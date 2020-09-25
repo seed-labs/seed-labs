@@ -4,3 +4,4 @@
 *.aux
 *.pdf
 *.xtr
+!**/Figs/*.pdf
