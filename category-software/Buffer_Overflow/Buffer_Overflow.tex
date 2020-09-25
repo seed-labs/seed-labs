@@ -35,11 +35,6 @@ write data beyond the boundaries of pre-allocated fixed length buffers. This
 vulnerability can be used by a malicious user to alter the flow control of
 the program, leading to the execution of malicious code. 
 
-%This vulnerability arises
-%due to the mixing of the storage for data (e.g. buffers) and the 
-%storage for controls (e.g. return addresses): an overflow in the data part can
-%affect the control flow of the program, because an overflow can
-%change the return address.
 
 In this lab, students will be given a program with a buffer-overflow
 vulnerability; their task is to develop a scheme to exploit 
@@ -876,11 +871,5 @@ starting at \texttt{buffer[i]}:
 
 \seedsubmission
 
-
-%BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
-%\bibliographystyle{plain}
-%\def\baselinestretch{1}
-%\bibliography{BibBuffer_Overflow,BibDu}
-%BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 
 \end{document}
