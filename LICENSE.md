@@ -3,7 +3,7 @@
 
 ## License 
 
-All the SEED labs and materials will use the Creative Commons
+All the SEED labs and associated materials will use the Creative Commons
 Attribution-NonCommercial-ShareAlike license. 
 Here is the URL of the license: https://creativecommons.org/licenses/by-nc-sa/4.0/
 
@@ -34,9 +34,3 @@ Attribution-NonCommercial-ShareAlike 4.0 International License:
 http://creativecommons.org/licenses/by-nc-sa/4.0/. This French
 translation is licensed under the same license. 
 
-## License for Code
-
-Creative Commons is more suitable for documents, images, video,
-and other copyrighted work, it is not very suitable for software. For software, 
-it is better to use software-specific licenses. For trivial code, we will just use
-Creative Commons to cover it (or not use any license). For non-trivial code, especially for software projects, we will choose another license. Different software projects can choose different licenses. 

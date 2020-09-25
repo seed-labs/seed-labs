@@ -1,9 +1,9 @@
 # Project Guide
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-Inside the SEEDLabs organization, we have several open-source projects. 
-This guide helps you navigate through these projects, so you can find the 
-ones that you are interested in contributing. 
+This is the core of the entire SEED project, it consists
+of all the labs that we have developed and maintained.  
+
 
 ## History
 
@@ -17,12 +17,6 @@ from his students. While this has worked quite well for almost 20 years,
 it has now reached a point, where individual efforts can no longer meet 
 the ever increasing needs from the world. There are many interesting things
 that we can do if we work together as a community. 
-
-To bring together those who are interested in contributing to the SEED project
-and to the Cybersecurity education, Du open-sources the entire SEED project, 
-which consists of several projects, 
-including all the SEED lab descriptions and source code he and his team has 
-been developing. This ```seed-labs``` Github organization is created as a home to host all the SEED projects. 
 
 ## Vision
 
