@@ -70,29 +70,15 @@ Detailed coverage of the ARP protocol and attacks can be found in the following:
 % SECTION
 % ******************************************* 
 \section{Task 1: ARP Cache Poisoning}
-\label{tt}
 
 
 The objective of this task is to use packet spoofing to launch an ARP cache poisoning attack on
 a target, such that when two victim machines A and B try to communicate with each other, their
 packets will be intercepted by the attacker, who can make changes to the packets, and can thus
 become the man in the middle between A and B. This is called Man-In-The-Middle (MITM) attack.
-In this lab, we use ARP cahce poisoning to conduct an MITM attack. 
+In this lab, we use ARP cache poisoning to conduct an MITM attack. 
 
 
-\begin{comment}
-ARP is insecure, as any device can send an ARP reply packet to another host
-and force that host to update its ARP table or cache with the new value.
-Basically, an attacker takes advantage of this and poisons the ARP table. Suppose a victim requests for something on network
-with some default gateway. All information will pass through that gateway. 
-An attacker can act as a default gateway for the victim, so that every request will go through him.
-
-Since our VMs are in the same network, There is no need of any gateway for their
-communication. However, if host C wants to intercept the traffics between 
-host A and host B, it can spoof an ARP reply packet to A, and tell this machine 
-to update its ARP cache, replace the MAC address of B with C's MAC address. 
-Then A will consider C as the default gateway, and all the traffics from A will go through C.
-\end{comment}
 
 The following code skeleton shows how to construct an ARP packet using Scapy.
 

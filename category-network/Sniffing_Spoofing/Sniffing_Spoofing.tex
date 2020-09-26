@@ -315,46 +315,6 @@ each round, and record the IP address based on your observation
 from Wireshark. Either way is acceptable, as long as you get the result. 
 
 
-\begin{comment}
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 1.4: ARP Cache Poisoning Attack}  
-
-The objective of this task is to use packet spoofing to launch
-an ARP cache poisoning attack on a target, such that when
-the victim machine tries to communicate with the IP address
-targeted by our attack, the packet will be delivered to our machine (the
-attacker's machine). To check whether your attack is successful or not, you
-can use the \texttt{"arp -a"} command to list the content of the ARP cache.  
-
-
-\begin{lstlisting}
-a = Ether()
-b = ARP()
-send(a/b)
-\end{lstlisting}
- 
-
-
-\paragraph{Task 1.4A.}  If your network is \texttt{10.0.2.0/24}, 
-launch the ARP cache poisoning attack against the victim VM, 
-such that we ping \texttt{10.0.2.99} from the victim VM, the packet will be delivered
-to our VM (attacker's VM), instead of being delivered to
-\texttt{10.0.2.99}. 
-
-
-\paragraph{Task 1.4B.}  The setup for this task is the same as Task 1.3A. 
-Instead of targeting \texttt{10.0.2.99}, we use an ARP cache poisoning
-attack to target at IP address \texttt{1.2.3.4}.  After our attack is
-successful, try ping \texttt{1.2.3.4} from the victim VM, please describe
-and explain your observation. 
-
-\end{comment}
-
-
-
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
