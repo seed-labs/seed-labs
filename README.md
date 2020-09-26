@@ -25,12 +25,12 @@ that we can do if we work together as a community.
 
 Learning by doing is essential for education. 
 Our vision is to develop hands-on labs that can help achieve
-learning by doing in the cybersecurity education around the world. 
+learning by doing in cybersecurity education.
 These include lab exercises that are well-designed, interesting, and effective, 
 as well as the platforms to support these labs. 
 The labs and platforms are open source, so universities,
 colleges, and high schools around the world 
-can freely use them to enhance their cybersecurity education. 
+can freely use them to enhance their curricula.
 
 
 ## Contributing
