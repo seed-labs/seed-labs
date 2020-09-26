@@ -23,18 +23,19 @@ improve the existing labs. I am only listing a few examples:
     plus several containers for the lab environment. This can drastically
     reduce the complexity of the lab setup. 
 
-  - There are always better ways to do things. If you find one that can
+  - There are always better ways to do things. If you find anything that can
     improve some of the existing tasks, we would like to hear 
     about it.
 
-  - Search for issues with label "TODO" to find out the specific things 
-    we are looking for.
+  - Search for issues with label "help wanted" to find out the specific things 
+    we are looking for. If you are very new in open-source project, 
+    you can start from the issues labeled "good first issue". 
 
 - **New labs**. Developing new SEED labs. There are many topics that are 
-not covered by the existing SEED labs. If you have expertises in those 
+not covered by the existing SEED labs. If you have expertise in those 
 topics, and are interested in develop
 one or multiple SEED labs on that topic, we would like to hear your 
-proposal, and will work with you to get things started. Here are 
+proposal, and will work with you to get things started. Here is 
 an incomplete list of topics: 
 
   - Forensics
