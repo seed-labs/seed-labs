@@ -68,7 +68,7 @@ some of us will respond to you.
 ## Community
 
 Discussions about the Open Source Guides take place on 
-this repository's [Issues](https://github.com/seed-labs/opensource.guide/issues) and [Pull Requests](https://github.com/seed-labs/pulls) sections. Anybody is welcome to join these conversations. 
+this repository's [Issues](https://github.com/seed-labs/seed-labs/issues) and [Pull Requests](https://github.com/seed-labs/seed-labs/pulls) sections. Anybody is welcome to join these conversations. 
 
 Wherever possible, do not take these conversations to private channels, including contacting the maintainers directly. Keeping communication public means everybody can benefit and learn from the conversation.
 
