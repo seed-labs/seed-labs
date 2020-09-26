@@ -1,0 +1,160 @@
+
+\renewcommand{\arraystretch}{1.5}
+
+\begin{longtable}{|p{0.2\textwidth}|p{0.8\textwidth}|}
+ \caption{Checklist for VPN demonstration}
+ \label{vpn:table:checklist}
+ \endfirsthead
+ \endhead
+ \hline\xrowht[()]{10pt}
+ \textbf{\Large Requirements} & \textbf{\Large Details} \\ 
+ \hline
+ \hline
+ \textbf{Initial State} & 
+	\vspace*{-0.3cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+		\item Rebooting all three VMs. Start recording after the VMs are rebooted. You
+		should start demo immediately after rebooting. If you wait too long,
+		you will have to do the rebooting again.
+
+		\item Type \texttt{"last reboot; date"} in a terminal to show the rebooting
+		time and current time on all three VMs. The difference between these two times
+		should not be more than 5 minute.
+
+		\item Display the routing tables on all three VMs.
+	\end{itemize}
+ \\ 
+ \hline
+ 
+ \textbf{Pre-Tunnel Test} & 
+ 	\vspace*{-0.3cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+		\item Before VPN is set up, \texttt{ping} Host \hostv
+		from Host \hostu and explain your observation.
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{Tunnel Creation} & 
+ 	\vspace*{-0.3cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+	   \item Start vpn client and vpn server programs.
+		\begin{itemize}
+		\item You need to type passwords to authenticate yourself to the server, the
+		password should not be visible (10 points will be deducted if we see your
+		passwords). You can use \texttt{getpass()} to achieve that (type ``\texttt{man
+		getpass}" to see its manual).
+
+		\item Passwords cannot be hardcoded in your program. If you do this, 50 points will be deducted. 
+		\end{itemize}
+
+	   \item Perform configuration on all VMs. Although you can put the configuration
+	   commands in a script, you do need to show the script and explain the commands in
+	   your script.
+
+	   \item Show routing tables on all three VMs after the configuration.
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{Ping Test} & 
+ 	\vspace*{-0.3cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+		\item On Host \hostu: \texttt{ping} Host \hostv.
+		\item Use Wireshark to prove that your VPN works correctly.
+		\item Show us the proof that the tunnel is indeed encrypted.
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{Telnet Test} & 
+ 	\vspace*{-0.3cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+		\item On Host \hostu: \texttt{telnet} to Host \hostv.
+		\item Use Wireshark to prove that your VPN works correctly.
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{Tunnel-Breaking Test} & 
+ 	\vspace*{-0.3cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+		\item On Host \hostu, telnet to Host \hostv. While keeping the telnet connection alive,
+		break the VPN tunnel by stopping the vpn client and/or vpn server programs.
+		Then type something in the telnet window. Do you see what you type? What
+		happens to the TCP connection? Is the connection broken? 
+
+		\item Let us now reconnect the VPN tunnel (do not wait for too long). 
+		Run the client and server programs again, and conduct the necessary
+		configuration (no need to explain or show commands). Once the tunnel is
+		re-established, what is going to happen to the telnet connection? Please
+		describe and explain your observation.
+
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{Large Packet Test} & 
+ 	\vspace*{-0.3cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+	\item Send a large packet (size \textgreater\space 3000) from Host \hostu to Host \hostv. 
+	You can use \texttt{"ping -s"} to do that. 
+
+	\item Use Wireshark to describe and explain your observations.
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{TLS Setup} & 
+ 	\vspace*{-0.3cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+		\item Show us how you set up your TLS on both client and server sides.
+		\item Show us where you place the server certificates and self-signed certificate.
+		\item Show us which lines of code load those certificates.
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{MITM Test} & 
+ 	\vspace*{-0.3cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+		\item Demonstrate that your system can successfully defeat MITM attacks. You
+		need to set up a simulated MITM attack, and demonstrate that your client
+		program can defeat it.
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{Code Explanation 1} & 
+	Which lines of code are responsible for the following:
+ 	\vspace*{0.2cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+		\item verifying that the server certificate is valid
+		\item verifying that the server is the owner of the certificate
+		\item verifying that the server is the intended server
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{Code Explanation 2} & 
+	Which line of code in the client forces TLS handshake to stop if the server certificate
+	verification fails?
+ \\ 
+ \hline
+
+ \textbf{Code Explanation 3} & 
+	Which line(s) of code do the following?
+	\vspace*{0.2cm}
+ 	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
+		\item sending username and password to the server
+		\item getting account information from the shadow file
+	\end{itemize}
+ \\ 
+ \hline
+
+ \textbf{Ending Time} & 
+	Type \texttt{"last reboot; date"} commands to display the time before ending your demo.
+ \\ 
+ \hline
+
+\end{longtable}

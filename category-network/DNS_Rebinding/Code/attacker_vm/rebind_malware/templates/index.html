@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+   <head>
+      <title>Thermometer</title>
+      <meta charset="utf-8"/>
+      <link rel="stylesheet" href="/css/bootstrap.min.css"/>
+      <script src="js/jquery-2.2.4.min.js"></script>
+      <style>
+         body {background-color: black }
+         h1 {font-size:2cm; text-align: center; color: white; text-shadow: 0 0 3mm yellow}
+         h2 {font-size:1cm; text-align: left; color: white; text-shadow: 0 0 1mm yellow}
+         h3 {font-size:1cm; text-align: left; color: red; text-shadow: 0 0 1mm white}
+      </style>
+   </head>
+
+    <body>
+       <div class="container">
+   	 <h1>Attacker's Website</h1>
+
+	 <div class="row">
+	    <div class="col-sm-6">
+	       <h2>Attack Countdown</h2>
+	    </div>
+	    <div class="col-sm-6">
+	       <span id="currentCount"></span>
+	    </div>
+ 	 </div>
+
+	 <div class="row">
+	    <h3 id="pwd-err" style="display: none;">
+                You are still talking to me (attacker)!<br>
+                You need to talk to the IoT server!
+            </h3>
+	    <h3 id="pwd-iot" style="display: none;">
+                You are now talking to the IoT server!
+            </h3>
+ 	 </div>
+       </div>
+
+    <script src="./js/main.js"></script>
+    </body>
+</html>
