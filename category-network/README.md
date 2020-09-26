@@ -6,7 +6,7 @@ This folder contains network security labs.
 - ARP Cache Poisoning Attack Lab
 - IP/ICMP Attacks Lab
 
-- TCP Attacks Lab
+- TCP Attacks Labs
   - TCP Attacks Lab
   - The Mitnick Attack Lab
 
