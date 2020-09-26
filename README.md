@@ -1,8 +1,11 @@
-# Project Guide
+![SEEDLabs Logo](https://seedsecuritylabs.org/assets/images/seed_labs_b.png)
+--------------------------------------------------------------------------------
+
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 This is the core of the entire SEED project, it consists
-of all the labs that we have developed and maintained.  
+of all the labs that we have developed and maintained 
+for the past 18 years. 
 
 
 ## History
