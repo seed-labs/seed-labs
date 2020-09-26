@@ -25,7 +25,9 @@ improve the existing labs. I am only listing a few examples:
 
   - There are always better ways to do things. If you find anything that can
     improve some of the existing tasks, we would like to hear 
-    about it.
+    about it. Inside some of the lab folders, we have a ```TODO.md``` file, 
+    which describes what we would like to achieve. Those are good places
+    to start.
 
   - Search for issues with label "help wanted" to find out the specific things 
     we are looking for. If you are very new in open-source projects, 
