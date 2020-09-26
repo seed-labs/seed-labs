@@ -1,0 +1,20 @@
+
+
+The above \urlisorurlsare is only accessible from inside of the virtual machine, because we
+have modified the \texttt{/etc/hosts} file to map the domain
+name of each URL to the virtual machine's local IP
+address ({\tt 127.0.0.1}).
+You may map any domain name to a particular IP address using
+\texttt{/etc/hosts}. For example, you can map
+\url{http://www.example.com} to the local IP address by appending the
+following entry to \texttt{/etc/hosts}:
+
+\begin{lstlisting}[backgroundcolor=]
+   127.0.0.1     www.example.com
+\end{lstlisting}
+
+If your web server and browser are running on two different machines, you need
+to modify \texttt{/etc/hosts} on the browser's machine accordingly to map these
+domain names to the web server's IP address, not to {\tt 127.0.0.1}.
+
+

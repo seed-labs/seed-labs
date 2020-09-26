@@ -1,0 +1,499 @@
+\input{../../common-files/header}
+\input{../../common-files/copyright}
+
+
+\lhead{\bfseries SEED Labs -- CSRF Lab}
+
+\begin{document}
+
+\begin{center}
+{\LARGE Cross-Site Request Forgery (CSRF) Attack Lab}
+\vspace{0.1in}\\
+{\Large (Web Application: {\tt Elgg})}
+\end{center}
+
+\seedlabcopyright{2006 - 2016}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Overview}
+
+
+The objective of this lab is to help students understand the Cross-Site Request
+Forgery (CSRF) attack. A CSRF attack involves a victim user, a
+trusted site, and a malicious site. The victim user holds an active session
+with a trusted site while visiting a malicious site. The
+malicious site injects an HTTP request for the trusted site into the victim
+user session, causing damages.
+
+In this lab, students  will be attacking a social networking web
+application using the CSRF attack. The open-source social networking application is called 
+\texttt{Elgg}, which has already been installed in our VM.
+\texttt{Elgg} has countermeasures against CSRF, but we have turned them off for the
+purpose of this lab.  This lab covers the following topics:
+
+\begin{itemize}[noitemsep]
+ \item Cross-Site Request Forgery attack
+ \item CSRF countermeasures: Secret token and Same-site cookie
+ \item HTTP GET and POST requests
+ \item JavaScript and Ajax
+\end{itemize}
+
+
+\paragraph{Readings.}
+Detailed coverage of the CSRF attack can be found in the following:
+
+\begin{itemize}
+\item Chapter 10 of the SEED Book, \seedbook
+\end{itemize}
+
+
+\paragraph{Lab environment.} \seedenvironment
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Lab Environment}
+
+
+This lab can only be conducted in our Ubuntu 16.04 VM, because of the configurations that we
+have performed to support this lab. We summarize these configurations in this
+section.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{../Web_Common/Web_Elgg_Setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{DNS Configuration.}
+This lab involves two websites, the victim website and the attacker's website. 
+Both websites are set up on our VM. Their URLs and folders are 
+described in the following: 
+
+
+\begin{lstlisting}
+ Attacker's website
+    URL: http://www.csrflabattacker.com
+    Folder: /var/www/CSRF/Attacker/ 
+  
+ Victim website (Elgg)
+    URL: http://www.csrflabelgg.com 
+    Folder: /var/www/CSRF/Elgg/ 
+\end{lstlisting}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\urlorurls}{URLs }
+\newcommand{\urlisorurlsare}{URLs are }
+\input{../Web_Common/Web_DNS_Setup}
+\input{../Web_Common/Web_Apache_Setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Lab Tasks}
+
+For the lab tasks, you will use two web sites that are locally setup in
+the virtual machine. The first web site is the vulnerable \texttt{Elgg}
+site accessible at \url{www.csrflabelgg.com} inside the virtual machine. The second
+web site is the attacker's malicious web site that is used for
+attacking {\tt Elgg}. This web site is accessible via
+\url{www.csrflabattacker.com} inside the virtual machine. 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1: Observing HTTP Request.}
+
+In Cross-Site Request Forget attacks, we need to forge HTTP requests. 
+Therefore, we need to know what a legitimate HTTP request looks like and 
+what parameters it uses, etc. 
+We can use a Firefox add-on called \texttt{"HTTP Header Live"} for this
+purpose.  
+The goal of this task is to get familiar with this tool. 
+Instructions on how to use this tool is given in the Guideline
+section~(\S~\ref{web:sec:httpheaderlive}).
+Please use this tool to capture an HTTP GET request and an HTTP POST
+request in \texttt{Elgg}. In your report, please identify the parameters
+used in this these requests, if any. 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2: CSRF Attack using GET Request}
+
+In this task, we need two people in the {\tt Elgg} social network: Alice
+and Boby. Boby wants to become a friend to Alice, but Alice refuses to add 
+him to her {\tt Elgg} friend list. Boby decides to use the CSRF attack to
+achieve his goal. He sends Alice an URL (via an email or a posting in {\tt
+Elgg}); Alice, curious about it, clicks on the URL, which leads her to Boby's web site:    
+{\tt www.csrflabattacker.com}. Pretend that you are Boby, describe how you
+can construct the content of the web page, so as soon as Alice visits the
+web page, Boby is added to the friend list of Alice (assuming Alice has an
+active session with {\tt Elgg}).
+
+
+To add a friend to the victim, we need to identify what the legitimate 
+Add-Friend HTTP request (a GET request) looks like. We can use 
+the \texttt{"HTTP Header Live"} Tool to do the investigation. 
+In this task, you are not allowed to
+write JavaScript code to launch the CSRF attack. Your job is to make the
+attack successful as soon as Alice visits the web page, without even making
+any click on the page (hint: you can use the {\tt img} tag, which
+automatically triggers an HTTP GET request).
+ 
+
+\texttt{Elgg} has implemented a countermeasure to defend against 
+CSRF attacks. In Add-Friend HTTP requests, you may notice that each 
+request includes two wired-looking parameters, \texttt{\_\_elgg\_ts} and 
+\texttt{\_\_elgg\_token}. These parameters are used by the countermeasure, so if they do not
+contain correct values, the request will not be accepted by \texttt{Elgg}.   
+We have disabled the countermeasure for this lab, so there is no need to include these two 
+parameters in the forged requests. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 3: CSRF Attack using POST Request}
+
+After adding himself to Alice's friend list, Boby wants to do something more. He 
+wants Alice to say ``Boby is my Hero'' in her profile, so everybody knows 
+about that. Alice does not like Boby, let alone putting that statement 
+in her profile. Boby plans to use a CSRF attack to achieve that goal. 
+That is the purpose of this task. 
+
+
+One way to do the attack is to post a message to Alice's {\tt Elgg} account, hoping that 
+Alice will click the URL inside the message. This URL will lead Alice to your (i.e., Boby's)
+malicious web site \url{www.csrflabattacker.com}, where you can launch the
+CSRF attack. 
+
+The objective of your attack is to modify the victim's profile. 
+In particular, the attacker needs to forge a request 
+to modify the profile information of the victim user of {\tt Elgg}. 
+Allowing users to modify their profiles is a feature of 
+{\tt Elgg}. If  users want to modify their profiles,
+they go to the profile page of {\tt Elgg}, fill out 
+a form, and then submit the form---sending a POST request---to 
+the server-side script {\tt /profile/edit.php}, which 
+processes the request and does the profile modification.
+
+
+The server-side script {\tt edit.php} accepts both GET and POST requests,
+so you can use the same trick as that in Task 1 to achieve the attack.
+However, in this task, you are required to use the POST request. 
+Namely, attackers (you) need to forge an HTTP POST request from the victim's
+browser, when the victim is visiting their malicious site. 
+Attackers need to know the structure of such a request.
+You can observe the
+structure of the request, i.e.,  the parameters of the request, by making
+some modifications to the profile and monitoring the request using
+the \texttt{"HTTP Header Live"} tool. 
+You may see something similar to
+the following. Unlike HTTP {\tt GET} requests, which append 
+parameters to the URL strings, the parameters of HTTP {\tt POST} requests are 
+included in the HTTP message body (see the contents between the two 
+\ding{80} symbols): 
+
+
+\begin{lstlisting}
+http://www.csrflabelgg.com/action/profile/edit
+
+POST /action/profile/edit HTTP/1.1
+Host: www.csrflabelgg.com
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:23.0) ...
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://www.csrflabelgg.com/profile/elgguser1/edit
+Cookie: Elgg=p0dci8baqrl4i2ipv2mio3po05
+Connection: keep-alive
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 642
+__elgg_token=fc98784a9fbd02b68682bbb0e75b428b&__elgg_ts=1403464813  (*@\ding{80}@*) 
+&name=elgguser1&description=%3Cp%3Iamelgguser1%3C%2Fp%3E
+&accesslevel%5Bdescription%5D=2&briefdescription= Iamelgguser1
+&accesslevel%5Bbriefdescription%5D=2&location=US
+......                                                              (*@\ding{80}@*)
+\end{lstlisting}
+
+
+After understanding the structure of the request, you need to 
+be able to generate the request from your attacking web page
+using JavaScript code. 
+To help you write such a JavaScript program,  we provide a 
+sample code in the following You can use this sample code to construct your malicious web site
+for the CSRF attacks. This is only a sample code, and you need to modify it to 
+make it work for your attack.
+
+
+\begin{lstlisting}
+<html>
+<body>
+<h1>This page forges an HTTP POST request.</h1>
+<script type="text/javascript">
+
+function forge_post()
+{
+    var fields;
+
+    // The following are form entries need to be filled out by attackers. 
+    // The entries are made hidden, so the victim won't be able to see them.
+    fields += "<input type='hidden' name='name' value='****'>";
+    fields += "<input type='hidden' name='briefdescription' value='****'>";
+    fields += "<input type='hidden' name='accesslevel[briefdescription]' 
+                                    value='2'>";                         (*@\ding{192}@*)
+    fields += "<input type='hidden' name='guid' value='****'>";
+
+    // Create a <form> element.
+    var p = document.createElement("form");
+	 
+    // Construct the form
+    p.action = "http://www.example.com";
+    p.innerHTML = fields;
+    p.method = "post";
+	 
+    // Append the form to the current page.
+    document.body.appendChild(p);
+	 
+    // Submit the form
+    p.submit();
+}
+
+	
+// Invoke forge_post() after the page is loaded.
+window.onload = function() { forge_post();}
+</script>
+</body>
+</html>
+\end{lstlisting}
+
+
+In Line~\ding{192}, the value \texttt{2} sets the access level of a field to public. 
+This is needed, otherwise, the access level will be set by default to private, so others cannot
+see this field. It should be noted that when copy-and-pasting the above code
+from a PDF file, the  single quote character in the program may become 
+something else (but still looks like a single quote). That will cause 
+syntax errors. Replace all the single quote symbols with the one typed from 
+your keyboard will fix those errors. 
+
+
+\paragraph{Questions.}
+In addition to describing your attack in full details, you also need to
+answer the following questions in your report:
+
+\begin{itemize}
+   \item \textbf{Question 1}: The forged HTTP request needs Alice's user
+   id (guid) to work properly. If Boby targets Alice specifically, before
+   the attack, he can find ways to get Alice's user id. Boby does not know 
+   Alice's {\tt Elgg} password, so he cannot log into Alice's account to get
+   the information. Please describe how Boby can solve this problem.
+
+   
+   \item \textbf{Question 2:} If Boby would like to launch the attack to
+   anybody who visits his malicious web page. In this case, he does not
+   know who is visiting the web page beforehand. Can he still launch the CSRF attack
+   to modify the victim's {\tt Elgg} profile? Please explain.
+\end{itemize}
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 4: Implementing a countermeasure for {\tt Elgg}} 
+
+
+{\tt Elgg} does have a built-in countermeasures to 
+defend against the CSRF attack. 
+We have commented out the countermeasures to make the attack work. 
+CSRF is not difficult to defend against, and there are several common approaches:
+
+\begin{itemize}
+   \item {\em Secret-token approach}: Web applications can embed a secret token
+   in their pages, and all requests coming from these pages will carry this 
+   token. Because cross-site requests cannot obtain this token, their 
+   forged requests will be easily identified by the server.
+
+   \item {\em Referrer header approach}: Web applications can also verify the origin page 
+   of the request using the \emph{referrer} header. However, due to privacy
+   concerns, this header information may have already been filtered out 
+   at the client side.
+\end{itemize}
+
+
+The web application {\tt Elgg} uses secret-token approach. 
+It embeds two parameters {\tt\_\_elgg\_ts} and {\tt\_\_elgg\_token} in the request as a countermeasure to CSRF attack. 
+The two parameters are added to the HTTP message body for the POST requests and to the URL string for the HTTP GET requests.
+
+
+\paragraph{{\tt Elgg} secret-token and timestamp in the body of the request.}
+{\tt Elgg} adds security token and timestamp to all the user actions to be performed.
+The following HTML code is present in all the forms where user action is required. 
+This code adds two new hidden parameters {\tt\_\_elgg\_ts} and {\tt\_\_elgg\_token} to the POST request:
+
+\begin{lstlisting}
+<input type = "hidden" name = "__elgg_ts" value = "" />
+<input type = "hidden" name = "__elgg_token" value = "" />
+\end{lstlisting}
+
+The {\tt\_\_elgg\_ts} and {\tt\_\_elgg\_token} are generated by the 
+\url{views/default/input/securitytoken.php} 
+module and added to the web page. 
+The code snippet below shows how it is dynamically added to the web page.
+{\footnotesize
+\begin{lstlisting}
+$ts = time();
+$token = generate_action_token($ts);
+
+echo elgg_view('input/hidden', array('name' => '__elgg_token', 'value' => $token));
+echo elgg_view('input/hidden', array('name' => '__elgg_ts', 'value' => $ts));
+\end{lstlisting}
+}
+
+{\tt Elgg} also adds the security tokens and timestamp to the JavaScript which can be accessed by 
+
+\begin{lstlisting}
+  elgg.security.token.__elgg_ts;
+  elgg.security.token.__elgg_token;
+\end{lstlisting}
+
+{\tt Elgg} security token is a hash value (md5 message digest) of the site secret value (retrieved from database),
+timestamp, user sessionID and random generated session string. There by defending against the CSRF attack.  
+The code below shows the secret token generation in {\tt Elgg}.
+
+\begin{lstlisting}
+function generate_action_token($timestamp) 
+{
+  $site_secret = get_site_secret();
+  $session_id = session_id();
+  // Session token
+  $st = $_SESSION['__elgg_session'];
+
+  if (($site_secret) && ($session_id)) 
+  {
+     return md5($site_secret . $timestamp . $session_id . $st);
+  }
+
+  return FALSE;
+}
+\end{lstlisting}
+
+
+The PHP function {\tt session\_id()} is used to get or set the session id
+for the current session.  The below code snippet shows random generated
+string for a given session {\tt\_\_elgg\_session} apart from public user
+Session ID.
+
+\begin{lstlisting}
+  ...... 
+  // Generate a simple token (private from potentially public session id)
+  if (!isset($_SESSION['__elgg_session'])) {
+  $_SESSION['__elgg_session'] = ElggCrypto::getRandomString(32,ElggCrypto::CHARS_HEX);
+	........
+\end{lstlisting}
+
+\paragraph{{\tt Elgg} secret-token validation.}
+The elgg web application validates the generated token and timestamp to
+defend against the CSRF attack.  Every user action calls {\tt
+validate\_action\_token} function and this function validates the tokens.
+If tokens are not present or invalid, the action will be denied and the
+user will be redirected.
+ 
+ 
+The below code snippet shows the function {\tt validate\_action\_token}.
+
+\begin{lstlisting}
+function validate_action_token($visibleerrors = TRUE, $token = NULL, $ts = NULL) 
+{
+  if (!$token) {	$token = get_input('__elgg_token');	}
+  if (!$ts) {$ts = get_input('__elgg_ts');	}
+  $session_id = session_id();
+  if (($token) && ($ts) && ($session_id)) {
+    // generate token, check with input and forward if invalid
+    $required_token = generate_action_token($ts);
+
+    // Validate token
+    if ($token == $required_token) {
+			
+      if (_elgg_validate_token_timestamp($ts)) {
+        // We have already got this far, so unless anything
+        // else says something to the contrary we assume we're ok
+        $returnval = true;
+        ......
+      }
+      else {     
+        ......
+        register_error(elgg_echo('actiongatekeeper:tokeninvalid'));
+        ......
+      }
+      ......
+}
+\end{lstlisting}
+
+
+
+\paragraph{Turn on countermeasure.}
+To turn on the countermeasure, please go to the directory
+\url{/var/www/CSRF/Elgg/vendor/elgg/elgg/engine/classes/Elgg} and 
+find the function {\tt gatekeeper} in the {\tt ActionsService.php} file. 
+In function {\tt gatekeeper()} please comment out the 
+{\tt "return true;"} statement as specified in the code comments.
+
+\begin{lstlisting}
+public function gatekeeper($action) {
+   //SEED:Modified to enable CSRF. 
+   //Comment the below return true statement to enable countermeasure
+   return true;
+   ......
+}
+\end{lstlisting}
+
+
+\paragraph{Task:}
+After turning on the countermeasure above, try the CSRF attack again, 
+and describe your observation. Please point out the secret tokens in the 
+HTTP request captured using Firefox's HTTP inspection tool.
+%{\tt LiveHTTPHeaders}. 
+Please explain why
+the attacker cannot send these secret tokens in the CSRF attack; what
+prevents them from finding out the secret tokens from the web page?   
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\section{Guidelines}
+
+\input{../Web_Common/Web_Dev_Tools}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Submission}
+
+\seedsubmission
+
+
+
+\end{document}
+
+
+

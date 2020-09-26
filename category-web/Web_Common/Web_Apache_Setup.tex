@@ -1,0 +1,39 @@
+
+\paragraph{Apache Configuration.}
+In our pre-built VM image, we used Apache server to host all the web
+sites used in the lab. The name-based virtual hosting feature in
+Apache could be used to host several web sites (or URLs) on the same
+machine. A configuration file named \texttt{000-default.conf} in the directory
+\url{"/etc/apache2/sites-available"} contains the necessary directives for the
+configuration:
+
+Inside the configuration file, each web site has a {\tt VirtualHost} block
+that specifies the URL for the web site and directory in the file system
+that contains the sources for the web site. The following examples show how
+to configure a website with URL \url{http://www.example1.com} and another
+website with URL \url{http://www.example2.com}:
+
+\begin{lstlisting}
+<VirtualHost *>
+    ServerName http://www.example1.com
+    DocumentRoot /var/www/Example_1/
+</VirtualHost>
+
+<VirtualHost *>
+    ServerName http://www.example2.com
+    DocumentRoot /var/www/Example_2/
+</VirtualHost>
+\end{lstlisting}
+
+
+You may modify the web application by accessing the source in the
+mentioned directories. For example, with the above configuration,
+the web application \url{http://www.example1.com} can be changed by modifying
+the sources in the \url{/var/www/Example_1/} directory. After a change is
+made to the configuration, the Apache server needs to be restarted. See the
+following command:
+
+\begin{lstlisting}[backgroundcolor=]
+   $ sudo service apache2 start
+\end{lstlisting}
+
