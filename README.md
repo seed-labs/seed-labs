@@ -19,16 +19,18 @@ The project has been maintained by Professor Du himself in the past, with the he
 from his students. While this has worked quite well for almost 20 years, 
 it has now reached a point, where individual efforts can no longer meet 
 the ever increasing needs from the world. There are many interesting things
-that we can do if we work together as a community. 
+that we can do if we work together as a community.
 
 ## Vision
 
 Learning by doing is essential for education. 
 Our vision is to develop hands-on labs that can help achieve
 learning by doing in the cybersecurity education around the world. 
-These include well-designed lab exercises, as well as the 
-platforms for these labs. These labs and platforms are 
-open source. 
+These include lab exercises that are well-designed, interesting, and effective, 
+as well as the platforms to support these labs. 
+The labs and platforms are open source, so universities,
+colleges, and high schools around the world 
+can freely use them to enhance their cybersecurity education. 
 
 
 ## Contributing
@@ -39,4 +41,17 @@ Want to contribute? Great! Please take a few minutes to
 
 ## License
 
-Works in the SEEDLabs organization will use open-source licenses. You can [read this](LICENSE.md) for more details.
+All the SEED labs in this repository use open-source licenses. 
+You can [read this](LICENSE.md) for more details.
+
+
+## Organization of this repository
+
+The SEED labs are divided into 6 categories, and each one has its own folder. 
+
+- ```category-crypto```:     For crypto labs
+- ```category-hardware```:   For hardware security labs
+- ```category-mobile```:     For mobile security labs
+- ```category-network```:    For network security labs
+- ```category-software```:   For software security labs
+- ```category-web```:        For web security labs
