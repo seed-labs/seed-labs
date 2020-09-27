@@ -1,3 +1,10 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % *******************************************
 % SECTION
@@ -10,12 +17,6 @@ For most of our tasks, you need to add \texttt{-march=native}
 flag when compiling the code with
 \texttt{gcc}. The \texttt{march} flag tells the compiler to enable all
 instruction subsets supported by the local machine.
-%The \texttt{O2} flag (\texttt{O} is the capital letter \texttt{o}, not zero)
-%is an optimization flag that tells the GCC compiler to improve the
-%performance of our code at the expanse of compilation time. 
-%We are doing
-%this because Meltdown attack is performance-sensitive, and this trick will
-%improve the possibility of successfully stealing the secret data.
 For example, we compile \texttt{myprog.c} using the following command:
 
 \begin{lstlisting}[backgroundcolor=]
@@ -50,40 +51,6 @@ called miss), the CPU will go to the main memory to get the data. The time
 spent in the latter case is significant longer. Most modern CPUs have
 CPU caches. 
 
-
-%Let us first learn how cache memory works.
-%Figure~\ref{spectre:fig:cache} shows how the data flows from memory to CPU. The TLB
-%(translation look-aside buffer) is responsible for storing the recent translations of the
-%Virtual addresses used by the CPU to the Physical addresses which are used to store data on
-%memory. For virtually tagged cache memories in which cache memory is indexed and tagged using
-%virtual addresses, the CPU directly fetches the data from cache and TLB is only used in case of
-%cache miss. For a physically tagged cache where cache memory is indexed and tagged using
-%physical address, a TLB look up needs to be done for every memory operation and then the
-%translation is used to access cache as shown in the figure above. The TLB if has the
-%translation returns the Physical address immediately, but in case the TLB does not have the
-%translation then it will access the page table of the process in the memory to get the
-%translation. Once the translation is found, it is used to check if the translated address
-%resides in cache (cache hit) or if the data has to be fetched from the main memory (cache
-%miss). In case of cache hit, the data can be directly fetched from the cache while in the
-%latter case the data is copied from memory to cache first and then fetched from cache to the
-%CPU.
-
-
-
-%The objective of this task is to learn how to set up the Cache memory as side channel and use
-%this side channel to extract contents. This task mainly focuses on the Flush+Reload variant of
-%the attack that can be performed on the Cache memory. 
-%
-%A cache line is a block of cache memory
-%typically of 64 bytes or 128 bytes. 
-%
-%For the attack, the attacker flushes a specific cache line
-%which is removing a particular block from the cache memory. Then the attacker monitors the
-%cache line removed. The victim function while executing may read some data into cache memory
-%and particularly in that cache line. The attacker then later try to perform its own reads and
-%time each of its read. By timing each read attacker can determine if the read data was in cache
-%or in memory. This allows the attacker to know the contents accessed by the victim. It may seem
-%a bit confusing but we will soon see this in action which will clear things more.
 
 
 \begin{figure}[htb]
