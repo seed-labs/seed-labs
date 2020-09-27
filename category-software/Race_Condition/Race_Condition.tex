@@ -256,7 +256,7 @@ snapshot of the VM. This way, you can easily recover from the mishap.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2.A: Launching the Race Condition Attack}
+\subsection{Task 2: Launching the Race Condition Attack}
 
 The goal of this task is to exploit the race condition vulnerability in 
 the vulnerable \setuid program listed earlier. The ultimate goal is to gain
@@ -298,12 +298,79 @@ old one first. The implementation of the
 {\tt "ln"} command actually uses {\tt unlink()} and {\tt symlink()}.
 
 
-\paragraph{Running the attack program.}
-After you have implemented the attack program, you should run it 
-in the background, and then run the vulnerable program 
-in parallel. If the attack fails, the vulnerable program
-will crash, so you need to run the vulnerable program repeatedly until the 
-attack is successful. 
+
+% -------------------------------------------
+% SUBSUBSECTION
+% ------------------------------------------- 
+\subsubsection{Task 2.A: Slow deterministic version of the attack}  
+To test our attack workflow, it can be helpful to run the attack in a
+deterministic environment without the need to win a race condition to
+succeed.  Although the attacker would not be able to control the source
+code of the vulnerable program in a real-life scenario, we can modify
+the vulnerable program in our environment for testing purposes.
+
+
+Specifically, if we add the statement \texttt{sleep(10);} into the
+\texttt{vulp.c} code in between the \texttt{access()} and
+\texttt{fopen()} calls, the \texttt{vulp} program (when re-compiled)
+will pause and yield control to the operating system for 10 seconds when
+the statement is executed.  This should give us more than enough time to
+manually switch the target of the symlink \texttt{/tmp/XYZ} from the
+user-owned file that passes the \texttt{access()} check to the
+\texttt{/etc/passwd} file that we want \texttt{fopen()} to use.
+
+
+Conduct the manual test using the following procedure:
+\begin{enumerate}
+  \item Open two Terminal windows, say Window 1 and Window 2.
+  \item In Window 1, add the \texttt{sleep} statement to \texttt{vulp.c}
+        and recompile the \texttt{vulp} program.  
+  \item In Window 2, create the \texttt{/tmp/XYZ} symlink pointing to a
+	benign user-owned file.  Then type in a command to switch the
+	target of \texttt{/tmp/XYZ} to \texttt{/etc/passwd}, but do not
+        execute the command.  
+  \item In Window 1, run the script that repeatedly executes the
+	\texttt{vulp} program in a loop and wait a few seconds to ensure
+        that the program is executing the \texttt{sleep} statement.
+  \item In Window 2, execute the symlink-switching command.  
+  \item In Window 1, wait for the remainder of the \texttt{sleep}
+	command's 10-second interval, after which you should see the
+	script print out a success message and terminate.  If the script
+	prints anything but a success message, the attack was
+	unsuccessful and you should end the programs in both Terminals
+        and debug your attack setup.  
+  \item In either window, check whether the attack was successful by
+	logging in as the test user you attempted to add to the password
+	file.  If the login is successful and the \texttt{id}
+	command shows that you have the root privilege (i.e. a uid of
+	zero), you have now reproduced what the full race condition
+        attack should do if it succeeds.  
+  \item Reset the system to its default state for launching the race
+	condition attack:   delete the \texttt{test} user entry from the
+	end of the password file, take out the \texttt{sleep} statement
+	from the \texttt{vulp} program, and recompile the program. Note:
+	to edit the password file, you will need root privileges.  The
+	\texttt{sudo} command can be used to execute another command
+	with root privileges (provided the root user has previously
+	granted the current user this ``\texttt{sudo} privilege'').  So,
+	for example, to open the password file in the text editor
+	\texttt{nano} with root privileges, you can enter 
+	``\texttt{sudo nano /etc/passwd}'' on the command line and
+        provide the \texttt{seed} user's password when prompted.
+\end{enumerate}  
+
+
+
+% -------------------------------------------
+% SUBSUBSECTION
+% ------------------------------------------- 
+\subsubsection{Task 2.B: Full version of attack}
+After you have implemented the attack program described above, you
+should run it in the background, and then run the vulnerable program in
+parallel. (Alternatively, you can run the attack program in one Terminal
+window and the vulnerable program in another Terminal window.)  If the
+attack fails, the vulnerable program will crash, so you need to run the
+vulnerable program repeatedly until the attack is successful. 
 
 
 
@@ -348,6 +415,10 @@ done
 echo "STOP... The passwd file has been changed"
 \end{lstlisting}
 
+\paragraph{Verifying success}
+When your script terminates,
+test the success of your exploit by logging in as the test user and
+verifying root privileges.  Then terminate the attack program by pressing \texttt{Ctrl-C} in the Terminal window in which you started the program.
 
 
 \paragraph{A Note.}
@@ -357,17 +428,17 @@ of the \texttt{/tmp/XYZ} file. If the owner of this file
 becomes root, manually delete this file, and try your 
 attack again, until your attack becomes successful. 
 Please document this observation in your lab report. 
-In Task 2.B, we will explain the reason and provide
+In Task 2.C, we will explain the reason and provide
 an improved attack method. 
 
 
 
 % -------------------------------------------
-% SUBSECTION
+% SUBSUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2.B: An Improved Attack Method}
+\subsubsection{Task 2.C: An Improved Attack Method}
 
-In Task 2.A, if you have done everything correctly, but still could not succeed
+In Task 2.B, if you have done everything correctly, but still could not succeed
 in the attack, check the ownership of \texttt{/tmp/XYZ}. You will find out    
 that \texttt{/tmp/XYZ}'s owner has become root (normally, it should be \texttt{seed}). 
 If this happens, your attack will never succeed, because your attack
@@ -378,10 +449,10 @@ folder has a ``sticky'' bit on, meaning that only the owner of the file can
 delete the file, even though the folder is world-writable. 
 
 
-In Task 2.A, we let you use the root's privilege to delete \texttt{/tmp/XYZ}, 
+In Task 2.B, we let you use the root's privilege to delete \texttt{/tmp/XYZ}, 
 and then try your attack again. The undesirable condition happens randomly,
 so by repeating the attack (with the ``help'' from root), you will eventually
-succeed in Task 2.A. Obviously, getting help from root is not a real attack. 
+succeed in Task 2.B. Obviously, getting help from root is not a real attack. 
 We would like to get rid of that, and do it without root's help.
 
 
