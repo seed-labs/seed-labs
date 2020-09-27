@@ -10,7 +10,7 @@ Here is the URL of the license: https://creativecommons.org/licenses/by-nc-sa/4.
 
 This license lets others remix, adapt, and build upon your work non-commercially, as long as they credit you and license their new creations under the identical terms. Here is a sample of the license statement for the original work:
 
-> Copyright &copy; 2020 by Author's Name.<br>
+> Copyright &copy; 2020 by Jane Doe.<br>
 This work is licensed under a Creative Commons
 Attribution-NonCommercial-ShareAlike 4.0 International License: 
 http://creativecommons.org/licenses/by-nc-sa/4.0/. 
