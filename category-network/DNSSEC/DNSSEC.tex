@@ -1,0 +1,593 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{../../common-files/header}
+\input{../../common-files/copyright}
+
+
+
+\newcommand{\dnsFigs}{./Figs}
+\lhead{\bfseries SEED Labs -- DNSSEC Lab}
+
+
+\def \code#1 {\fbox{\scriptsize{\texttt{#1}}}}
+
+\newcommand{\bankcom}{\url{bank32.com}\xspace}
+\newcommand{\wwwbank}{\url{www.bank32.com}\xspace}
+\newcommand{\examplenet}{\url{example.net}\xspace}
+\newcommand{\wwwexample}{\url{www.example.net}\xspace}
+\newcommand{\apollo}{\texttt{Apollo}\xspace}
+
+\begin{document}
+
+\begin{center}
+{\LARGE DNS Security Extensions (DNSSEC) Lab}
+\end{center}
+
+\seedlabcopyright{2020}
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Lab Overview}
+
+To protect DNS, the Domain Name System
+Security Extensions~(DNSSEC) were developed. DNSSEC is a set of extension to
+DNS, aiming to provide authentication and integrity checking on DNS data.
+With DNSSEC, all answers from DNSSEC
+protected zones are digitally signed.  By checking the digital signature, a
+DNS resolver is able to check if the information is authentic or not.
+With such a mechanism, the DNS cache
+poisoning attack will be defeated, because any fake data, whether from a
+spoofed response packet or from an authoritative nameserver, will be
+detected because they will fail the signature checking.
+
+
+To help students understand how DNSSEC works, we will
+enhance the miniature DNS system developed 
+in the DNS-in-a-Box lab with DNSSEC. Students will
+configure each of the nameservers, so they all support 
+DNSSEC. This lab covers the following topics:
+
+\begin{itemize}[noitemsep]
+\item DNS and how it works
+\item DNSSEC and how it works
+\item Key management, public key, digital signature 
+\item Docker container, docker compose
+\end{itemize}
+
+
+\paragraph{Readings and videos.}
+Detailed coverage of the DNS protocol and attacks can be found in the following:
+
+\begin{itemize}
+\item Chapter 18 of the SEED Book, \seedbook
+\item Section 7 of the SEED Lecture, \seedisvideo
+\end{itemize}
+
+
+\paragraph{Lab environment.} This lab has been tested on our pre-built
+Ubuntu 20.04 VM, which can be downloaded
+from this website: (not ready for downloading; before this VM is available,
+you can build your own and install the docker and docker-compose software).
+
+
+
+\paragraph{Prerequisite.} This lab depends on the DNS-In-a-Box lab, 
+so students should do that lab first. In this lab description,
+we assume that the miniature DNS system has already been set up
+correctly, and each nameserver is hosted inside a container. 
+We will modify each of the container, so the nameserver inside 
+can support DNSSEC.
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 1: Set up the \texttt{example.edu} Domain}
+
+
+In this task, we will go to the container folder for the 
+\texttt{example.edu} nameserver. This container, built 
+from the DNS-in-a-Box lab, hosts 
+the \texttt{example.edu} domain. 
+We will modify the files inside this folder, so the nameserver
+can support DNSSEC queries.
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.a: Enabling DNSSEC}
+
+To enable DNSSEC on this server, we need to add the following entry to the 
+configuration file \texttt{named.conf.options}. 
+It should be noted that \texttt{dnssec-enable} is already set by default. 
+
+\begin{lstlisting}
+dnssec-enable yes;
+dnssec-validation auto;
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.b: Generating keys for \texttt{example.edu} server} 
+
+First, we need to generate two pairs of keys, one is called Zone Signing Key (ZSK), and 
+the other is called Key Signing Key (KSK). Each key consists of a public key and a private key.
+ZSK is used to sign the zone records, while the KSK is used to sign the ZSK. 
+
+This two-key scheme is quite common in key management. The one that actually signs the record
+(i.e., ZSK) can change frequently to achieve better security. If only one key is used,
+when this key changes, the data stored in the key management system needs to be updated. 
+In DNSSEC, the parent zone stores the information about this key, so the parent zone file
+needs to be updated. 
+
+To avoid this overhead, the second key is introduced. This key is called 
+Key Signing Key, i.e., it only signs the ZSK record in the zone file, while the 
+other records are still signed by ZSK. The KSK's information is provided to 
+the parent zone, but KSK does not change very frequently. When ZSK changes,
+all we need to do is to use the KSK to generate a new signature for the ZSK. 
+
+Both ZSK and KSK are public key pairs, but since their roles and lifetime are different,
+typically the KSK key is set to be stronger than the ZSK key, i.e., the key size 
+is longer. In the following, the first command generates a ZSK key using the 
+\texttt{RSASHA256} algorithm with key size being 1024. The second command 
+generates a KSK key using the same algorithm, but doubling the key size. 
+
+
+\begin{lstlisting}
+dnssec-keygen -a RSASHA256 -b 1024 example.edu
+dnssec-keygen -a RSASHA256 -b 2048 -f KSK example.edu
+\end{lstlisting}
+
+The second command generate a KSK. The \texttt{-f} option 
+put \texttt{257} in the key file, indicating this is the KSK. 
+Without this option, a default value \texttt{256} is put in
+the key file, indicating this is the ZSK.
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.c: Signing the \texttt{example.edu} domain's zone file} 
+
+We will sign the zone file. This zone file 
+is the same as the one used in the DNS-in-a-Box lab. We use the 
+following \texttt{dnssec-signzone} command to sign the zone file.  
+
+
+\begin{lstlisting}
+dnssec-signzone -S -o example.edu example.edu.db
+\end{lstlisting}
+ 
+With the \texttt{-S} option, the command will look
+for the zone signing key and key signing key 
+from the specified folder using the zone name (we did not specify the key folder 
+using the \texttt{-K} option, so the default is the current folder)
+If you have multiple pairs of keys in the specified folder,
+the command will generate signatures using each key, so you would get 
+multiple signatures for each record. 
+
+
+Once the zone file is signed, a new zone file ended with
+\texttt{.signed} will be generated. Take a look at the file and describe 
+what new entries are added to the original zone file. Please explain
+their purposes. 
+
+
+This new zone file will be used by our nameserver, so 
+we will modify the \texttt{named.conf} file to tell the 
+nameserver to use this file as its zone file. See the following 
+example: 
+
+\begin{lstlisting}
+zone "example.edu" {
+        type master;
+        file "/etc/bind/example.edu.db.signed";
+};
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.d: Starting nameserver}
+
+We prepare the following Dockerfile, which is similar to the one used in 
+the DNS-in-a-Box lab. 
+
+\begin{lstlisting}
+FROM ubuntu:20.04
+
+RUN  apt-get update  \
+     && apt-get -y install \
+        bind9  \
+        bind9utils \
+        iputils-ping \
+        nano \
+     && apt-get clean
+
+COPY named.conf                /etc/bind/
+COPY example.edu.db.signed     /etc/bind/
+
+COPY start.sh /
+
+CMD [ "/start.sh"]
+\end{lstlisting}
+ 
+Follow the instruction in DNS-in-a-Box lab to build the container image 
+and then start running the container. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.e: Testing the server}
+
+
+We will use the following \texttt{dig} command to conduct the testing. 
+The command allows us to directly ask 
+a server (\texttt{@server}) to get a specific \texttt{type}
+of DNS record for a specific domain or host \texttt{name}.
+By using the \texttt{+dnssec} flag, we set the DNSSEC OK bit (DO) in the OPT record 
+in the additional section of the query, requesting the server to
+send back the related DNSSEC records, such as the signature. 
+
+\begin{lstlisting}
+General format:
+$ dig @server name type +dnssec
+
+Example:
+$ dig @172.20.0.65 example.edu DNSKEY +dnssec
+\end{lstlisting}
+ 
+
+Run the following commands to get different types of records 
+from the \texttt{example.edu} nameserver. Provide an explanation
+for each of the records in the response. You need to 
+replace the IP address \texttt{172.20.0.65} with the actual
+IP address assigned to the \texttt{example.edu} nameserver.
+
+\begin{lstlisting}
+$ dig @172.20.0.65 example.edu DNSKEY +dnssec
+$ dig @172.20.0.65 example.edu NS +dnssec
+$ dig @172.20.0.65 www.example.edu A +dnssec
+\end{lstlisting}
+ 
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 2: Setting Up the \texttt{edu} and root servers}
+
+
+In this task, we will set up the \texttt{edu} and root servers. 
+The instructions are similar to those in Task 1, so we will not repeat them. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.a: Finding and understanding the DS record}
+
+
+After signing the zone file of \texttt{example.edu} , a DS record is generated for the Key
+Signing Key, and by default, it is placed inside a file called \texttt{dsset-<xyz>}, where
+\texttt{<xyz>} is the zone name. In our case, \texttt{dsset-example.edu.} is the file name.
+
+
+DS (Delegation Signer) record holds the name of a delegated zone. It 
+references a DNSKEY record in the sub-delegated zone. 
+The DS record should be placed in the parent zone along with the delegating NS records.
+The following gives an example of the DS record:
+
+
+\begin{lstlisting}
+example.edu.   IN DS 10246   8  2   (*@\textbf{563D...(omitted)...1D59D1}@*)
+                       (*@\ding{192}@*)              (*@\ding{193}@*)
+\end{lstlisting}
+
+A DS record contains a key tag (marked as \ding{192}), which is a 
+short numeric value identifying the referenced key. This key
+is the Key Signing Key (KSK) for the domain.
+The most important element in a DS record is the digest (marked by \ding{193}),
+which is the one-way hash value of the KSK. By putting this digest
+value in the parent zone (i.e., the \texttt{edu} zone), 
+the integrity of the sub-delegated zone's
+KSK can be verified. That is the main purpose of this DS record. 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.b: Setting up the \texttt{edu} server} 
+
+Follow the instruction in Task 1 to set up the configuration 
+file and generate the ZSK and KSK keys 
+for this domain, and then use the keys to sign
+the zone file. The zone file is similar to that used 
+in the DNS-in-a-Box lab, but we need to add more 
+entries to the zone file before signing it. 
+
+
+The entry is the DS record of the sub-delegated zone. 
+In our case, the \texttt{example.edu} zone is delegated to 
+another nameserver, so the digest of its Key Signing Key must 
+be included in the \texttt{edu} zone, so the 
+integrity of the key can be verified. 
+
+
+We can copy and paste the content of the DS record to 
+\texttt{edu}'s zone file, or use the following
+\texttt{INCLUDE} entry to include the file. The latter 
+method is more convenient for the lab, because even if we 
+change the Key Signing Key of a zone, the DS record's file name stays the same,
+so there is no need to change the parent's zone file.
+
+\begin{lstlisting}
+$INCLUDE ../example_edu_server/dsset-example.edu.
+\end{lstlisting}
+ 
+
+\paragraph{Testing.} 
+Run the following commands to get different types of records
+from the \texttt{edu} nameserver. Provide an explanation
+for each of the records in the response. You need to
+replace the IP address \texttt{172.20.0.60} with the actual
+IP address assigned to the \texttt{edu} nameserver.
+
+
+\begin{lstlisting}
+$ dig @172.20.0.60 edu DNSKEY +dnssec
+$ dig @172.20.0.60 edu NS +dnssec
+$ dig @172.20.0.60 example.edu +dnssec
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.b: Setting up the root server} 
+
+The steps to set up the root server is the same as those in the 
+previous task. Remember to add the \texttt{edu} zone's DS record 
+to the zone file, before signing the zone.  
+
+
+\paragraph{Testing.}
+Run the following commands to get different types of records
+from the \texttt{edu} nameserver. Provide an explanation
+for each of the records in the response. You need to
+replace the IP address \texttt{172.20.0.30} with the actual
+IP address assigned to the root nameserver.
+
+
+\begin{lstlisting}
+$ dig @172.20.0.30 . DNSKEY +dnssec
+$ dig @172.20.0.30 . NS +dnssec
+$ dig @172.20.0.30 edu +dnssec
+$ dig @172.20.0.30 example.edu +dnssec
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.c: Setting up the local DNS server} 
+
+
+When a computer needs to resolve the IP address from a hostname (or vice versa),
+it sends a request to its helper, which is called local DNS server (it
+does not need to be local).  This local DNS server will conduct the
+entire DNS resolution process, and then send the result back to the computer.
+Please follow the DNS-in-a-Box lab to set up this local DNS server, and also
+follow Task 1.a to enable DNSSEC on this server. 
+
+In DNSSEC, each nameserver provides its own public keys (both ZSK and KSK) to
+the client, so the client can use KSK to verify the signature on ZSK, and then use ZSK to 
+verify the signature on each record. That leaves one thing uncertain: how to verify
+the authenticity of KSK? That is the purpose of the DS record in the parent zone. 
+The parent will provide the DS record for its sub-zone, and this DS record is used 
+to verify the KSK of sub-zone. 
+
+Since the root server does not have a parent zone, how do we verify the authenticity 
+of the root server?  The root servers' public keys are the root of the trust, so they are 
+the most important keys in the DNSSEC infrastructure, and they are called \textit{trust
+anchors}. They must be obtained using a secure way. 
+
+BIND 9 has built-in DNSSEC trust anchors, but they can be 
+overridden by the content inside \path{/etc/bind/bind.keys}.  
+In this task, we will put our root server's public key 
+into this file. Copy the \texttt{bind.keys} to our container folder,
+and replace the public key inside with our root server's 
+Key Signing Key. Make sure use the KSK here, not the ZSK. 
+
+
+\begin{lstlisting}
+trust-anchors {
+    . initial-key 257 3 8 " <Root's Key Signing Key> ";
+};
+\end{lstlisting}
+
+
+\paragraph{Testing.} After starting the local server container, run the 
+following command (replace \texttt{172.20.0.20} with the actual IP 
+address assigned to your local DNS server).
+
+\begin{lstlisting}
+$ dig @172.20.0.20 www.example.edu +dnssec
+\end{lstlisting}
+
+If everything has been set up correctly, you should able to get the 
+answer, the IP address of \texttt{www.example.com}. All your containers
+should be running to get this result. 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.d: Configure our VM to use this local DNS server}
+
+So far, we need to use \texttt{@<ip>} in our \texttt{dig} command
+to indicate what DNS server the \texttt{dig} command should talk to. While this
+is not an issue for \texttt{dig}, it is a problem for other software that
+depends on DNS. We need to tell the operating system that the
+DNS server container built in this task is the system's
+local DNS server.
+
+This is achieved by changing
+the resolver configuration file~(\texttt{/etc/resolv.conf}) of the user machine,
+so the container's IP address is added as the first \texttt{nameserver} entry in the file, i.e.,
+this server will be used as the primary DNS server.
+Unfortunately, our provided VM uses the Dynamic Host Configuration Protocol (DHCP) to obtain
+network configuration parameters, such as IP address, local DNS server, etc.
+DHCP clients will overwrite the \texttt{/etc/resolv.conf} file with the information
+provided by the DHCP server.
+
+One way to get our information into \texttt{/etc/resolv.conf} without worrying about
+the DHCP is to add the following entry to the \path{/etc/resolvconf/resolv.conf.d/head}
+file:
+
+
+\begin{lstlisting}
+Add the following entry to /etc/resolvconf/resolv.conf.d/head
+  nameserver 172.20.0.20
+
+Run the following command for the change to take effect
+$ sudo resolvconf -u
+\end{lstlisting}
+
+The content of the head file will be prepended to the dynamically generated resolver
+configuration file. Normally, this is just a comment line (the comment in
+\texttt{/etc/resolv.conf} comes from this head file).
+
+
+After you finish configuring the user machine, repeat
+the testing commands in Task 2.c, but this time, do not
+include the \texttt{@<ip>} in the command. Pay attention to
+the server's IP address in the response to check whether the response does
+come from your container. If the setup is unsuccessful,
+the IP will be \texttt{127.0.0.53}.
+
+\begin{lstlisting}
+$ dig www.example.edu +dnssec
+\end{lstlisting}
+
+\paragraph{Wireshark.} Please first flush the DNS cache on the local DNS server (using 
+\texttt{"rndc flush"}, and then run above \texttt{dig} command. Using 
+Wireshark to capture all the traffic generated by this DNS query, and briefly explain
+the purpose of each captured packet in your lab report.  Please make sure you flush the 
+cache every time when you run the \texttt{dig} command, so the query process is not 
+affected by the cache. 
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 3: System Integration and Expansion}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 3.a: System Integration}
+
+
+
+Follow the system integration task in the DNS-in-a-Box lab to 
+build a \texttt{docker-compose.yml} file, so we can
+start all the containers using one command, instead of doing 
+it separately for each container. 
+
+
+During the testing, you may need to run commands on some of the containers.
+To do that, first you find the container's ID, and then use
+\texttt{"docker exec -it"} to execute a command on the container. See
+the following example:
+
+\begin{lstlisting}
+// Find container's ID
+$ docker ps
+cd194e895c33 ...
+
+// Run /bin/bash in a selected container
+$ docker exec -it cd194e895c33 /bin/bash
+root@cd194e895c33:/# rndc flush
+root@cd194e895c33:/#
+\end{lstlisting}
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 3.b: System Expansion}
+
+
+After completing the integration, we need to expand our
+DNS system to include more nameservers, so our system becomes more 
+realistic. Please conduct the following tasks:
+
+\begin{itemize}
+\item Adding 2 more root servers. The real-world DNS system has 13 different
+IP address for the root server. We will create three in this lab.
+
+\item Hosting two TLD servers. One is \texttt{edu}, which is already
+done in Task 2. The other one is your choice.
+You can find all the existing TLD names from the
+real root zone file: \url{https://www.internic.net/domain/root.zone}.
+You can pick one from there or come up with one yourself.
+It costs a lot to buy a new TLD name in the real world, but in this lab, you
+can ``own'' one for free.
+
+\item For each TLD, build a second-level domain, in
+addition to \texttt{example.edu} that is already built in Task 2.
+Use your first name as the domain name.
+For example, if your first name is \texttt{Bob}, you need to build the containers
+for the \texttt{bob.edu} and \texttt{bob.<tld>} domains,
+where \texttt{<tld>} is the name for a Top-Level Domain selected
+by you.
+\end{itemize}
+
+
+After the setup, please design your testing to demonstrate 
+that your DNSSEC system works as expected. Please include your screenshots
+and briefly explain your observation. 
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Submission}
+
+\seedsubmission 
+
+
+\end{document}
