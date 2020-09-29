@@ -1,4 +1,4 @@
-# Manual
+# Configuration That Requires Manual Efforts
 
 Most of the steps in VM building are automated in our 
 building scripts. There are still two things that need to be 
@@ -27,7 +27,8 @@ To disable the notification, we need to do two steps
   change "Send error report to Canonical" to ```Never```.
 
 - Change ```/etc/default/apport```, set ```enabled=0``` 
-  (the original value was 1)
+  (the original value was 1; this step is actually done automatically in our 
+  script, so you will see that the value is already changed to 0)
 
 ## Install HTTP header live extension 
 
