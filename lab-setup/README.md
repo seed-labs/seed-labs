@@ -1,4 +1,4 @@
-# Lab Setup
+# Building the VM For SEED Labs
 
 Building the VM for SEED labs is one of the challenging tasks in the 
 SEED project. When we upgrade the platform, some SEED labs may be 
@@ -10,6 +10,9 @@ We are in the process of moving the SEED platform from Ubuntu 16.04 (32-bit)
 to Ubuntu 20.04. This is a significant upgrade, because we will 
 switch to the 64-bit machine. We open source this VM building process,
 so more people can benefit from it and can also contribute to the effort. 
+Detailed building instructions can be found from the 
+[README](ubuntu20.04-vm/README.md) 
+file in the ```ubuntu20.04-vm/``` folder
 
 ## Help is needed for the following tasks
 
@@ -32,4 +35,14 @@ If there is a better way to reduce the size of the VM, that will be great.
 to identify whether there is any need to revise the lab description.  
 
 
+## Beta Testing
+
+We plan to use Spring 2021 for the Beta Testing of this VM. During
+this phase, we hope to fix all the problems in the VM and lab
+description.
+
+
+## Official Release Date
+
+We plan to officially release Ubuntu 20.04 VM, along with revised SEED labs in Summer 2021.
 
