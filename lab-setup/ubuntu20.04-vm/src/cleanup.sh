@@ -16,3 +16,7 @@ sudo cp /dev/null /var/log/apache2/access.log
 sudo cp /dev/null /var/log/apache2/error.log
 sudo cp /dev/null /var/log/apache2/other_vhosts_access.log
 
+
+# Clean up the apt cache 
+sudo apt clean
+

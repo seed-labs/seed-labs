@@ -9,6 +9,13 @@ FileDir=Files/System
 cp $FileDir/seed_bashrc  ~/.bashrc
 
 
+
+#-------------------------------------------------------------
+# Set up the background image
+sudo cp $FileDir/seed-vm-background-tesla-coil.jpg /usr/share/background
+sudo cp $FileDir/focal-wallpapers.xml /usr/share/gnome-background-properties
+
+
 #------------------------------------------------------------------
 # Copy user-account profile 
 
@@ -40,10 +47,9 @@ FirefoxProfileDir=tttt
 cp $FileDir/firefox_profile_user.js  ~/.mozilla/firefox/$FirefoxProfileDir/user.js
 
 
-#------------------------------------------------
-# Enabling service
-# sudo systemctl enable ssh  (no need)
-# sudo systemctl enable openbsd-inetd (no need)
+
+
+
 
 #------------------------------------------------
 # Cleanup 
