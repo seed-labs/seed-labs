@@ -12,8 +12,8 @@ cp $FileDir/seed_bashrc  ~/.bashrc
 
 #-------------------------------------------------------------
 # Set up the background image
-sudo cp $FileDir/seed-vm-background-tesla-coil.jpg /usr/share/background
-sudo cp $FileDir/focal-wallpapers.xml /usr/share/gnome-background-properties
+sudo cp $FileDir/seed-vm-background-tesla-coil.jpg  /usr/share/background/
+sudo cp $FileDir/seed-wallpapers.xml /usr/share/gnome-background-properties/
 
 
 #------------------------------------------------------------------
