@@ -30,6 +30,8 @@ of the VM.
 - **Create Cloud VM**: Once the VM is built, we need to customize it so
 it runs efficiently on various cloud platform, such as AWS. We also need to 
 put the VM on cloud so others can directly run the VM from the cloud.
+See the ```aws/``` folder for current work on an AWS build of the
+SEEDUbuntu-16.04 VM.
 
 - **Size reduction**: Right now, the size of the VM is quite large. 
 If there is a better way to reduce the size of the VM, that will be great. 
