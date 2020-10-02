@@ -1,5 +1,5 @@
 # SEEDUbuntu 16.04 AWS setup instructions
-Author: Steve Cole (svcole@wustl.edu)
+Author: Steve Cole (svcole@wustl.edu)    
 Washington University in St. Louis
 
 ## Overview
@@ -58,33 +58,36 @@ more secure.  The new password is "**5sFr7%93#PJY**" (without the quotes).
 10. Force user to change password after first login.    
 11. Add /sbin to path so user can execute “ifconfig” .     
 
-## How to Launch SEEDUbuntu VM
+## How to Launch SEEDUbuntu VM in AWS
 
-Note: Steps 1-2 are only needed for setting up multiple SEEDUbuntu
+_Note_: Steps 1-2 are only needed for setting up multiple SEEDUbuntu
 instances on the same local (virtual) subnet.  For setting up a single
 SEEDUbuntu instance, these steps may be skipped.    
 
 1. Create a new VPC (under Services -> VPC in AWS; VPCs are
 distinct from EC2).  Set the CIDR block to 10.0.0.0/16.   
 2.	Create a new VPC subnet in the region in which the custom AMI
-image is available (currently us-east-1f).  Be sure to select the VPC
+image is available.  Be sure to select the VPC
 just created in the previous step.  Give the subnet the CIDR block
 10.0.0.0/24.    
+
+_Note_: this AMI is currently available in the regions us-east-1,
+us-west-1, and ap-south-1 .  If you would like to create an instance in
+a different region, please contact Steve Cole.    
  
-3.	Create a security group with the following rules:    
+3. Create a security group with the following rules:    
 - Inbound: allow  TCP ports 22 (for SSH access) and 5901 (for
 remote desktop access via xrdp on custom port), (any traffic from local
-subnet (10.0.0.0/24) if using multiple machines only)
-b.     
+subnet 10.0.0.0/24 if using multiple machines only)    
 - Outbound: allow TCP ports 22 (SSH), 5901 (xrdp on custom port),
 80, and 443 (so we can access the Internet from inside the SEED
 machine), ICMP for pings anywhere, UDP anywhere for DNS, (any traffic to
-local subnet (10.0.0.0/24) if using multiple machines only)
+local subnet 10.0.0.0/24 if using multiple machines only)
 
 4. Launch a new instance with a configuration that includes the
 following: 
 - the custom AMI, which can be found by searching for
- “SEEDUbuntu-aws” in the “Community” section of AMI options.
+ "SEEDUbuntu-aws" in the "Community" section of AMI options.
 _NOTE_: this AMI is currently available in the regions us-east-1,
 us-west-1, and ap-south-1 .  If you would like to create an instance in
 a different region, please contact Steve Cole.    
@@ -113,7 +116,7 @@ GUI Desktop access.
 
 ## Remote Desktop Access to SEEDUbuntu Instance
 
-Note: you must complete initial login via SSH according to instructions
+_Note_: you must complete initial login via SSH according to instructions
 above BEFORE logging in via RDP.    
 
 1. Open a remote desktop client that can use RDP (e.g. "Remote Desktop
@@ -144,7 +147,7 @@ in either via ssh or RDP.
 should see an interface with IPv4 address 10.0.0.x for some (unique) x
 for each machine.    
 3. Run "ping –c 5 10.0.0.x" from each machine, using the other
-machine’s IP address found in the previous step.  You should see 5
+machine's IP address found in the previous step.  You should see 5
 results printing on the terminal one per second; if so, then the ping
 was successful.   
 
