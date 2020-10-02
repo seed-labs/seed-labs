@@ -153,10 +153,13 @@ was successful.
 
 ## More info
 
-The [script](src/seedvm-init.sh) used to update the baseline SEEDUbuntu-16.04 image is
-available in the src/ directory and in the ~seed directory of the AMI
-itself.
+The script used to update the baseline SEEDUbuntu-16.04 image is
+available in the src/ directory as [seedvm-init.sh](src/seedvm-init.sh)
+and in the ~seed directory of the AMI itself.
 
-A [standalone version of these
-instructions](doc/SEEDUbuntu-image-instrs-student.pdf) (with screenshots included)
-that may be given to students is available in the doc/ directory.
+A short list of additional manual configuration steps is available in
+the doc/ directory as [manual\_steps.md](doc/manual_steps.md).
+
+A standalone version of these instructions (with screenshots included)
+that may be given to students is available in the doc/ directory as
+[SEEDUbuntu-image-instrs-student.docx](doc/SEEDUbuntu-image-instrs-student.docx).
