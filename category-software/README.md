@@ -12,10 +12,10 @@ The meaning of the Changes column can be found from
 | ---      | ---  | ---   |  ---   |
 | Buffer Overflow |   | |
 | Return-to-Libc | |  |
+| Format String | | |
 | Shellcode | | |
 | Set-UID  | Editorial | Done | [README](Environment_Variable_and_SetUID/README.md)
 | Race Condition | Minor | Done |[README](Race_Condition/README.md) |
 | Dirty COW  | None | Done | Still use Ubuntu 12.04
-| Format String | | |
-| Shellshock | | |
+| Shellshock | Minor | Done | [README](Shellshock/README.md)
 
