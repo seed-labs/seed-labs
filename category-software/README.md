@@ -12,7 +12,7 @@ categories: no change, minor, major, new (completely redesigned).
 | Return-to-Libc | |  |
 | Shellcode | | |
 | Set-UID  | | |
-| Race Condition | | |
+| Race Condition | minor | [README](Race_Condition/README.md) |
 | Dirty COW  | | |
 | Format String | | |
 | Shellshock | | |

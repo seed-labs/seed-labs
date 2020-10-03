@@ -82,7 +82,7 @@ different levels of a computer system, from application, kernel,
 to hardware. 
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 % *******************************************
@@ -105,11 +105,11 @@ In this lab, we need to disable this protection. You can achieve
 that using the following commands:
 
 \begin{lstlisting}
+  // On Ubuntu 16.04 and 20.04, use the following:
+  $ sudo sysctl -w fs.protected_symlinks=0
+
   // On Ubuntu 12.04, use the following:
   $ sudo sysctl -w kernel.yama.protected_sticky_symlinks=0
-
-  // On Ubuntu 16.04, use the following:
-  $ sudo sysctl -w fs.protected_symlinks=0
 \end{lstlisting}
 
 
@@ -365,14 +365,20 @@ Conduct the manual test using the following procedure:
 % SUBSUBSECTION
 % ------------------------------------------- 
 \subsubsection{Task 2.B: Full version of attack}
-After you have implemented the attack program described above, you
-should run it in the background, and then run the vulnerable program in
-parallel. (Alternatively, you can run the attack program in one Terminal
-window and the vulnerable program in another Terminal window.)  If the
-attack fails, the vulnerable program will crash, so you need to run the
+
+In the previous task, we have kind of ``cheated'' by asking the vulnerable program
+to slow down, so we can launch the attack. This is definitely not a real attack.
+In this task, we will launch the real attack. 
+Before doing this task, make sure that the \texttt{sleep()} statement is removed 
+from the \texttt{vulp} program. 
+
+The typical strategy in race condition attacks is to launch the attack many many 
+times, hoping to hit the race condition window once.  
+Therefore, we run the attack program and the vulnerable program in
+parallel. For example, you can run the attack program in one Terminal
+window and the vulnerable program in another Terminal window. 
+If the attack fails, the vulnerable program will crash, so you need to run the
 vulnerable program repeatedly until the attack is successful. 
-
-
 
 \paragraph{Running the vulnerable program and monitoring results.}
 Since you need to run the vulnerable program for many
@@ -490,19 +496,15 @@ is a system call that allows us to achieve that. More accurately,
 it allows us to atomically swap two symbolic links. 
 The following program first makes two symbolic links \texttt{/tmp/XYZ}
 and \texttt{/tmp/ABC}, and then using the
-\texttt{SYS\_renameat2} system call to atomically switch them. 
+\texttt{renameat2} system call to atomically switch them. 
 This allows us to change what \texttt{/tmp/XYZ} points to
 without introducing any race condition. 
-It should be noted that there is no function
-wrapper for the \texttt{SYS\_renameat2} system call in the \texttt{libc} library
-on Ubuntu 16.04, so we have to invoke the system call using 
-\texttt{syscall()}, instead of invoking it like a normal function call. 
-
 
 \begin{lstlisting}
+#define _GNU_SOURCE
+  
+#include <stdio.h>
 #include <unistd.h>
-#include <sys/syscall.h>
-#include <linux/fs.h>
 
 int main()
 {
@@ -511,8 +513,7 @@ int main()
    unlink("/tmp/XYZ"); symlink("/dev/null",   "/tmp/XYZ");
    unlink("/tmp/ABC"); symlink("/etc/passwd", "/tmp/ABC");
 
-   syscall(SYS_renameat2, 0, "/tmp/XYZ", 0, "/tmp/ABC", flags);
-
+   renameat2(0, "/tmp/XYZ", 0, "/tmp/ABC", flags);
    return 0;
 }
 \end{lstlisting}
@@ -521,7 +522,6 @@ int main()
 \paragraph{Tasks.} Please revise your attack program using 
 this new strategy, and try your attack again. If everything 
 is done correctly, your attack should be able to succeed. 
-
 
 
 
@@ -554,11 +554,11 @@ attacks. In this task, you need to turn the protection back on using the
 following commands:
 
 \begin{lstlisting}
+  // On Ubuntu 16.04 and 20.04, use the following command:
+  $ sudo sysctl -w fs.protected_symlinks=1
+
   // On Ubuntu 12.04, use the following command:
   $ sudo sysctl -w kernel.yama.protected_sticky_symlinks=1
-
-  // On Ubuntu 16.04, use the following command:
-  $ sudo sysctl -w fs.protected_symlinks=1
 \end{lstlisting}
 
 Conduct your attack after the protection is turned on.  
