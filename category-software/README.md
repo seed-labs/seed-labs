@@ -1,13 +1,19 @@
 # Software Security
 
-This folder contains all the software security labs. 
+## Summary of the changes for Ubuntu 20.04
 
-- Buffer Overflow Vulnerability Lab
-- Return-to-Libc Attack Lab
-- Shellcode Development Lab
-- Environment Variable and Set-UID lab
-- Race Condition Vulnerability Lab
-- Dirty COW Attack Lab
-- Format String Vulnerability Lab
-- Shellshock Vulnerability Lab
+Detailed changes are described in the README file for each lab.
+Here we only summarize how much change is made. Here are the 
+categories: no change, minor, major, new (completely redesigned).
+
+| Lab Name | Changes |  Notes |
+| ---      | ---     |  ---   |
+| Buffer Overflow |   | |
+| Return-to-Libc | |  |
+| Shellcode | | |
+| Set-UID  | | |
+| Race Condition | | |
+| Dirty COW  | | |
+| Format String | | |
+| Shellshock | | |
 
