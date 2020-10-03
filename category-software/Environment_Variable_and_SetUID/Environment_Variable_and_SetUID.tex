@@ -62,7 +62,7 @@ and their related security problems can be found in the following:
 \item Section 2 of the SEED Lecture at Udemy, \seedcsvideo
 \end{itemize}
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -149,7 +149,6 @@ void printenv()
 void main()
 {
   pid_t childPid;
-
   switch(childPid = fork()) {
     case 0:  /* child process */
       printenv();          (*@\ding{192}@*)
@@ -221,8 +220,8 @@ int main()
 in Line \ding{192} to the following; describe your observation.
 
 
-\begin{lstlisting}[backgroundcolor=]
-  execve("/usr/bin/env", argv, environ);
+\begin{lstlisting}
+execve("/usr/bin/env", argv, environ);
 \end{lstlisting}
 
 
@@ -293,7 +292,7 @@ the environment variables in the current process.
 extern char **environ;
 
 void main()
-{
+{ 
   int i = 0;
   while (environ[i] != NULL) {
      printf("%s\n", environ[i]);
@@ -351,8 +350,8 @@ change the {\tt PATH} environment variable in the following way (this example
 adds the directory {\tt /home/seed} to the beginning of the {\tt PATH} environment variable):
 
 
-\begin{lstlisting}[backgroundcolor=]
-  $ export PATH=/home/seed:$PATH
+\begin{lstlisting}
+$ export PATH=/home/seed:$PATH
 \end{lstlisting}
 
 
@@ -362,11 +361,11 @@ however, the programmer only uses the relative path for the {\tt ls}
 command, rather than the absolute path:
 
 \begin{lstlisting} 
-   int main()
-   {
-       system("ls");
-       return 0;
-   }
+int main()
+{
+     system("ls");
+     return 0;
+}
 \end{lstlisting}
 
 Please compile the above program, and change its owner to {\tt root}, and 
@@ -375,17 +374,15 @@ make it a \setuid program.  Can you let this \setuid program run your code inste
 Describe and explain your observations. \\
 
 
-\paragraph{Note (Ubuntu 16.04 VM only):} 
+\paragraph{Note:} 
 The \texttt{system(cmd)} function executes the \texttt{/bin/sh} program first, and then  
 asks this shell program to run the \texttt{cmd} command. 
-In both Ubuntu 12.04 and Ubuntu 16.04 VMs, \texttt{/bin/sh} is actually 
-a symbolic link pointing to the
-\texttt{/bin/dash} shell. However, the \texttt{dash} program in these two VMs have an important
-difference.  The \texttt{dash} shell in Ubuntu 16.04 has a countermeasure that prevents itself
+In Ubuntu 20.04 (and several versions before), \texttt{/bin/sh} is actually 
+a symbolic link pointing to \texttt{/bin/dash}. 
+This shell program has a countermeasure that prevents itself
 from being executed in a \setuid process.  Basically, if \texttt{dash} detects that it is
 executed in a \setuid process, it immediately changes the effective user ID to the process's
-real user ID, essentially dropping the privilege. The \texttt{dash} program in Ubuntu 12.04
-does not have this behavior.
+real user ID, essentially dropping the privilege. 
 
 
 Since our victim program is a \setuid program, 
@@ -393,13 +390,11 @@ the countermeasure in \texttt{/bin/dash} can prevent our attack.
 To see how our attack works without such a countermeasure, 
 we will link \texttt{/bin/sh} to another shell that does not
 have such a countermeasure.  We have installed a shell program
-called \texttt{zsh} in our Ubuntu 16.04 VM. We use the following
-commands to link \texttt{/bin/sh} to \texttt{zsh} (there is no need to do these in Ubuntu
-12.04):
+called \texttt{zsh} in our Ubuntu 20.04 VM. We use the following
+commands to link \texttt{/bin/sh} to \texttt{/bin/zsh}:
 
 \begin{lstlisting}
-$ sudo rm /bin/sh
-$ sudo ln -s /bin/zsh /bin/sh
+$ sudo ln -sf /bin/zsh /bin/sh
 \end{lstlisting}
 
 
@@ -444,42 +439,42 @@ Please follow these steps:
   \item Let us build a dynamic link library. Create the following program,
   and name it {\tt mylib.c}. It basically overrides the {\tt sleep()} function 
   in {\tt libc}:
-  \begin{lstlisting}
-  #include <stdio.h>
-  void sleep (int s)
-  {
-    /* If this is invoked by a privileged program, 
-       you can do damages here!  */
-    printf("I am not sleeping!\n");
-  }
+\begin{lstlisting}
+#include <stdio.h>
+void sleep (int s)
+{
+  /* If this is invoked by a privileged program, 
+     you can do damages here!  */
+  printf("I am not sleeping!\n");
+}
 \end{lstlisting}
 
   \item We can compile the above program using the following commands (in the 
   {\tt -lc} argument, the second character is $\ell$):
-  \begin{verbatim}
-  % gcc -fPIC -g -c mylib.c
-  % gcc -shared -o libmylib.so.1.0.1 mylib.o -lc
-  \end{verbatim}
+\begin{lstlisting}
+$ gcc -fPIC -g -c mylib.c
+$ gcc -shared -o libmylib.so.1.0.1 mylib.o -lc
+\end{lstlisting}
 
   
 
   \item Now, set the {\tt LD\_PRELOAD} environment variable:  
-  \begin{verbatim}
-  % export LD_PRELOAD=./libmylib.so.1.0.1  
-  \end{verbatim}
+\begin{lstlisting}
+$ export LD_PRELOAD=./libmylib.so.1.0.1  
+\end{lstlisting}
 
   \item Finally, compile the following program {\tt myprog}, and 
   in the same directory as the above dynamic link library {\tt
   libmylib.so.1.0.1}:
-  \begin{lstlisting}
-  /* myprog.c */
-  int main()
-  {
-    sleep(1);
-    return 0;
-  }
+\begin{lstlisting}
+/* myprog.c */
+int main()
+{
+  sleep(1);
+  return 0;
+}
 \end{lstlisting}
-  \end{enumerate}
+\end{enumerate}
 
 
 \paragraph{Step 2.} 
