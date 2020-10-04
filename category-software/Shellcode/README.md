@@ -11,5 +11,5 @@ and solutions:
   in the ```ld``` linker command. 
 
 - Tasks 1 and 2 are still writing 32-bit shellcode. We added a new task, Task 3, 
-  which task focuses on writing 64-bit shellcode.
+  which focuses on writing 64-bit shellcode.
 
