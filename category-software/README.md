@@ -10,7 +10,8 @@ The meaning of the Changes column can be found from
 
 | Lab Name | Changes | Status |  Notes |
 | ---      | ---  | ---   |  ---   |
-| Buffer Overflow |   | |
+| Buffer Overflow (32-bit) | Major  | Done | [README](Buffer_Overflow/README.md)
+| Buffer Overflow (64-bit) | New  |  | [README](Buffer_Overflow_x64/README.md) 
 | Return-to-Libc | |  |
 | Format String | | |
 | Shellcode | Major | Done | [README](Shellcode/README.md)
