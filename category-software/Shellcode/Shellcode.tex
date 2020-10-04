@@ -80,6 +80,8 @@ Detailed coverage of the shellcode can be found in the following:
 \paragraph{Lab Environment.} 
 \seedenvironment
 
+
+
 % *******************************************
 % SECTION
 % ******************************************* 
@@ -90,6 +92,14 @@ In this task, we will first start with a shellcode example,
 to demonstrate how to write a shellcode. After that, we ask
 students to modify the code to accomplish various tasks. 
 
+Shellcode is typically written using assembly languages, which
+depend on the computer architecture. We will be using 
+the Intel architectures, which have two types of processors:
+x86 (for 32-bit CPU) and x64 (for 64-bit CPU). In this 
+task, we will focus on 32-bit shellcode. In the final task,
+we will switch to 64-bit shellcode.  
+Although most of the computers these days are 64-bit computers,
+they can run 32-bit programs. 
 
 
 % -------------------------------------------
@@ -97,7 +107,7 @@ students to modify the code to accomplish various tasks.
 % ------------------------------------------- 
 \subsection{Task 1.a: The Entire Process}
 
-In this task, we provide a basic shellcode to show students 
+In this task, we provide a basic x86 shellcode to show students 
 how to write a shellcode from scratch. Students 
 can download this code from the lab's website, go through
 the entire process described in this task. 
@@ -141,8 +151,8 @@ section .text
 
 \paragraph{Compiling to object code.}
 We compile the assembly code above (\texttt{mysh.s}) using \texttt{nasm}, which 
-is an assembler and disassembler for the Intel x86 architecture.
-The \texttt{-f elf32} indicates that we want to compile the code
+is an assembler and disassembler for the Intel x86 and x64 architectures.
+The \texttt{-f elf32} option indicates that we want to compile the code
 to 32-bit ELF binary format. The Executable and Linkable Format (ELF) 
 is a common standard file format for executable file, object code, shared libraries. 
 For 64-bit assembly code, \texttt{elf64} should be used. 
@@ -155,14 +165,16 @@ $ nasm -f elf32 mysh.s -o mysh.o
 \paragraph{Linking to generate final binary.}
 Once we get the object code \texttt{mysh.o}, if we want to generate the 
 executable binary, we can run the linker program \texttt{ld}, which
-is the last step in compilation. After this step, we get the final
+is the last step in compilation. The \texttt{-m elf\_i386} option means 
+generating the 32-bit ELF binary. 
+After this step, we get the final
 executable code \texttt{mysh}. If we run it, we can get a shell. 
 Before and after running \texttt{mysh},  
 we print out the current shell's process IDs using \texttt{echo \$\$},
 so we can clearly see that \texttt{mysh} indeed starts a new shell. 
 
 \begin{lstlisting}
-$ ld mysh.o -o mysh
+$ ld -m elf_i386 mysh.o -o mysh
 
 $ echo $$
 25751    (*@\reflectbox{\ding{217}} the process ID of the current shell@*)
@@ -569,7 +581,7 @@ as a standalone program.
 
 \begin{lstlisting}
 $ nasm -f elf32 mysh2.s -o mysh2.o
-$ ld --omagic mysh2.o -o mysh2
+$ ld --omagic -m elf_i386 mysh2.o -o mysh2
 \end{lstlisting}
 
 
@@ -590,6 +602,55 @@ b=22
 \end{lstlisting}
 
 
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 3: Writing 64-bit Shellcode}
+
+Once we know how to write the 32-bit shellcode, writing 64-bit
+shellcode will not be difficult, because they are quite similar;
+the differences are mainly in the registers. 
+For the x64 architecture, invoking system call is done through
+the \texttt{syscall} instruction, and the first three arguments 
+for the system call are stored in the \texttt{rdx}, \texttt{rsi}, 
+\texttt{rdi} registers, respectively. 
+The following is an example of 64-bit shellcode:
+
+\begin{lstlisting}[caption={A 64-bit shellcode \texttt{mysh64.s}}]
+  section .text
+  global _start
+    _start:
+      ; The following code calls execve("/bin/sh", ...)
+      xor  rdx, rdx       ; 3rd argument (stored in rdx)
+      push rdx
+      mov rax,'/bin//sh'  
+      push rax
+      mov rdi, rsp        ; 1st argument (stored in rdi)
+      push rdx
+      push rdi
+      mov rsi, rsp        ; 2nd argument (stored in rsi)
+      xor  rax, rax
+      mov al, 0x3b        ; execve()
+      syscall
+\end{lstlisting}
+
+We can use the following commands to compile the assemble code into
+64-bit binary code: 
+
+\begin{lstlisting}
+$ nasm -f elf64 mysh_64.s -o mysh_64.o
+$ ld mysh_64.o -o mysh_64
+\end{lstlisting}
+
+\paragraph{Task.}
+Repeat Task 1.b for this 64-bit shellcode. Namely, 
+instead of executing \texttt{"/bin/sh"}, we need to execute
+\texttt{"/bin/bash"}, and we are not allowed to use
+any redundant \texttt{/} in the command string, 
+i.e., the length of the command must be 9 bytes (\texttt{/bin/bash}).
+Please demonstrate how you can do that.
+In addition to showing that you can get a bash shell, you also
+need to show that there is no zero in your code. 
 
 % *******************************************
 % SECTION
