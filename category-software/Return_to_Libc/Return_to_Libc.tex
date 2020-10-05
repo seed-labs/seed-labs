@@ -93,7 +93,7 @@ Detailed coverage of the return-to-libc attack can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -102,8 +102,26 @@ Detailed coverage of the return-to-libc attack can be found in the following:
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Tasks}
+\section{Environment Setup}
 
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Note on x86 and x64 Architectures}
+
+
+The return-to-libc attack on the x64 machines (64-bit)
+is much more difficult than that on the x86 machines (32-bit).
+Although the SEED Ubuntu 20.04 VM is a 64-bit machine,
+we decide to keep using the 32-bit programs (x64 is
+compatible with x86, so 32-bit programs can still 
+run on x64 machines). In the future, we may 
+introduce a 64-bit version for this lab. 
+Therefore, in this lab, when we compile 
+programs using \texttt{gcc}, we always 
+use the \texttt{-m32} flag, which means compiling 
+the program into 32-bit binary. 
 
 
 % -------------------------------------------
@@ -129,8 +147,6 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 \end{lstlisting}
 
 
-
-
 \paragraph{The StackGuard Protection Scheme.}
 The GCC compiler implements a security mechanism called
 \textit{StackGuard} to prevent buffer overflows. In the presence of this
@@ -141,7 +157,7 @@ protection during the compilation using the
 
 
 \begin{lstlisting}
-$ gcc -fno-stack-protector example.c
+$ gcc -m32 -fno-stack-protector example.c
 \end{lstlisting}
 
 
@@ -158,10 +174,10 @@ To change that, use the following option when compiling programs:
 
 \begin{lstlisting}
 For executable stack:
-$ gcc -z execstack  -o test test.c
+$ gcc -m32 -z execstack  -o test test.c
 
 For non-executable stack:
-$ gcc -z noexecstack  -o test test.c
+$ gcc -m32 -z noexecstack  -o test test.c
 \end{lstlisting}
 
 
@@ -282,7 +298,7 @@ because ownership changes cause the \setuid bit to be turned off.
 
 \begin{lstlisting}
 // Note: N should be replaced by the value set by the instructor
-$ gcc -DBUF_SIZE=N -fno-stack-protector -z noexecstack -o retlib retlib.c
+$ gcc -m32 -DBUF_SIZE=N -fno-stack-protector -z noexecstack -o retlib retlib.c
 $ sudo chown root retlib           
 $ sudo chmod 4755 retlib           
 \end{lstlisting}
@@ -301,6 +317,12 @@ will change, and the solution will be different.
 Students should ask their instructors for
 the value of \texttt{N}.
 
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Lab Tasks}
 
 
 \subsection{Task 1: Finding out the addresses of \texttt{libc} functions} 
@@ -677,7 +699,7 @@ int main()
 }
 \end{lstlisting}
 
-We can use {\tt "gcc -S foobar.c"} to
+We can use {\tt "gcc -m32 -S foobar.c"} to
 compile this program to the assembly code.
 The resulting file {\tt foobar.s} will look like the following:
 

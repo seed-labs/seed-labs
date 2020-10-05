@@ -12,7 +12,7 @@ The meaning of the Changes column can be found from
 | ---      | ---  | ---   |  ---   |
 | Buffer Overflow (32-bit) | Major | Done | [README](Buffer_Overflow/README.md)
 | Buffer Overflow (64-bit) | New   | Done | [README](Buffer_Overflow_x64/README.md) 
-| Return-to-Libc | |  |
+| Return-to-Libc | Minor | Done | [README](Return_to_Libc/README.md)
 | Format String | | |
 | Shellcode | Major | Done | [README](Shellcode/README.md)
 | Set-UID  | Editorial | Done | [README](Environment_Variable_and_SetUID/README.md)
