@@ -1,5 +1,5 @@
 
-LAB    = Format_String_Server
+LAB    = Format_String
 LABPDF = $(LAB).pdf
 
 
