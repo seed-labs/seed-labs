@@ -21,7 +21,7 @@ unsigned int  target = 0x11223344;
 
 void myprintf(char *msg)
 {
-    uintptr_t framep;
+    unsigned int *framep;
     // Copy the ebp value into framep, and print it out
     asm("movl %%ebp, %0" : "=r"(framep));
     printf("The ebp value inside myprintf() is: 0x%.8x\n", framep);

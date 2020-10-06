@@ -151,7 +151,7 @@ unsigned int  target = 0x11223344;
 
 void myprintf(char *msg)
 {
-    uintptr_t framep;
+    unsigned int *framep;
     // Copy the ebp value into framep, and print it out
     asm("movl %%ebp, %0" : "=r"(framep));
     printf("The ebp value inside myprintf() is: 0x%.8x\n", framep);
@@ -506,7 +506,7 @@ system call, which involves setting the following four
 registers before invoking the \texttt{"int 0x80"} instruction.  
 
 \begin{lstlisting}
- eax =  0x0B (execve()'s system call number)
+ eax = 0x0B (execve()'s system call number)
  ebx = address of the "/bin/bash" string (argument 1)
  ecx = address of argv[] (argument 2)
  edx = 0 (argument 3, for environment variables; we set it to NULL)
@@ -521,7 +521,7 @@ in the Buffer-Overflow Lab and in Chapter 4.7 of the SEED book (2nd edition).
 
 
 \begin{lstlisting}[label=format:code:shellcode, 
-   caption=Shellcode in \texttt{server\_exploit\_skeleton.py} (can be downloaded from the lab's website)] 
+   caption=Shellcode in \texttt{exploit.py} (can be downloaded from the lab's website)] 
 # The following code runs "/bin/bash -c '/bin/rm /tmp/myfile'"
 malicious_code= (
     # Push the command '/bin////bash' into stack (//// is equivalent to /)
@@ -621,7 +621,7 @@ victim server machine. The following \texttt{nc} command creates a TCP
 server listening to port \texttt{7070}:  
 
 \begin{lstlisting}[backgroundcolor=]
-$ nc -l 7070 -v
+$ nc -lnv 7070 
 \end{lstlisting}
 
 
