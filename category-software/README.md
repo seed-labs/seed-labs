@@ -13,8 +13,8 @@ The meaning of the Changes column can be found from
 | Buffer Overflow (32-bit) | Major | Done | [README](Buffer_Overflow/README.md)
 | Buffer Overflow (64-bit) | New   | Done | [README](Buffer_Overflow_x64/README.md) 
 | Return-to-Libc           | Minor | Done | [README](Return_to_Libc/README.md)
-| Format String (32-bit)   | Minor |      | [README](Format_String/README.md) 
-| Format String (64-bit)   | New   |      | [README](Format_String_x64/README.md)
+| Format String (32-bit)   | Minor | Done | [README](Format_String/README.md) 
+| Format String (64-bit)   | New   | Done | [README](Format_String_x64/README.md)
 | Shellcode                | Major | Done | [README](Shellcode/README.md)
 | Set-UID      | Editorial | Done  | [README](Environment_Variable_and_SetUID/README.md)
 | Race Condition           | Minor | Done |[README](Race_Condition/README.md) |

@@ -1,0 +1,446 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{../../common-files/header}
+\input{../../common-files/copyright}
+
+
+\newcommand{\formatFigs}{./Figs}
+\newcommand{\dockerfile}{\texttt{Dockerfile}\xspace}
+
+
+\lhead{\bfseries SEED Labs -- Format String Vulnerability Lab (64-bit)}
+
+
+\begin{document}
+
+
+\begin{center}
+{\LARGE Format String Vulnerability Lab (64-bit)}
+\end{center}
+
+
+\seedlabcopyright{2020}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Overview}
+
+
+The \texttt{printf()} function in C is used to print out a string according to a format.  Its
+first argument is called \textit{format string}, which defines how the string should be
+formatted. Format strings use placeholders marked by the \texttt{\%} character for the
+\texttt{printf()} function to fill in data during the printing.  The use of format strings is
+not only limited to the \texttt{printf()} function; many other functions, such as
+\texttt{sprintf()}, \texttt{fprintf()}, and \texttt{scanf()}, also use format strings. Some
+programs allow users to provide the entire or part of the contents in a format string. If such
+contents are not sanitized, malicious users can use this opportunity to get the program to run
+arbitrary code. A problem like this is called \textit{format string vulnerability}.
+
+
+The objective of this lab is for students to gain the first-hand
+experience on format string vulnerabilities by putting what they have learned 
+about the vulnerability from class into actions. 
+Students will be given a program with a format string
+vulnerability; their task is to exploit
+the vulnerability to achieve the following damage: (1) crash the 
+program, (2) read the internal memory of the program, (3) modify
+the internal memory of the program, and most severely, 
+(4) inject and execute malicious code using the victim program's privilege. 
+This lab covers the following topics:
+
+\begin{itemize}[noitemsep]
+\item Format string vulnerability
+\item Code injection
+\item Shellcode 
+\item Reverse shell 
+\end{itemize}
+
+
+\noindent
+\fbox{\parbox{\textwidth}{
+\noindent
+\textbf{Customization by instructor.} Instructors should customize
+this lab by choosing a value for the \texttt{DUMMY\_SIZE} constant,
+which is used during the compilation of the vulnerable program.
+Different values can make the solutions
+different. Please pick a value
+between \texttt{0} and \texttt{300} for this lab.
+
+\vspace{0.05in}
+\begin{center}
+\textbf{\large The \texttt{DUMMY\_SIZE} value for this lab is: \underline{\ \ \ \ \ \ \ \ \ \ \ }}
+\end{center}
+}}
+
+
+\paragraph{Readings and videos.}
+Detailed coverage of the format string attack can be found in the following:
+
+\begin{itemize}
+\item Chapter 6 of the SEED Book, \seedbook
+\item Section 9 of the SEED Lecture at Udemy, \seedcsvideo
+\item The lab also involves reverse shell, which is covered in Chapter 9 of the SEED book.
+\end{itemize}
+
+
+
+\paragraph{Lab environment.} \seedenvironmentB
+
+
+
+
+\newpage
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Lab Setup}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{The Vulnerable Program}
+
+You can get the server program from the lab's website. 
+This program has a format string vulnerability.
+The 64-bit server program is slight different from the 32-bit version. 
+When it runs, it listens to UDP port
+\texttt{9090}. Whenever a UDP packet comes to this port, the program
+gets the data and invokes \texttt{myprintf()} to print out the data. 
+The server is a root daemon, i.e., it runs with the root privilege. 
+Inside the \texttt{myprintf()} function, there is a format string
+vulnerability. We will exploit this vulnerability to gain the root
+privilege.  
+
+\begin{lstlisting}[label=format:code:server, caption={The vulnerable server program
+             \texttt{server.c} (can be downloaded from the lab's website)}]
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/ip.h>
+
+#define PORT 9090
+
+/* Changing this size will change the layout of the stack.
+ * We have added 2 dummy arrays: in main() and myprintf().
+ * Instructors can change this value each year, so students 
+ * won't be able to use the solutions from the past.   
+ * Suggested value: between 0 and 300  */
+#ifndef DUMMY_SIZE
+#define DUMMY_SIZE 100
+#endif
+
+char *secret = "A secret message\n";
+unsigned long  target = 0x1122334455667788;
+
+void myprintf(char *msg)
+{
+    unsigned long int *framep;
+
+    // Copy the rbp value into framep, and print it out
+    asm("movq %%rbp, %0" : "=r" (framep));
+    printf("Frame Pointer (rbp) inside myprintf(): 0x%.16lx\n", 
+            (unsigned long) framep);
+
+    /* Change the size of the dummy array to randomize the parameters 
+       for this lab. Need to use the array at least once */
+    char dummy[DUMMY_SIZE];  memset(dummy, 0, DUMMY_SIZE);
+
+    // This line has a format-string vulnerability
+    printf("The target variable (value, before printf): 0x%.16lx\n", target);
+    printf(msg);
+    printf("The target variable (value, after printf):  0x%.16lx\n", target);
+}
+
+void main()
+{
+    struct sockaddr_in server;
+    struct sockaddr_in client;
+    int clientLen;
+    char buf[1500];
+
+    /* Change the size of the dummy array to randomize the parameters
+       for this lab. Need to use the array at least once */
+    char dummy[DUMMY_SIZE];  memset(dummy, 0, DUMMY_SIZE);
+
+    /* Print out some internal data to simplify lab tasks */
+    printf("Input buffer (address):        0x%.16lx\n", (unsigned long) buf);
+    printf("The secret variable (address): 0x%.16lx\n", 
+            (unsigned long) secret);
+    printf("The target variable (address): 0x%.16lx\n", 
+            (unsigned long) &target);
+    myprintf("");
+
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    memset((char *) &server, 0, sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = htonl(INADDR_ANY);
+    server.sin_port = htons(PORT);
+
+    if (bind(sock, (struct sockaddr *) &server, sizeof(server)) < 0)
+        perror("ERROR on binding");
+
+    while (1) {
+        bzero(buf, 1500);
+        recvfrom(sock, buf, 1500-1, 0,
+                 (struct sockaddr *) &client, &clientLen);
+        myprintf(buf);
+    }
+    close(sock);
+}
+\end{lstlisting}
+
+
+\paragraph{Compilation.} Compile the above program. For this task,
+we will compile it to 64-bit binary code. 
+During the compilation, you will see a
+warning message. This warning is generated by a countermeasure implemented by
+the \texttt{gcc} compiler against format string vulnerabilities. We can
+ignore this warning for now. 
+
+
+\begin{lstlisting}
+// Note: N should be replaced by the value set by the instructor
+$ gcc -DDUMMY_SIZE=N -z execstack -o server server.c
+server.c: In function 'myprintf':
+server.c:13:5: warning: format not a string literal and no format arguments 
+               [-Wformat-security]
+     printf(msg);
+     ^
+\end{lstlisting}
+
+It should be noted that the program needs to be compiled using 
+the \texttt{"-z execstack"} option, which allows the stack to be 
+executable. Non-executable stack is a countermeasure against stack-based 
+code injection attacks, but 
+it can be defeated using the return-to-libc technique. To simplify 
+this lab, we simply disable this defeat-able countermeasure. 
+
+
+
+\paragraph{For instructors.} 
+To prevent students from using the solutions from the past (or from those 
+posted on the Internet), instructors can change the 
+value for \texttt{DUMMY\_SIZE} by requiring students to compile the 
+server code using a different \texttt{DUMMY\_SIZE} value. 
+Without the \texttt{-DDUMMY\_SIZE}  
+option, \texttt{DUMMY\_SIZE} is set to the default value 100 (defined
+in the program). 
+When this value changes, the layout of the stack 
+will change, and the solution will be different. 
+Students should ask their instructors for
+the value of \texttt{N}.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Setting Up Containers for the Server} 
+
+We will use two computers for this lab, one for the attacker,
+and the other for running the vulnerable server. Instead of 
+using two virtual machines, we will containers. 
+We run the vulnerable server inside a Docker container, and 
+launch the attack from the VM. The files needed for 
+container creation is included in the zip file
+that can be downloaded from the lab's website. 
+
+
+\paragraph{\texttt{Dockerfile}}. 
+Docker can build images automatically by reading the instructions from a 
+file called \dockerfile. 
+The content of \dockerfile is shown in the following:
+
+\begin{lstlisting}
+FROM ubuntu:20.04
+  
+RUN  apt-get update  \
+     && apt-get -y install \
+        iputils-ping \
+        net-tools \
+        iproute2  \
+        nano \
+     && apt-get clean
+
+
+COPY server /
+EXPOSE 9090
+
+CMD [ "/bin/bash"]
+\end{lstlisting}
+ 
+
+Our container is built on top of the official \texttt{Ubuntu 20.04} Docker image,
+and it installs several additional software packages. 
+We copy the server program to the root folder inside the container (make sure 
+compile the server code first). We expose the port \texttt{9090}, because
+it is used by the server program. The final \texttt{CMD} entry
+indicates that when the container starts, the \texttt{/bin/bash} program 
+will be executed automatically. 
+
+
+\paragraph{Building container image.}
+\dockerfile is placed inside a folder called \texttt{server\_container}. Enter 
+this folder, and run the following command to build the container image (the 
+name specified in the \texttt{-t} option is the name of the container image, and you can
+use any name you want): 
+
+\begin{lstlisting}
+$ docker build -t server . 
+\end{lstlisting}
+
+
+
+\paragraph{Running the container.}
+Once the container image is built, we can use the following command to run an
+instance based on the image. With the \texttt{--rm} option, the container instance will be 
+automatically removed when it exits (the image will not be removed). 
+The \texttt{-it} option is required because we need to get an interactive session
+with the container. After the container starts, you will get a shell.
+Execute the \texttt{ip addr} command to get the IP address of the container. 
+We need it in the attack. 
+
+\begin{lstlisting}
+$ docker run --rm -it server 
+root@1a7468ce7eaa:/# ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state ...
+    inet 127.0.0.1/8 scope host lo
+34: eth0@if35: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 ...
+    inet (*@\textbf{172.17.0.2/16}@*) brd 172.17.255.255 scope global eth0
+\end{lstlisting}
+
+
+\paragraph{Several userful commands.}
+Students can refer to the Docker's manual to learn more Docker's commands. 
+We list some of the commands that might be useful in this lab. 
+
+\begin{lstlisting}
+# List all the running containers. 
+$ docker ps 
+
+# Stop a container 
+$ docker stop <id>
+
+# Run a bash command on a running container 
+$ docker exec -it <id> /bin/bash
+\end{lstlisting}
+ 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Running the Vulnerable Server} 
+
+On the server, we run our server program using the root privilege. We
+assume that this program is a privileged root daemon. The server listens to
+port \texttt{9090}. When it runs,  it prints out some internal data 
+that are needed for the attacks. In the real world, servers do not 
+print out this kind of data. We do that to simplify the lab tasks. 
+In real attacks, attackers need to find way to figure out these data
+or guess them. 
+
+\begin{lstlisting}
+// On the server container
+# /server_64
+Input buffer (address):        0x00007fffffffd9c0
+The secret variable (address): 0x0000555555556008
+The target variable (address): 0x0000555555558010
+Frame Pointer (rbp) inside myprintf():      0x00007fffffffd910
+The target variable (value, before printf): 0x1122334455667788
+The target variable (value, after printf):  0x1122334455667788
+\end{lstlisting}
+
+
+On the client VM, we can send data to the server using 
+the \texttt{nc} command, where the flag \texttt{"-u"} means UDP (the server
+program is a UDP server). The IP address in the following example should be 
+replaced by the actual IP address of the server container. 
+Yon can send any data to the server. The server program is supposed
+to print out whatever is sent by you. 
+
+
+\begin{lstlisting}
+// Send out a "hello" message to the server
+$ echo hello | nc -u 172.17.0.2 9090 
+
+// Send the content of badfile to the server
+$ nc -u 172.17.0.2 9090 < badfile
+\end{lstlisting}
+
+
+ 
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Lab Tasks}
+
+
+The lab tasks are the same as the 32-bit version, so we will not 
+repeat them. Students should read the 32-bit version of the 
+lab description for detailed tasks. Here, we will
+only emphasize one of the challenges caused by
+the x64 architecture. 
+
+
+\paragraph{Challenge.} The main challenge caused by x64 is the zeros in the address.
+Although the x64 architecture
+supports 64-bit address space, only the address from
+\texttt{0x00} through \texttt{0x00007FFFFFFFFFFF} is allowed. That means for
+every address (8 bytes), the highest two bytes are always zeros.
+This causes a problem.
+
+In the attack, we need to place addresses inside the format string. For 
+32-bit programs, we can put the addresses anywhere, because there 
+are no zeros inside the address. We can no longer do this
+for the 64-bit programs. If you put an address in the middle of 
+your format string, when \texttt{printf()} parses the 
+format string, it will stop the parsing when it sees a zero. Basically,
+anything after the first zero in a format string will not 
+be considered as part of the format string. 
+
+The problem caused by zeros is different from that
+in the buffer overflow attack, in which,
+zeros will terminate the memory copy if \texttt{strpcy()} is used. 
+Here, we do not have memory copy in the program, 
+so we can have zeros in our input, but where to put them
+is critical. 
+There are many ways to solve this problem, and 
+we leave this to students. In the lab report, students
+should explain how they have solved this problem. 
+
+
+\paragraph{Note.} If students have already done 
+the 32-bit version of this lab, they can skip all the 
+warm-up tasks, and only conduct the code injection attack (Task 6
+and Task 7). 
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Submission}
+
+\seedsubmission
+
+
+
+\end{document}
