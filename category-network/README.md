@@ -13,7 +13,7 @@ The meaning of the Changes column can be found from
 | Sniffing/Spoofing   | Minor | Done | [README](Sniffing_Spoofing/README.md)|
 | ARP Cache Poisoning | | | |
 | IP/ICMP             | | | | 
-| TCP Attacks         | | | |
+| TCP Attacks         | Minor | Done | [README](TCP_Attacks/README.md)|
 | Mitnick Attack      | | | | 
 | Local DNS Attack    | | | |
 | Remote DNS Attack   | | | |
