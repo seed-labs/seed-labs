@@ -24,9 +24,19 @@ tools using Scapy. For SYN flooding attacks, a C program is provided.
 
 ## Container Setup
 
-- The lab uses the standard OneLAN setup. No customization 
-is needed. 
-
+- The lab uses the standard OneLAN setup. We need to add the following
+to the Compose file, because inside the container, we won't be able to
+turn off the SYN cookie countermeasure. We only need to do this for 
+the victim machine. The Compose file will be provided on the lab's website.
+  ```
+    HostA:
+        ...
+        cap_add:
+                - ALL
+        sysctls:
+                - net.ipv4.tcp_syncookies=0
+        ...         
+  ```
 
 - For this lab, using the container setup is much more convenient
 than using three VMs.
