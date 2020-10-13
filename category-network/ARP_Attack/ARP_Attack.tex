@@ -74,6 +74,17 @@ Detailed coverage of the ARP protocol and attacks can be found in the following:
 \paragraph{Lab environment.} \seedenvironment
 
 
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Environment Setup Using Containers}
+
+...
+
+
+
 % *******************************************
 % SECTION
 % ******************************************* 
@@ -88,7 +99,9 @@ In this lab, we use ARP cache poisoning to conduct an MITM attack.
 
 
 
-The following code skeleton shows how to construct an ARP packet using Scapy.
+The following code skeleton shows how to construct an ARP packet using Scapy. 
+Please replace the interface name \texttt{br-05f0c56e8085} with the one in your 
+own setup (see the previous section). 
 
 \begin{lstlisting}
 #!/usr/bin/python3
@@ -98,7 +111,7 @@ E = Ether()
 A = ARP()
 
 pkt = E/A
-sendp(pkt)
+sendp(pkt, iface='br-05f0c56e8085')
 \end{lstlisting}
 
 The above program constructs and sends an ARP packet. Please set necessary attribute
