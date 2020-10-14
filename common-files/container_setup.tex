@@ -1,13 +1,24 @@
 
 \paragraph{Container setup and commands.}
-The Docker and Compose files are provided on the lab's website,
-along with the user manual. The following Compose
-commands are used to create and tear down
-the lab environment.
+The Docker and Compose files, along with the user manual,
+can be downloaded from the lab's website,
+The followings Compose commands are for creating and tearing down
+the lab environment. 
+Since we are going to use 
+these commands and several docker commands very
+frequently, we have created aliases for these commands
+in the \texttt{.bashrc} file.  
+
 
 \begin{lstlisting}
 $ docker-compose build  # Build the container image
 $ docker-compose up     # Start the container
 $ docker-compose down   # Shut down the container
-\end{lstlisting}
 
+// Aliases for commonly used docker and Compose commands. 
+$ dcbuild       # Alias for: docker-compose build
+$ dcup          # Alias for: docker-compose up
+$ dcdown        # Alias for: docker-compose down
+$ dockps        # Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
+$ docksh <id>   # Alias for: docker exec -it <id> /bin/bash
+\end{lstlisting}
