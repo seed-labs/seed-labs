@@ -14,7 +14,7 @@ The meaning of the Changes column can be found from
 | ARP Cache Poisoning | | | |
 | IP/ICMP             | | | | 
 | TCP Attacks         | Minor | Done | [README](TCP_Attacks/README.md)|
-| Mitnick Attack      | | | | 
+| Mitnick Attack      | Minor | Done | [README](Mitnick_Attack/README.md)| 
 | Local DNS Attack    | | | |
 | Remote DNS Attack   | | | |
 | DNS Rebinding Attack| | | |
