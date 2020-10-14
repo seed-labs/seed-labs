@@ -6,8 +6,10 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \lhead{\bfseries SEED Labs -- The Mitnick Attack Lab}
@@ -77,7 +79,7 @@ Detailed coverage of the TCP session hijacking can be found in the following:
 \item Section 6 of the SEED Lecture, \seedisvideo
 \end{itemize}
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -196,13 +198,50 @@ X-Terminal would trust every
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Setup}
+\section{Lab Environment Setup Using Container}
 
-We need to use three VMs for this lab. One for X-Terminal, one for
-the trusted server, and one the attacker. In the real Mitnick attack,
-the attacker machine is a remote machine. In this lab, for the 
-sake of simplicity, we put all these three VMs on the 
-same network. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Container Setup}
+
+In this lab, students need to use three machines, 
+one for X-Terminal, one for Trusted Server, and the other for the attacker. 
+In the real Mitnick attack, the attacker machine is a remote machine. 
+In this lab, for the 
+sake of simplicity, we put all these three machines on the same network. 
+Students can use three virtual
+machines for this lab, but it will be much more convenient to
+use one VM plus two containers.  We will launch
+attacks from the VM, while using containers for the attack targets. 
+We have named the containers using X-Terminal and Trusted Server.
+The lab environment is depicted in the following:
+
+
+\begin{lstlisting}[backgroundcolor=]
+            +------------+      +--------------+  +----------------+  
+            |     VM     |      |   Container  |  |    Container   |  
+            | (attacker) |      | (X-Terminal) |  |(Trusted Server)|  
+            |  10.9.0.1  |      |   10.9.0.5   |  |    10.9.0.6    |  
+            +----+-------+      +-------+------+  +--------+-------+  
+                 | br-<id>             | eth0          | eth0   
+                 |                     |               |        
+           ------+---------------------+---------------+--------------
+           Network  10.9.0.0/24
+
+\end{lstlisting}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input common files related to containers
+\input{\commonfolder/container_setup}
+\input{\commonfolder/container_interface}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
 
 
 % -------------------------------------------
@@ -216,7 +255,7 @@ remotely. Although we will use \rsh in this task, we should know that
 are not used any more. They have been replaced by
 more secured programs, such as \texttt{ssh}.   
 That is why in the modern Linux operating systems, the \rsh command 
-is actually a symbolic link to the \texttt{ssh} program.  See the following
+is actually a symbolic link to the \texttt{ssh} program. 
 
 \begin{lstlisting}
 $ ls -al /etc/alternatives | grep rsh
@@ -230,14 +269,15 @@ of the \rsh program. Obviously, the old version of
 the \rsh no longer works, but an open-source project
 re-implements the remote shell clients and servers. 
 It is called \texttt{rsh-redone}. 
-Currently, it has not been installed in our VM yet, so 
-we will use the following commands to install \rsh server and client on all 
-three VMs. 
+We can use the following commands to install \rsh server and client. 
 
 \begin{lstlisting}
 $ sudo apt-get install rsh-redone-client
 $ sudo apt-get install rsh-redone-server
 \end{lstlisting}
+
+\paragraph{Note.} The \rsh programs are already installed in our 
+VM and container. 
 
 
 
@@ -261,17 +301,25 @@ from the trusted server. To avoid typing passwords, he
 created a \texttt{.rhosts} file on host X-Terminal and put the trusted
 server's IP address into the file.
 Note that the \texttt{.rhosts} file must reside at the top level of a user's home directory and
-can be written \textbf{only by the owner/user}. Use the following commands on X-Terminal to
-do the setup.
+can be written \textbf{only by the owner/user}.
+
+
+Please use the following commands on X-Terminal to set up the \texttt{.rhosts} file.
+It should be noted when we get into a container, we will be in the root 
+account. In this lab, we need to switch to a normal user account called seed, which
+is already created inside the container: 
 
 \begin{lstlisting}
-$ touch .rhosts
+# su seed          (*@\reflectbox{\ding{217}}@*) Switch to the seed account
+$ cd               (*@\reflectbox{\ding{217}}@*) Go to seed's home directory
+$ touch .rhosts    (*@\reflectbox{\ding{217}}@*) Create an empty file 
 $ echo [Server's IP address] > .rhosts
 $ chmod 644 .rhosts
 \end{lstlisting}
 
 To verify your configuration, try running the following command on the trusted server.
 \begin{lstlisting}
+# su seed          (*@\reflectbox{\ding{217}}@*) Switch to the seed account
 $ rsh [X-Terminal's IP] date
 \end{lstlisting}
 
@@ -298,11 +346,9 @@ the Mitnick attack.
 The operating systems at the time of the Mitnick Attack were vulnerable to SYN
 flooding attacks, which could mute the target machine or even shut it down. 
 However, SYN flooding can no longer cause such a damage for modern operating systems. 
-To simulate this affect, we will
-disconnect the trusted server from the network, so it is completely ``muted''.
-Click on the network icon on the upper right corner of the desktop,
-and choose \texttt{Disconnect}. 
+We will simulate this effect. 
 
+We can manually stop the trusted server container, but that is not enough.
 When X-Terminal receives a SYN packet from the trusted server, it will respond with
 a SYN+ACK packet. Before sending out this packet, 
 it needs to know the MAC address of the trusted server. 
@@ -321,7 +367,7 @@ the trusted server, and hence would get the trusted server's MAC address, and
 save it to the cache. 
 
 
-To simplify the task, before disconnecting the trusted server, 
+To simplify the task, before stopping the trusted server, 
 we will simply ping it from X-Terminal once, and then use 
 the \texttt{arp} command to check and make sure that
 the MAC address is in the cache. It should be noted that 
@@ -329,12 +375,12 @@ cache entry may be deleted by the operating system if
 the OS fails to reach a destination using 
 the cached MAC address. To simply your attack, 
 you can run the following command on X-Terminal to
-permanently add an entry to the ARP cache:
+permanently add an entry to the ARP cache (it needs to
+run in the root account):
 
 \begin{lstlisting}
-$ sudo arp -s [Server's IP] [Server's MAC]
+# arp -s [Server's IP] [Server's MAC]
 \end{lstlisting}
-
 
 
 
@@ -390,20 +436,23 @@ values are. We allow students to use these fields for task simplification.
 \paragraph{The behavior of \rsh.} 
 To create a spoofed \rsh session between the trusted server and X-Terminal,
 we need to understand the behavior of \rsh. Let us start a 
-\rsh session from Host A to Host B, and then use Wireshark to 
-capture the packets between them. We use the following command to
+\rsh session from Trusted Server to X-Terminal, and then use Wireshark
+to capture the packets between them (note: we will run Wireshark
+on the attacker VM; make sure to select the correct network
+interface corresponding to the \texttt{10.9.0.0/24} network). 
+We use the following command to
 run the \texttt{date} command on Host B from Host A via the \rsh  
 remote shell.
 
 
 \begin{lstlisting}
-// On Host A
-$ rsh [B's IP] date
+// On Trusted Server
+$ rsh 10.9.0.5 date
 \end{lstlisting}
  
 The packet trace in this \rsh session is shown in the following. 
-Here \texttt{10.0.2.7} is the Host A's IP address, 
-and \texttt{10.0.2.6} is Host B's IP address.
+Here \texttt{10.9.0.6} is the Trusted Server's IP address, 
+and \texttt{10.9.0.5} is X-Terminal's IP address.
 If a packet does not carry any TCP data, the length information (i.e.
 \texttt{Len=0}) is omitted. 
 
@@ -411,25 +460,25 @@ If a packet does not carry any TCP data, the length information (i.e.
                   label={listing:rsh}]
 # The first connection
    SRC IP    DEST IP   TCP Header
-1  10.0.2.7  10.0.2.6  1023 -> 514 [SYN] Seq=778933536 
-2  10.0.2.6  10.0.2.7  514 -> 1023 [SYN,ACK] Seq=10879102 Ack=778933537 
-3  10.0.2.7  10.0.2.6  1023 -> 514 [ACK] Seq=778933537 Ack=10879103 
-4  10.0.2.7  10.0.2.6  1023 -> 514 [ACK] Seq=778933537 Ack=10879103 Len=20
+1  10.9.0.6  10.9.0.5  1023 -> 514 [SYN] Seq=778933536 
+2  10.9.0.5  10.9.0.6  514 -> 1023 [SYN,ACK] Seq=10879102 Ack=778933537 
+3  10.9.0.6  10.9.0.5  1023 -> 514 [ACK] Seq=778933537 Ack=10879103 
+4  10.9.0.6  10.9.0.5  1023 -> 514 [ACK] Seq=778933537 Ack=10879103 Len=20
                        RSH Session Establishment
                        Data: 1022\x00seed\x00seed\x00date\x00
-5  10.0.2.6  10.0.2.7  514 -> 1023 [ACK] Seq=10879103 Ack=778933557
+5  10.9.0.5  10.9.0.6  514 -> 1023 [ACK] Seq=10879103 Ack=778933557
 
 # The second connection
-6  10.0.2.6  10.0.2.7  1023 -> 1022 [SYN] Seq=3920611526 
-7  10.0.2.7  10.0.2.6  1022 -> 1023 [SYN,ACK] Seq=3958269143 Ack=3920611527 
-8  10.0.2.6  10.0.2.7  1023 -> 1022 [ACK] Seq=3920611527 Ack=3958269144 
+6  10.9.0.5  10.9.0.6  1023 -> 1022 [SYN] Seq=3920611526 
+7  10.9.0.6  10.9.0.5  1022 -> 1023 [SYN,ACK] Seq=3958269143 Ack=3920611527 
+8  10.9.0.5  10.9.0.6  1023 -> 1022 [ACK] Seq=3920611527 Ack=3958269144 
 
 
 # Going back to the first connection
-9  10.0.2.6  10.0.2.7  514 -> 1023 [ACK] Seq=10879103 Ack=778933557 Len=1
+9  10.9.0.5  10.9.0.6  514 -> 1023 [ACK] Seq=10879103 Ack=778933557 Len=1
                        Data: \x00
-10 10.0.2.7  10.0.2.6  1023 -> 514 [ACK] Seq=778933557 Ack=10879104 
-11 10.0.2.6  10.0.2.7  514 -> 1023 [ACK] Seq=10879104 Ack=778933557 Len=29
+10 10.9.0.6  10.9.0.5  1023 -> 514 [ACK] Seq=778933557 Ack=10879104 
+11 10.9.0.5  10.9.0.6  514 -> 1023 [ACK] Seq=10879104 Ack=778933557 Len=29
                        Data: Sun Feb 16 13:41:17 EST 2020
 \end{lstlisting}
 
@@ -461,16 +510,6 @@ first connection.
 Students can use Wireshark to capture a \rsh session, and study its
 behaviors, before launching the Mitnick attack. 
 We divide the attack task into two sub-tasks, each one focusing on one connection. 
-
-
-
-We will use Scapy for most of the tasks in this lab.
-The current version of the SEED VM may not have Scapy installed for Python3.
-We can use the following command to install Scapy for Pyhon3.
-
-\begin{lstlisting}
-$ sudo pip3 install scapy
-\end{lstlisting}
 
 
 
@@ -555,10 +594,10 @@ beginning of the section, or you will get a penalty.
 #!/usr/bin/python3
 from scapy.all import *
 
-x_ip      = "10.0.2.6"  # X-Terminal
+x_ip      = "10.9.0.5"  # X-Terminal
 x_port    = 514         # Port number used by X-Terminal
 
-srv_ip    = "10.0.2.7"  # The trusted server
+srv_ip    = "10.9.0.6"  # The trusted server
 srv_port  = 1023        # Port number used by the trusted server
 
 # Add 1 to the sequence number used in the spoofed SYN
@@ -587,8 +626,8 @@ def spoof(pkt):
   # ... Add code here ...
 
 myFilter = 'tcp'   # You need to make the filter more specific
-sniff(filter=myFilter, prn=spoof)
-
+sniff(iface='br-****', filter=myFilter, prn=spoof)
+                  (*@\reflectbox{\ding{218}} \textbf{You need to set the correct value here.}@*)   
 \end{lstlisting}
 
 
@@ -606,7 +645,7 @@ The structure of the \rsh data is shown below.
 The data has four parts: a port number, client's user ID, server's user ID,
 and a command.
 The port number will be used for the second connection (see Task 2.2). 
-Both client and server's user ID is \texttt{seed} in our VM. 
+Both client and server's user ID is \texttt{seed} in our container. 
 The four fields are separated by a byte 0.
 Note that there is also a byte 0 at the end of the \rsh data. An example is given in the
 following. In this example, we tell X-Terminal that we are going to listen on port 9090 for the
