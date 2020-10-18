@@ -87,22 +87,22 @@ Detailed coverage of the DNS protocol and attacks can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
-\vspace{0.2in}
-\noindent
-\fbox{\parbox{\textwidth}{
-\noindent
-\textbf{Customization.} 
-In this lab description, we use the domain \texttt{attacker32.com} to refer to the 
-domain controlled by the attacker. When students do this lab, they are not allowed 
-to use this domain name; instead, they should use a name that includes 
-their last names (the domain name is only used internally inside the VMs, so it does not 
-matter whether the name is owned by others or not). 
-The purpose of this requirement is to differentiate student's work.
-}}
+%\vspace{0.2in}
+%\noindent
+%\fbox{\parbox{\textwidth}{
+%\noindent
+%\textbf{Customization.} 
+%In this lab description, we use the domain \texttt{attacker32.com} to refer to the 
+%domain controlled by the attacker. When students do this lab, they are not allowed 
+%to use this domain name; instead, they should use a name that includes 
+%their last names (the domain name is only used internally inside the VMs, so it does not 
+%matter whether the name is owned by others or not). 
+%The purpose of this requirement is to differentiate student's work.
+%}}
 
 
 
@@ -152,41 +152,96 @@ password; in real systems, the password will be re-generated periodically.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Environment Setup}
+\section{Lab Environment Setup Using Container}
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.9\textwidth]{\rebindingFigs/environment_setup_rebind.pdf}
+\includegraphics[width=0.9\textwidth]{\rebindingFigs/environment_setup_container.pdf}
 \caption{Environment setup for the experiment}
 \label{dns:fig:rebind_environment}
 \end{figure}
 
 
-In this lab, we will use three machines (VMs), which will be called 
-User VM, Local DNS Server, and Attacker VM. For the sake of simplicity,
-we place these VMs on the same network using the NAT Network adaptor in VirtualBox. In the 
-real world, they are not on the same network.
-We also assume that IoT device, which is running on the user VM, 
-is behind the firewall, so the attacker VM cannot directly
-access the IoT device. 
-The setup of this lab is quite complicated, as we need to 
-configure three VMs and run multiple servers on them, including 
-an IoT web server (on User VM), a web server and a DNS server (on Attacker
-VM), and a DNS server (on the Local DNS server). 
-We break down the setup into 5 tasks. 
+In this lab, we will use six machines. 
+The lab environment setup is illustrated
+in Figure~\ref{dns:fig:rebind_environment}. Only the user machine 
+will be using VM, and the others are all containers. Please download the 
+\texttt{labsetup.zip} file to your VM from the lab's website, 
+and run the following 
+command to set up the lab environment:
 
 
-In the rest of the document, we assume that the User VM's IP address is
-{\tt 10.0.2.6}, the local DNS Server's IP is {\tt 10.0.2.7} and the Attacker
-VM's IP is {\tt 10.0.2.8}. The lab environment setup is illustrated
-in Figure~\ref{dns:fig:rebind_environment}. 
+\begin{lstlisting}
+$ unzip labsetup.zip
+$ cd labsetup
+$ docker-compose build
+$ docker-compose up
+
+// When the lab is finished, use the following command to 
+// tear down the setup (doing it from another window)
+$ docker-compose down 
+\end{lstlisting}
 
 
+In the setup, we have two networks, a home network and 
+an outside network. The home network 
+simulates a typical network at home. 
+The User machine and the IoT 
+services are connected to this network, which
+is protected by the firewall on the router container. 
+The firewall blocks
+all traffic going to the \texttt{10.8.0.0/24} network. 
+This way, outside machines cannot 
+access the machines on the home network. 
+We also set up a NAT server on the router, so the machines
+on the home network can access outside (and the reply
+packets can come back). 
+
+The second network simulates the outside world. In addition to
+the router, there are three containers attached to this network,
+one serving as the local DNS server, and the other two
+serving as the attacker's nameserver and web server.
+The attacker owns the \texttt{attacker32.com} domain, 
+which is hosted by the attacker's nameserver container. 
+The web server hosts a malicious website used for the 
+attack. 
+
+
+\paragraph{Remove route on the user VM.}
+When we create a network using docker, 
+the host machine (i.e., the user VM) will be automatically
+attached to the network and is given the IP address 
+\texttt{.1}. In our setup, we create two networks, so 
+the user VM will be connected to both networks.
+If we run the \texttt{ip route} command, we will see the following: 
+
+\begin{lstlisting}
+$ ip route 
+10.8.0.0/24 dev br-77cfd5c95222 proto kernel scope link src 10.8.0.1
+10.9.0.0/24 dev br-97924f33175f proto kernel scope link src 10.9.0.1
+\end{lstlisting}
+
+We can see that the user VM can directly access the \texttt{10.9.0.0/24} network.
+That is different from what is depicted in Figure~\ref{dns:fig:rebind_environment}.
+To simulate the same setup, we will remove the direct route to
+the \texttt{10.9.0.0/24} network, and then add a new 
+routing entry to use \texttt{10.8.0.2} to reach the outside network. 
+We will execute the following commands on the user VM.
+ 
+
+\begin{lstlisting}
+$ sudo ip route del 10.9.0.0/24
+$ sudo ip route add 10.9.0.0/24 via 10.8.0.2
+\end{lstlisting}
+ 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1: Configure the User VM}
+\subsection{Configure the User VM}
+
+We need to provide further configuration on the user VM.
+
 
 \paragraph{Step 1. Reduce Firefox's DNS caching time.}
 To reduce load on DNS servers and to speed up response time, Firefox browser caches DNS
@@ -204,17 +259,23 @@ After making the change, we should exit from the Firefox browser, and restart it
 change will not take effect.
 
 
-
 \paragraph{Step 2. Change \texttt{/etc/hosts}.}
 We need to add the following entry to the \texttt{/etc/hosts} file. 
-We will use \texttt{www.seeedIoT32.com} as the name for the 
-IoT web server. This server can run on a different VM, but for the 
-sake of simplicity, we run the IoT server on the User VM (assuming 
-its IP address is \texttt{10.0.2.6}): 
-
+We will use \texttt{www.seedIoT32.com} as the name for the 
+IoT server. Its IP address is \texttt{10.8.0.5}. 
 
 \begin{lstlisting}
-10.0.2.6   www.seedIoT32.com
+10.8.0.5   www.seedIoT32.com
+\end{lstlisting}
+
+
+We can now test the IoT server. Point the browser to the following URL on the 
+User VM. If everything is set up correctly, we should be able to see 
+a thermostat. We can also change the temperature setting by dragging the 
+sliding bar. Please provide a screenshot in your lab report. 
+
+\begin{lstlisting}
+http://www.seedIoT32.com
 \end{lstlisting}
  
 
@@ -230,10 +291,10 @@ file with the information provided by the DHCP server.
 
 One way to get our information into \texttt{/etc/resolv.conf} without worrying about
 the DHCP is to add the following entry to the \path{/etc/resolvconf/resolv.conf.d/head}
-file (assuming that \texttt{10.0.2.7} is the IP address of the local DNS server):
+file (\texttt{10.9.0.11} is the IP address of the local DNS server in our setup):
 
 \begin{lstlisting}
-nameserver 10.0.2.7
+nameserver 10.9.0.11
 \end{lstlisting}
 
 The content of the head file will be prepended to the dynamically generated resolver
@@ -246,267 +307,29 @@ $ sudo resolvconf -u
 \end{lstlisting}
 
 
-%----------------------------
-\paragraph{Step 4. Testing.}
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Testing the Lab Setup.}
+
 After configuring the user VM, use the \texttt{dig} command
-to get an IP address from a hostname of your choice. From the response, please provide
-evidences to show that the response is indeed from your server. If you cannot find the
-evidence, your setup is not successful.
+to get the IP address of \texttt{www.attacker32.com}
+and \texttt{ns.attacker32.com}. You should get 
+\texttt{10.9.0.22} and \texttt{10.9.0.21}, respectively. 
+If you do not get this, your lab environment is not 
+set up correctly. 
 
 
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 2: Start the IoT server on the User VM}
-
-In this task, we will start the IoT server on the User VM. 
-Through the web server, users can communicate with the 
-IoT device.
-
-
-%-----------
-\paragraph{Step 1. Install Flask.}
-We used the \texttt{Flask} web framework to develop the
-IoT server. In the current version of the SEED VM, \texttt{Flask} 
-has not been installed, so we need to install it first.
-Use the following command to install \texttt{Flask}.
-
-\begin{lstlisting}
-$ sudo pip3 install Flask==1.1.1
-\end{lstlisting}
-
-
-%-----------
-\paragraph{Step 2. Start the IoT server.}
-The IoT server code is included in \texttt{user\_vm.zip}, which 
-can be downloaded from the lab's website. After unzipping the file,
-enter the \texttt{user\_vm} folder, and start the IoT server 
-by either running the prepared script \texttt{start\_iot.sh} 
-or running \texttt{"flask run"} directly. It should be noted 
-that we use port \texttt{8080} for the IoT server (this port number is 
-hard-coded in the lab setup; changing it to a different number
-will break the lab setup).
-
-
-\begin{lstlisting}
-$ unzip user_vm.zip          # Unzip the file
-$ cd user_vm                 # Go to the user_vm folder
-$ FLASK_APP=rebind_iot flask run --host 0.0.0.0 --port 8080
-\end{lstlisting}
- 
-
-%-----------
-\paragraph{Step 3. Testing the IoT server.}
-To test the IoT server, point the browser to the following URL on the 
-User VM. If everything is setup correctly, we should be able to see 
-a thermostat. We can also change the temperature setting by dragging the 
-sliding bar. Please provide a screenshot in your lab report. 
-
-\begin{lstlisting}
-http://www.seedIoT32.com:8080
-\end{lstlisting}
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3: Start the attack web server on the Attacker VM}
-
-In this lab, the IoT device is only accessible from behind the firewall, i.e., 
-only from the User VM in the lab setup. A typical way to get our 
-malicious code onto the User VM is to get the user to visit 
-our website, so the JavaScript code placed on our web pages 
-can get into the User VM. In this task, we will start 
-a web server to host such web pages. 
-
-%-----------
-\paragraph{Step 1. Install Flask}
-Our malicious web server is also developed based on the 
-\texttt{Flask} web framework, so we need to 
-install it first on the Attacker VM. 
-
-
-\begin{lstlisting}
-$ sudo pip3 install Flask==1.1.1
-\end{lstlisting}
-
-
-%-----------
-\paragraph{Step 2. Start the attacker's web server}
-The attacker's server code is included in \texttt{attacker\_vm.zip}, which
-can be downloaded from the lab's website. After unzipping the file,
-enter the \texttt{attacker\_vm} folder, and start the web server by
-running the prepared script \texttt{start\_webserver.sh} or running
-\texttt{"flask run"} directly. 
-
-
-
-\begin{lstlisting}
-$ unzip attacker_vm.zip      # unzip the file
-$ cd attacker_vm             # Go to the attacker_vm folder
-$ FLASK_APP=rebind_malware flask run --host 0.0.0.0 --port 8080
-\end{lstlisting}
-
-
-
-%-----------
-\paragraph{Step 3. Testing the Attacker's web server.}
+We can now test the attacker's website. 
 Point the browser to the following URL on the Attacker VM, and you should 
 be able to see the attacker's website. 
 Please provide a screenshot in your lab report. 
 
-
 \begin{lstlisting}
-http://localhost:8080
+http://www.attacker32.com
 \end{lstlisting}
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 4: Configure the DNS server on the Attacker VM}
-
-The Attacker VM also serves as the nameserver for the \texttt{attacker32.com}
-domain. The BIND9 server is already running on the Attacker VM, and 
-we need to prepare a zone file for it. A sample 
-zone file is included in the \texttt{attacker\_vm} folder.  Students should 
-change the zone file accordingly, and copy it into the \texttt{/etc/bind} 
-folder. The following shows the content of the sample zone file. The first 
-entry is the default Time-To-Live (\texttt{TTL}) value (seconds) 
-for the response, specifying how long the response can stay in
-the DNS cache. In later tasks, this value may
-need to be modified. 
-
-\begin{lstlisting}
-$TTL 10000
-@       IN      SOA   ns.attacker32.com. admin.attacker32.com. (
-                2008111001
-                8H
-                2H
-                4W
-                1D)
-
-@       IN      NS    ns.attacker32.com.
-
-@       IN      A     10.0.2.8
-www     IN      A     10.0.2.8
-ns      IN      A     10.0.2.8
-*       IN      A     10.0.2.8
-\end{lstlisting}
- 
-
-You need to add the following zone entry to \texttt{/etc/bind/named.conf},
-so the above zone file will be used by the BIND9 server. 
-
-\begin{lstlisting}
-zone "attacker32.com" {
-        type master;
-        file "/etc/bind/attacker32.com.zone";
-};
-\end{lstlisting}
- 
-
-After making changes to the \texttt{named.conf} file, we need to 
-restart the BIND9 server using the following command. 
-
-\begin{lstlisting}
-$ sudo service bind9 restart
-\end{lstlisting}
- 
-
-\paragraph{Testing.} If everything is set up correctly, we can
-try the following \texttt{dig} command to see whether the response we get 
-is the same as what we put in the zone file. Please include your 
-observation (screenshots) in the lab report. 
-
-\begin{lstlisting}
-// Test DNS server (change 10.0.2.8 to the Attacker VM's IP)
-$ dig @10.0.2.8 www.attacker32.com
-\end{lstlisting}
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 5: Configure the Local DNS Server}
-
-
-In the previous task, we have set up the nameserver for the 
-\texttt{attacker32.com} domain (or the customized name chosen
-by students) on the attacker VM. In order for others to find
-this nameserver, we need to register 
-our nameserver with the \texttt{.com} nameserver, so 
-an \texttt{NS} record is added to its database. Without this step,
-DNS requests from others will not be able to reach our nameserver. 
-
-
-To do this, not only do we need to purchase the domain, we also need to 
-run our nameserver on a public computer, not a VM inside 
-a private network (our VM is not 
-accessible from the outside). While all of these are doable, it 
-increases the cost and complexity of the lab setup. We 
-use a much simpler approach to simulate the real-world
-scenario. 
-
-On the Local DNS server, we set up a forward record for 
-the \texttt{attacker32.com} domain, so  
-whenever the local DNS server receives a DNS query for hosts inside this domain, 
-it will simply send the DNS query to the IP 
-address specified in the forward record, instead of going to the root server
-and then the \texttt{.com} server to find out where the nameserver for the 
-\texttt{attacker32.com} domain is.  
-
-
-To add such 
-a record to the Local DNS server, 
-we need to add the following lines 
-to \path{/etc/bind/named.conf} (it should be noted that students should use 
-their own customized domain name, instead of using \texttt{attacker32.com}).
-
-\begin{lstlisting}
-zone "attacker32.com" {
-    type forward;
-    forwarders { 10.0.2.8; };
-};
-\end{lstlisting}
-
-If you copy and paste the above lines from the PDF file, be aware that the 
-quotation symbols may not be correct, which may introduce
-errors to the configuration file. It is better to delete them, and 
-retype the quotation symbols. After configuring BIND9, 
-we need to restart the DNS server using the following command: 
-
-
-\begin{lstlisting}
-$ sudo service bind9 restart
-\end{lstlisting}
-
-%Check the BIND9's log file at \texttt{/var/log/syslog} to
-%see whether there is any error message. 
-
-
-\paragraph{Testing.}
-If we have done Tasks 1-5 correctly, when we run the following 
-\texttt{dig} command on the User VM to find out the IP address of 
-any host inside the \texttt{attacker32.com} domain, we should  
-get the value that is put inside the \texttt{attacker32.com}'s 
-zone file on the attacker VM. 
-
-
-\begin{lstlisting}
-$ dig xyz.attacker32.com
-\end{lstlisting}
- 
-
-
-Please include your observations (screenshots) 
-in the lab report. 
-If you do not get this IP address, you may have done 
-something wrong in one of the steps. You should 
-fix it before proceeding to the next task. 
 
 
 
@@ -520,7 +343,11 @@ We are ready to launch the attack on the IoT device. To help students
 understand how the attack works, we break down
 the attack into several incremental steps. 
 
-\subsection{Task 6. Understanding the Same-Origin Policy Protection}
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1. Understanding the Same-Origin Policy Protection}
 
 In this task, we will do some experiment to understand the 
 same-origin policy protection implemented on browsers. On the User VM,
@@ -529,9 +356,9 @@ different Firefox windows (instead of on three different tabs), so they are all 
 
 
 \begin{lstlisting}
-URL 1:  http://www.seedIoT32.com:8080
-URL 2:  http://www.seedIoT32.com:8080/change
-URL 3:  http://www.attacker32.com:8080/change
+URL 1:  http://www.seedIoT32.com
+URL 2:  http://www.seedIoT32.com/change
+URL 3:  http://www.attacker32.com/change
 \end{lstlisting}
 
  
@@ -569,11 +396,10 @@ Tools -> Web Developer -> Web Console
   
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 7. Defeat the Same-Origin Policy Protection}
+\subsection{Task 2. Defeat the Same-Origin Policy Protection}
 
 
 From the previous task, it seems impossible to
@@ -597,30 +423,41 @@ it first needs to know the IP address of \texttt{www.attacker32.com}.
 A DNS request will be sent out from the User's machine. If the 
 IP address is not cached at the local DNS server, a DNS request will
 eventually be sent to \texttt{attacker32.com}'s  nameserver, which 
-is running on the attacker's VM. 
+is controlled by the attacker. 
 Therefore, the attacker can decide what to put in the response. 
 
 
 \paragraph{Step 1: Modify the JavaScript code.}
-On the attacker VM, the JavaScript code running inside the 
-\url{www.attacker32.com:8080/change} page is 
+On the attacker's web server, the JavaScript code running inside the 
+\url{www.attacker32.com/change} page is 
 stored in the following file: 
-\path{attacker_vm/rebind_malware/templates/js/change.js}. Since this page
+\path{/app/rebind_server/templates/js/change.js}. Since this page
 comes from the \texttt{www.attacker32.com} server, 
 according to the same-origin policy, it can only
 interact with the same server. Therefore, we need to change the first 
-line of the code from \url{http://www.seediot32.com:8080} 
-to the following:
+line of the code from \url{http://www.seediot32.com} 
+to the following (we have installed a simple editor called \texttt{nano}
+in the container):
 
 \begin{lstlisting}
-let url_prefix = 'http://www.attacker32.com:8080'
+let url_prefix = 'http://www.attacker32.com'
 \end{lstlisting}
  
 
-After making the change, restart the web server on the attacker VM, then
-go to the User VM, refresh the page, and click the button again. Do you still see the error
+After making the change, restart the web server container (see the 
+command below). Then go to the User VM, refresh the page, and click the button again. 
+Do you still see the error
 message in the web console? Please explain your observation. 
 
+
+\begin{lstlisting}
+$ docker ps
+...
+78359039627a  www-attacker
+
+$ docker container restart 7835
+\end{lstlisting}
+ 
 
 
 \paragraph{Step 2: Conduct the DNS rebinding.}
@@ -637,14 +474,57 @@ we want.
 
 
 To change the DNS mapping, students can modify the 
-\path{attacker32.com.zone} file. After making the changes,
-run the following command, so the BIND9 server can reload the revised zone data. 
+\path{zone\_attacker32.com} file inside attacker's nameserver container.
+The zone file can be found in 
+the \texttt{/etc/bind} folder. 
+The following shows the content of the zone file. The first 
+entry is the default Time-To-Live (\texttt{TTL}) value (seconds) 
+for the response, specifying how long the response can stay in
+the DNS cache. This value may need to be modified. 
+The following is the content of the zone file:
 
 \begin{lstlisting}
-$ sudo rndc reload attacker32.com
+$TTL 1000
+@       IN      SOA   ns.attacker32.com. admin.attacker32.com. (
+                2008111001
+                8H
+                2H
+                4W
+                1D)
+
+@       IN      NS    ns.attacker32.com.
+
+@       IN      A     10.9.0.22
+www     IN      A     10.9.0.22
+ns      IN      A     10.9.0.21
+*       IN      A     10.9.0.22
+\end{lstlisting}
+
+
+After making the changes to the zone file, 
+run the following command to ask the nameserver 
+to reload the revised zone data. 
+
+\begin{lstlisting}
+# rndc reload attacker32.com
+\end{lstlisting}
+
+
+
+Because of the tasks conducted previously, the DNS mapping for the 
+\texttt{www.attacker32.com} has already been cached by the local
+DNS server, it will not expire until 1000 seconds later.  To 
+shorten the waiting, students are allowed to clean out the cache using the 
+following command (on the local DNS server). However, this can only be 
+conducted before the attack starts. Once the attack starts, students 
+are not allowed to touch the local DNS server. 
+
+\begin{lstlisting}
+// Do it on the local DNS server container
+# rndc flush
 \end{lstlisting}
  
-
+ 
 If both steps in this task are done correctly, clicking the button 
 on the \texttt{change} page from \url{www.attacker32.com} should be able to change
 the thermostat's temperature successfully. Please provide evidence in your report to
@@ -654,7 +534,7 @@ demonstrate your success.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 8. Launch the Attack}
+\subsection{Task 3. Launch the Attack}
 
 In the previous task, the user has to click the button to set the 
 temperature to the dangerously high value. Obviously, it is unlikely that users will 
@@ -663,14 +543,14 @@ a web page for that purpose. It can be accessed using the following URL:
 
 
 \begin{lstlisting}
-http://www.attacker32.com:8080
+http://www.attacker32.com
 \end{lstlisting}
  
 
 Once you have loaded this page into the User VM, you should be able to see a page with a 
 timer, which goes down from 10 to 0. Once it reaches 0, the JavaScript code 
 on this page will send the set-temperature request to 
-\url{http://www.attacker32.com:8080}, and then reset the timer value to 10. 
+\url{http://www.attacker32.com}, and then reset the timer value to 10. 
 Students need to use the DNS rebinding technique, so
 once the timer reaches 0, the thermostat's temperature is set to 
 88 Celsius. 
