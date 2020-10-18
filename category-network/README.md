@@ -16,8 +16,8 @@ The meaning of the Changes column can be found from
 | TCP Attacks         | Minor | Done | [README](TCP_Attacks/README.md)|
 | Mitnick Attack      | Minor | Done | [README](Mitnick_Attack/README.md)| 
 | Local DNS Attack    | | | |
-| Remote DNS Attack   | | | |
-| DNS Rebinding Attack| | | |
+| Remote DNS Attack   | Minor | | |
+| DNS Rebinding Attack| Minor | | |
 | Firewall Exploration| | | |
 | Firewall Evasion    | | | |
 | VPN Tunneling       | | | |
