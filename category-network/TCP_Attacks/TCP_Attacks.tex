@@ -226,7 +226,11 @@ It seems that the victim machine remembers past successful
 connections, and uses this memory when establishing
 future connections with the ``returning'' client. 
 This behavior does not exist in Ubuntu 16.04 
-and earlier versions. 
+and earlier versions. Some users of the SEED labs
+reported that the memory lasts less than 3 hours, i.e.,
+if you keep doing the attack for 3 hours, the attack
+will eventually be successful.
+
 
 We have not figured out whether this is a countermeasure specifically designed
 for the SYN flooding attack or this is just a side effect caused by
