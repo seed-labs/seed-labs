@@ -34,8 +34,6 @@ Updated on July 26, 2020
 \section{Lab Overview}
 
 
-
-
 The objective of this lab is for students to gain the first-hand experience
 on the remote DNS cache poisoning attack, also called the Kaminsky
 DNS attack. DNS (Domain Name System) is the
@@ -63,12 +61,6 @@ the local attack. This lab covers the following topics:
 \end{itemize}
 
 
-\vspace{0.1in}
-\newnote{This lab was revised on July 26, 2020. 
-The setup part has been modified significantly, and it is now 
-part of lab tasks. As results, the task numbers have changed.}
-
-
 \paragraph{Readings and videos.}
 Detailed coverage of the DNS protocol and attacks can be found in the following:
 
@@ -78,7 +70,7 @@ Detailed coverage of the DNS protocol and attacks can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 \vspace{0.2in}
@@ -117,25 +109,45 @@ The main target for DNS cache poisoning attacks is
 local DNS server.  Obviously, it
 is illegal to attack a real server, so we need to set up our own DNS
 server to  conduct the attack experiments. The lab
-environment needs three separate machines:
-one for the victim, one for the DNS server, and the other for the attacker.
-We will run these three virtual machines on a single host machine.
-All these VMs will run our pre-built \ubuntu VM image.
-Figure~\ref{dns:fig:environment} illustrates the setup of the experiment environment. 
-For the VM network setting, if you
-are using {\tt VirtualBox}, please use {\tt "NAT Network"} as the 
-network adapter for each VM.  If you are using {\tt Vmware}, the default
-{\tt "NAT"} setting is good enough.
-We put all these VMs on the same LAN only for the sake of simplicity. 
+environment needs four separate machines:
+one for the victim, one for the DNS server, and two for the attacker.
+The lab environment setup is illustrated in the following.
+
+\begin{lstlisting}[backgroundcolor=]
+ +------------+   +------------+  +------------+  +---------------+
+ | Attack VM  |   |  Container |  |  Container |  |  Container    |
+ |            |   |   (user)   |  |  Local DNS |  |attacker32.com |
+ |            |   |            |  |   Server   |  |  nameserver   |
+ |  10.9.0.1  |   |  10.9.0.5  |  |  10.9.0.53 |  |  10.9.0.153   |
+ +-----+------+   +------+-----+  +------+-----+  +------+--------+
+       |                 |               |               |
+       |                 |               |               |
+-------+-----------------+---------------+---------------+-------
+           Network  10.9.0.0/24
+
+\end{lstlisting}
+
+Only the attack machine will be using VM; all the others are containers. 
+We put all these machines on the same LAN only for the sake of simplicity. 
 Students are not allowed to exploit this fact in their attacks; 
 they should treat the attacker machine as a remote machine, 
 i.e., the attacker cannot sniff packets on the LAN.
+Please download the
+\texttt{labsetup.zip} file to your VM from the lab's website,
+and run the following
+command to set up the lab environment:
 
 
-In the following sections, we assume that the user machine's IP address is
-{\tt 10.0.2.6}, the local DNS Server's IP is {\tt 10.0.2.7} and the attacker
-machine's IP is {\tt 10.0.2.8}. We call the Local DNS server
-\texttt{Apollo} in this document. 
+\begin{lstlisting}
+$ unzip labsetup.zip
+$ cd labsetup
+$ docker-compose build
+$ docker-compose up
+
+// When the lab is finished, use the following command to
+// tear down the setup (doing it from another window)
+$ docker-compose down
+\end{lstlisting}
 
 
 % -------------------------------------------
@@ -162,7 +174,7 @@ the DHCP is to add the following entry to the \path{/etc/resolvconf/resolv.conf.
 file (assuming that \texttt{10.0.2.7} is the IP address of the local DNS server):
 
 \begin{lstlisting}
-nameserver 10.0.2.7
+nameserver 10.9.0.53
 \end{lstlisting}
 
 
@@ -176,123 +188,41 @@ $ sudo resolvconf -u
 \end{lstlisting}
 
 
-
-\paragraph{Testing:}
-After you finish configuring the user machine, use the \texttt{dig} command
-to get an IP address from a hostname of your choice. From the response, please provide
-evidences to show that the response is indeed from your server. If you cannot find the
-evidence, your setup is not successful.
-
-
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2: Configure the Local DNS Server (the Server VM)} 
+\subsection{Configure the Local DNS Server} 
 
-
-For the local DNS server, we need to run a DNS server program.  The most
-widely used DNS server software is called BIND~(Berkeley Internet Name
-Domain), which, as the name suggests, was originally designed at the
-University of California Berkeley in the early 1980s.  The latest version
-of BIND is BIND 9, which was first released in 2000. We will show how to
-configure BIND 9 for our lab environment.
-The BIND 9 server program is already installed in our pre-built
-\ubuntu VM image and it is automatically started when the 
-system boots up.
-
-
+The local DNS server container has already been configured, 
+so no action is needed. 
+We run the BIND 9 DNS server program on the local DNS server. 
 BIND 9 gets its configuration from a file called \path{/etc/bind/named.conf}. This file
 is the primary configuration file, and it usually contains several \texttt{"include"}
 entries, i.e., the actual configurations are stored in those included files. One of the
-included files is called \path{/etc/bind/named.conf.options}. This is where we typically set up
-the configuration options. 
+included files is called \path{/etc/bind/named.conf.options}. 
+This is where the actual configuration is set. 
+
+\paragraph{Simplification.}
+DNS servers now randomize
+the source port number in their DNS queries; this makes the attacks much more
+difficult. Unfortunately, many DNS servers still use predictable source
+port number.  For the sake of simplicity in this lab, we fix the
+source port number to  {\tt 33333} in the 
+configuration file. 
+
+\paragraph{Turning off DNSSEC.} 
+DNSSEC is introduced to protect against spoofing attacks on DNS servers.
+To show how attacks work
+without this protection mechanism, we have turned off the protection 
+in the configuration file. 
 
 
-\paragraph{Step 1: Remove the {\tt example.com} Zone.}
-If you did our ``Local DNS Attack Lab'', you have probably configured the
-local DNS server {\tt Apollo} to host the {\tt example.com} domain. In this lab,
-this DNS server will not host that domain, so please remove its
-corresponding zone from {\tt /etc/bind/named.conf}.
-
-
-
-\paragraph{Step 2: Set up a forward zone.}
-The main purpose of the Kaminsky attack in this lab is to
-get the victim to use \texttt{ns.attacker32.com} as
-the nameserver of the \texttt{example.com} domain. Once the attack
-succeeds, all future queries of the \texttt{example.com} domain on the victim
-DNS server will be sent to \texttt{ns.attacker32.com}. 
-
-
-
-In the real world, the local DNS server needs to 
-find the IP address of \texttt{ns.attacker32.com} first. 
-It will go through the root server, the \texttt{com} server,
-and eventually get a response from the actual 
-nameserver that hosts the \texttt{attacker32.com} domain.  
-Once the local DNS server gets the IP address, it will send
-the query to this IP address. That is where students will have problems,
-because students do not own this \texttt{attacker32.com} domain (it is
-actually owned by Wenliang Du, the author of this lab), so students will not 
-be able to configure the DNS server running on \texttt{ns.attacker32.com}.
-
-
-To solve this problem, each student can purchase his or her own domain, and then
-use the purchased name in the attack, instead of using \texttt{attacker32.com}.
-This way, students can configure their DNS
-servers to answer queries. The cost of this approach is too high for students. 
-
-
-Fortunately, BIND9 allows us to add a forward zone in the DNS configuration. 
-Add the following zone entry to the \path{/etc/bind/named.conf} file. 
-This entry indicates that for all queries of the \texttt{attacker32.com}
-domain, forward the queries to \texttt{10.0.2.8}. 
-This is equivalent to using \texttt{10.0.2.8} as the nameserver 
-for the \texttt{attacker32.com} domain. Therefore, with this entry,
-the local DNS server will not try to find the IP address of 
-\texttt{attacker32.com}'s nameserver; it already has the IP address. 
-Please do not forget to include all those semicolons, or the 
-configuration will be invalid.
-
-
-\begin{lstlisting}
-zone "attacker32.com" {
-    type forward;
-    forwarders {
-        10.0.2.8;
-    };
-};
-\end{lstlisting}
- 
-
-
-\paragraph{Step 3: Configure a few options.} 
-In our SEED VM, we have already performed all the configuration
-in this step. We just want to show what we have done; no action is
-needed from students if the SEED VM is used. 
-The configuration is made in the \path{/etc/bind/named.conf.options}
-file.
-
-
-\begin{itemize} 
-\item 
-\textbf{Configure where to dump the DNS cache.} 
-The following option specifies where the cache content should be dumped to
-if BIND is asked to dump its cache.  If this option is not specified, BIND
-dumps the cache to a default file called
-\path{/var/cache/bind/named_dump.db}.
-
-\begin{lstlisting}
-  options {
-      dump-file "/var/cache/bind/dump.db";
-  };
-\end{lstlisting}
-
+\paragraph{DNS cache.}
+During the attack, we need to inspect the DNS cache on the local DNS server.
 The following two commands are related to DNS cache.
-The first command dumps the content of the cache to the file specified above, and
-the second command clears the cache.
-
+The first command dumps the content of the cache to the file 
+\path{/var/cache/bind/dump.db}, 
+and the second command clears the cache.
 
 \begin{lstlisting}
 $ sudo rndc dumpdb -cache    // Dump the cache to the specified file
@@ -300,76 +230,18 @@ $ sudo rndc flush            // Flush the DNS cache
 \end{lstlisting}
 
 
-\item 
-\textbf{Turn off DNSSEC.} 
-DNSSEC is introduced to protect against spoofing attacks on DNS servers.
-To show how attacks work
-without this protection mechanism, we need to turn the protection off.
-This is done by modifying the \path{named.conf.options} file:
-comment out the {\tt dnssec-validation} entry, and
-add a {\tt dnssec-enable} entry.
-
-\begin{lstlisting}
-  options {
-      # dnssec-validation auto;
-      dnssec-enable no;
-  };
-\end{lstlisting}
-
-
-\item 
-\textbf{Fix the Source Ports.}
-DNS servers now randomize
-the source port number in their DNS queries; this makes the attacks much more
-difficult. Unfortunately, many DNS servers still use predictable source
-port number.  For the sake of simplicity in this lab, we assume that the
-source port number is a fixed number. We can set the source port for all
-DNS queries to {\tt 33333}. This can be done by adding the following option
-to the file {\tt /etc/bind/named.conf.options}:
-
-\begin{lstlisting}
-   query-source port 33333
-\end{lstlisting}
-
-\end{itemize}
-
-
-
-\paragraph{Step 4: Restart DNS server.}
-We can now restart the DNS server using the following command. Every time
-a modification is made to the DNS configuration, the DNS server needs to be
-restarted. The following command will start or restart the \texttt{BIND 9}
-DNS server.
-
-\begin{lstlisting}
-$ sudo service bind9 restart
-\end{lstlisting}
-
-
-
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3: Configure the Attacker VM}
+\subsection{Configure the Attacker's Nameserver}
 
-On the Attacker VM, we will host two zones. One is 
+
+The attacker's nameserver has already been configured, 
+so no action is needed. 
+On the attacker's nameserver, we host two zones. One is 
 the attacker's legitimate zone \texttt{attacker32.com}, and the other 
-is the fake \texttt{example.com} zone.  
-
-
-\begin{itemize} 
-\item Step 1: Download the \texttt{attacker32.com.zone} and 
-              \texttt{example.com.zone} files from the lab's website. 
-
-\item Step 2: Modify these files accordingly based on students'
-              actual network setup (e.g., some IP addresses need to be
-	      changed). 
-
-\item Step 3: Copy these two files to the \texttt{/etc/bind} folder. 
-
-\item Step 4: Add the following entries to \path{/etc/bind/named.conf}:
-
+is the fake \texttt{example.com} zone. The zones are 
+configured in \path{/etc/bind/named.conf}:
 
 \begin{lstlisting}
 zone "attacker32.com" {
@@ -384,15 +256,11 @@ zone "example.com" {
 \end{lstlisting}
 
 
-\item Step 5: Restart the DNS server.
-\end{itemize} 
- 
-
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Testing the Setup}
+\subsection{Testing the Setup}
 
 From the User VM, we will run a series of commands to ensure 
 that our setup is correct. 
