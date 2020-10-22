@@ -15,11 +15,13 @@ The meaning of the Changes column can be found from
 | IP/ICMP             | | | | 
 | TCP Attacks         | Minor | Done | [README](TCP_Attacks/README.md)|
 | Mitnick Attack      | Minor | Done | [README](Mitnick_Attack/README.md)| 
-| Local DNS Attack    | | | |
-| Remote DNS Attack   | Minor | | |
-| DNS Rebinding Attack| Minor | | |
+| Local DNS Attack    | Minor | | [README](DNS_Local/README.md)|
+| Remote DNS Attack   | Minor | | [README](DNS_Remote/README.md)|
+| DNS Rebinding Attack| Minor | | [README](DNS_Rebinding/README.md)|
+| DNS-in-a-box        |  --   | -- | Designed for Ubuntu 20.04 |
+| DNSSEC              |  --   | -- | Designed for Ubuntu 20.04 |
 | Firewall Exploration| | | |
-| Firewall Evasion    | | | |
-| VPN Tunneling       | | | |
-| VPN Lab             | | | |
+| Firewall Evasion    | | |[README](Firewall_VPN/README.md) |
+| VPN Tunneling       | | |[README](VPN_Tunnel/README.md) |
+| VPN Lab             | | |[README](VPN/README.md)|
 | Heartbleed Attack   | | | |
