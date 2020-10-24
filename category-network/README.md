@@ -20,7 +20,7 @@ The meaning of the Changes column can be found from
 | DNS Rebinding Attack| Minor | | [README](DNS_Rebinding/README.md)|
 | DNS-in-a-box        |  --   | -- | Designed for Ubuntu 20.04 |
 | DNSSEC              |  --   | -- | Designed for Ubuntu 20.04 |
-| Firewall Exploration| | | |
+| Firewall Lab        | Major | |[README](Firewall/README.md)|
 | Firewall Evasion    | | |[README](Firewall_VPN/README.md) |
 | VPN Tunneling       | | |[README](VPN_Tunnel/README.md) |
 | VPN Lab             | | |[README](VPN/README.md)|
