@@ -10,19 +10,22 @@
 \input{../../common-files/copyright}
 
 \newcommand{\telnet} {\texttt{telnet}\xspace}
+\newcommand{\iptables}{\texttt{iptables}\xspace}
+\newcommand{\netfilter}{\texttt{netfilter}\xspace}
+\newcommand{\Netfilter}{\texttt{Netfilter}\xspace}
 
 \newcommand{\firewallFigs}{./Figs}
-\lhead{\bfseries SEED Labs -- Linux Firewall Exploration Lab}
+\lhead{\bfseries SEED Labs -- Firewall Lab}
 
 \begin{document}
 
 
 
 \begin{center}
-{\LARGE Linux Firewall Exploration Lab}
+{\LARGE Firewall Lab}
 \end{center}
 
-\seedlabcopyright{2006 - 2016}
+\seedlabcopyright{2006 - 2020}
 
 
 
@@ -31,37 +34,31 @@
 % ******************************************* 
 \section{Overview}
 
-The learning objective of this lab is for students to gain the 
-insights on how firewalls work 
-by playing with firewall software and implement a simplified 
-packet filtering firewall.
-Firewalls have several types; in this lab, we focus on
-\textit{packet filter}.
-Packet filters inspect packets, and decide 
+The learning objective of this lab is two-fold: learning
+how firewalls work, and setting up a simple firewall
+for a network. Students will first 
+implement a simple stateless packet-filtering firewall, 
+which inspects packets, and decides 
 whether to drop or forward a packet based on firewall rules. 
-Packet filters are usually {\em stateless}; they filter each packet based 
-only on the information contained in that packet, without paying 
-attention to whether a packet is part of an existing stream of traffic.
-Packet filters often use a combination of a packet's source and 
-destination address, its protocol, and, for TCP and UDP traffic, 
-port numbers. 
-%Unlike packet filters, which work at the
-%network and transport layers, application firewalls work at 
-%the application layer. A widely used application firewall 
-%is web proxy, which is primarily used for egress filtering of 
-%web traffic.  
-In this lab, students will play with 
-this type of firewall, and also through the implementation of some 
-of the key functionalities, they can understand how 
-firewalls work. Moreover, students will learn how to use SSH tunnels to bypass firewalls. 
+Through this implementation task, students can get the 
+basic ideas on how firewall works.
+
+
+Actually, Linux already has a built-in firewall, also based on 
+\texttt{netfilter}. This firewall is called \iptables. 
+Students will be given a simple network topology, and are asked to
+use \iptables to set up firewall rules to protect the network. 
+Students will also be exposed to several other interesting 
+applications of \iptables. 
 This lab covers the following topics:
+
 
 \begin{itemize}[noitemsep]
 \item Firewall
 \item Netfilter
 \item Loadable kernel module
-\item Bypassing firewalls using SSH tunnel 
-\item How to bypassing firewalls using VPN is covered in a separate lab.
+\item Using \iptables to set up firewall rules
+\item Various applications of \iptables
 \end{itemize}
 
 
@@ -74,71 +71,55 @@ Detailed coverage of firewalls can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
+
 
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Tasks}
+\section{Environment Setup}
 
+
+We will write a separate document regarding environment
+setup, for the common part, we refer students to 
+read the document (read Section 1 and 3). 
+In this document, we provide additional setup and 
+background that are specific to this lab. 
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1: Using Firewall}
+\subsection{Useful Commands}
 
-\linux has a tool called {\tt iptables}, which is essentially a firewall.
-In this task, the objective is to use {\tt iptables} to set up some firewall policies, and 
-observe the behaviors of your system after the policies become effective.
-You need to set up at least two VMs, one called Machine A, and other called 
-Machine B. You run the firewall on your Machine A. Basically, we use 
-{\tt iptables} as a personal firewall. Optionally, if you have more VMs, you can 
-set up a firewall at your router, so it can protect a network, instead of 
-just one single computer. After you set up the two VMs, you should perform
-the following tasks: 
-
-\begin{itemize}
-\item Prevent A from doing \telnet to Machine B.
-\item Prevent B from doing \telnet to Machine A.
-\item Prevent A from visiting an external web site. You can choose any web
-site that you like to block, but keep in mind, some web servers have multiple
-IP addresses. 
-\end{itemize}
-
-
-You can find the manual of {\tt iptables} by typing {\tt "man iptables"} or search it
-online. We list some commonly used commands 
-in the following:
+For example, there are some commands that are more specific
+to this lab, we will provide them here. 
 
 
 \begin{lstlisting}
-// List all the rules in the filter table
-$ sudo iptables -L
-$ sudo iptables -L --line-numbers
-
-// Delete all the rules in the filter table
-$ sudo iptables -F
-
-// Delete the 2nd rule in the INPUT chain of the filter table 
-$ sudo iptables -D INPUT 2
-
-// Drop all the incoming packets that satisfy the <rule>
-$ sudo iptables -A INPUT <rule>  -j DROP
+// Enable IP forwarding 
+$ sudo sysctl ...
 \end{lstlisting}
  
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 2: Implementing a Simple Firewall} 
 
-The firewall you used in the previous task is a packet filtering 
-type of firewall. The main part of this type of firewall is the filtering part, 
-which inspects each incoming and outgoing packets, and enforces the firewall policies 
+ 
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 1: Implementing a Simple Firewall} 
+
+
+In this task, we will implement a simple packet filtering 
+type of firewall, which 
+inspects each incoming and outgoing packets, and enforces the firewall policies 
 set by the administrator. Since the packet 
 processing is done within the kernel, the filtering must also be 
 done within the kernel. Therefore, it seems that implementing such
@@ -148,283 +129,30 @@ the kernel. The modern \linux
 operating systems provide several new mechanisms 
 to facilitate the manipulation of packets without rebuilding
 the kernel image. These two mechanisms are 
-\textit{Loadable Kernel Module} ({\tt LKM}) and {\tt Netfilter}.
- 
+\textit{Loadable Kernel Module} (\texttt{LKM}) and \texttt{Netfilter}.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.a: Implement a Simple Kernel Module}
+
 
 {\tt LKM} allows us to add a new module to the kernel at the runtime. 
 This new module enables us to extend the functionalities of the kernel,
 without rebuilding the kernel or even rebooting the computer. 
-The packet filtering part of a firewall can be implemented 
-as an LKM. However, this is not enough. In order for the filtering module to 
-block incoming/outgoing packets, the module 
-must be inserted into the packet processing path. 
-This cannot be easily done in the past before 
-the {\tt Netfilter} was introduced into the \linux.
+The packet filtering part of a firewall can be implemented as an LKM. 
+In this task, we will get familiar with LKM.
 
-
-{\tt Netfilter} is designed to facilitate the manipulation of 
-packets by authorized users. {\tt Netfilter} achieves this 
-goal by implementing a number of {\em hooks} in the 
-\linux kernel. These hooks are inserted into various places, 
-including the packet incoming and outgoing paths. 
-If we want to manipulate the incoming packets, we simply
-need to connect our own programs (within LKM) to the 
-corresponding hooks. Once an incoming packet arrives, 
-our program will be invoked. Our program can decide 
-whether this packet should be blocked or not; moreover,
-we can also modify the packets in the program.
-
-
-In this task, you need to use LKM and {\tt Netfilter} to implement
-the packet filtering module.  This module will fetch 
-the firewall policies from a data structure, and use the 
-policies to decide whether packets should be blocked or not.
-To make your life easier, so you can focus on the filtering part, 
-the core of firewalls, we allow you to hardcode your firewall policies 
-in the program. You should support at least five different 
-rules, including the ones specified in the previous task. 
-Guidelines on how to use \texttt{Netfilter} can be 
-found in Section~\ref{firewall:sec:guidelines}. In addition, 
-Chapter 14 (\S 14.4) of the SEED book provides more detailed explanation on \texttt{Netfilter}. 
-
-
-\paragraph{Note for Ubuntu 16.04 VM:}
-The code in the SEED book was developed in Ubuntu 12.04. It needs to be changed slightly 
-to work in Ubuntu 16.04. The change is in the definition of the 
-callback function \texttt{telnetFilter()}, because
-the prototype of \texttt{Netfilter}'s callback function has been changed in
-Ubuntu 16.04. See the difference in the following:
-
-
-\begin{lstlisting}
-// In Ubuntu 12.04
-unsigned int telnetFilter(unsigned int hooknum, struct sk_buff *skb,
-           const struct net_device *in, const struct net_device *out,
-           int (*okfn)(struct sk_buff *)) 
-
-// In Ubuntu 16.04
-unsigned int telnetFilter(void *priv, struct sk_buff *skb,
-                          const struct nf_hook_state *state)
-\end{lstlisting}
- 
-
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3: Evading Egress Filtering}
-
-Many companies and schools enforce egress filtering, which blocks users
-inside of their networks from reaching out to certain web sites or Internet
-services. They do allow users to access other web sites. 
-In many cases, this type of firewalls inspect 
-the destination IP address and port number in the outgoing packets. If 
-a packet matches the restrictions, it will be dropped. 
-They usually do not conduct deep packet inspections (i.e., looking into
-the data part of packets) due to the performance reason. 
-In this task, we show how such egress filtering can be bypassed using
-the tunnel mechanism. There are many ways to establish tunnels; 
-in this task, we only focus on SSH tunnels.
-
-You need two VMs A and B for this task (three will be better). Machine A is running 
-behind a firewall (i.e., inside the company or school's network), and Machine B 
-is outside of the firewall.
-Typically, there is a dedicated machine that runs the firewall, but
-in this task, for the sake of convenience, you can run the firewall 
-on Machine A.
-You can use {\tt iptables} to set up the following
-two firewall rules:
-
-
-\begin{itemize}
-\item \underline{Block all the outgoing traffic to external telnet servers.}  In
-reality, the servers that are blocked are usually game servers or other
-types of servers that may affect the productivity of employees. In this 
-task, we use the telnet server for demonstration purposes. You can run
-the telnet server on Machine B.
-If you have a third VM, Machine C, you can run the 
-telnet server on Machine C. 
-
-
-\item \underline{Block all the outgoing traffic to {\tt www.facebook.com},} so employees 
-(or school kids) are not distracted during their work/school hours. Social
-network sites are commonly blocked by companies and schools. After 
-you set up the firewall, launch your Firefox browser, and try to connect to Facebook, and report
-what happens. If you have already visited Facebook before using this 
-browser, you need to clear all the caches using 
-Firefox's menu: 
-\texttt{Edit -> Preferences -> Privacy \& Security (left pane) -> Clear History (Button on right)}; 
-otherwise, the cached
-pages may be displayed. If everything is set up properly, you 
-should not be able to see Facebook pages. 
-It should be noted that Facebook has many IP addresses, it can 
-change over the time. Remember to check whether the address is 
-still the same by using {\tt ping} or {\tt dig} command. If 
-the address has changed, you need to update your firewall rules. 
-You can also choose web sites with static IP addresses, instead of using Facebook.
-For example, most universities' web servers use static IP addresses (e.g. 
-{\tt www.syr.edu}); for demonstration purposes, 
-you can try block these IPs, instead of Facebook. 
-
-\end{itemize}
-
-
-
-%--------------------------------
-\paragraph{Task 3.a: Telnet to Machine B through the firewall}
-
-
-\begin{figure}[htb]
-\begin{center}
-\includegraphics[width=0.7\textwidth]{\firewallFigs/ssh_tunnel.pdf}
-\end{center}
-\caption{SSH Tunnel Example}
-\label{firewall:fig:sshtunnel}
-\end{figure}
- 
-
-To bypass the firewall, we can establish an SSH tunnel between
-Machine A and B, so all the telnet traffic will go through this tunnel
-(encrypted), evading the inspection. Figure~\ref{firewall:fig:sshtunnel}
-illustrates how the tunnel works. 
-The following command 
-establishes an SSH tunnel between the localhost (port 8000) and 
-machine B (using the default port 22); when packets come out of B's end, it will
-be forwarded to Machine C's port 23 (\telnet port). If you only have two VMs,
-you can use one VM for both Machine B and Machine C.
-
-
-\begin{lstlisting}
-$ ssh -L 8000:Machine_C_IP:23  seed@Machine_B_IP
-
-// We can now telnet to Machine C via the tunnel:
-$ telnet localhost 8000
-\end{lstlisting}
-
-When we \telnet to \texttt{localhost}'s port \texttt{8000},  
-SSH will transfer all our TCP packets from
-one end of the tunnel on \texttt{localhost:8000} to the other end of the tunnel
-on Machine B; from there,
-the packets will be forwarded to \texttt{Machine\_C:23}. Replies from Machine C will
-take a reverse path, and eventually reach our telnet client.
-Essentially, we are able to telnet to Machine C.
-Please describe your observation and explain how you are able to 
-bypass the egress filtering. You should use Wireshark to see
-what exactly is happening on the wire.
-
-
-
-%--------------------------------
-\paragraph{Task 3.b: Connect to Facebook using SSH Tunnel.}
-To achieve this goal, we can use the approach similar to that in 
-Task 3.a, i.e., establishing a tunnel between your localhost:port
-and Machine B, and ask B to forward packets to Facebook. To do 
-that, you can use the following command to set up the tunnel:
-{\tt "ssh -L 8000:FacebookIP:80 ..."}. 
-We will not use this approach, and instead, we 
-use a more generic approach, called dynamic port forwarding, instead of a static one
-like that in Task 3.a. To do that, we only specify the local
-port number, not the final destination. When Machine B receives
-a packet from the tunnel, it will dynamically decide where it should 
-forward the packet to based on the destination information of
-the packet.
-
-
-\begin{lstlisting}[backgroundcolor=]
-$ ssh -D 9000 -C seed@machine_B
-\end{lstlisting}
-
-
-\begin{figure}[htb]
-  \begin{center}
-     \includegraphics[width=0.8\textwidth]{\firewallFigs/SOCKS_config.pdf}
-  \end{center}
-  \caption{Configure the SOCKS Proxy}
-  \label{firewall:fig:socks_config}
-\end{figure}
-
-
-
-Similar to the telnet program, which connects {\tt localhost:9000}, 
-we need to ask Firefox to connect to {\tt localhost:9000} every time it 
-needs to connect to a web server, so the traffic can 
-go through our SSH tunnel. To achieve that, we can tell Firefox to
-use {\tt localhost:9000} as its proxy. 
-To support dynamic port forwarding, we need a special type of proxy 
-called \textit{SOCKS proxy}, which is supported by most browsers. 
-To set up the proxy in Firefox, go to the menu bar, 
-click \texttt{Edit -> Preferences}, 
-scroll down to \texttt{Network Proxy},  and
-click the \texttt{Settings} button.
-Then follow Figure~\ref{firewall:fig:socks_config}.
-After the setup is done, please do the following:
-
-
-\begin{enumerate}
-\item Run Firefox and go visit the Facebook page.
-Can you see the Facebook page? 
-Please describe your observation. 
-
-\item After you get the facebook page, break the SSH tunnel, 
-clear the Firefox cache, and try the connection again. 
-Please describe your observation. 
-
-\item Establish the SSH tunnel again and connect to Facebook. 
-Describe your observation. 
-
-\item Please explain what you have observed, especially
-on why the SSH tunnel can help bypass the egress filtering. 
-You should use Wireshark to see
-what exactly is happening on the wire. Please describe your 
-observations and explain them using the packets that you
-have captured.
-\end{enumerate}
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 4: Evading Ingress Filtering}
-
-
-Machine A runs a web server behind a firewall; so only the machines 
-in the internal network can access this web server. 
-You are working from home and needs to access this internal web server. 
-You do not have VPN, but you have SSH, which is considered as 
-a poor man's VPN. You do have an account on Machine A (or another internal machine behind the firewall), 
-but the firewall also blocks incoming SSH connection, so you cannot SSH into any machine on the
-internal network. Otherwise, you can use the same technique from Task 3 to access the web server. 
-The firewall, however, does not block outgoing SSH connection, i.e., 
-if you want to connect to an outside SSH server, you can still do that. 
-
-
-The objective of this task is to be able to access the web server on Machine A from
-outside.  We will use two machines to emulate the setup. Machine A is the internal computer,
-running the protected web server; Machine B is the outside machine at home. 
-On Machine A, we block Machine B from accessing its port 80 (web server) and 22 (SSH server).
-You need to set up a reverse SSH tunnel on Machine A, so once you get home, you can 
-still access the protected web server on A from home. 
-
-
-
-
-% *******************************************
-% SECTION
-% ******************************************* 
-\section{Guidelines}
-\label{firewall:sec:guidelines}
-
-
-\subsection{Loadable Kernel Module}
 
 The following is a simple loadable kernel module. It prints out 
-{\tt "Hello World!"} when the module is loaded; when the module
-is removed from the kernel, it prints out {\tt "Bye-bye World!"}.
+\texttt{"Hello World!"} when the module is loaded; when the module
+is removed from the kernel, it prints out \texttt{"Bye-bye World!"}.
 The messages are not printed out on the screen; they are 
-actually printed into the {\tt /var/log/syslog} file. You can
-use {\tt dmesg | tail -10} to read the last 10 lines of message.
+actually printed into the \texttt{/var/log/syslog} file. You can
+use \texttt{"dmesg | tail -10"} to read the last 10 lines of 
+the messages. 
 
 
 \begin{lstlisting}
@@ -446,8 +174,9 @@ void cleanup_module(void)
 We now need to create {\tt Makefile}, which includes the following
 contents (the above program is named {\tt hello.c}). Then 
 just type {\tt make}, and the above program will be compiled
-into a loadable kernel module.
-
+into a loadable kernel module (when you copy and paste the following
+into \texttt{Makefile}, make sure replace the spaces before the 
+\texttt{make} commands with a tab).
 
 
 \begin{lstlisting}
@@ -462,28 +191,62 @@ clean:
 
 
 Once the module is built by typing {\tt make}, you can use the following commands to 
-load the module, list all modules, and remove the module:
-
-\begin{lstlisting}
- $ sudo insmod mymod.ko        (inserting a module)
- $ lsmod                       (list all modules)
- $ sudo rmmod mymod.ko         (remove the module)
-\end{lstlisting}
-
+load the module, list all modules, and remove the module. 
 Also, you can use {\tt modinfo mymod.ko} to show information about a 
 Linux Kernel module.
 
+\begin{lstlisting}
+$ sudo insmod mymod.ko        (inserting a module)
+$ lsmod                       (list all modules)
+$ sudo rmmod mymod.ko         (remove the module)
+$ dmesg | tail -10            (check the messages)
+\end{lstlisting}
+
+
+\paragraph{Task.} Please compile and run this simple kernel module on 
+your VM and show your running results in the lab report. 
 
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{A Simple Program that Uses Netfilter}
+\subsection{Task 1.b: Implement a Simple Firewall Using \texttt{Netfilter}}  
+
+
+In this task, we will write our packet filtering program
+as an LKM, and then insert in into the packet processing path
+inside the kernel. This cannot be easily done in the past before 
+the \Netfilter was introduced into the \linux.
+
+{\tt Netfilter} is designed to facilitate the manipulation of 
+packets by authorized users. {\tt Netfilter} achieves this 
+goal by implementing a number of {\em hooks} in the 
+\linux kernel. These hooks are inserted into various places, 
+including the packet incoming and outgoing paths. 
+If we want to manipulate the incoming packets, we simply
+need to connect our own programs (within LKM) to the 
+corresponding hooks. Once an incoming packet arrives, 
+our program will be invoked. Our program can decide 
+whether this packet should be blocked or not; moreover,
+we can also modify the packets in the program.
+
+
+In this task, you need to use LKM and {\tt Netfilter} to implement
+the packet filtering module.  This module will fetch 
+the firewall policies from a data structure, and use the 
+policies to decide whether packets should be blocked or not.
+To make your life easier, so you can focus on the filtering part, 
+the core of firewalls, we allow you to hardcode your firewall policies 
+in the program. You should support at least three different 
+rules. Guidelines on how to use \texttt{Netfilter} can be 
+found in Chapter 17 of the SEED book.
+
 
 Using {\tt Netfilter} is quite straightforward. All we need to do
 is to hook our functions (in the kernel module) to the corresponding
-{\tt Netfilter} hooks. Here we show an example:
+{\tt Netfilter} hooks. Here we show an example (the code can
+be downloaded from the lab's website):
 
 
 \begin{lstlisting}
@@ -491,6 +254,8 @@ is to hook our functions (in the kernel module) to the corresponding
 #include <linux/kernel.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
+#include <linux/ip.h>
+#include <linux/tcp.h>
 
 
 /* This is the structure we shall use to register our function */
@@ -504,9 +269,23 @@ unsigned int hook_func(void *priv, struct sk_buff *skb,
     /* This is where you can inspect the packet contained in
        the structure pointed by skb, and decide whether to accept 
        or drop it. You can even modify the packet */
-
-    // In this example, we simply drop all packets
-    return NF_DROP;           /* Drop ALL packets */
+ 
+    struct iphdr *iph;
+    struct tcphdr *tcph;
+    
+    iph = ip_hdr(skb);
+    tcph = (void *)iph+iph->ihl*4;
+ 
+    if (iph->protocol == IPPROTO_TCP && tcph->dest == htons(23)) {
+      printk(KERN_INFO "Dropping telnet packet to %d.%d.%d.%d\n",
+          ((unsigned char *)&iph->daddr)[0],
+          ((unsigned char *)&iph->daddr)[1],
+          ((unsigned char *)&iph->daddr)[2],
+          ((unsigned char *)&iph->daddr)[3]);
+      return NF_DROP;       /* Drop this packet */
+    } else {
+      return NF_ACCEPT;     /* Accept this packet */
+    }
 }
 
 /* Initialization routine */
@@ -517,16 +296,501 @@ int init_module()
     nfho.pf       = PF_INET;
     nfho.priority = NF_IP_PRI_FIRST;   /* Make our function first */
 
-    nf_register_hook(&nfho);
+    // nf_register_hook(&nfho);               // For Ubuntu 16.04 VM
+    nf_register_net_hook(&init_net, &nfho);   // For Ubuntu 20.04 VM
     return 0;
 }
 
 /* Cleanup routine */
 void cleanup_module()
 {
-    nf_unregister_hook(&nfho);
+    // nf_unregister_hook(&nfho);             // For Ubuntu 16.04 VM
+    nf_unregister_net_hook(&init_net, &nfho); // For Ubuntu 20.04 VM
 }
 \end{lstlisting}
+
+
+\paragraph{Note for Ubuntu 20.04 VM:}
+The code in the SEED book was developed in Ubuntu 16.04. It needs to be changed slightly 
+to work in Ubuntu 20.04. The change is in the hook registration and 
+unregistration APIs. See the difference in the following:
+
+
+\begin{lstlisting}
+// Hook registration:
+  nf_register_hook(&nfho);                  // For Ubuntu 16.04 VM
+  nf_register_net_hook(&init_net, &nfho);   // For Ubuntu 20.04 VM
+
+
+// Hook unregistration:
+  nf_unregister_hook(&nfho);                // For Ubuntu 16.04 VM
+  nf_unregister_net_hook(&init_net, &nfho); // For Ubuntu 20.04 VM
+\end{lstlisting}
+ 
+
+\paragraph{Tasks.} Based on the code provided above (they can be downloaded
+from the lab's website), please do the following tasks:
+
+\begin{itemize}
+\item Compile and run the provided code. Based on your execution results,
+explain the purpose of the firewall.  
+
+\item The following are \netfilter hooks. Please replace the 
+hook used in the sample code with each one of the following,
+and describe your observation.
+
+\begin{lstlisting}
+   NF_INET_PRE_ROUTING,
+   NF_INET_LOCAL_IN,
+   NF_INET_FORWARD,
+   NF_INET_LOCAL_OUT,
+   NF_INET_POST_ROUTING,
+\end{lstlisting}
+ 
+\end{itemize}
+ 
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 2: Setting Up a Firewall}
+
+In the previous task, we had a chance to build a simple firewall using \netfilter. Actually,
+\linux already has a built-in firewall, also based on \netfilter. This firewall is called
+\iptables. Technically, the kernel part implementation of the firewall
+is called \texttt{Xtables}, while \iptables is a user-space program to
+configure the firewall. However, \iptables is often used to refer to both the kernel-part
+implementation and the user-space program. 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Background of \iptables}
+
+In this task, we will use \iptables to set up a firewall. 
+The \iptables firewall is designed not only to filter packets, but also to make changes to
+packets. To help manage these firewall rules for different purposes, \iptables organizes all
+rules using a hierarchical structure: table, chain, and rules.
+There are several tables, each specifying the main purpose of the rules as shown
+in Table~\ref{firewall:table:iptables}.
+For example, rules for packet filtering should be
+placed in the \texttt{filter} table, while rules for making changes to packets should be placed
+in the \texttt{nat} or \texttt{mangle} tables.
+
+Each table contains several chains, each of which corresponds to a \netfilter hook. Basically,
+each chain indicates where its rules are enforced. For example, rules on
+the \texttt{FORWARD} chain are enforced at the \texttt{NF\_INET\_FORWARD} hook, and rules on
+the \texttt{INPUT} chain are enforced at the  \texttt{NF\_INET\_LOCAL\_IN} hook.
+
+Each chain contains a set of firewall rules that will be enforced.
+When we set up firewalls, we add rules to these chains.
+For example, if we would like to block all incoming \telnet traffic, we would
+add a rule to the \texttt{INPUT} chain of the \texttt{filter} table.  If we
+would like to redirect all incoming \telnet traffic to a different
+port on a different host, basically doing port forwarding, we can add a rule to the
+\texttt{INPUT} chain of the \texttt{mangle} table, as we need to make changes to packets.
+
+
+\begin{table}[htb]
+        \centering
+%       \renewcommand{\arraystretch}{1.2}
+        \caption{\iptables Tables and Chains}
+        \label{firewall:table:iptables}
+        \centering
+
+        \begin{tabular}{|l|l|l|}
+                \hline
+                \bfseries Table & \bfseries Chain & \bfseries Functionality \\
+                \hline\hline
+                filter          &    \texttt{INPUT}      & Packet filtering \\
+                                &    \texttt{FORWARD}    & \\
+                                &    \texttt{OUTPUT}      & \\
+                \hline
+                nat             &   \texttt{PREROUTING}    & Modifying source or destination \\
+                                &   \texttt{INPUT}      & network addresses \\
+                                &   \texttt{OUTPUT}      & \\
+                                &   \texttt{POSTROUTING}   & \\
+                \hline
+                mangle          &   \texttt{PREROUTING}    & Packet content modification \\
+                                &   \texttt{INPUT}      & \\
+                                &   \texttt{FORWARD}     & \\
+                                &   \texttt{OUTPUT}      & \\
+                                &   \texttt{POSTROUTING}   & \\
+                \hline
+        \end{tabular}
+\end{table}
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Using \iptables}
+
+
+To add rules to the chains in each table, we use the \iptables command,
+which is a quite powerful command. 
+Students can find the manual of \iptables by typing \texttt{"man iptables"} 
+or easily find many tutorials from online. 
+What makes \iptables complicated is the many command-line arguments 
+that we need to provide when
+using the command. However, 
+if we understand the structure of these command-line arguments, 
+we will find out that the command is not that complicated. 
+
+
+In a typical \iptables command, we add a rule to or remove a rule 
+from one of the chains in one of the tables, so we need to 
+specify a table name (the default is \texttt{filter}), a chain name, 
+and an operation on the chain. After that, we specify the rule, which
+is basically a pattern that will be matched with each of the 
+packets passing through. If there is a match, an action will be 
+performed on this packet. 
+The general structure of the command is depicted in the following:
+
+\begin{lstlisting}
+# iptables -t <table> -<operation> <chain>  <rule>   -j <target>
+           ---------- --------------------  -------  -----------
+              Table          Chain           Rule      Action
+\end{lstlisting}
+
+
+The rule is the most complicated part of the \iptables command. 
+We will provide additional information later on when we use 
+specific rules. In the following, we list some commonly 
+used commands: 
+
+
+\begin{lstlisting}
+// List all the rules in a table (without line number)
+$ sudo iptables -t nat -L
+
+// List all the rules in a table (with line number)
+$ sudo iptables -t filter -L --line-numbers
+
+// Delete rule No. 2 in the INPUT chain of the filter table 
+$ sudo iptables -t filter -D INPUT 2
+
+// Drop all the incoming packets that satisfy the <rule>
+$ sudo iptables -t filter -A INPUT <rule>  -j DROP
+\end{lstlisting}
+
+
+\paragraph{Note.} Docker relies on \iptables to manage 
+the networks it creates, so it adds many rules to \iptables.
+When we manipulate \iptables rules, we should be careful 
+not to remove Docker rules. For example, it will be quite
+dangerous to run the \texttt{"iptables -F"} command, because 
+it removes all the rules in the \texttt{filter} table,
+including many of the Docker rules. That will cause 
+trouble to Docker containers. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.a: Set Up a Stateless Firewall}
+
+In this task, we will set up firewall rules on the router container
+to protect the \texttt{192.168.60.0/24} network. We will only use 
+the \texttt{filter} table in this task.  
+Your firewall should satisfy the following requirements. 
+In your report, you should provide screenshots to demonstrate 
+that your firewall does satisfy the requirements.
+
+
+\begin{itemize}
+\item Ingress: Prevent outsiders from accessing any internal ports (including
+both TCP and UDP), other than port TCP 80, which is used by web servers. 
+We have installed a very simple web server in the container. You can
+add the following command to the command entry of a container
+in the Compose file if you want to run the server on that container:
+
+\begin{lstlisting}
+\end{lstlisting}
+ 
+\item Ingress: Your firewall should allow DNS replies to come back. 
+
+\item Ingress: Block all the ICMP echo request from outside, but 
+do allow the ICMP reply packets to come in; otherwise, internal 
+computers will not be able to run \texttt{ping}.  
+
+\item Egress: Prevent internal machines from connecting to the outside via \telnet.
+
+\item Egress: Prevent internal machines from visiting an external web site. 
+You can choose any web site that you like to block, but keep in mind, 
+some web servers have multiple IP addresses. 
+
+\end{itemize}
+
+
+To see what options that we can use for rules specific to the tcp, udp, and 
+icmp protocols, we can use the following commands. 
+
+\begin{lstlisting}
+$ iptables -p tcp  -h
+$ iptables -p udp  -h
+$ iptables -p icmp -h
+\end{lstlisting}
+ 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.b: Experiment with the Connection Tracking} 
+
+
+In the previous task, we have only set up stateless firewalls, which inspect each
+packet independently. However, packets
+are usually not independent; they may be part of a TCP connection,
+or they may be ICMP packets triggered by other packets. Treating them
+independently does not take into consideration the context of the
+packets, and can thus lead to inaccurate or unsafe firewall rules.
+For example, if we would like to allow TCP packets to get into our network
+only if a connection was made first, we cannot achieve that easily 
+using stateless packet filters, because when the firewall examines each individual TCP packet,
+it has no idea about whether the packet belongs to an existing connection
+or not, unless the firewall maintains some state information for each connection.
+If it does that, it becomes a stateful firewall.
+
+
+To support stateful firewalls, we need to be able to track connections. 
+This is achieved by the \texttt{conntrack} mechanism inside the kernel. 
+In this task, we will conduct experiments related to this module, and 
+get familiar with the connection tracking mechanism. 
+In our experiment, we will check the connection tracking information
+on the router container. This can be done using the following command: 
+
+\begin{lstlisting}
+# conntrack -L
+\end{lstlisting}
+
+The goal of the task is to use a series of experiments to 
+help students understand the 
+connection concept in this tracking mechanism, especially
+for the ICMP and UDP protocols, because unlike TCP,  they 
+do not have connections. 
+Before doing the experiments, we need to restart the server container to
+remove all the firewall rules added in the previous task. We can either 
+manually remove those rules, or simply restart the router container 
+using the following commands:
+
+\begin{lstlisting}
+$ docker container  ls
+7e234511e597  firewall-router
+$ docker restart 7e
+\end{lstlisting}
+
+Please conduct the following experiments. For each experiment, please 
+describe your observation, along with your explanation. 
+
+\begin{itemize}
+\item ICMP experiment: Run the following command and 
+check the connection tracking information on the router. Describe
+your observation. How long is the ICMP connection state be kept? 
+
+\begin{lstlisting}
+// On 192.168.60.5, send out ICMP packets
+# ping 10.9.0.5
+\end{lstlisting}
+
+\item UDP experiment: Run the following command and 
+check the connection tracking information on the router. Describe
+your observation. How long is the UDP connection state be kept? 
+
+
+\begin{lstlisting}
+// On 10.9.0.5, start a netcat UDP server
+# nc -lnuv 9090
+
+// On 192.168.60.5, send out UDP packets 
+# nc -u 10.9.0.5 9090
+\end{lstlisting}
+
+
+\item TCP experiment: Run the following command and 
+check the connection tracking information on the router. Describe
+your observation. How long is the TCP connection state be kept? 
+
+\begin{lstlisting}
+// On 10.9.0.5, start a netcat UDP server
+# nc -lnv 9090
+
+// On 192.168.60.5, send out TCP packets 
+# nc 10.9.0.5 9090
+\end{lstlisting}
+
+\end{itemize}
+ 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.c: Setting Up a Stateful Firewall} 
+
+
+Now we are ready to set up firewall rules based on connections. 
+In the following example, 
+the \texttt{"-m conntrack"} option indicates that we are using the \texttt{conntrack} module,
+which is a very important module for \iptables; it tracks connections, and
+\iptables replies on the tracking information to build stateful firewalls. 
+The \texttt{--ctsate ESTABLISHED,RELATED} indicates that whether a packet
+belongs to an \texttt{ESTABLISHED} or \texttt{RELATED} connection.
+
+\begin{lstlisting}
+# sudo iptables -A OUTPUT -p tcp -m conntrack
+                --ctstate ESTABLISHED,RELATED -j ACCEPT
+\end{lstlisting}
+
+
+Please improve the firewall from Task 2.c using the \texttt{conntrack} module, 
+so the firewall will allow TCP, UDP, and ICMP packets to go through (both direction)
+if they belong to an existing connection. 
+
+ 
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 3: Other Applications of \iptables}
+
+Before doing each subtask in this task, please 
+restart the server container, so the setting from the 
+previous task/subtask won't affect the current task. 
+
+
+\begin{lstlisting}
+$ docker container  ls
+7e234511e597  firewall-router
+$ docker restart 7e
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 3.a: Packet Limiting}
+
+
+Give the command, ask students to show the experiment results. 
+
+\begin{lstlisting}
+# iptables -A INPUT -p icmp -m limit \
+              --limit 10/min --limit-burst 5 -j ACCEPT
+
+# iptables -A INPUT -p icmp -j DROP
+\end{lstlisting}
+ 
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 3.b: Port Forwarding}
+
+
+Add the following to the Compose file for each 
+\begin{lstlisting}
+command: bash -c "
+                      ...
+                      nc -lnkuv 9090 &&
+                      /start.sh
+                 "
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 3.c: Load Balancing (verified)}
+
+The order matters. How chains are traversed. 
+ 
+
+
+Students should decide the values (p1=0.33, p2=0.5, p3=1)
+
+\begin{lstlisting}
+iptables -t nat -A PREROUTING -p udp --dport 9090  \
+         -m statistic --mode random --probability .33     \
+         -j DNAT --to-destination 192.168.60.5:9090
+
+# iptables -t nat -A PREROUTING -p tcp --dport 8000  \
+              -m statistic --mode random --probability <p1>       \
+              -j DNAT --to-destination <host 1>:8000
+
+# iptables -t nat -A PREROUTING -p tcp --dport 8000  \
+              -m statistic --mode random --probability <p2>       \
+              -j DNAT --to-destination <host 2>:8000
+
+# iptables -t nat -A PREROUTING -p tcp --dport 8000  \
+              -m statistic --mode random --probability <p3>       \
+              -j DNAT --to-destination <host 3>:8000
+\end{lstlisting}
+
+
+
+From the VM  
+\begin{lstlisting}
+echo asdfsdafsadf | nc -u 192.168.60.11 9090
+\end{lstlisting}
+ 
+
+\paragraph{Generalization.} What if we have \texttt{K} hosts?  
+
+
+ 
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 3.c: Changing TTL (verified)}
+
+
+
+Limit how far a packet can go. 
+
+
+\begin{lstlisting}
+# iptables -j TTL -h
+...
+TTL target options
+  --ttl-set value		Set TTL to <value 0-255>
+  --ttl-dec value		Decrement TTL by <value 1-255>
+  --ttl-inc value		Increment TTL by <value 1-255>
+
+
+# iptables -t mangle -A POSTROUTING -j TTL --ttl-set 1
+
+# iptables -t <table> -A <chain> -j TTL --<ttl command> <ttl value>
+
+\end{lstlisting}
+ 
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 4: Reverse Path Filter}
+
+
+
+\begin{lstlisting}
+
+\end{lstlisting}
+ 
+
+
 
 
 
