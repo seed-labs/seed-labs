@@ -6,8 +6,11 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+\input{\commonfolder/manual}
+
 
 \newcommand{\telnet} {\texttt{telnet}\xspace}
 \newcommand{\iptables}{\texttt{iptables}\xspace}
@@ -79,35 +82,34 @@ Detailed coverage of firewalls can be found in the following:
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Environment Setup}
+\section{Environment Setup Using Containers}
 
 
-We will write a separate document regarding environment
-setup, for the common part, we refer students to 
-read the document (read Section 1 and 3). 
-In this document, we provide additional setup and 
-background that are specific to this lab. 
+In this lab, we need to use multiple machines. 
+Their setup is depicted in Figure~\ref{fig:labsetup}.  
+We will use containers to set up this lab environment.
+Please download the 
+\texttt{labsetup.zip} file to your VM from the lab's website,
+unzip it, and enter the \texttt{labsetup} folder. 
+Then follow the instructions below
+to set up the lab environment.
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Useful Commands}
-
-For example, there are some commands that are more specific
-to this lab, we will provide them here. 
-
-
-\begin{lstlisting}
-// Enable IP forwarding 
-$ sudo sysctl ...
-\end{lstlisting}
- 
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{./Figs/TwoLANs.pdf}
+\end{center}
+\caption{Lab setup}
+\label{fig:labsetup}
+\end{figure}
 
 
 
- 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input common files related to containers
+\input{\commonfolder/container_setup}
+\input{\commonfolder/container_detach_from_192.168}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -205,7 +207,10 @@ $ dmesg | tail -10            (check the messages)
 
 \paragraph{Task.} Please compile and run this simple kernel module on 
 your VM and show your running results in the lab report. 
-
+It should be noted that all the tasks in Task 1 should be 
+performed on the VM, but students who are familiar with Docker
+are encouraged to deploy the firewall developed in this task
+to the router container. 
 
 
 % -------------------------------------------
@@ -291,10 +296,10 @@ unsigned int hook_func(void *priv, struct sk_buff *skb,
 /* Initialization routine */
 int init_module()
 {   /* Fill in our hook structure */
-    nfho.hook = hook_func;         /* Handler function */
-    nfho.hooknum  = NF_INET_PRE_ROUTING; /* First hook for IPv4 */
+    nfho.hook = hook_func;               // Handler function 
+    nfho.hooknum  = NF_INET_PRE_ROUTING; // The hook 
     nfho.pf       = PF_INET;
-    nfho.priority = NF_IP_PRI_FIRST;   /* Make our function first */
+    nfho.priority = NF_IP_PRI_FIRST;     // Make our function first 
 
     // nf_register_hook(&nfho);               // For Ubuntu 16.04 VM
     nf_register_net_hook(&init_net, &nfho);   // For Ubuntu 20.04 VM
@@ -336,17 +341,16 @@ from the lab's website), please do the following tasks:
 explain the purpose of the firewall.  
 
 \item The following are \netfilter hooks. Please replace the 
-hook used in the sample code with each one of the following,
+hook used in the sample code with the ones marked by \ding{81}
 and describe your observation.
 
 \begin{lstlisting}
-   NF_INET_PRE_ROUTING,
-   NF_INET_LOCAL_IN,
-   NF_INET_FORWARD,
-   NF_INET_LOCAL_OUT,
-   NF_INET_POST_ROUTING,
+NF_INET_PRE_ROUTING 
+NF_INET_LOCAL_IN         (*@\ding{81}@*)
+NF_INET_FORWARD 
+NF_INET_LOCAL_OUT 
+NF_INET_POST_ROUTING     (*@\ding{81}@*)
 \end{lstlisting}
- 
 \end{itemize}
  
 
@@ -355,7 +359,7 @@ and describe your observation.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 2: Setting Up a Firewall}
+\section{Task 2: Setting Up a Stateless Firewall}
 
 In the previous task, we had a chance to build a simple firewall using \netfilter. Actually,
 \linux already has a built-in firewall, also based on \netfilter. This firewall is called
@@ -492,7 +496,7 @@ trouble to Docker containers.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2.a: Set Up a Stateless Firewall}
+\subsection{Set Up a Stateless Firewall}
 
 In this task, we will set up firewall rules on the router container
 to protect the \texttt{192.168.60.0/24} network. We will only use 
@@ -504,13 +508,7 @@ that your firewall does satisfy the requirements.
 
 \begin{itemize}
 \item Ingress: Prevent outsiders from accessing any internal ports (including
-both TCP and UDP), other than port TCP 80, which is used by web servers. 
-We have installed a very simple web server in the container. You can
-add the following command to the command entry of a container
-in the Compose file if you want to run the server on that container:
-
-\begin{lstlisting}
-\end{lstlisting}
+both TCP and UDP), other than port TCP 8080. 
  
 \item Ingress: Your firewall should allow DNS replies to come back. 
 
@@ -518,11 +516,12 @@ in the Compose file if you want to run the server on that container:
 do allow the ICMP reply packets to come in; otherwise, internal 
 computers will not be able to run \texttt{ping}.  
 
-\item Egress: Prevent internal machines from connecting to the outside via \telnet.
+\item Egress: Prevent internal machines from connecting to the outside 
+      via \telnet.
 
-\item Egress: Prevent internal machines from visiting an external web site. 
-You can choose any web site that you like to block, but keep in mind, 
-some web servers have multiple IP addresses. 
+\item Egress: Internal machines should be able to visit outside websites, 
+except one particular website that you would like to block. Keep in mind, 
+some websites have multiple IP addresses. 
 
 \end{itemize}
 
@@ -538,10 +537,12 @@ $ iptables -p icmp -h
  
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 2.b: Experiment with the Connection Tracking} 
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 3: Connection Tracking and Stateful Firewall}
 
 
 In the previous task, we have only set up stateless firewalls, which inspect each
@@ -556,6 +557,12 @@ using stateless packet filters, because when the firewall examines each individu
 it has no idea about whether the packet belongs to an existing connection
 or not, unless the firewall maintains some state information for each connection.
 If it does that, it becomes a stateful firewall.
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 3.a: Experiment with the Connection Tracking} 
 
 
 To support stateful firewalls, we need to be able to track connections. 
@@ -631,7 +638,7 @@ your observation. How long is the TCP connection state be kept?
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2.c: Setting Up a Stateful Firewall} 
+\subsection{Task 3.b: Setting Up a Stateful Firewall} 
 
 
 Now we are ready to set up firewall rules based on connections. 
@@ -648,149 +655,46 @@ belongs to an \texttt{ESTABLISHED} or \texttt{RELATED} connection.
 \end{lstlisting}
 
 
-Please improve the firewall from Task 2.c using the \texttt{conntrack} module, 
+Please improve the firewall from Task 2 using the \texttt{conntrack} module, 
 so the firewall will allow TCP, UDP, and ICMP packets to go through (both direction)
 if they belong to an existing connection. 
 
- 
-
-
-
-% *******************************************
-% SECTION
-% ******************************************* 
-\section{Task 3: Other Applications of \iptables}
-
-Before doing each subtask in this task, please 
-restart the server container, so the setting from the 
-previous task/subtask won't affect the current task. 
-
-
-\begin{lstlisting}
-$ docker container  ls
-7e234511e597  firewall-router
-$ docker restart 7e
-\end{lstlisting}
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3.a: Packet Limiting}
-
-
-Give the command, ask students to show the experiment results. 
-
-\begin{lstlisting}
-# iptables -A INPUT -p icmp -m limit \
-              --limit 10/min --limit-burst 5 -j ACCEPT
-
-# iptables -A INPUT -p icmp -j DROP
-\end{lstlisting}
- 
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3.b: Port Forwarding}
-
-
-Add the following to the Compose file for each 
-\begin{lstlisting}
-command: bash -c "
-                      ...
-                      nc -lnkuv 9090 &&
-                      /start.sh
-                 "
-\end{lstlisting}
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3.c: Load Balancing (verified)}
-
-The order matters. How chains are traversed. 
- 
-
-
-Students should decide the values (p1=0.33, p2=0.5, p3=1)
-
-\begin{lstlisting}
-iptables -t nat -A PREROUTING -p udp --dport 9090  \
-         -m statistic --mode random --probability .33     \
-         -j DNAT --to-destination 192.168.60.5:9090
-
-# iptables -t nat -A PREROUTING -p tcp --dport 8000  \
-              -m statistic --mode random --probability <p1>       \
-              -j DNAT --to-destination <host 1>:8000
-
-# iptables -t nat -A PREROUTING -p tcp --dport 8000  \
-              -m statistic --mode random --probability <p2>       \
-              -j DNAT --to-destination <host 2>:8000
-
-# iptables -t nat -A PREROUTING -p tcp --dport 8000  \
-              -m statistic --mode random --probability <p3>       \
-              -j DNAT --to-destination <host 3>:8000
-\end{lstlisting}
-
-
-
-From the VM  
-\begin{lstlisting}
-echo asdfsdafsadf | nc -u 192.168.60.11 9090
-\end{lstlisting}
- 
-
-\paragraph{Generalization.} What if we have \texttt{K} hosts?  
-
-
- 
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3.c: Changing TTL (verified)}
-
-
-
-Limit how far a packet can go. 
-
-
-\begin{lstlisting}
-# iptables -j TTL -h
-...
-TTL target options
-  --ttl-set value		Set TTL to <value 0-255>
-  --ttl-dec value		Decrement TTL by <value 1-255>
-  --ttl-inc value		Increment TTL by <value 1-255>
-
-
-# iptables -t mangle -A POSTROUTING -j TTL --ttl-set 1
-
-# iptables -t <table> -A <chain> -j TTL --<ttl command> <ttl value>
-
-\end{lstlisting}
- 
-
-
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 4: Reverse Path Filter}
+\section{Task 4: Limiting Network Traffic}
 
-
+In addition to blocking packets, we can also 
+limit the number of packets that can pass through the firewall. 
+This can be done using the \texttt{limit} module of \iptables.
+In this task, we will use this module to limit how many packets 
+from \texttt{10.9.0.5} are allowed to get into the internal network. 
+You can use \texttt{"iptables -m limit -h"} to see the manual.  
 
 \begin{lstlisting}
-
+$ iptables -m limit -h
+limit match options:
+--limit avg             max average match rate: default 3/hour
+                        [Packets per second unless followed by
+                        /sec /minute /hour /day postfixes]
+--limit-burst number    number to match in a burst, default 5
 \end{lstlisting}
  
 
+Please run the following commands on router, and then
+ping \texttt{192.168.60.5} from \texttt{10.9.0.5}.  
+Describe your observation. 
+Please conduct the experiment with and without the second command, 
+and then explain whether the second rule is needed or not, and why.
 
+\begin{lstlisting}
+# iptables -A FORWARD -s 10.9.0.5 -m limit \
+           --limit 10/minute --limit-burst 5 -j ACCEPT
+
+# iptables -A FORWARD -s 10.9.0.5 -j DROP
+\end{lstlisting}
 
 
 
