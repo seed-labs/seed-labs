@@ -1,12 +1,20 @@
 
+
 \paragraph{Container setup and commands.}
+Please download the
+\texttt{labsetup.zip} file to your VM from the lab's website,
+unzip it, enter the \texttt{labsetup} folder, and 
+use the \texttt{docker-compose.yml} file to 
+set up the lab environment. Detailed explanation
+of the content in this file and all the involved 
+\texttt{Dockerfile} can be found from the 
+user manual, which can be downloaded from the website. 
+If this is the first time you set up a SEED lab environment
+using Docker and Compose, it is very important that you read 
+the user manual. 
 
-
-
-The Docker and Compose files, along with the user manual,
-can be downloaded from the lab's website,
-The followings Compose commands are for creating and tearing down
-the lab environment. 
+In the following, we list some of the commonly
+used commands related to Docker and Compose. 
 Since we are going to use 
 these commands and several docker commands very
 frequently, we have created aliases for these commands
@@ -27,10 +35,7 @@ $ docksh <id>   # Alias for: docker exec -it <id> /bin/bash
 \end{lstlisting}
 
 
-
-Detailed explanation of \texttt{Dockerfile} and
-the \texttt{docker-compose.yml} file can be found from
-the manual, which is linked to this lab's website. If you encounter
-issues when setting up the lab environment, read the
-``Common Problems'' section for potential solutions.
+If you encounter problems when setting up the lab environment, 
+please read the ``Common Problems'' section of the manual
+for potential solutions.
 
