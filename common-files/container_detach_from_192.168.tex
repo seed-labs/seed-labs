@@ -1,0 +1,32 @@
+
+\paragraph{Removing the Host VM from \texttt{192.168.60.0/24} network.}
+When Docker creates a network, it automatically attach the
+host machine (i.e., the VM) to the network. In this
+case, the host machine is attached to both
+networks, and is given the IP address \texttt{10.9.0.1} and
+\texttt{192.168.60.1}.
+This may create undesirable situations,
+so let's remove it.
+
+In our setup, we only want the VM to be connected to
+\texttt{10.9.0.0/24}, not to both.
+We need to detach the VM from the other network. We cannot simply power down
+the interface, because that will affects all the containers on that network.
+Our solution is to remove the IP address
+of the interface, and then set the routing accordingly. The following
+script does exactly that.
+
+
+\begin{lstlisting}
+#!/bin/bash
+
+# Get the interface name
+IFname=$(docker network ls | grep 192.168.60.0 | cut -d' ' -f 1)
+
+# Remove the IP address from the interface
+sudo ip addr flush br-$IFname
+
+# Use 10.9.0.11 as the router to access 192.168.60.0/24
+sudo ip route add 192.168.60.0/24 via 10.9.0.11
+\end{lstlisting}
+
