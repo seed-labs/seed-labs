@@ -6,8 +6,12 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+\input{\commonfolder/manual}
+
 
 \newcommand{\dnsFigs}{./Figs}
 
@@ -20,9 +24,6 @@
 
 \begin{center}
 {\LARGE Remote DNS Attack (Kaminsky Attack) Lab}
-
-\vspace{0.05in}
-Updated on July 26, 2020
 \end{center}
 
 \seedlabcopyright{2006 - 2020}
@@ -73,6 +74,9 @@ Detailed coverage of the DNS protocol and attacks can be found in the following:
 \paragraph{Lab environment.} \seedenvironmentB
 
 
+%% Temporarily remove this part, to make the task a little bit simpler
+%% during the transition phase (from VM to container)
+\begin{comment}
 \vspace{0.2in}
 \noindent
 \fbox{\parbox{\textwidth}{
@@ -86,6 +90,7 @@ the domain name is only visible inside the lab environment, not to the
 public, any name, including those already owned by others, can be used
 safely in this lab. 
 }}
+\end{comment}
 
 
 
@@ -98,7 +103,7 @@ safely in this lab.
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.9\textwidth]{\dnsFigs/environment_setup_remote.pdf}
+\includegraphics[width=0.9\textwidth]{\dnsFigs/DNS.pdf}
 \caption{Environment setup for the experiment}
 \label{dns:fig:environment}
 \end{figure}
@@ -111,167 +116,61 @@ is illegal to attack a real server, so we need to set up our own DNS
 server to  conduct the attack experiments. The lab
 environment needs four separate machines:
 one for the victim, one for the DNS server, and two for the attacker.
-The lab environment setup is illustrated in the following.
+The lab environment setup is illustrated in Figure~\ref{dns:fig:environment}.
 
-\begin{lstlisting}[backgroundcolor=]
- +------------+   +------------+  +------------+  +---------------+
- | Attack VM  |   |  Container |  |  Container |  |  Container    |
- |            |   |   (user)   |  |  Local DNS |  |attacker32.com |
- |            |   |            |  |   Server   |  |  nameserver   |
- |  10.9.0.1  |   |  10.9.0.5  |  |  10.9.0.53 |  |  10.9.0.153   |
- +-----+------+   +------+-----+  +------+-----+  +------+--------+
-       |                 |               |               |
-       |                 |               |               |
--------+-----------------+---------------+---------------+-------
-           Network  10.9.0.0/24
 
-\end{lstlisting}
+
+%\begin{lstlisting}[backgroundcolor=]
+% +------------+   +------------+  +------------+  +---------------+
+% | Attack VM  |   |  Container |  |  Container |  |  Container    |
+% |            |   |   (user)   |  |  Local DNS |  |attacker32.com |
+% |            |   |            |  |   Server   |  |  nameserver   |
+% |  10.9.0.1  |   |  10.9.0.5  |  |  10.9.0.53 |  |  10.9.0.153   |
+% +-----+------+   +------+-----+  +------+-----+  +------+--------+
+%       |                 |               |               |
+%       |                 |               |               |
+%-------+-----------------+---------------+---------------+-------
+%           Network  10.9.0.0/24
+%
+%\end{lstlisting}
 
 Only the attack machine will be using VM; all the others are containers. 
 We put all these machines on the same LAN only for the sake of simplicity. 
 Students are not allowed to exploit this fact in their attacks; 
 they should treat the attacker machine as a remote machine, 
 i.e., the attacker cannot sniff packets on the LAN.
-Please download the
-\texttt{labsetup.zip} file to your VM from the lab's website,
-and run the following
-command to set up the lab environment:
 
 
-\begin{lstlisting}
-$ unzip labsetup.zip
-$ cd labsetup
-$ docker-compose build
-$ docker-compose up
-
-// When the lab is finished, use the following command to
-// tear down the setup (doing it from another window)
-$ docker-compose down
-\end{lstlisting}
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 1: Configure the User VM} 
-\label{subsec:user_machine}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input common files related to containers
+\input{\commonfolder/container_setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-On the user machine {\tt 10.0.2.6}, we need to use
-{\tt 10.0.2.7} as the local DNS server.
-This is achieved by changing
-the resolver configuration file~(\texttt{/etc/resolv.conf}) of the user machine,
-so the server \texttt{10.0.2.7} is added as the first \texttt{nameserver} entry in the file, i.e.,
-this server will be used as the primary DNS server.
-Unfortunately, our provided VM uses the Dynamic Host Configuration Protocol (DHCP) to obtain
-network configuration parameters, such as IP address, local DNS server, etc.
-DHCP clients will overwrite the \texttt{/etc/resolv.conf} file with the information
-provided by the DHCP server.
 
-
-One way to get our information into \texttt{/etc/resolv.conf} without worrying about
-the DHCP is to add the following entry to the \path{/etc/resolvconf/resolv.conf.d/head}
-file (assuming that \texttt{10.0.2.7} is the IP address of the local DNS server):
-
-\begin{lstlisting}
-nameserver 10.9.0.53
-\end{lstlisting}
-
-
-The content of the head file will be prepended to the dynamically generated resolver
-configuration file. Normally, this is just a comment line (the comment in
-\texttt{/etc/resolv.conf} comes from this head file). After making the change,
-we need to run the following command for the change to take effect:
-
-\begin{lstlisting}
-$ sudo resolvconf -u
-\end{lstlisting}
+%\subsection{Summary of the Configuration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{../DNS_Common/summary_of_config}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Configure the Local DNS Server} 
+\subsection{Task 1: Testing the Lab Setup}
 
-The local DNS server container has already been configured, 
-so no action is needed. 
-We run the BIND 9 DNS server program on the local DNS server. 
-BIND 9 gets its configuration from a file called \path{/etc/bind/named.conf}. This file
-is the primary configuration file, and it usually contains several \texttt{"include"}
-entries, i.e., the actual configurations are stored in those included files. One of the
-included files is called \path{/etc/bind/named.conf.options}. 
-This is where the actual configuration is set. 
-
-\paragraph{Simplification.}
-DNS servers now randomize
-the source port number in their DNS queries; this makes the attacks much more
-difficult. Unfortunately, many DNS servers still use predictable source
-port number.  For the sake of simplicity in this lab, we fix the
-source port number to  {\tt 33333} in the 
-configuration file. 
-
-\paragraph{Turning off DNSSEC.} 
-DNSSEC is introduced to protect against spoofing attacks on DNS servers.
-To show how attacks work
-without this protection mechanism, we have turned off the protection 
-in the configuration file. 
-
-
-\paragraph{DNS cache.}
-During the attack, we need to inspect the DNS cache on the local DNS server.
-The following two commands are related to DNS cache.
-The first command dumps the content of the cache to the file 
-\path{/var/cache/bind/dump.db}, 
-and the second command clears the cache.
-
-\begin{lstlisting}
-$ sudo rndc dumpdb -cache    // Dump the cache to the specified file
-$ sudo rndc flush            // Flush the DNS cache
-\end{lstlisting}
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Configure the Attacker's Nameserver}
-
-
-The attacker's nameserver has already been configured, 
-so no action is needed. 
-On the attacker's nameserver, we host two zones. One is 
-the attacker's legitimate zone \texttt{attacker32.com}, and the other 
-is the fake \texttt{example.com} zone. The zones are 
-configured in \path{/etc/bind/named.conf}:
-
-\begin{lstlisting}
-zone "attacker32.com" {
-        type master;
-        file "/etc/bind/attacker32.com.zone";
-};
-
-zone "example.com" {
-        type master;
-        file "/etc/bind/example.com.zone";
-};
-\end{lstlisting}
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Testing the Setup}
-
-From the User VM, we will run a series of commands to ensure 
-that our setup is correct. 
+From the User container, we will run a series of commands to ensure 
+that our lab setup is correct. 
 
 
 \paragraph{Get the IP address of \texttt{ns.attacker32.com}.}
 When we run the following \texttt{dig} command, 
-the local DNS server will forward the request to the Attacker VM 
+the local DNS server will forward the request to the Attacker nameserver 
 due to the \texttt{forward} zone entry added to the local DNS server's
 configuration file. Therefore, the answer should come from
-the \texttt{attacker32.com.zone} file that we set up on the Attacker VM.
+the \texttt{attacker32.com.zone} file that we set up on the Attacker nameserver.
 If this is not what you get, your setup has an issue. Please describe your
 observation in your lab report. 
 
@@ -284,9 +183,9 @@ $ dig ns.attacker32.com
 \paragraph{Get the IP address of \texttt{www.example.com}.} 
 Two nameservers are now hosting the \texttt{example.com} 
 domain, one is the domain's official nameserver, and the other 
-is the Attacker VM. We will query these two nameservers and see what 
+is the Attacker container. We will query these two nameservers and see what 
 response we will get. 
-Please run the following two commands (from the User VM), 
+Please run the following two commands (from the User machine), 
 and describe your observation. 
 
 
@@ -491,7 +390,7 @@ Kaminsky attack. Finally in Task 7, we verify the impact of the attack.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Construct DNS request} 
+\subsection{Task 2: Construct DNS request} 
 
 This task focuses on sending out DNS requests. 
 In order to complete the attack, attackers need to trigger the target 
@@ -521,20 +420,11 @@ request = ip/udp/dns
 \end{lstlisting}
  
 
-\paragraph{Scapy.} If you use Python3, the version of the SEED VM 
-may not have Scapy installed. You can use the following command to 
-install Scapy for Pyhon3. 
-
-
-\begin{lstlisting}
-$ sudo pip3 install scapy
-\end{lstlisting}
- 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 5: Spoof DNS Replies.}   
+\subsection{Task 3: Spoof DNS Replies.}   
 
 In this task, we need to spoof DNS replies in the Kaminsky attack. 
 Since our target is \texttt{example.com}, we need to spoof
@@ -578,7 +468,7 @@ show that the spoofed packets are valid.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 6: Launch the Kaminsky Attack.}   
+\subsection{Task 4: Launch the Kaminsky Attack.}   
 
 Now we can put everything together to conduct the Kaminsky attack. 
 In the attack, we need to send out many spoofed DNS replies, hoping 
@@ -625,7 +515,7 @@ cat /var/cache/bind/dump.db | grep attacker
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 7: Result Verification}
+\subsection{Task 5: Result Verification}
 
 If the attack is successful, in the local DNS server's DNS cache, 
 the {\tt NS} record for \texttt{example.com} will become 
@@ -637,11 +527,11 @@ sending to the domain's legitimate nameserver.
 
 
 To verify whether your attack is successful or not, 
-go to the User VM, run the following two
+go to the User machine, run the following two
 \texttt{dig} commands. In the responses, the IP addresses for 
 \texttt{www.example.com} should be the same for both 
 commands, and it should be whatever you have included
-in the zone file on the Attacker VM. 
+in the zone file on the Attacker nameserver. 
 
 \begin{lstlisting}
 // Ask the local DNS server to do the query
