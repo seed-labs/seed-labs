@@ -108,7 +108,7 @@ The lab environment is depicted in the following:
   | (attacker) |      |  (victim)  |  |   (user1)  |  |   (user2)  |
   |  10.9.0.1  |      |  10.9.0.5  |  |  10.9.0.6  |  |  10.9.0.7  |
   +----+-------+      +------+-----+  +------+-----+  +------+-----+
-       | br-<id>             | eth0          | eth0          | eth0
+       |                     | eth0          | eth0          | eth0
        |                     |               |               |
 -------+---------------------+---------------+---------------+-------
            Network  10.9.0.0/24
@@ -173,7 +173,7 @@ The size of the queue has a system-wide setting.  In Ubuntu OSes, we can check t
 setting using the following command: 
 
 \begin{lstlisting}
-$ sudo sysctl -q net.ipv4.tcp_max_syn_backlog
+# sysctl -q net.ipv4.tcp_max_syn_backlog
 net.ipv4.tcp_max_syn_backlog = 128
 \end{lstlisting}
 
@@ -196,11 +196,33 @@ $ sudo sysctl -w net.ipv4.tcp_syncookies=0 (turn off SYN cookie)
 $ sudo sysctl -w net.ipv4.tcp_syncookies=1 (turn on  SYN cookie)
 \end{lstlisting}
 
+The commands above only work inside the VM.  
+Inside the provided container, we will not be able to change 
+the SYN cookie flag. If we run the command, 
+we will see the following error message. The container
+is not given the privilege to make the change. 
+
+\begin{lstlisting}
+# sysctl -w net.ipv4.tcp_syncookies=1
+sysctl: setting key "net.ipv4.tcp_syncookies": Read-only file system
+\end{lstlisting}
+
+If we want to turn off the SYN cookie in a container, 
+we have to do it when we build the container. 
+That is why we added the following entry
+to the \texttt{docker-compose.yml} file:  
+
+\begin{lstlisting}
+   sysctls:
+         - net.ipv4.tcp_syncookies=0
+\end{lstlisting}
+
+ 
 
 
 \paragraph{Launching the attack.}
 We provide a C program called \texttt{synflood.c}. Students can compile
-the program and then launch the attack on the target machine:
+the program on the VM and then launch the attack on the target machine:
 
 \begin{lstlisting}
 $ gcc -o synflood synflood.c
@@ -300,8 +322,7 @@ C is much faster; that is why our C code will always win the competition.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection {Task 2: TCP RST Attacks on \texttt{telnet} and 
-             \texttt{ssh} Connections}
+\subsection {Task 2: TCP RST Attacks on \texttt{telnet} Connections}
 
 The TCP RST Attack can terminate an established TCP connection between
 two victims. For example, if there is an established \telnet connection (TCP)
@@ -309,10 +330,9 @@ between two users A and B, attackers can spoof a RST packet from A to B,
 breaking this existing connection. To succeed in this attack, attackers
 need to correctly construct the TCP RST packet. 
 
-In this task, you need to launch an TCP RST attack to break an existing 
-\telnet connection between A and B. After that,
-try the same attack on an {\tt ssh} connection. Please describe
-your observations.  To simplify the lab,
+In this task, you need to launch a TCP RST attack from the VM 
+to break an existing \telnet connection between A and B, which are 
+containers.  To simplify the lab,
 we assume that the attacker and the victim are on the same LAN,
 i.e., the attacker can observe the TCP traffic between
 A and B.
