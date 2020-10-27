@@ -106,21 +106,30 @@ to the same LAN. We can either use
 two VMs or use one VM plus a container. 
 The following diagrams shows the setup using container. 
 We will do all the attacks on the VM, while using
-the container as the user machine. 
+the container as the user machine. Figure~\ref{fig:labsetup}
+depicts the lab environment setup.
 
 
-\begin{lstlisting}[backgroundcolor=]
-                +--------------+      +--------------+
-                |     VM       |      |   Container  |
-                |  (attacker)  |      |    (user)    |
-                |   10.9.0.1   |      |   10.9.0.5   |
-                +-----+--------+      +------+-------+
-                      | br-<id>              | eth0
-         10.9.0.0/24  |                      |
-         -------------+----------------------+------------
-	  
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{Figs/OneLan_onehost.pdf}
+\end{center}
+\caption{Lab environment setup}
+\label{fig:labsetup}
+\end{figure}
+ 
 
-\end{lstlisting}
+%\begin{lstlisting}[backgroundcolor=]
+%                +--------------+      +--------------+
+%                |     VM       |      |   Container  |
+%                |  (attacker)  |      |    (user)    |
+%                |   10.9.0.1   |      |   10.9.0.5   |
+%                +-----+--------+      +------+-------+
+%                      | br-<id>              | eth0
+%         10.9.0.0/24  |                      |
+%         -------------+----------------------+------------
+%
+%\end{lstlisting}
  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -142,12 +151,6 @@ fixed functionalities. Scapy is different: it can be used not only as a tool,
 but also as a building block to construct other sniffing and spoofing
 tools, i.e., we can integrate the Scapy functionalities into our own
 program.  In this set of tasks, we will use Scapy for each task. 
-The current version of the SEED VM may not have Scapy installed for Python3. 
-We can use the following command to install Scapy for Pyhon3.
-
-\begin{lstlisting}
-$ sudo pip3 install scapy
-\end{lstlisting}
 
 
 To use Scapy, we can write a Python program, and then execute this program
@@ -379,11 +382,12 @@ from Wireshark. Either way is acceptable, as long as you get the result.
 
 In this task, you will combine the sniffing and spoofing techniques
 to implement the following sniff-and-then-spoof program.
-You need two VMs on the same LAN. From VM A, you
+You need two machines on the same LAN: the VM and the user container. 
+From the user container, you
 {\tt ping} an IP X. This will generate an ICMP echo
 request packet. If X is alive, the {\tt ping} program will receive
 an echo reply, and print out the response. Your sniff-and-then-spoof
-program runs on VM B, which monitors the LAN through packet sniffing. Whenever it
+program runs on the VM, which monitors the LAN through packet sniffing. Whenever it
 sees an ICMP echo request, regardless of what the target IP address is,
 your program should immediately send out an echo reply using the
 packet spoofing technique. Therefore, regardless of whether machine X
@@ -392,8 +396,26 @@ a reply, indicating that X is alive. You need to use Scapy
 to do this task. In your report, you need to provide evidence to demonstrate 
 that your technique works. 
 
+In your experiment, you should \texttt{ping} the following three IP addresses
+from the user container. 
+Report your observation and explain the results. 
 
+\begin{lstlisting}
+ping 1.2.3.4     # a non-existing host on the Internet
+ping 10.9.0.99   # a non-existing host on the LAN
+ping 8.8.8.8     # an existing host on the Internet
+\end{lstlisting}
 
+\paragraph{Hint:} You need to understand how the ARP protocol works in order to 
+correctly explain your observation. You also need to know a little bit 
+about routing. The following command help you find the router
+for a specified destination:
+
+\begin{lstlisting}
+ip route get 1.2.3.4 
+\end{lstlisting}
+ 
+ 
 
 
 % *******************************************
