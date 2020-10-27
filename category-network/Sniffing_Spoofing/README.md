@@ -17,8 +17,8 @@ the interface. For the container setup, we have to specify it.
 ## Container Setup
 
 - A new section on the container setup is added. Most of the content
-are placed in common files, which will be shared by several labs.  
+are placed in common files, which are shared by several labs.  
 
-- The lab uses the standard OneLAN setup. No customization 
-is needed. Even though the setup creates 3 containers, we only need
-to use one of them.
+- The lab uses the standard OneLAN setup, which has 3 containers.
+A customization is made in the Compose file so only one container
+is used. 
