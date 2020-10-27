@@ -40,3 +40,12 @@ the victim machine. The Compose file will be provided on the lab's website.
 
 - For this lab, using the container setup is much more convenient
 than using three VMs.
+
+
+## Wish List
+
+The RST attack on video streaming task is commented out, because 
+it does not work any more, due to the improvement of the video streaming
+software. In the future, I hope to use container to host our 
+own streeming service, and then launch the RST attack on this server.
+
