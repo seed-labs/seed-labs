@@ -1,20 +1,17 @@
 
 LAB    = Mitnick_Attack
 LABPDF = $(LAB).pdf
-WEB    = ../../seedwebsite/Labs_16.04/PDF
+
+COMMONFOLDER = ../../common-files
+DEPENDENCE = $(COMMONFOLDER)/container_setup.tex $(COMMONFOLDER)/container_interface.tex
 
 
 all: $(LABPDF) 
 
 
-%.pdf: %.tex
+%.pdf: %.tex $(DEPENDENCE)
 	pdflatex $<
 	pdflatex $<
-
-git:
-	git add .
-	git commit -m"..."
-	git push
 
 cp:
 	cp $(LABPDF) $(WEB)
