@@ -6,8 +6,11 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+\input{\commonfolder/manual}
 
 \newcommand{\rebindingFigs}{./Figs}
 
@@ -151,6 +154,15 @@ password; in real systems, the password will be re-generated periodically.
 % ******************************************* 
 \section{Lab Environment Setup Using Container}
 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Container Setup}
+
+
+
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.9\textwidth]{\rebindingFigs/environment_setup_container.pdf}
@@ -162,23 +174,7 @@ password; in real systems, the password will be re-generated periodically.
 In this lab, we will use six machines. 
 The lab environment setup is illustrated
 in Figure~\ref{dns:fig:rebind_environment}. Only the user machine 
-will be using VM, and the others are all containers. Please download the 
-\texttt{labsetup.zip} file to your VM from the lab's website, 
-and run the following 
-command to set up the lab environment:
-
-
-\begin{lstlisting}
-$ unzip labsetup.zip
-$ cd labsetup
-$ docker-compose build
-$ docker-compose up
-
-// When the lab is finished, use the following command to 
-// tear down the setup (doing it from another window)
-$ docker-compose down 
-\end{lstlisting}
-
+will be using VM, and the others are all containers. 
 
 In the setup, we have two networks, a home network and 
 an outside network. The home network 
@@ -187,9 +183,9 @@ The User machine and the IoT
 services are connected to this network, which
 is protected by the firewall on the router container. 
 The firewall blocks
-all traffic going to the \texttt{10.8.0.0/24} network. 
+all traffic going to the \texttt{192.168.60.80}. 
 This way, outside machines cannot 
-access the machines on the home network. 
+access the IoT device.
 We also set up a NAT server on the router, so the machines
 on the home network can access outside (and the reply
 packets can come back). 
@@ -204,33 +200,14 @@ The web server hosts a malicious website used for the
 attack. 
 
 
-\paragraph{Remove route on the user VM.}
-When we create a network using docker, 
-the host machine (i.e., the user VM) will be automatically
-attached to the network and is given the IP address 
-\texttt{.1}. In our setup, we create two networks, so 
-the user VM will be connected to both networks.
-If we run the \texttt{ip route} command, we will see the following: 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input common files related to containers
+\input{\commonfolder/container_setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{lstlisting}
-$ ip route 
-10.8.0.0/24 dev br-77cfd5c95222 proto kernel scope link src 10.8.0.1
-10.9.0.0/24 dev br-97924f33175f proto kernel scope link src 10.9.0.1
-\end{lstlisting}
 
-We can see that the user VM can directly access the \texttt{10.9.0.0/24} network.
-That is different from what is depicted in Figure~\ref{dns:fig:rebind_environment}.
-To simulate the same setup, we will remove the direct route to
-the \texttt{10.9.0.0/24} network, and then add a new 
-routing entry to use \texttt{10.8.0.2} to reach the outside network. 
-We will execute the following commands on the user VM.
- 
 
-\begin{lstlisting}
-$ sudo ip route del 10.9.0.0/24
-$ sudo ip route add 10.9.0.0/24 via 10.8.0.2
-\end{lstlisting}
- 
+
 
 % -------------------------------------------
 % SUBSECTION
@@ -314,7 +291,7 @@ $ sudo resolvconf -u
 After configuring the user VM, use the \texttt{dig} command
 to get the IP address of \texttt{www.attacker32.com}
 and \texttt{ns.attacker32.com}. You should get 
-\texttt{10.9.0.22} and \texttt{10.9.0.21}, respectively. 
+\texttt{10.9.0.180} and \texttt{10.9.0.153}, respectively. 
 If you do not get this, your lab environment is not 
 set up correctly. 
 
