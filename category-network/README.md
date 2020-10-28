@@ -16,8 +16,8 @@ The meaning of the Changes column can be found from
 | TCP Attacks         | Minor | Done | [README](TCP_Attacks/README.md)|
 | Mitnick Attack      | Minor | Done | [README](Mitnick_Attack/README.md)| 
 | Local DNS Attack    | Minor | | [README](DNS_Local/README.md)|
-| Remote DNS Attack   | Minor | | [README](DNS_Remote/README.md)|
-| DNS Rebinding Attack| Minor | | [README](DNS_Rebinding/README.md)|
+| Remote DNS Attack   | Minor | Done | [README](DNS_Remote/README.md)|
+| DNS Rebinding Attack| Minor | Done | [README](DNS_Rebinding/README.md)|
 | DNS-in-a-box        |  --   | -- | Designed for Ubuntu 20.04 |
 | DNSSEC              |  --   | -- | Designed for Ubuntu 20.04 |
 | Firewall Lab        | Major | |[README](Firewall/README.md)|
