@@ -6,8 +6,10 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+\input{\commonfolder/manual}
 
 
 \lhead{\bfseries SEED Labs -- IP/ICMP Attacks Lab}
@@ -46,7 +48,7 @@ This lab covers the following topics:
 \item The IP and ICMP protocols
 \item IP Fragmentation and the related attacks
 \item ICMP redirect attack
-\item Routing and reverse path filtering 
+\item Routing 
 \end{itemize}
 
 
@@ -60,7 +62,7 @@ in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 % *******************************************
@@ -126,8 +128,6 @@ we should disable IP fragment reassembly in Wireshark preferences.
 Click the following menu sequence: \texttt{Edit} $\rightarrow$ \texttt{Preferences}; 
 click the \texttt{Protocols} dropdown menu, find and click \texttt{IPv4}.
 Uncheck the \texttt{"Reassemble fragmented IPv4 datagrams"} option. 
-
-
 
 
 
@@ -296,183 +296,117 @@ Please show your experiment result, and explain your observation.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 3: Routing and Reverse Path Filtering} 
+\section{Task 3: Routing} 
 
 
-The objective of this task is two-fold: get familiar with routing, 
-and understand a spoof-prevention mechanism 
-called reverse path filtering, which prevents outside from spoofing 
-
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3.a: Network Setup}
- 
-
-
-
-\begin{figure}[htb]
-\begin{center}
-\includegraphics[width=0.8\textwidth]{\ipFigs/NetworkSetup.pdf}
-\end{center}
-\caption{Network setup}
-\label{ip:fig:reverse_filtering}
-\end{figure}
-
-In this task, we will set up two networks and three VMs, \texttt{A}, \texttt{B}, and 
-\texttt{R}. The network setup is depicted in Figure~\ref{ip:fig:reverse_filtering}. 
-The IP addresses in the figure are only for illustration purposes; students can choose
-different IP addresses in their setup.
-
-
-The \texttt{10.0.2.0/24} network should use the \texttt{"NAT Network"} adaptor 
-in VirtualBox. Both Machines \texttt{A} and \texttt{R} are attached 
-to this network, so they can directly communicate with each other. 
-The second network \texttt{192.168.60.0/24} should use the 
-\texttt{"Internal Network"} adaptor in VirtualBox. Only
-Machines \texttt{R} and \texttt{B} are attached to this network. 
-Therefore, Machines \texttt{A} and \texttt{B} cannot directly 
-communicate with each other.
-The figure shows three machines inside the \texttt{192.168.60.0/24} network, but 
-students only need to include one VM in their setup. 
-
-
-Since Machine \texttt{R} is attached to both networks, it needs to 
-have two network adaptors, one using the \texttt{"NAT Network"} type
-and the other using the \texttt{"Internal Network"}. In VirtualBox, 
-by default, only one network adaptor is enabled. We can
-go to the VM Settings to enable the second one, but  we need to 
-shutdown the VM first; otherwise, we will find out that
-the \texttt{"Adaptor 2"} button is grayed out.
-
-
-\paragraph{Set up static IP addresses.}
-VMs attached to the \texttt{"NAT Network"} network will automatically get their 
-IP addresses from the \texttt{DHCP} server, but for 
-VMs on the \texttt{"Internal Network"}, VirtualBox does not provide DHCP, so the
-VM must be statically configured. To do this, click the network icon on the top-right corner
-of the desktop, and select \texttt{"Edit Connections"}. You will see a list
-of \texttt{"Wired connections"}, one for each of the network adaptors used by the VM.
-For Machine \texttt{B}, there is only one connection, but 
-for Machine \texttt{R}, we will see two. To make sure
-that you pick the one attached to the \texttt{"Internal Network"} adapter,
-You can check the MAC address displayed in the pop-up window after you have
-picked a connection to edit.
-Compare this MAC address with the one displayed by the \texttt{ifconfig} command,
-and you will know whether you have picked the right connection or not.
-
-After selecting the right connection to edit,
-pick the \texttt{"ipv4 Settings"} tab and select the
-\texttt{"Manual"} method, instead of the default \texttt{"Automatic (DHCP)"}. Click
-the \texttt{"Add"} button to set up the new IP address for the VM. See
-Figure~\ref{ip:fig:internalnetwork} for details.
+The objective of this task is for students to get familiar with routing. 
+Even though this task is not relevant to security, it is essential
+for many network-related SEED labs, so we will cover it
+in this lab. 
+We need at least three machines 
+and two networks for this lab (see Figure~\ref{fig:setup}). 
+There are two approaches to set up this lab environment. 
+One is to use VirtualBox to create virtual machines and networks. 
+Another approach is to use Docker to create containers and networks. 
+We do encourage students to use 
+the Docker approach, because it is much more convenient to set up.
 
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=0.8\textwidth]{\ipFigs/InternalNetwork.pdf}
+\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/TwoLANs.pdf}
 \end{center}
-\caption{Manually set up the IP address for the \texttt{"Internal Network"} adaptor.}
-\label{ip:fig:internalnetwork}
+\caption{Lab environment setup}
+\label{fig:setup}
 \end{figure}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input common files related to containers
+\input{\commonfolder/container_setup}
+\input{\commonfolder/container_detach_from_192.168}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3.b: Routing Setup} 
-
-The objective of this task is to configure the routing on Machines \texttt{A},
-\texttt{B} and \texttt{R}, so \texttt{A} and \texttt{B} can communicate with 
-each other. Students can use the following commands to 
-set up the routing tables on these three machines. 
-
-
-\begin{lstlisting}
-// List all the entries in the routing table 
-$ ip route 
-
-// Add an entry 
-$ sudo ip route add <network> dev <interface> via <router ip>
-
-// Delete a routing entry
-$ sudo ip route del ...
-\end{lstlisting}
-
-
-We need to configure \texttt{R} as a router.
+\paragraph{Note on Router configuration.}
 Unless specifically configured, a computer will only act as a host,
-not as a gateway. Machine \texttt{R} needs to forward packets, 
-so it needs to function as a gateway. We need to
-enable the IP forwarding for a computer to behave like a gateway.
-IP forwarding can be enabled using the following command:
+not as a gateway, i.e., they do not forward packets for 
+others. For the router container to function like a router,
+we need to enable the IP forwarding on it. 
+For virtual machines, we can use the following 
+command to enable IP forwarding on the VM:
 
 \begin{lstlisting}
 $ sudo sysctl net.ipv4.ip_forward=1
 \end{lstlisting}
 
+However, for containers, we are not able to run this command. 
+Even though we have a root account, this root is not the 
+same as that on the hosting VM, and there 
+are certain things that we cannot do inside the container, such as 
+modifying this variable and alike. If we run the command,
+we will see the following error message. The container
+is not given the privilege to make the change.
 
-In your lab report, please demonstrate (using screenshots) that you can successfully
-\texttt{ping} and \texttt{telnet} to \texttt{B} from \texttt{A}, and 
-vice versa. 
+\begin{lstlisting}
+# sysctl net.ipv4.ip_forward=1
+sysctl: setting key "net.ipv4.ip_forward": Read-only file system
+\end{lstlisting}
+
+If we want to modify this flag for a container,
+we have to do it when we build the container.
+That is why we added the following entry
+to the \texttt{docker-compose.yml} file:
+
+\begin{lstlisting}
+sysctls:
+         - sysctl net.ipv4.ip_forward=1
+\end{lstlisting}
+
+
+
+\paragraph{Task.} After we have set up the containers and 
+networks, hosts on the same LAN can communicate with one another, but
+not the hosts on different LANs. This is because we have not set 
+up the routing on the router and hosts yet. This task is left 
+to students. Students need to configure the routing table 
+on all the containers, so the can communicate with one 
+another. 
+
+There are two approaches to configure the routing table
+on containers. One is to get on each running container, and manually configure its routing
+table. Another approach is to add commands to the Compose file (\texttt{docker-compose.yml}), 
+so when each container is started, the commands will be automatically
+executed. We do recommend students to use the Compose file approach. 
+Students can find the \texttt{command} entry for some of the 
+containers. Since a command entry only allows one command,
+if we want to execute multiple commands, we feed the command
+string (commands are separated by \texttt{\&\&}) 
+to the \texttt{"bash -c"} command for execution.
+
+\begin{lstlisting}
+command: bash -c "
+             command one && 
+	     command two && 
+	     command three
+         "
+\end{lstlisting}
  
 
+Routing tables can be set using the \texttt{ip route} command. Students who are not familiar 
+with this command can easily find its manual on the Internet. We list 
+some of the usage examples in the following:
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3.c: Reverse Path Filtering}
+\begin{lstlisting}
+// List all the entries in the routing table 
+# ip route 
 
-Linux kernel implements a filtering rule called 
-\textit{reverse path filtering},  which ensures the 
-symmetric routing rule. When a packet with the source IP address X comes 
-from an interface (say \texttt{I}), the OS will check whether the return
-packet will return from the same interface, i.e., whether 
-the routing for packets going to X is symmetric. 
-To check that, the OS conducts a reverse lookup, 
-finds out which interface will be used to route the return packets back to X.
-If this interface is not \texttt{I}, i.e., different from where the 
-original packet comes from, the routing path is asymmetric. In this case,
-the kernel will drop the packet. 
+// Add an entry 
+# ip route add <network> dev <interface> via <router ip>
 
-
-The reverse path filtering mechanism can effectively
-prevent outsiders from spoofing packets with the source IP 
-address that belongs to the internal network. 
-For example, in the Network depicted in 
-Figure~\ref{ip:fig:internalnetwork}, Machine \texttt{A}
-cannot send a spoofed packets to Machine \texttt{B} with a source IP 
-address belonging to the \texttt{192.168.60.0/24} network.  
-
-
-In this task, students will conduct an experiment to 
-see the reverse path filtering in action. Students 
-should send three spoofed packets on Machine \texttt{A}. 
-All these packets should be sent to 
-Machine \texttt{B}, but the source IP addresses should use one of 
-the following: 
-
-
-\begin{itemize}[noitemsep]
-\item An IP address belonging to the network \texttt{10.0.2.0/24}.  
-\item An IP address belonging to the internal network \texttt{192.168.60.0/24}.  
-\item An IP address belonging to the Internet, such as \texttt{1.2.3.4}.
-\end{itemize}
-
-
-During the experiments, students run \texttt{Wireshark} on both Machine \texttt{B}
-and \texttt{R}, and check whether the spoofed packets are forwarded to the internal network 
-or not by \texttt{R}.
-When running \texttt{Wireshark} on machine \texttt{R},
-check the traffic on both network interfaces. If the spoofed packet
-is forwarded, it should appear in both interfaces; otherwise, we will only see 
-the packet from the incoming interface. Please describe and explain your observations. 
-
+// Delete a routing entry
+# ip route del ...
+\end{lstlisting}
 
 
 
