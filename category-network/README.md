@@ -12,10 +12,10 @@ The meaning of the Changes column can be found from
 | ---      | ---     | ---    |  ---   |
 | Sniffing/Spoofing   | Minor | Done | [README](Sniffing_Spoofing/README.md)|
 | ARP Cache Poisoning | | | |
-| IP/ICMP             | | | | 
+| IP/ICMP             | Minor | Done | [README](IP_Attacks/README.md)| 
 | TCP Attacks         | Minor | Done | [README](TCP_Attacks/README.md)|
 | Mitnick Attack      | Minor | Done | [README](Mitnick_Attack/README.md)| 
-| Local DNS Attack    | Minor | | [README](DNS_Local/README.md)|
+| Local DNS Attack    | Major | Done | [README](DNS_Local/README.md)|
 | Remote DNS Attack   | Minor | Done | [README](DNS_Remote/README.md)|
 | DNS Rebinding Attack| Minor | Done | [README](DNS_Rebinding/README.md)|
 | DNS-in-a-box        |  --   | -- | Designed for Ubuntu 20.04 |
