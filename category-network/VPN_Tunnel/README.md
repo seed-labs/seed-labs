@@ -2,10 +2,11 @@
 
 ## For Ubuntu 20.04 
 
-TBA
+There is no change to the code. 
 
 ## Container Setup
 
-If we use the container as the lab setup, the design of the lab
-will be significantly different. Therefore, we will keep this 
-lab as is, and then create a container version for this lab. 
+There is no change to the code. 
+Using containers, we can use a much more complicated network topology.
+We provide two topologies for this lab. 
+
