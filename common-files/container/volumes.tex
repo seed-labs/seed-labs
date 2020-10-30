@@ -1,0 +1,17 @@
+
+\paragraph{Volumes.} In this lab, we need to write code and then run
+the code inside containers. Code editing is more convenient inside
+the VM, so we will do it from the VM. Using the Docker \texttt{volumes},
+we can create a shared folder between VM and the container.
+If you look at the \texttt{docker-compose.yml} file, you will find out that
+we have added the following entry to the VPN client and server containers.
+It indicates mounting the \texttt{./volumes} folder on the host
+machine (i.e., the VM) to the \texttt{/volumes} folder inside the container.
+We will write our code in the \texttt{./volumes} folder (on the VM), so they
+can be used inside the containers.
+
+\begin{lstlisting}
+volumes:
+       - ./volumes:/volumes
+\end{lstlisting}
+
