@@ -26,10 +26,23 @@ $ docker-compose build  # Build the container image
 $ docker-compose up     # Start the container
 $ docker-compose down   # Shut down the container
 
-// Aliases for commonly used docker and Compose commands. 
+// Aliases for the Compose commands above
 $ dcbuild       # Alias for: docker-compose build
 $ dcup          # Alias for: docker-compose up
 $ dcdown        # Alias for: docker-compose down
+\end{lstlisting}
+
+
+All the containers will be running in the background. To run
+commands on a container, we often need to get a shell on
+that container. We first need to use the \texttt{"docker ps"}  
+command to find out the ID of the container, and then
+use \texttt{"docker exec"} to start a shell on that 
+container. Since we are going to use these two commands
+very frequently, we have also created aliases
+for them:
+
+\begin{lstlisting}
 $ dockps        # Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
 $ docksh <id>   # Alias for: docker exec -it <id> /bin/bash
 \end{lstlisting}
