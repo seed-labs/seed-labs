@@ -22,6 +22,6 @@ The meaning of the Changes column can be found from
 | DNSSEC              |  --   | -- | Designed for Ubuntu 20.04 |
 | Firewall Lab        | Major | |[README](Firewall/README.md)|
 | Firewall Evasion    | | |[README](Firewall_VPN/README.md) |
-| VPN Tunneling       | | |[README](VPN_Tunnel/README.md) |
+| VPN Tunneling       | Major | Done |[README](VPN_Tunnel/README.md) |
 | VPN Lab             | | |[README](VPN/README.md)|
 | Heartbleed Attack   | | | |
