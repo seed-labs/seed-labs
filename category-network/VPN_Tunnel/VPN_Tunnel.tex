@@ -6,14 +6,17 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
 
 
 \newcommand{\miniVPN}{{\tt MiniVPN}\xspace}
 \newcommand{\vpnFigs}{./Figs}
 
-\lhead{\bfseries SEED Labs -- VPN Tunneling Lab}
+\lhead{\bfseries SEED Labs -- VPN Lab: The Container Version}
 
 
 \newcommand{\hostu}{{\tt U}\xspace}
@@ -23,15 +26,17 @@
 \begin{document}
 
 \begin{center}
-{\LARGE VPN Tunneling Lab}
+{\LARGE VPN Lab: The Container Version}
 \end{center}
 
 \seedlabcopyright{2020}
 
-\newcounter{task}
-\setcounter{task}{1}
-\newcommand{\tasks} {\bf {\noindent (\arabic{task})} \addtocounter{task}{1} \,}
 
+
+
+% *******************************************
+% SECTION
+% *******************************************
 \section{Overview}
 
 A Virtual Private Network (VPN) is a private network built on top of a
@@ -82,7 +87,7 @@ lab first. After learning the PKI and TLS,
 they can then move on to the comprehensive VPN lab.
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -97,74 +102,112 @@ they can then move on to the comprehensive VPN lab.
 We will create a VPN tunnel between a 
 computer (client) and a gateway, allowing the computer to securely access 
 a private network via the gateway. 
-We need at least three VMs: VPN client (also serving as Host \hostu), VPN server (the gateway),
-and a host in the private network (Host \hostv). 
-The network setup is depicted in Figure~\ref{vpn:fig:host2gateway}.
+We need at least three machines: VPN client (also serving as Host \hostu), 
+VPN server (the router/gateway), and a host in the private network (Host \hostv). 
+The network setup is depicted in 
+Figure~\ref{vpn:fig:labsetup}.
 
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=0.9\textwidth]{\vpnFigs/Host2Gateway.pdf}
+\includegraphics[width=0.9\textwidth]{./Figs/VPN_2lans.pdf}
 \end{center}
-\caption{VM setup for this lab}
-\label{vpn:fig:host2gateway}
+\caption{Lab environment setup}
+\label{vpn:fig:labsetup}
 \end{figure}
  
-
 
 In practice, the VPN client and VPN server are connected via the Internet.
 For the sake of simplicity, we directly connect these two
 machines to the same LAN in this lab, i.e., this LAN simulates the Internet. 
-We will use the \texttt{"NAT Network"} adaptor for this LAN.
+
 The third machine, Host \hostv, is a computer inside the private network. Users
 on Host \hostu (outside of the private network) want to communicate with Host \hostv 
 via the VPN tunnel. To simulate this setup, we connect Host \hostv to VPN Server
-(also serving as a gateway) via an \texttt{"Internal Network"}.  In such a setup, 
+(also serving as a gateway).  In such a setup, 
 Host \hostv is not directly accessible from the Internet; nor is it directly accessible 
 from Host \hostu. 
 
-VMs attached to the \texttt{"NAT Network"} network will automatically get their
-IP addresses from the \texttt{DHCP} server, but for
-VMs on the \texttt{"Internal Network"}, VirtualBox does not provide DHCP, so the
-VMs must be statically configured. To do this, click the network icon on the top-right corner
-of the desktop, and select \texttt{"Edit Connections"}. You will see a list
-of \texttt{"Wired connections"}, one for each of the network adaptors used by the VM.
-For Host \hostv, there is only one connection, but for VPN Server, we will see two. To make sure 
-that you pick the one attached to the \texttt{Internal Network"} adapter, 
-You can check the MAC address displayed in the pop-up window after you have 
-picked a connection to edit. 
-Compare this MAC address with the one that you get from \texttt{ifconfig},
-and you will know whether you have picked the right connection or not. 
 
 
-After you have selected the right connection to edit, 
-pick the \texttt{"ipv4 Settings"} tab and select the 
-\texttt{"Manual"} method, instead of the default \texttt{"Automatic (DHCP)"}. Click 
-the \texttt{"Add"} button to set up the new IP address for the VM. See
-Figure~\ref{vpn:fig:internalnetwork} for details. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input common files related to containers
+\input{\commonfolder/container_setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+\paragraph{Volumes.} In this lab, we need to write code and then run
+the code inside containers. Code editing is more convenient inside 
+the VM, so we will do it from the VM. Using the Docker \texttt{volumes},
+we can create a shared folder between VM and the container. 
+If you look at the \texttt{docker-compose.yml} file, you will find out that 
+we have added the following entry to the VPN client and server containers.
+It indicates mounting the \texttt{./volumes} folder on the host 
+machine (i.e., the VM) to the \texttt{/volumes} folder inside the container.  
+We will write our code in the \texttt{./volumes} folder (on the VM), so they
+can be used inside the containers. 
 
-\begin{figure}[htb]
-\begin{center}
-\includegraphics[width=0.8\textwidth]{\vpnFigs/InternalNetwork.pdf}
-\end{center}
-\caption{Manually set up the IP address for the \texttt{"Internal Network"} adaptor on VPN
-Server.}
-\label{vpn:fig:internalnetwork}
-\end{figure}
+\begin{lstlisting}
+volumes:
+       - ./volumes:/volumes
+\end{lstlisting}
+ 
+
+
+\paragraph{Sniffing packets.} Being able to sniffing packets is very 
+important in this lab, because if things do not go as expected, being 
+able to look at where packets go can help us identify the problems. 
+There are two different ways to do packet sniffing:
+
+
+\begin{itemize}
+\item Running \texttt{tcpdump} on containers. 
+We have already installed \texttt{tcpdump}
+on each container. To sniff the packets going through a particular 
+interface, we just need to find out the interface name, and then do the 
+following (assume that the interface name is \texttt{eth0}):
+
+\begin{lstlisting}
+# tcpdump -i eth0 -n
+\end{lstlisting}
+
+It should be noted that inside containers, due to the isolation created by
+Docker, when we run \texttt{tcpdump} inside a container,  
+we can only sniff the packets going in and out of this container.
+We won't be able to sniff the packets between other containers. 
+
+
+\item Running \texttt{tcpdump} on the VM. If we run \texttt{tcpdump}
+on the VM, we do not have the restriction on the containers, and
+we can sniff all the packets going among containers. The interface 
+name for a network is different on the VM than on the container. 
+On containers, each interface name usually starts with \texttt{eth};
+on the VM, the interface name for the network created 
+by Docker starts with \texttt{br-}, followed by the ID of the network.  
+You can always use the \texttt{ip address} command to get the 
+interface name on the VM and containers. 
+
+\item We can also run Wireshark on the VM to sniff packets.
+Similar to \texttt{tcpdump}, we need to select what interface 
+we want Wireshark to sniff on. 
+\end{itemize}
  
 
 
 \paragraph{Testing.} Please conduct the following testings to ensure that the 
-network setup is performed correctly:
+lab environment is set up correctly:
 
 \begin{itemize}[noitemsep]
 \item Host \hostu can communicate with VPN Server.
+
 \item VPN Server can communicate with Host \hostv.
+
 \item Host \hostu should not be able to communicate with Host \hostv. 
+
+\item Run \texttt{tcpdump} on the router, and sniff the traffic on each
+of the network. Show that you can capture packets.
+
 \end{itemize}
- 
 
 
 
@@ -207,11 +250,12 @@ The objective of this task is to get familiar with the TUN/TAP technology.
 We will conduct several experiments to learn the technical details
 of the TUN/TAP interface. We will use the following Python program
 as the basis for the experiments, and we will modify this base 
-code throughout this lab. 
+code throughout this lab. The code is already included 
+in the \texttt{volumes} folder in the zip file.  
 
 
 \begin{lstlisting}[caption={Creating a TUN interface (\texttt{tun.py})}, label=vpn:list:create_tun]
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import fcntl
 import struct
@@ -250,19 +294,20 @@ root privilege. See the following commands:
 
 \begin{lstlisting}
 // Make the Python program executable 
-$ chmod a+x tun.py
+# chmod a+x tun.py
 
 // Run the program using the root privilege
-$ sudo ./tun.py
+# tun.py
 \end{lstlisting}
  
 
 Once the program is executed, it will block. You can go to 
-another terminal to print out all the interfaces on the machine. Please 
+another terminal and get a new shell on the container. 
+Then print out all the interfaces on the machine. Please 
 report your observation after running the following command:
 
 \begin{lstlisting}
-$ ip address
+# ip address
 \end{lstlisting}
  
 
@@ -271,7 +316,7 @@ in this task is to change the \texttt{tun.py} program, so
 instead of using \texttt{tun}  as the prefix of the interface name, use
 your last name as the prefix. For example, if your last name is smith, 
 you should use \texttt{smith} as the prefix.  If your last name is long,
-you can use the first five characters. Please show how your results. 
+you can use the first five characters. Please show your results. 
  
 
 
@@ -290,10 +335,10 @@ for the configuration:
 
 \begin{lstlisting}
 // Assign IP address to the interface 
-$ sudo ip addr add 192.168.53.99/24 dev tun0
+# ip addr add 192.168.53.99/24 dev tun0
 
 // Bring up the interface
-$ sudo ip link set dev tun0 up
+# ip link set dev tun0 up
 \end{lstlisting}
  
 
@@ -419,7 +464,7 @@ the source and destination IP address of the enclosed IP packet.
 
 
 \begin{lstlisting}[caption={\texttt{tun\_server.py}}, label=vpn:list:tun_server]
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 from scapy.all import *
 
@@ -482,7 +527,7 @@ The following command shows how to add an entry to the routing table:
 
 
 \begin{lstlisting}
-$ sudo ip route add <network> dev <interface> via <router ip>
+# ip route add <network> dev <interface> via <router ip>
 \end{lstlisting}
  
 
@@ -524,12 +569,15 @@ Unless specifically configured, a computer will only act as a host,
 not as a gateway. VPN Server needs to forward packets between the private network and the 
 tunnel, so it needs to function as a gateway. We need to  
 enable the IP forwarding for a computer to behave like a gateway. 
-IP forwarding can be enabled
-using the following command:
+IP forwarding has already been enabled on the router container. 
+You can see in \texttt{docker-compose.yml} that the router
+container has the following entry:
 
 \begin{lstlisting}
-$ sudo sysctl net.ipv4.ip_forward=1
+sysctls:
+        - net.ipv4.ip_forward=1
 \end{lstlisting}
+
 
  
 
@@ -540,7 +588,7 @@ Please show your proof.
 It should be noted that although Host \hostv will respond to the ICMP packets,
 the reply will not get back to Host \hostu, because we have not set up everything yet. 
 Therefore, for this task, it is sufficient to
-show (using Wireshark) that the ICMP packets have arrived at Host \hostv.
+show (using Wireshark or tcpdump) that the ICMP packets have arrived at Host \hostv.
 
 
 
@@ -657,71 +705,68 @@ Host \texttt{V}'s routing table has a default setting: packets going to
 any destination, except the \texttt{192.168.60.0/24} network,   
 will be automatically routed to the VPN server.  
 
-In the real world, Host \hostv may be a few hops away from the VPN server, and the default routing entry 
+In the real world, Host \hostv may be a few hops away from the VPN server, 
+and the default routing entry 
 may not guarantee to route the return packet back to the VPN server. Routing tables inside a 
 private network have to be set up properly to ensure that packets going to the other end of the
 tunnel will be routed to the VPN server. To simulate this scenario, we will 
 remove the default entry from Host \hostv, and add a more specific entry to the routing 
-table, so the return packets can be routed back to the VPN server. The network prefix 
-for this entry should have no less than 24 bits.
+table, so the return packets can be routed back to the VPN server.
 Students can use the following commands to remove the default entry 
 and add a new entry: 
 
 \begin{lstlisting}
 // Delete the default entry
-$ sudo ip route del 0.0.0.0/0
+# ip route del default
 
 // Add an entry
-$ sudo ip route add <network> dev <interface> via <router ip>
+# ip route add <network prefix> via <router ip>
 \end{lstlisting}
-
 
 
 
 % *******************************************
 % SECTION
-% ******************************************* 
-\section{Task 8: Experiment with the TUN IP Address}
-
-On Host \hostu, change its TUN interface's IP address to 
-\texttt{192.168.30.99} and see how it works. 
-Namely the IP addresses set on the TUN interface on the client
-and server sides are from two different networks.  
+% *******************************************
+\section{Task 8: VPN Between Private Networks} 
 
 
-You will find out that the packets cannot arrive at Host \hostv. They must be dropped somewhere
-along the path, and your task is to 
-find out where the packets get dropped and how you can solve this problem. More specifically,
-you should answer the following questions and demonstrate your solution:
-
-
-\begin{itemize}[noitemsep]
-\item Where are the packets dropped? Please provide evidence using Wireshark traces.
-\item Why are the packets dropped? See the hint below. 
-\item How to solve this problem? You are not allowed to change the IP address on any of
-the TUN interfaces? Please demonstrate that your solution works. 
-\end{itemize}
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{Figs/VPN_3lans.pdf}
+\end{center}
+\caption{VPN between two private networks}
+\label{vpn:fig:two-private-network}
+\end{figure}
  
-
-\paragraph{Hint:} To understand the result of 
-this experiment, students need to understand the reverse path filtering mechanism
-and the symmetric routing rule implemented inside Linux kernel. 
-If this rule is not covered in your class, see 
-the explanation and demonstration regarding this rule from the
-SEED lecture titled \textit{Internet Security: A Hands-on Approach}: Lecture 32
-in Section 4 (Spoofing Prevention on Routers). See the following link for 
-details: \url{https://www.handsonsecurity.net/video.html}.
+In this task, we are setting up a VPN between two private networks.
+The setup is illustrated in Figure~\ref{vpn:fig:two-private-network}.
+The whole setup is described in the \texttt{docker-compose2.yml} file, 
+and you can use the \texttt{"-f docker-compose2.yml"} option to ask
+\texttt{docker-compose} to use this file, instead of the 
+default \texttt{docker-compose.yml} file. 
 
 
-
-
-
+This setup simulates a situation where an organization has two sites, 
+each having a private network. The only way to connect these two
+networks is through the Internet. 
+Your task is to set up a VPN between these two sites, so
+the communication between these two networks will go 
+through a VPN tunnel. You can use the code developed earlier,
+but you need to think about how to set up the correct routing,
+so packets between these two private networks can 
+get routed into the VPN tunnel. 
+In your report, please describe and explain what you did.
+You need to provide proofs to show that the packets 
+between the two private networks are indeed going through
+a VPN tunnel. 
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
 \section{Task 9: Experiment with the TAP Interface}
+
 
 In this task, we will do a simple experiment with the TAP interface, so students
 can get some idea of this type of interface. The way how the TAP interface works is 
@@ -734,7 +779,9 @@ Other than getting the frames containing IP packets, using the TAP interface,
 applications can also get other types of frames, such as ARP frames. 
 
 
-We will use the following program for our experiment. The code 
+We will use the following program for our experiment, and we will
+only use the VPN client container (either lab environment setup is fine).
+The code 
 for creating the TUN interface and TAP interface is quite similar; the 
 only difference is in the interface type. For TAP interfaces, we use
 \texttt{IFF\_TAP}, while for TUN,  we use \texttt{IFF\_TUN}.
@@ -766,7 +813,7 @@ the \texttt{192.168.53.0/24} network; report and explain your observations.
 
 To make this more interesting, once you get an ethernet frame from the TAP interface,
 you can check whether it is an ARP request; if it is, generate a corresponding
-ARP reply and write it to the TAP interface. A skeleton code is provided in the
+ARP reply and write it to the TAP interface. A sample code is provided in the
 following:
 
 \begin{lstlisting}
@@ -778,11 +825,13 @@ while True:
       print(ether.summary())
 
       # Send a spoofed ARP response
+      FAKE_MAC   = "aa:bb:cc:dd:ee:ff"
       if ARP in ether and ether[ARP].op == 1 :
          arp       = ether[ARP]
-         newether  = Ether( ... )
-         newarp    = ARP(op=2, ... )
-         newpkt    = newether/newarp
+         newether  = Ether(dst=ether.src, src=FAKE_MAC)
+         newarp    = ARP(psrc=arp.pdst, hwsrc=FAKE_MAC,
+                         pdst=arp.psrc, hwdst=ether.src, op=2)
+         newpkt     = newether/newarp
 
          print("***** Fake response: {}".format(newpkt.summary()))
          os.write(tun, bytes(newpkt))
@@ -798,6 +847,7 @@ response. See the following examples.
 arping -I tap0 192.168.53.33
 arping -I tap0 1.2.3.4
 \end{lstlisting}
+
  
  
 % *******************************************
