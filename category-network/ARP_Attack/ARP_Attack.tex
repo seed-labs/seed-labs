@@ -6,8 +6,10 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \lhead{\bfseries SEED Labs -- ARP Cache Poisoning Attack Lab}
@@ -71,7 +73,7 @@ Detailed coverage of the ARP protocol and attacks can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -81,7 +83,58 @@ Detailed coverage of the ARP protocol and attacks can be found in the following:
 % ******************************************* 
 \section{Environment Setup Using Containers}
 
-...
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The General Setup} 
+
+In this lab, students need to have 3 machines. We use 
+containers to set up the lab environment, which is depicted 
+in Figure~\ref{arp:fig:labsetup}.
+In this setup, we have an attacker machine (Host M),
+which is used to launch attacks against the other two machines, Host A and
+Host B.  These three machines must be on the same LAN,
+because the ARP cache poisoning attack is limited to LAN.
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{Figs/ARP_onelan.pdf}
+\end{center}
+\caption{Lab environment setup}
+\label{arp:fig:labsetup}
+\end{figure}
+ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input common files related to containers
+\input{\commonfolder/container_setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Customization}
+
+
+\paragraph{Privileged mode.}
+For the Host M container, we used the \texttt{privileged} mode; without it,
+we will not be able to run \texttt{sysctl} to enable/disable the 
+IP forwarding. The use of this mode is specified in the Compose file: 
+
+\begin{lstlisting}
+privileged: true
+\end{lstlisting}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/volumes}
+
+\input{\commonfolder/container/sniffing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -104,7 +157,7 @@ Please replace the interface name \texttt{br-05f0c56e8085} with the one in your
 own setup (see the previous section). 
 
 \begin{lstlisting}
-#!/usr/bin/python3
+#!/usr/bin/env python3
 from scapy.all import *
 
 E = Ether()
@@ -202,7 +255,7 @@ will forward the packets between A and B. Please run the following command and r
 Please describe your observation. 
 
 \begin{lstlisting}
-$ sudo sysctl net.ipv4.ip_forward=1
+# sysctl net.ipv4.ip_forward=1
 \end{lstlisting}
 
 \paragraph{Step 4 (Launch the MITM attack).} We are ready to make changes to the Telnet data
@@ -224,7 +277,7 @@ between A to B. Once the connection is established, we turn off the IP forwardin
 following command. Please type something on A's Telnet window, and report your observation: 
 
 \begin{lstlisting}
-$ sudo sysctl net.ipv4.ip_forward=0
+# sysctl net.ipv4.ip_forward=0
 \end{lstlisting}
 
 \item We run our sniff-and-spoof program on Host M, such that for the captured packets sent
@@ -237,44 +290,53 @@ To help students get started, we provide a skeleton sniff-and-spoof
 program in the following. The program capture all the TCP packets, and 
 then for packets from A to B, it makes some changes (the modification
 part is not included, because that is part of the task). For packets from
-B to A, the program simply forward the original packets. 
+B to A, the program does not make any change.  
 
 \begin{lstlisting}
-#!/usr/bin/python3
+#!/usr/bin/env python3
 from scapy.all import *
 
-VM_A_IP = "10.0.2.6"
-VM_B_IP = "10.0.2.7"
+IP_A = "10.9.0.5"
+IP_B = "10.9.0.6"
 
 def spoof_pkt(pkt):
-  if pkt[IP].sr == VM_A_IP and pkt[IP].dst == VM_B_IP \
-                           and pkt[TCP].payload:
+    if pkt[IP].src == IP_A and pkt[IP].dst == IP_B:
+         # Create a new packet based on the captured one.
+         # (1) We need to delete the checksum fields in the IP and TCP headers, 
+         #     because our modification will make them invalid.
+         #     Scapy will recalculate them for us if these fields are missing. 
+         # (2) We also delete the original TCP payload.
 
-     # Create a new packet based on the captured one.
-     # (1) We need to delete the checksum fields in the IP and TCP headers, 
-     #     because our modification will make them invalid.
-     #     Scapy will recalculate them for us if these fields are missing. 
-     # (2) We also delete the original TCP payload.
-     newpkt = IP(pkt[IP])
-     del(newpkt.chksum)  
-     del(newpkt[TCP].chksum) 
-     del(newpkt[TCP].payload) 
+         newpkt = IP(pkt[IP])
+         del(newpkt.chksum)
+         del(newpkt[TCP].payload)
+         del(newpkt[TCP].chksum)
 
-     #####################################################################
-     # Construct the new payload based on the old payload.
-     # Students need to implement this part.
+         #####################################################################
+         # Construct the new payload based on the old payload.
+         # Students need to implement this part.
 
-     olddata = pkt[TCP].payload.load   # Get the original payload data 
-     newdata = olddata  # No change is made in this sample code
-     #####################################################################
+         if pkt[TCP].payload:
+             data = pkt[TCP].payload.load  # The original payload data
+             newdata = data   # No change is nade in this sample code
 
-     # Attach the new data and set the packet out
-     send(newpkt/newdata)
+             send(newpkt/newdata)
+         else:
+             send(newpkt)
+         #####################################################################
 
-  elif pkt[IP].src == VM_B_IP and pkt[IP].dst == VM_A_IP:
-     send(pkt[IP]) # Forward the original packet
+    elif pkt[IP].src == IP_B and pkt[IP].dst == IP_A:
+         # Create new packet based on the captured one 
+	 # Do not make any change 
 
-pkt = sniff(filter='tcp',prn=spoof_pkt)
+         newpkt = IP(pkt[IP])
+         del(newpkt.chksum)
+         del(newpkt[TCP].chksum)
+         send(newpkt)
+
+
+f = 'tcp'
+pkt = sniff(iface='eth0', filter=f, prn=spoof_pkt)
 \end{lstlisting}
 
 
@@ -303,7 +365,6 @@ that is not what you have typed.
 
 
 
-
 % *******************************************
 % SECTION
 % ******************************************* 
@@ -318,11 +379,11 @@ connection between A and B:
 
 
 \begin{lstlisting}
-On Host B (server, IP address is 10.0.2.7), run the following:
-$ nc -l 9090
+On Host B (server, IP address is 10.9.0.6), run the following:
+# nc -lp 9090
 
 On Host A (client), run the following:
-$ nc 10.0.2.7 9090
+# nc 10.9.0.6 9090
 \end{lstlisting}
  
 
