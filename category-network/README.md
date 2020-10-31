@@ -11,7 +11,7 @@ The meaning of the Changes column can be found from
 | Lab Name | Changes | Status |  Notes |
 | ---      | ---     | ---    |  ---   |
 | Sniffing/Spoofing   | Minor | Done | [README](Sniffing_Spoofing/README.md)|
-| ARP Cache Poisoning | | | |
+| ARP Cache Poisoning | Minor | Done | [README](ARP_Attack/README.md)|
 | IP/ICMP             | Minor | Done | [README](IP_Attacks/README.md)| 
 | TCP Attacks         | Minor | Done | [README](TCP_Attacks/README.md)|
 | Mitnick Attack      | Minor | Done | [README](Mitnick_Attack/README.md)| 
@@ -23,5 +23,5 @@ The meaning of the Changes column can be found from
 | Firewall Lab        | Major | |[README](Firewall/README.md)|
 | Firewall Evasion    | | |[README](Firewall_VPN/README.md) |
 | VPN Tunneling       | Major | Done |[README](VPN_Tunnel/README.md) |
-| VPN Lab             | | |[README](VPN/README.md)|
+| VPN Lab             | None  | -- |[README](VPN/README.md)|
 | Heartbleed Attack   | | | |
