@@ -95,16 +95,16 @@ local DNS server.  Obviously, it
 is illegal to attack a real server, so we need to set up our own DNS
 server to  conduct the attack experiments. The lab
 environment needs four separate machines:
-one for the victim, one for the DNS server, and two for the attacker.
+one for the victim, one for the local DNS server, and two for the attacker.
 The lab environment setup is illustrated in Figure~\ref{dns:fig:environment}.
-Only the attack machine will be using VM; all the others are containers.
 This lab focuses on the local attack, so we put all these machines on 
 the same LAN.
 
 
+
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.9\textwidth]{\commonfolder/Figs/DNS.pdf}
+\includegraphics[width=0.9\textwidth]{\commonfolder/Figs/DNS_2lans.pdf}
 \caption{Lab environment setup}
 \label{dns:fig:environment}
 \end{figure}
@@ -112,8 +112,7 @@ the same LAN.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input common files related to containers
-\input{\commonfolder/container_setup}
-\input{\commonfolder/container_interface}
+\input{\commonfolder/container/setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -137,6 +136,35 @@ if the adversaries can redirect the user
 to a malicious web site that looks very much like the main web site 
 of bank, the user might be fooled and give away password
 of his/her online banking account.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{About the Attacker Container} 
+
+In this lab, we can either use the VM or the attacker container 
+as the attacker machine. If you look at the Docker Compose file, you will
+see that the attacker container is configured differently from the other 
+containers. 
+
+
+\begin{itemize}
+\item \textit{Shared folder.} When we use the attacker container 
+to launch attacks, we need to put the attacking code inside
+the attacker container. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/volumes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\item \textit{Host mode.} 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/host_mode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{itemize}
+
 
 
 % -------------------------------------------
@@ -171,7 +199,7 @@ provided in the SEED book.
 
 
 \begin{lstlisting}
-#!/usr/bin/python3
+#!/usr/bin/env python3
 from scapy.all import *
 import sys
 
@@ -197,7 +225,6 @@ It should be noted that in the code above, the value (highlighted) for the
 name for the \texttt{10.9.0.0/24} network.  
  
 
-
 While the attack program is running, on the user machine, you can
 run \texttt{dig} command on behalf of the user.
 This command triggers the user
@@ -208,6 +235,39 @@ If your attack is successful, you should be able to see
 your spoofed information in the reply. Compare your results obtained before
 and after the attack. 
 
+
+\paragraph{A potential issue.} When we do this lab using containers, 
+we saw a very strange situation. The sniffing and spoofing 
+inside containers is very slow, and our spoofed packets even arrive 
+later than the legitimate one from the Internet, even though 
+we are local. In the past, when we use VMs for this lab, we never 
+had this issue. We have not figured out the cause of this 
+performance issue yet (if you have any insight on this issue, please 
+let us know).
+
+To get around this problem, we intentionally slow down the 
+traffic going to the outside, so the authentic replies will not 
+come that fast. This can be done using the 
+following \texttt{tc} command on the router to add some 
+delay to the outgoing network traffic. 
+The router has two interfaces, \texttt{eth0} and 
+\texttt{eth1}, make sure use the one connected 
+to the external network \texttt{10.8.0.0/24}.
+
+\begin{lstlisting}
+// Delay the network traffic by 100ms
+# tc qdisc add dev (*@\textbf{eth0}@*) root netem delay 100ms
+
+// Delete the tc entry
+# tc qdisc del dev eth0 root netem
+
+// Show all the tc entries 
+# tc qdisc show dev eth0
+\end{lstlisting}
+ 
+
+You can keep the \texttt{tc} entry on for this entire lab, because 
+all the tasks will face a similar situation. 
 
 
 % -------------------------------------------
@@ -241,7 +301,8 @@ the impact will last until the cached information expires.
 This attack is called {\em DNS cache poisoning}.  
 
 
-Please modify the program used in the previous task for this attack. Before attacking, 
+Please modify the program used in the previous task for this attack. 
+Before attacking, 
 make sure that the DNS Server's cache is empty. 
 You can flush the cache using the following command:
 
@@ -289,8 +350,11 @@ example.com.            259200  IN      NS       ns.attacker32.com.
  
 
 Please add a spoofed NS record in your attack code, and launch the 
-attack (before doing the attack, please remember to clear the cache on 
-the local DNS server first).
+attack. Section~\ref{sec:guideline} has an example showing how to
+include an NS record in a DNS response packet. 
+Detailed guidelines are provided in the SEED book.
+Before doing the attack, please remember to clear the cache on 
+the local DNS server first.
 If your attack is successful, when you run the \texttt{dig} command 
 on the user machine for any hostname in the \url{example.com} domain, you will
 get the fake IP address provided by \texttt{ns.attacker32.com}. Please also
@@ -391,15 +455,16 @@ try our ``Remote DNS Attack Lab''.
 You need to use Scapy for several tasks in this lab. The following sample code shows how to
 sniff a DNS query and then spoof a DNS reply, which contains 
 a record in the Answer section, two records in the Authority section and two
-records in the Additional section.  
+records in the Additional section. The code is already included 
+in the \texttt{Labsetup.zip} file (inside the \texttt{volumes} folder).  
 
 
-\begin{lstlisting}
-#!/usr/bin/python
+\begin{lstlisting}[caption={Sample code: \texttt{dns\_sniff\_spoof.py}}]
+#!/usr/bin/env python3
 from scapy.all import *
  
 def spoof_dns(pkt):
-  if (DNS in pkt and 'www.example.net' in pkt[DNS].qd.qname):
+  if (DNS in pkt and 'www.example.net' in pkt[DNS].qd.qname.decode('utf-8')):
 
     # Swap the source and destination IP address
     IPpkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)
@@ -424,7 +489,7 @@ def spoof_dns(pkt):
                     ttl=259200, rdata='5.6.7.8')
 
     # Construct the DNS packet
-    DNSpkt = DNS(id=pkt[DNS].id, qd=pkt[DNS].qd, aa=1, rd=0, qr=1,     (*@\ding{192}@*)
+    DNSpkt = DNS(id=pkt[DNS].id, qd=pkt[DNS].qd, aa=1, rd=0, qr=1,  (*@\ding{81}@*)
                  qdcount=1, ancount=1, nscount=2, arcount=2,
                  an=Anssec, ns=NSsec1/NSsec2, ar=Addsec1/Addsec2)
 
@@ -433,11 +498,13 @@ def spoof_dns(pkt):
     send(spoofpkt)
 
 # Sniff UDP query packets and invoke spoof_dns().                		
-pkt = sniff(filter='udp and dst port 53', prn=spoof_dns)
+f = 'udp and dst port 53'
+pkt = sniff(iface='br-43d947d991eb', filter=f, prn=spoof_dns)       (*@\ding{73}@*)    
 \end{lstlisting}
  
-
-Line~\ding{192} constructs the DNS payload, including DNS header and data. Each field 
+Please make sure replace the interface name in Line~\ding{73} with
+the one in your system.
+Line~\ding{81} constructs the DNS payload, including DNS header and data. Each field 
 of the DNS payload is explained in the following:
 
  
