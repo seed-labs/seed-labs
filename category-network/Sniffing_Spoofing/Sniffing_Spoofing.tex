@@ -102,17 +102,16 @@ their students' programming background.
 \section{Environment Setup using Container} 
 
 In this lab, we will use two machines that are connected
-to the same LAN. We can either use
-two VMs or use one VM plus a container. 
-The following diagrams shows the setup using container. 
-We will do all the attacks on the VM, while using
-the container as the user machine. Figure~\ref{fig:labsetup}
-depicts the lab environment setup.
+to the same LAN. We can either use two VMs or use two containers. 
+Figure~\ref{fig:labsetup} depicts the lab environment setup using 
+containers.
+We will do all the attacks on the attacker container, while using
+the other container as the user machine. 
 
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=0.8\textwidth]{Figs/OneLan_onehost.pdf}
+\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/OneLan_onehost.pdf}
 \end{center}
 \caption{Lab environment setup}
 \label{fig:labsetup}
@@ -121,7 +120,6 @@ depicts the lab environment setup.
 
 %\begin{lstlisting}[backgroundcolor=]
 %                +--------------+      +--------------+
-%                |     VM       |      |   Container  |
 %                |  (attacker)  |      |    (user)    |
 %                |   10.9.0.1   |      |   10.9.0.5   |
 %                +-----+--------+      +------+-------+
@@ -132,11 +130,48 @@ depicts the lab environment setup.
 %\end{lstlisting}
  
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands} 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Input common files related to containers
-\input{\commonfolder/container_setup}
-\input{\commonfolder/container_interface}
+\input{\commonfolder/container/setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{About the Attacker Container}
+
+In this lab, we can either use the VM or the attacker container
+as the attacker machine. If you look at the Docker Compose file, you will
+see that the attacker container is configured differently from the other
+containers. Here are the differences:
+
+
+\begin{itemize}
+\item \textit{Shared folder.} When we use the attacker container
+to launch attacks, we need to put the attacking code inside
+the attacker container.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/volumes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\item \textit{Host mode.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/host_mode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{itemize}
+
+
+\paragraph{Getting the network interface name.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/interface}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -160,15 +195,15 @@ At the beginning of the program (Line~\ding{192}),
 we should import all Scapy's modules.
 
 \begin{lstlisting}
-$ view mycode.py
-#!/usr/bin/python3
+# view mycode.py
+#!/usr/bin/env python3
 
 from scapy.all import *    (*@\ding{192}@*)
 
 a = IP()
 a.show()
 
-$ sudo python3 mycode.py
+# python3 mycode.py
 ###[ IP ]###
   version   = 4
   ihl       = None
@@ -176,8 +211,8 @@ $ sudo python3 mycode.py
 
 
 // Make mycode.py executable (another way to run python programs)
-$ chmod a+x mycode.py
-$ sudo ./mycode.py 
+# chmod a+x mycode.py
+# mycode.py 
 \end{lstlisting}
 
 
@@ -187,7 +222,7 @@ This is more convenient if we need to change our code
 frequently in an experiment.
 
 \begin{lstlisting}
-$ sudo python3
+# python3
 >>> from scapy.all import *
 >>> a = IP()
 >>> a.show()
@@ -212,7 +247,7 @@ A sample code is provided in the following:
 
 
 \begin{lstlisting}
-#!/usr/bin/python3
+#!/usr/bin/env python3
 from scapy.all import *
 
 def print_pkt(pkt):
@@ -223,8 +258,10 @@ pkt = sniff(iface='br-c93733e9f913', filter='icmp', prn=spoof_pkt)
 
 
 The code above will sniff the packets on the \texttt{br-c93733e9f913}
-interface. If we want to sniff on multiple interfaces, we can
-put all the interfaces in a list, and assign to \texttt{iface}.
+interface. Please read the instruction in the lab setup section
+regarding how to get the interface name. 
+If we want to sniff on multiple interfaces, we can
+put all the interfaces in a list, and assign it to \texttt{iface}.
 See the following example: 
 
 
@@ -232,7 +269,6 @@ See the following example:
 iface=['br-c93733e9f913', 'enp0s3']
 \end{lstlisting}
  
-
 
 
 \paragraph{Task 1.1A.} The above program sniffs packets. For each captured
@@ -243,12 +279,14 @@ privilege; describe and explain your observations.
  
 \begin{lstlisting}
 // Make the program executable 
-$ chmod a+x sniffer.py
+# chmod a+x sniffer.py
 
 // Run the program with the root privilege
-$ sudo ./sniffer.py
+# sniffer.py
 
-// Run the program without the root privilege
+// Switch to the "seed" account, and
+// run the program without the root privilege
+# su seed
 $ sniffer.py
 \end{lstlisting}
 
@@ -769,7 +807,9 @@ manuals from the Internet.
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
