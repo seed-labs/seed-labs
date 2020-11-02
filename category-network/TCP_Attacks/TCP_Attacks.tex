@@ -91,42 +91,48 @@ Detailed coverage of the TCP attacks can be found in the following:
 \section{Lab Environment}
 
 
-In this lab, students need to have at least 3 machines. One machine 
-is mainly used for launching attacks, the second machine is used as the victim, and 
-the third one is used as the observer and user. Students can use three virtual 
-machines for this lab, but it will be much more convenient to 
-use containers. We will create four containers, their roles
-are depicted in the following.
+In this lab, we need to have at least three machines. We use 
+containers to set up the lab environment. Figure~\ref{tcp:fig:labsetup}
+depicts the lab setup. 
+We will use the attacker container to launch attacks, while using the other 
+three containers as the victim and user machines. 
 We assume all these machines are on the same LAN. 
+Students can also use three virtual machines for this lab, 
+but it will be much more convenient to use containers. 
 
 
-\begin{lstlisting}[backgroundcolor=]
-  +------------+      +------------+  +------------+  +------------+
-  |  Attacker  |      |   Victim   |  |    User 1  |  |   User 2   |
-  |  10.9.0.1  |      |  10.9.0.5  |  |  10.9.0.6  |  |  10.9.0.7  |
-  +----+-------+      +------+-----+  +------+-----+  +------+-----+
-       |                     | eth0          | eth0          | eth0
-       |                     |               |               |
--------+---------------------+---------------+---------------+-------
-           Network  10.9.0.0/24
-
-\end{lstlisting}
- 
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/OneLan.pdf}
+\end{center}
+\caption{Lab environment setup}
+\label{tcp:fig:labsetup}
+\end{figure}
  
 
+%\begin{lstlisting}[backgroundcolor=]
+%  +------------+      +------------+  +------------+  +------------+
+%  |  Attacker  |      |   Victim   |  |    User 1  |  |   User 2   |
+%  |  10.9.0.1  |      |  10.9.0.5  |  |  10.9.0.6  |  |  10.9.0.7  |
+%  +----+-------+      +------+-----+  +------+-----+  +------+-----+
+%       |                     | eth0          | eth0          | eth0
+%       |                     |               |               |
+%-------+---------------------+---------------+---------------+-------
+%           Network  10.9.0.0/24
+%
+%\end{lstlisting}
+ 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Input common files related to containers
-\input{\commonfolder/container_setup}
-\input{\commonfolder/container_interface}
+\input{\commonfolder/container/setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-% *******************************************
-% SECTION
-% ******************************************* 
-\section{Lab Tasks}
-
-
+ 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
@@ -154,6 +160,16 @@ the attacker container.
 \end{itemize}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\input{\commonfolder/container_interface}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Lab Tasks}
 
 
 % -------------------------------------------
@@ -226,8 +242,8 @@ That is why we added the following entry
 to the \texttt{docker-compose.yml} file:  
 
 \begin{lstlisting}
-   sysctls:
-         - net.ipv4.tcp_syncookies=0
+sysctls:
+      - net.ipv4.tcp_syncookies=0
 \end{lstlisting}
 
  
@@ -238,8 +254,11 @@ We provide a C program called \texttt{synflood.c}. Students can compile
 the program on the VM and then launch the attack on the target machine:
 
 \begin{lstlisting}
+// Compile the code on the host VM
 $ gcc -o synflood synflood.c
-$ sudo ./synflood 10.9.0.5 23
+
+// Launch the attack from the attacker container
+# synflood 10.9.0.5 23
 \end{lstlisting}
  
 
@@ -358,7 +377,7 @@ A skeleton code is provided in the following. You need to replace each
 
 
 \begin{lstlisting}
-#!/usr/bin/python
+#!/usr/bin/env python3
 from scapy.all import *
 
 ip  = IP(src="@@@@", dst="@@@@")
@@ -470,7 +489,7 @@ should put into each field of the spoofed TCP packets.
 
 
 \begin{lstlisting}
-#!/usr/bin/python
+#!/usr/bin/env python3
 from scapy.all import *
 
 ip  = IP(src="@@@@", dst="@@@@")
@@ -534,7 +553,7 @@ we type the reverse shell command.
 As soon as the reverse shell gets executed, the top window indicates 
 that we get a shell. This is a reverse shell, i.e., it runs on \texttt{10.9.0.5}.  
 
-
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[backgroundcolor=]
            +---------------------------------------------------+ 
            | (*@\textbf{On 10.9.0.1 (attcker)}@*)                             |
@@ -553,6 +572,7 @@ that we get a shell. This is a reverse shell, i.e., it runs on \texttt{10.9.0.5}
            |                                                   | 
            +---------------------------------------------------+
 \end{lstlisting}
+\end{minipage}
 
 We provide a brief description on the reverse shell command in the following.
 Detailed explanation can be found in the SEED book.
@@ -599,7 +619,9 @@ shell on the target server.
 % ******************************************* 
 \section{Lab Report}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
