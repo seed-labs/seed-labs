@@ -87,9 +87,9 @@ Detailed coverage of the ARP protocol and attacks can be found in the following:
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{The General Setup} 
+\section{Environment Setup using Container}
 
-In this lab, students need to have 3 machines. We use 
+In this lab, we need three machines. We use 
 containers to set up the lab environment, which is depicted 
 in Figure~\ref{arp:fig:labsetup}.
 In this setup, we have an attacker machine (Host M),
@@ -99,7 +99,7 @@ because the ARP cache poisoning attack is limited to LAN.
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=0.8\textwidth]{Figs/ARP_onelan.pdf}
+\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/ARP_onelan.pdf}
 \end{center}
 \caption{Lab environment setup}
 \label{arp:fig:labsetup}
@@ -108,33 +108,44 @@ because the ARP cache poisoning attack is limited to LAN.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input common files related to containers
-\input{\commonfolder/container_setup}
+\input{\commonfolder/container/setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Customization}
+\subsection{About the Attacker Container}
 
+In this lab, we can either use the VM or the attacker container
+as the attacker machine. If you look at the Docker Compose file, you will
+see that the attacker container is configured differently from the other
+containers. Here are the differences:
 
-\paragraph{Privileged mode.}
-For the Host M container, we used the \texttt{privileged} mode; without it,
-we will not be able to run \texttt{sysctl} to enable/disable the 
-IP forwarding. The use of this mode is specified in the Compose file: 
-
-\begin{lstlisting}
-privileged: true
-\end{lstlisting}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{itemize}
+\item \textit{Shared folder.} When we use the attacker container
+to launch attacks, we need to put the attacking code inside
+the attacker container.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/volumes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\item \textit{Privileged mode.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/privileged_mode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{itemize}
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Packet Sniffing} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/sniffing}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
