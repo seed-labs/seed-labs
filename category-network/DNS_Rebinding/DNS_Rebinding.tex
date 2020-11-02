@@ -156,18 +156,11 @@ password; in real systems, the password will be re-generated periodically.
 
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Container Setup}
-
-
-
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.9\textwidth]{\rebindingFigs/environment_setup_container.pdf}
-\caption{Environment setup for the experiment}
-\label{dns:fig:rebind_environment}
+\includegraphics[width=0.9\textwidth]{\commonfolder/Figs/IoT_2lans.pdf}
+\caption{Lab environment setup}
+\label{rebind:fig:labsetup}
 \end{figure}
 
 
@@ -175,7 +168,6 @@ In this lab, we will use six machines.
 The lab environment setup is illustrated
 in Figure~\ref{dns:fig:rebind_environment}. Only the user machine 
 will be using VM, and the others are all containers. 
-
 In the setup, we have two networks, a home network and 
 an outside network. The home network 
 simulates a typical network at home. 
@@ -200,12 +192,16 @@ The web server hosts a malicious website used for the
 attack. 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Input common files related to containers
-\input{\commonfolder/container_setup}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -536,7 +532,10 @@ once the timer reaches 0, the thermostat's temperature is set to
 % *******************************************
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 \end{document}
