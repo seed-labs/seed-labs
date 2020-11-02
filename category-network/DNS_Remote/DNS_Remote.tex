@@ -103,11 +103,10 @@ safely in this lab.
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.9\textwidth]{\commonfolder/Figs/DNS.pdf}
+\includegraphics[width=0.85\textwidth]{\commonfolder/Figs/DNS.pdf}
 \caption{Environment setup for the experiment}
 \label{dns:fig:environment}
 \end{figure}
-
 
 
 The main target for DNS cache poisoning attacks is
@@ -134,23 +133,61 @@ The lab environment setup is illustrated in Figure~\ref{dns:fig:environment}.
 %
 %\end{lstlisting}
 
-Only the attack machine will be using VM; all the others are containers. 
 We put all these machines on the same LAN only for the sake of simplicity. 
 Students are not allowed to exploit this fact in their attacks; 
 they should treat the attacker machine as a remote machine, 
-i.e., the attacker cannot sniff packets on the LAN.
+i.e., the attacker cannot sniff packets on the LAN. 
+This is different from the local DNS attack. 
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Input common files related to containers
-\input{\commonfolder/container_setup}
+\input{\commonfolder/container/setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{About the Attacker Container}
+
+In this lab, we can either use the VM or the attacker container
+as the attacker machine. If you look at the Docker Compose file, you will
+see that the attacker container is configured differently from the other
+containers.
+
+
+\begin{itemize}
+\item \textit{Shared folder.} When we use the attacker container
+to launch attacks, we need to put the attacking code inside
+the attacker container.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/volumes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\item \textit{Host mode.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/host_mode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{itemize}
+
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{../DNS_Common/summary_of_config}
-\input{../DNS_Common/setup_testing}
+\input{\commonfolder/DNS/summary_of_config}
+\input{\commonfolder/DNS/setup_testing}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -438,17 +475,14 @@ guideline section.
 To check whether the attack is successful or not, we need to 
 check the {\tt dump.db} file to see whether our spoofed DNS
 response has been successfully accepted by the DNS server. 
-The following shell script dump the DNS cache, and search whether
+The following commands dump the DNS cache, and search whether
 the cache contains the word \texttt{attacker} (in our 
 attack, we used \texttt{attacker32.com} as the attacker's 
 domain; if students use a different domain name, they should 
 search for a different word).  
 
 \begin{lstlisting}
-#!/bin/bash
-
-sudo rndc dumpdb -cache
-cat /var/cache/bind/dump.db | grep attacker
+# rndc dumpdb -cache && grep attacker /var/cache/bind/dump.db
 \end{lstlisting}
  
 
@@ -526,7 +560,7 @@ which is saved into a file.
 
 
 \begin{lstlisting}[caption={\texttt{generate\_dns\_reply.py}}]
-#!/usr/bin/python3
+#!/usr/bin/env python3
 from scapy.all import *
 
 # Construct the DNS header and payload
