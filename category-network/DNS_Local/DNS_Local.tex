@@ -31,7 +31,7 @@
 {\LARGE Local DNS Attack Lab}
 \end{center}
 
-\seedlabcopyright{2018}
+\seedlabcopyright{2018 - 2020}
 
 
 % *******************************************
@@ -104,38 +104,22 @@ the same LAN.
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.9\textwidth]{\commonfolder/Figs/DNS_2lans.pdf}
+\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/DNS_2lans.pdf}
 \caption{Lab environment setup}
 \label{dns:fig:environment}
 \end{figure}
 
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Input common files related to containers
 \input{\commonfolder/container/setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{../DNS_Common/summary_of_config}
-\input{../DNS_Common/setup_testing}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-% *******************************************
-% SECTION
-% ******************************************* 
-\section{The Attack Tasks}
-
-
-The main objective of DNS attacks on a user is to redirect the user
-to another machine $B$ when the user tries to get to machine $A$ using
-$A$'s host name. For example, when the user tries to access the online banking,
-if the adversaries can redirect the user 
-to a malicious web site that looks very much like the main web site 
-of bank, the user might be fooled and give away password
-of his/her online banking account.
 
 
 
@@ -164,6 +148,34 @@ the attacker container.
 \input{\commonfolder/container/host_mode}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{itemize}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/DNS/summary_of_config}
+\input{\commonfolder/DNS/setup_testing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{The Attack Tasks}
+
+
+The main objective of DNS attacks on a user is to redirect the user
+to another machine $B$ when the user tries to get to machine $A$ using
+$A$'s host name. For example, when the user tries to access the online banking,
+if the adversaries can redirect the user 
+to a malicious web site that looks very much like the main web site 
+of bank, the user might be fooled and give away password
+of his/her online banking account.
+
+
 
 
 
