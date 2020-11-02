@@ -4,7 +4,7 @@ LAB    = Firewall
 LABPDF = $(LAB).pdf
 
 COMMONFOLDER = ../../common-files
-DEPENDENCE = $(COMMONFOLDER)/container_setup.tex $(COMMONFOLDER)/container_detach_from_192.168.tex
+DEPENDENCE = $(COMMONFOLDER)/container/setup.tex $(COMMONFOLDER)/container/detach_from_interface.tex
 
 
 all: $(LABPDF)
