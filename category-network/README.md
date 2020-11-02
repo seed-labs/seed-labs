@@ -18,10 +18,40 @@ The meaning of the Changes column can be found from
 | Local DNS Attack    | Major | Done | [README](DNS_Local/README.md)|
 | Remote DNS Attack   | Minor | Done | [README](DNS_Remote/README.md)|
 | DNS Rebinding Attack| Minor | Done | [README](DNS_Rebinding/README.md)|
-| DNS-in-a-box        |  --   | --   | Designed for Ubuntu 20.04 |
-| DNSSEC              |  --   | --   | Designed for Ubuntu 20.04 |
-| Firewall Lab        | Major |      | [README](Firewall/README.md)|
-| Firewall Evasion    |       |      | [README](Firewall_VPN/README.md) |
+| Firewall Lab        | Major | Done | [README](Firewall/README.md)|
 | VPN Tunneling       | Major | Done | [README](VPN_Tunnel/README.md) |
-| VPN Lab             | None  | --   | [README](VPN/README.md)|
-| Heartbleed Attack   |  --   | --   |                        |
+| DNS-in-a-box        |  New  | Done   | Designed for Ubuntu 20.04 |
+| DNSSEC              |  New  | Done   | Designed for Ubuntu 20.04 |
+|||||
+| Firewall Evasion    |  --   | --   | [README](Firewall_VPN/README.md) |
+| VPN Lab             |  --   | --   | [README](VPN/README.md)|
+| Heartbleed Attack   |  --   | --   | Work in progress       |
+||||
+
+
+
+## Network Topology and Docker Images Used
+
+We will use the following rule when assigning docker images to containers
+- Attacker Container: use the Scapy image, unless it doesn't use Pyhon.
+- Victim Container: use the Ubuntu 20.04 image.
+- User/Observer Container: use the Ubuntu 20.04 image.
+
+| Lab Name | Topology |  Ubuntu | Scapy | Flask  |
+| ---      | :---:  | :---: | :---:  | :---: |
+| Sniffing/Spoofing   | 1 LAN  | x | x |   |
+| ARP Cache Poisoning | 1 LAN  | x | x |   |
+| IP/ICMP             | 2 LANs | x | x |   |
+| TCP Attacks         | 1 LAN  | x | x |   |
+| Mitnick Attack      | 1 LAN  | x | x |   |
+| Local DNS Attack    | 2 LANS | x | x |   |
+| Remote DNS Attack   | 1 LAN  | x | x |   |
+| DNS Rebinding Attack| 2 LANs | x | x | x |
+| Firewall Lab        | 2 LANs | x |   |   |
+| VPN Tunneling       | 2 LANs |   | x |   |
+|||||
+| Firewall Evasion    | | | | |
+| VPN Lab             | | | | |
+| Heartbleed Attack   | | | | |
+| DNS-in-a-box        | | | | |
+| DNSSEC              | | | | | 
