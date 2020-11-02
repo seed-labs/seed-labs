@@ -95,17 +95,14 @@ In this lab, students need to have at least 3 machines. One machine
 is mainly used for launching attacks, the second machine is used as the victim, and 
 the third one is used as the observer and user. Students can use three virtual 
 machines for this lab, but it will be much more convenient to 
-use one VM plus three containers. We will launch 
-attacks from the VM against one of the containers, while using
-the other two containers as the observer/user machines.
+use containers. We will create four containers, their roles
+are depicted in the following.
 We assume all these machines are on the same LAN. 
-The lab environment is depicted in the following:
 
 
 \begin{lstlisting}[backgroundcolor=]
   +------------+      +------------+  +------------+  +------------+
-  |     VM     |      |  Container |  |  Container |  |  Container |
-  | (attacker) |      |  (victim)  |  |   (user1)  |  |   (user2)  |
+  |  Attacker  |      |   Victim   |  |    User 1  |  |   User 2   |
   |  10.9.0.1  |      |  10.9.0.5  |  |  10.9.0.6  |  |  10.9.0.7  |
   +----+-------+      +------+-----+  +------+-----+  +------+-----+
        |                     | eth0          | eth0          | eth0
@@ -115,16 +112,6 @@ The lab environment is depicted in the following:
 
 \end{lstlisting}
  
-
-%The configuration is described in Figure~\ref{tcp:fig:env}.
-
-%\begin{figure}[htb]
-%  \begin{center}
-%    \includegraphics[width=0.6\textwidth]{\tcpFigs/TCP_Env_setup.pdf}
-%  \end{center}
-%  \caption{Environment Setup}
-%  \label{tcp:fig:env}
-%\end{figure}
  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -134,13 +121,39 @@ The lab environment is depicted in the following:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-
-
 % *******************************************
 % SECTION
 % ******************************************* 
 \section{Lab Tasks}
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{About the Attacker Container}
+
+In this lab, we can either use the VM or the attacker container
+as the attacker machine. If you look at the Docker Compose file, you will
+see that the attacker container is configured differently from the other
+containers.
+
+
+\begin{itemize}
+\item \textit{Shared folder.} When we use the attacker container
+to launch attacks, we need to put the attacking code inside
+the attacker container.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/volumes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\item \textit{Host mode.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/host_mode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{itemize}
+
+
 
 
 % -------------------------------------------
@@ -422,7 +435,7 @@ not at the content server machine (which does not belong to you).
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: TCP Session Hijacking}
+\subsection{Task 3: TCP Session Hijacking}
 
 
 
@@ -484,7 +497,7 @@ set the \texttt{iface} argument.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 5: Creating Reverse Shell using TCP Session Hijacking}
+\subsection{Task 4: Creating Reverse Shell using TCP Session Hijacking}
 
 When attackers are able to inject a command to the victim's machine using
 TCP session hijacking, they are not interested in running one simple
