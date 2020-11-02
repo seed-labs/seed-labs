@@ -207,38 +207,80 @@ X-Terminal would trust every
 % ------------------------------------------- 
 \subsection{Container Setup}
 
-In this lab, students need to use three machines, 
+In this lab, we need three machines, 
 one for X-Terminal, one for Trusted Server, and the other for the attacker. 
 In the real Mitnick attack, the attacker machine is a remote machine. 
 In this lab, for the 
 sake of simplicity, we put all these three machines on the same network. 
 Students can use three virtual
 machines for this lab, but it will be much more convenient to
-use one VM plus two containers.  We will launch
-attacks from the VM, while using containers for the attack targets. 
-We have named the containers using X-Terminal and Trusted Server.
-The lab environment is depicted in the following:
+use containers. The lab environment is depicted 
+Figure~\ref{mitnick:fig:labsetup}.
 
 
-\begin{lstlisting}[backgroundcolor=]
-            +------------+      +--------------+  +----------------+  
-            |     VM     |      |   Container  |  |    Container   |  
-            | (attacker) |      | (X-Terminal) |  |(Trusted Server)|  
-            |  10.9.0.1  |      |   10.9.0.5   |  |    10.9.0.6    |  
-            +----+-------+      +-------+------+  +--------+-------+  
-                 | br-<id>             | eth0          | eth0   
-                 |                     |               |        
-           ------+---------------------+---------------+--------------
-           Network  10.9.0.0/24
 
-\end{lstlisting}
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/Mitnick_onelan.pdf}
+\end{center}
+\caption{Lab environment setup}
+\label{mitnick:fig:labsetup}
+\end{figure}
+ 
 
+%\begin{lstlisting}[backgroundcolor=]
+%            +------------+      +--------------+  +----------------+  
+%            |     VM     |      |   Container  |  |    Container   |  
+%            | (attacker) |      | (X-Terminal) |  |(Trusted Server)|  
+%            |  10.9.0.1  |      |   10.9.0.5   |  |    10.9.0.6    |  
+%            +----+-------+      +-------+------+  +--------+-------+  
+%                 | br-<id>             | eth0          | eth0   
+%                 |                     |               |        
+%           ------+---------------------+---------------+--------------
+%           Network  10.9.0.0/24
+%
+%\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Input common files related to containers
-\input{\commonfolder/container_setup}
-\input{\commonfolder/container_interface}
+\input{\commonfolder/container/setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{About the Attacker Container}
+
+In this lab, we can either use the VM or the attacker container
+as the attacker machine. If you look at the Docker Compose file, you will
+see that the attacker container is configured differently from the other
+containers. Here are the differences:
+
+\begin{itemize}
+\item \textit{Shared folder.} When we use the attacker container
+to launch attacks, we need to put the attacking code inside
+the attacker container.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/volumes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\item \textit{Privileged mode.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/privileged_mode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{itemize}
+
+
+
 
 
 
