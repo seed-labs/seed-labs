@@ -80,13 +80,7 @@ Detailed coverage of the ARP protocol and attacks can be found in the following:
 
 % *******************************************
 % SECTION
-% ******************************************* 
-\section{Environment Setup Using Containers}
-
-
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
+% *******************************************
 \section{Environment Setup using Container}
 
 In this lab, we need three machines. We use 
@@ -106,8 +100,12 @@ because the ARP cache poisoning attack is limited to LAN.
 \end{figure}
  
 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Input common files related to containers
 \input{\commonfolder/container/setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -313,17 +311,17 @@ IP_B = "10.9.0.6"
 def spoof_pkt(pkt):
     if pkt[IP].src == IP_A and pkt[IP].dst == IP_B:
          # Create a new packet based on the captured one.
-         # (1) We need to delete the checksum fields in the IP and TCP headers, 
-         #     because our modification will make them invalid.
-         #     Scapy will recalculate them for us if these fields are missing. 
-         # (2) We also delete the original TCP payload.
+         # 1) We need to delete the checksum in the IP & TCP headers, 
+         #    because our modification will make them invalid.
+         #    Scapy will recalculate them if these fields are missing. 
+         # 2) We also delete the original TCP payload.
 
          newpkt = IP(pkt[IP])
          del(newpkt.chksum)
          del(newpkt[TCP].payload)
          del(newpkt[TCP].chksum)
 
-         #####################################################################
+         #################################################################
          # Construct the new payload based on the old payload.
          # Students need to implement this part.
 
@@ -334,11 +332,11 @@ def spoof_pkt(pkt):
              send(newpkt/newdata)
          else:
              send(newpkt)
-         #####################################################################
+         ################################################################
 
     elif pkt[IP].src == IP_B and pkt[IP].dst == IP_A:
          # Create new packet based on the captured one 
-	 # Do not make any change 
+         # Do not make any change 
 
          newpkt = IP(pkt[IP])
          del(newpkt.chksum)
@@ -414,7 +412,10 @@ first name, so we know the work is done by you.
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
