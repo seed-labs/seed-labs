@@ -1,8 +1,8 @@
 
-\paragraph{Sniffing packets.} Being able to sniffing packets is very
+Being able to sniffing packets is very
 important in this lab, because if things do not go as expected, being
 able to look at where packets go can help us identify the problems.
-There are two different ways to do packet sniffing:
+There are several different ways to do packet sniffing:
 
 
 \begin{itemize}
@@ -19,7 +19,9 @@ following (assume that the interface name is \texttt{eth0}):
 It should be noted that inside containers, due to the isolation created by
 Docker, when we run \texttt{tcpdump} inside a container,
 we can only sniff the packets going in and out of this container.
-We won't be able to sniff the packets between other containers.
+We won't be able to sniff the packets between other containers. 
+However, if a container uses the \texttt{host} mode in its 
+network setup, it can sniff other containers' packets. 
 
 
 \item Running \texttt{tcpdump} on the VM. If we run \texttt{tcpdump}
