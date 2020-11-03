@@ -46,7 +46,7 @@ We will use the following rule when assigning docker images to containers
 | Mitnick Attack      | 1 LAN  | x | x |   |
 | Local DNS Attack    | 2 LANS | x | x |   |
 | Remote DNS Attack   | 1 LAN  | x | x |   |
-| DNS Rebinding Attack| 2 LANs | x | x | x |
+| DNS Rebinding Attack| 2 LANs | x |   | x |
 | Firewall Lab        | 2 LANs | x |   |   |
 | VPN Tunneling       | 2 LANs |   | x |   |
 |||||
