@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-    HostA1:
+    victim:
         build: ./image_ubuntu
         image: seed-image-ubuntu
         container_name: victim-10.9.0.5
@@ -19,14 +19,31 @@ services:
                       /start.sh
                  "
 
-    HostA2:
-        build: ./image_scapy
+    attacker:
         image: seed-image-scapy
-        container_name: attacker-10.9.0.6
+        container_name: attacker-10.9.0.105
+        tty: true
+        cap_add:
+                - ALL
+        privileged: true
+        volumes:
+                - ./volumes:/volumes
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.105
+        command: bash -c "
+                      ip route add 192.168.60.0/24 via 10.9.0.11 &&
+                      /start.sh
+                 "
+
+    malicious-router:
+        image: seed-image-ubuntu
+        container_name: malicious-router-10.9.0.111
         tty: true
         cap_add:
                 - ALL
         sysctls:
+                - net.ipv4.ip_forward=1
                 - net.ipv4.conf.all.send_redirects=0
                 - net.ipv4.conf.default.send_redirects=0
                 - net.ipv4.conf.eth0.send_redirects=0
@@ -34,11 +51,12 @@ services:
                 - ./volumes:/volumes
         networks:
             net-10.9.0.0:
-                ipv4_address: 10.9.0.6
+                ipv4_address: 10.9.0.111
         command: bash -c "
                       ip route add 192.168.60.0/24 via 10.9.0.11 &&
                       /start.sh
                  "
+
     HostB1:
         image: seed-image-ubuntu
         container_name: host-192.168.60.5
