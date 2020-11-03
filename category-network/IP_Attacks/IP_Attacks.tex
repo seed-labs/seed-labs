@@ -65,13 +65,74 @@ in the following:
 \paragraph{Lab environment.} \seedenvironmentB
 
 
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Environment Setup using Container}
+
+In this lab, we need three machines. We use
+containers to set up the lab environment, which is depicted
+in Figure~\ref{ip:fig:labsetup}.
+In this setup, we have an attacker machine (Host M),
+which is used to launch attacks against the other two machines, Host A and
+Host B.  These three machines must be on the same LAN,
+because the ARP cache poisoning attack is limited to LAN.
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/TwoLANs.pdf}
+\end{center}
+\caption{Lab environment setup}
+\label{ip:fig:labsetup}
+\end{figure}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{About the Attacker Container}
+
+In this lab, we can either use the VM or the attacker container
+as the attacker machine. If you look at the Docker Compose file, you will
+see that the attacker container is configured differently from the other
+containers. Here are the differences:
+
+\begin{itemize}
+\item \textit{Shared folder.} When we use the attacker container
+to launch attacks, we need to put the attacking code inside
+the attacker container.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/volumes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\item \textit{Privileged mode.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/privileged_mode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{itemize}
+
+
+
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tasks 1: IP Fragmentation}
+\section{Task 1: IP Fragmentation}
 
-Two VMs are needed for this task. They should be connected to the same network, so they
-can communicate with each other.
+We will only use two containers for this task, the attacker container
+and the victim container.
 
 % -------------------------------------------
 % SUBSECTION
@@ -79,7 +140,8 @@ can communicate with each other.
 \subsection{Task 1.a: Conducting IP Fragmentation}
 
 In this task, students need to construct a UDP packet and send it to a UDP 
-server. They can use \texttt{"nc -lu 9090"} to start a UDP server. 
+server. They can use \texttt{"nc -lu -p 9090"} to start a UDP server inside
+the victim container. 
 Instead of building one single IP packet, students need to 
 divide the packet into 3 fragments, each containing 32 bytes of data (the
 first fragment contains 8 bytes of the UDP header plus 32 bytes of data).
@@ -88,14 +150,15 @@ If everything is done correctly, the server will display
 The following is a sample code for constructing the first fragment.
 
 \begin{lstlisting}
-#!/usr/bin/python3
+#!/usr/bin/env python3
 from scapy.all import *
 
 # Construct IP header
-ip = IP(src="1.2.3.4", dst="10.0.0.15")
+ip = IP(src="1.2.3.4", dst="10.9.0.5")
 ip.id    = 1000  # Identification
 ip.frag  = 0     # Offset of this IP fragment
 ip.flags = 1     # Flags
+ip.proto = 17    # For UDP
 
 # Construct UDP header
 udp = UDP(sport=7070, dport=9090)
@@ -106,7 +169,7 @@ payload = 'A' * 80    # Put 80 bytes in the first fragment
 
 # Construct the entire packet and send it out
 pkt = ip/udp/payload  # For other fragments, we should use ip/payload
-pkt[UDP].checksum = 0 # Set the checksum field to zero
+pkt[UDP].chksum = 0 # Set the checksum field to zero
 send(pkt, verbose=0)
 \end{lstlisting}
 
@@ -214,25 +277,41 @@ use a different router for the subsequent packets sent to that same
 destination.
 
 
-In our VM, there is a countermeasure against the ICMP redirect attack. Before doing
-the task, we need to turn off the countermeasure by configuring the operating system
+In the Ubuntu operating system, 
+there is a countermeasure against the ICMP redirect attack. In the 
+Compose file, we have already 
+turned off the countermeasure by configuring the victim container
 to accept ICMP redirect messages. 
 
 \begin{lstlisting}
-$ sudo sysctl net.ipv4.conf.all.accept_redirects=1
+// In docker-compose.yml
+sysctls:
+      - net.ipv4.conf.all.accept_redirects=1
+
+// To turn the protection on, set its value to 0
+# sysctl net.ipv4.conf.all.accept_redirects=0
 \end{lstlisting}
 
-For this task, we should have two VMs, the victim VM (Host A) and 
-the attacker VM (Host M). Students should pick a destination B, which
-should be a host outside of our local network (e.g., an outside web server). 
-Normally, when A sends a packet to B, the packet will go to the 
-router provided by VirtualBox (usually it is \texttt{10.0.2.1} if we use
-the default IP prefix for NAT Network). 
 
-The objective of this task is to launch an ICMP redirect attack on Host A 
-from Host M, such that when Host A sends packets to B, 
-it will use M as the router, and hence sends those packets to M. 
-Since M is controlled by the attacker, the attacker can 
+For this task, we will attack the victim container from 
+the attacker container. In the current setup, 
+the victim will use the router container (\texttt{192.168.60.11}) as
+the router to get to the \texttt{192.168.60.0/24} network. If
+we run \texttt{ip route} on the victim container, we will
+see the following
+
+\begin{lstlisting}
+# ip route
+default via 10.9.0.1 dev eth0 
+10.9.0.0/24 dev eth0 proto kernel scope link src 10.9.0.5 
+192.168.60.0/24 via (*@\textbf{10.9.0.11}@*) dev eth0
+\end{lstlisting}
+ 
+The objective of this task is to launch an ICMP redirect attack on the victim,
+such that when the victim sends packets to the \texttt{192.168.60.5}
+network, it will use the malicious router container (\texttt{10.9.0.111})
+as its router. 
+Since the malicious router is controlled by the attacker, the attacker can 
 intercept the packets, make changes, and then send 
 the modified packets out. This is a form of the Man-In-The-Middle (MITM) attack. 
 For the simplicity of this lab, students are not required to 
@@ -258,25 +337,67 @@ icmp.gw = @@@@
 # The enclosed IP packet should be the one that 
 # triggers the redirect message. 
 ip2 = IP(src = @@@@, dst = @@@@)
-send(ip/icmp/ip2/UDP());
+send(ip/icmp/ip2/ICMP());
 \end{lstlisting}
  
 
 \paragraph{Verification.}
-To verify whether the ICMP redirect attack is successful, we can use 
-the \texttt{"ip route get"} command to see what router will be used for a 
-packet destination. For example, if we want to know
-what router will be used for packets going to \texttt{8.8.8.8}, we can use 
-the following command: 
+ICMP redirect messages will not affect the routing table; instead, it 
+affects the routing cache. Entries in the routing cache overwrite 
+those in the routing table, until the entries expire. To display 
+and clean the cache contents, we can use the following commands: 
 
 \begin{lstlisting}
-$ ip route get 8.8.8.8
-8.8.8.8 via 10.0.2.1 dev enp0s3  src 10.0.2.4
-    cache
+// Display the routing cache 
+# ip route show cache
+192.168.60.5 via 10.9.0.111 dev eth0
+    cache <redirected> expires 296sec
+
+// Clean the routing cache
+# ip route flush cache
 \end{lstlisting}
 
 
-\paragraph{Questions.} Please conduct the following experiments, and explain your observations:
+Please do a traceroute on the victim machine, and see whether the packet
+is rerouted or not. 
+
+\begin{lstlisting}
+# mtr -n 192.168.60.5
+\end{lstlisting}
+ 
+
+
+
+\paragraph{A strange issue.} While developing this lab, we have observed
+a strange issue in the container environment. The issue does not exist
+if the victim is a VM, instead of a container. 
+If we spoof the redirect packets, but the victim machine is not 
+sending out ICMP packets during the attack, the attack will never be successful. 
+This is not the case for the VM setting. 
+Moreover, the \texttt{ip2} inside the redirect packet must match with the
+type and the destination IP address of the packets 
+that the victim is currently sending (ICMP for ICMP,
+UDP for UDP, etc.). 
+
+
+It seems that the OS kernel conducts some kind of 
+sanity check before accepting an ICMP redirect packets. 
+We have not figured out what exactly caused this, 
+and why the VM does not have these restrictions. 
+This is an open issue for the SEED labs, and we encourage 
+students to help us resolve this issue. We recommend instructors
+to give students bonus points if they have indeed resolved this issue. 
+
+
+Before we find a way to disable this checking mechanism, 
+when we launch the attack,
+we should should \texttt{ping} the \texttt{192.168.60.5} host on the 
+victim machine. 
+
+
+\paragraph{Questions.} After you have succeeded in the attack, please 
+conduct the following experiments, and see whether your attack can 
+still succeed. Please explain your observations:
 
 \begin{enumerate}
 \item Can you use ICMP redirect attacks to redirect to a remote machine? Namely,
@@ -287,126 +408,23 @@ Please show your experiment result, and explain your observation.
 the same network? Namely, the IP address assigned to \texttt{icmp.gw} is a local computer that
 is either offline or non-existing. 
 Please show your experiment result, and explain your observation.  
+
+\item If you look at the \texttt{docker-compose.yml} file, you will find the 
+following entries for the malicious router container. What are the purposes
+of these entries? Please change their value to \texttt{1}, and launch the attack again. 
+Please describe and explain your observation. 
+
+\begin{lstlisting}
+sysctls:
+     - net.ipv4.conf.all.send_redirects=0
+     - net.ipv4.conf.default.send_redirects=0
+     - net.ipv4.conf.eth0.send_redirects=0
+\end{lstlisting}
+ 
 \end{enumerate}
 
 
 
-
-
-% *******************************************
-% SECTION
-% ******************************************* 
-\section{Task 3: Routing} 
-
-
-The objective of this task is for students to get familiar with routing. 
-Even though this task is not relevant to security, it is essential
-for many network-related SEED labs, so we will cover it
-in this lab. 
-We need at least three machines 
-and two networks for this lab (see Figure~\ref{fig:setup}). 
-There are two approaches to set up this lab environment. 
-One is to use VirtualBox to create virtual machines and networks. 
-Another approach is to use Docker to create containers and networks. 
-We do encourage students to use 
-the Docker approach, because it is much more convenient to set up.
-
-
-\begin{figure}[htb]
-\begin{center}
-\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/TwoLANs.pdf}
-\end{center}
-\caption{Lab environment setup}
-\label{fig:setup}
-\end{figure}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Input common files related to containers
-\input{\commonfolder/container_setup}
-\input{\commonfolder/container_detach_from_192.168}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\paragraph{Note on Router configuration.}
-Unless specifically configured, a computer will only act as a host,
-not as a gateway, i.e., they do not forward packets for 
-others. For the router container to function like a router,
-we need to enable the IP forwarding on it. 
-For virtual machines, we can use the following 
-command to enable IP forwarding on the VM:
-
-\begin{lstlisting}
-$ sudo sysctl net.ipv4.ip_forward=1
-\end{lstlisting}
-
-However, for containers, we are not able to run this command. 
-Even though we have a root account, this root is not the 
-same as that on the hosting VM, and there 
-are certain things that we cannot do inside the container, such as 
-modifying this variable and alike. If we run the command,
-we will see the following error message. The container
-is not given the privilege to make the change.
-
-\begin{lstlisting}
-# sysctl net.ipv4.ip_forward=1
-sysctl: setting key "net.ipv4.ip_forward": Read-only file system
-\end{lstlisting}
-
-If we want to modify this flag for a container,
-we have to do it when we build the container.
-That is why we added the following entry
-to the \texttt{docker-compose.yml} file:
-
-\begin{lstlisting}
-sysctls:
-         - sysctl net.ipv4.ip_forward=1
-\end{lstlisting}
-
-
-
-\paragraph{Task.} After we have set up the containers and 
-networks, hosts on the same LAN can communicate with one another, but
-not the hosts on different LANs. This is because we have not set 
-up the routing on the router and hosts yet. This task is left 
-to students. Students need to configure the routing table 
-on all the containers, so the can communicate with one 
-another. 
-
-There are two approaches to configure the routing table
-on containers. One is to get on each running container, and manually configure its routing
-table. Another approach is to add commands to the Compose file (\texttt{docker-compose.yml}), 
-so when each container is started, the commands will be automatically
-executed. We do recommend students to use the Compose file approach. 
-Students can find the \texttt{command} entry for some of the 
-containers. Since a command entry only allows one command,
-if we want to execute multiple commands, we feed the command
-string (commands are separated by \texttt{\&\&}) 
-to the \texttt{"bash -c"} command for execution.
-
-\begin{lstlisting}
-command: bash -c "
-             command one && 
-	     command two && 
-	     command three
-         "
-\end{lstlisting}
- 
-
-Routing tables can be set using the \texttt{ip route} command. Students who are not familiar 
-with this command can easily find its manual on the Internet. We list 
-some of the usage examples in the following:
-
-\begin{lstlisting}
-// List all the entries in the routing table 
-# ip route 
-
-// Add an entry 
-# ip route add <network> dev <interface> via <router ip>
-
-// Delete a routing entry
-# ip route del ...
-\end{lstlisting}
 
 
 
@@ -415,7 +433,10 @@ some of the usage examples in the following:
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \end{document}
 
