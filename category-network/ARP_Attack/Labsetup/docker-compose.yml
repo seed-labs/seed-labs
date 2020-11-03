@@ -1,0 +1,53 @@
+version: "3"
+
+services:
+    HostA:
+        build: ./image_scapy
+        image: seed-image-scapy
+        container_name: A-10.9.0.5
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.5
+        command: bash -c "
+                      /etc/init.d/openbsd-inetd start &&
+                      /start.sh
+                 "
+                  
+    HostB:
+        image: seed-image-scapy
+        container_name: B-10.9.0.6
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.6
+
+        command: bash -c "
+                      /etc/init.d/openbsd-inetd start &&
+                      /start.sh
+                 "
+
+    HostM:
+        image: seed-image-scapy
+        container_name: M-10.9.0.7
+        tty: true
+        cap_add:
+                - ALL
+        privileged: true
+        volumes:
+                - ./volumes:/volumes
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.7
+
+networks:
+    net-10.9.0.0:
+        name: net-10.9.0.0
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+
