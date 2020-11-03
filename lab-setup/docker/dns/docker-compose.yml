@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+    local-server:
+        build: ./local_server
+        image: seed-local-server
+        container_name: local-server
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            seed-net:
+                ipv4_address: 10.9.0.53
+                  
+    user:
+        build: ./user
+        image: seed-user
+        container_name: user
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            seed-net:
+                ipv4_address: 10.9.0.5
+
+    ns-attacker:
+        build: ./ns_attacker
+        image: seed-ns-attacker
+        container_name: ns-attacker
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            seed-net:
+                ipv4_address: 10.9.0.153
+
+networks:
+    seed-net:
+        name: seed-net
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+
