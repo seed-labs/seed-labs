@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+   <head>
+      <title>Thermometer</title>
+      <link rel="stylesheet" href="css/style.css"/>
+      <script src="js/jquery-2.2.4.min.js"></script>
+   </head>
+
+   <body>
+     <div id="wrapper">
+       <div id="thermometer">
+          <div id="temperature" style="height:0" data-value="0&#176;C"></div>
+          <div id="graduations"></div>
+       </div>
+
+       <div id="playground">
+          <div id="range">
+            <input id="minTemp" type="text" value="0">
+            <input type="range" min="0" max="100" value="21">
+            <input id="maxTemp" type="text" value="100">
+	  </div>
+	  <p id="unit">Celsius &#176;C</p>
+       </div>
+
+	<p id="info"></p>
+     </div>
+
+     <script src="./js/main.js"></script>
+    </body>
+</html>
