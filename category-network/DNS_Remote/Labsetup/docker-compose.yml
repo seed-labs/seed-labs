@@ -1,0 +1,55 @@
+version: "3"
+
+services:
+    local-server:
+        build: ./images_dns/local_server
+        image: seed-local-server
+        container_name: local-server
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            seed-net:
+                ipv4_address: 10.9.0.53
+                  
+    user:
+        build: ./images_dns/user
+        image: seed-user
+        container_name: user
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            seed-net:
+                ipv4_address: 10.9.0.5
+
+    attacker:
+        build: ./image_scapy
+        image: seed-image-scapy
+        container_name: seed-attacker
+        tty: true
+        cap_add:
+                - ALL
+        privileged: true
+        volumes:
+                - ./volumes:/volumes
+        network_mode: host
+
+    ns-attacker:
+        build: ./images_dns/ns_attacker
+        image: seed-ns-attacker
+        container_name: ns-attacker
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            seed-net:
+                ipv4_address: 10.9.0.153
+
+networks:
+    seed-net:
+        name: seed-net
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+
