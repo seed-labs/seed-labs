@@ -20,6 +20,7 @@ services:
                  "
 
     attacker:
+        build: ./image_scapy
         image: seed-image-scapy
         container_name: attacker-10.9.0.105
         tty: true
@@ -37,7 +38,7 @@ services:
                  "
 
     malicious-router:
-        image: seed-image-ubuntu
+        image: seed-image-scapy
         container_name: malicious-router-10.9.0.111
         tty: true
         cap_add:
@@ -47,6 +48,7 @@ services:
                 - net.ipv4.conf.all.send_redirects=0
                 - net.ipv4.conf.default.send_redirects=0
                 - net.ipv4.conf.eth0.send_redirects=0
+        privileged: true
         volumes:
                 - ./volumes:/volumes
         networks:
