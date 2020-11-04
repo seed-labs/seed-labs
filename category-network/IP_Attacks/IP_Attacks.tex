@@ -253,9 +253,9 @@ situation. Please report your observation.
 \subsection{Task 1.d: Sending Incomplete IP Packet}
 
 
-In this task, we are going to use Machine A to launch a Denial-of-Service attack 
-on Machine B. In the attack, Machine A sends  a lot of 
-incomplete IP packets to B, i.e., these packets consist of 
+In this task, we are going to launch a Denial-of-Service attack 
+on the victim container. In the attack, the attacker sends  a lot of 
+incomplete IP packets to the victim, i.e., these packets consist of 
 IP fragments, but some fragments are missing. All these incomplete IP packets 
 will stay in the kernel, until they time out. Potentially, this can
 cause the kernel to commit a lot of kernel memory. In the past, this 
@@ -274,8 +274,26 @@ An ICMP redirect is an error message sent by a router to the sender of an
 IP packet. Redirects are used when a router believes a packet is being
 routed incorrectly, and it would like to inform the sender that it should
 use a different router for the subsequent packets sent to that same
-destination.
+destination. ICMP redirect can be used by attackers to change 
+a victim's routing. 
 
+
+The objective of this task is to launch an ICMP redirect attack on the victim,
+such that when the victim sends packets to \texttt{192.168.60.5},
+it will use the malicious router container (\texttt{10.9.0.111})
+as its router. 
+Since the malicious router is controlled by the attacker, the attacker can 
+intercept the packets, make changes, and then send 
+the modified packets out. This is a form of the Man-In-The-Middle (MITM) attack. 
+The task is divided into two subtasks, the ICMP redirect attack task and 
+the MITM attack task.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.a: Launching ICMP Redirect Attack} 
 
 In the Ubuntu operating system, 
 there is a countermeasure against the ICMP redirect attack. In the 
@@ -307,18 +325,6 @@ default via 10.9.0.1 dev eth0
 192.168.60.0/24 via (*@\textbf{10.9.0.11}@*) dev eth0
 \end{lstlisting}
  
-The objective of this task is to launch an ICMP redirect attack on the victim,
-such that when the victim sends packets to the \texttt{192.168.60.5}
-network, it will use the malicious router container (\texttt{10.9.0.111})
-as its router. 
-Since the malicious router is controlled by the attacker, the attacker can 
-intercept the packets, make changes, and then send 
-the modified packets out. This is a form of the Man-In-The-Middle (MITM) attack. 
-For the simplicity of this lab, students are not required to 
-conduct the MITM part; they only need to demonstrate that 
-their ICMP redirect attacks can successfully redirect
-packets from A to B.
-
 
 \paragraph{Code skeleton.} A code skeleton is provided in the following, with
 some of the essential parameters left out. Students should fill in the proper 
@@ -424,6 +430,121 @@ sysctls:
 \end{enumerate}
 
 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.b: Launching the MITM Attack} 
+
+Using the ICMP redirect attack, we can get the victim to use 
+our malicious router (\texttt{10.9.0.111}) as the router for the destination
+\texttt{192.168.60.5}. Therefore, all packets from the victim machine 
+to this destination will be routed through the malicious router.
+We would like to modify the victim's packets. 
+
+
+Before launching the MITM attack, we start a TCP client and server program
+using \texttt{netcat}. See the following commands.  
+
+\begin{lstlisting}
+On the destination container 192.168.60.5, start the netcat server:
+# nc -lp 9090
+
+On the victim container, connect to the server:
+# nc 192.168.60.5 9090
+\end{lstlisting}
+
+
+Once the connection is made, you can type messages on the victim machine.
+Each line of messages will be put into a TCP packet sent
+to the destination, which simply displays the message.
+Your task is to replace every occurrence of your first name in the
+message with a sequence of A's. The length of the sequence should be the
+same as that of your first name, or you will mess up the TCP sequence
+number, and hence the entire TCP connection. You need to use your real
+first name, so we know the work is done by you.
+
+
+
+\paragraph{Disabling IP Forwarding.}
+In the setup, the malicious router's IP forwarding is enabled, so it does 
+function like a router and forward packets for others. When we launch 
+the MITM attack, we have to stop forwarding IP packets; instead,
+we will intercept the packet, make a change, and send out a new packet. 
+To do that, we just need to disable the IP forwarding on the malicious 
+router. 
+
+\begin{lstlisting}
+# sysctl net.ipv4.ip_forward=0
+\end{lstlisting}
+
+
+\paragraph{MITM code.}
+Once the IP forwarding is disabled, our program needs to take over
+the role of packet forwarding from the victim to the target, of course
+after making changes to the packets. Since the packet's destination 
+is not for us, the kernel will not give the packet to us; it will simply
+drops the packet. However, if our program is a sniffer program,
+we will get the packet from the kernel. Therefore, we will use 
+the sniff-and-spoof technique to implement this MITM attack.
+
+
+To help students get started, we provide a skeleton sniff-and-spoof
+program in the following. The program capture all the TCP packets, and
+then for packets from A to B, it makes some changes (the modification
+part is not included, because that is part of the task). 
+If you did the ARP Attack lab before doing this one, the code for the MITM
+attack is very similar.
+
+
+\begin{lstlisting}
+#!/usr/bin/env python3
+from scapy.all import *
+
+IP_A = "10.9.0.5"
+MAC_A = "02:42:0a:09:00:05"
+IP_B = "10.9.0.6"
+MAC_B = "02:42:0a:09:00:06"
+
+def spoof_pkt(pkt):
+    if pkt[IP].src == IP_A and pkt[IP].dst == IP_B:
+         # Create a new packet based on the captured one.
+         # 1) We need to delete the checksum in the IP & TCP headers,
+         #    because our modification will make them invalid.
+         #    Scapy will recalculate them if these fields are missing.
+         # 2) We also delete the original TCP payload.
+
+         newpkt = IP(pkt[IP])
+         del(newpkt.chksum)
+         del(newpkt[TCP].payload)
+         del(newpkt[TCP].chksum)
+
+
+         #################################################################
+         # Construct the new payload based on the old payload.
+         # Students need to implement this part.
+
+         if pkt[TCP].payload:
+             data = pkt[TCP].payload.load  # The original payload data
+             newdata = data   # No change is nade in this sample code
+
+             send(newpkt/newdata)
+         else:
+             send(newpkt)
+         ################################################################
+
+f = 'tcp'
+pkt = sniff(iface='eth0', filter=f, prn=spoof_pkt)
+\end{lstlisting}
+
+
+It should be noted that the code above captures all the TCP
+packets, including the one generated by the program itself. That is
+undesirable, as it will affect
+the performance. Students needs to change the filter, so it does not capture
+its own packets.
 
 
 
