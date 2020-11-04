@@ -12,7 +12,7 @@ The meaning of the Changes column can be found from
 | ---      | ---     | ---    |  ---   |
 | Sniffing/Spoofing   | Minor | Done | [README](Sniffing_Spoofing/README.md)|
 | ARP Cache Poisoning | Minor | Done | [README](ARP_Attack/README.md)|
-| IP/ICMP             | Minor | Done | [README](IP_Attacks/README.md)| 
+| IP/ICMP             | Major | Done | [README](IP_Attacks/README.md)| 
 | TCP Attacks         | Minor | Done | [README](TCP_Attacks/README.md)|
 | Mitnick Attack      | Minor | Done | [README](Mitnick_Attack/README.md)| 
 | Local DNS Attack    | Major | Done | [README](DNS_Local/README.md)|
@@ -32,10 +32,14 @@ The meaning of the Changes column can be found from
 
 ## Network Topology and Docker Images Used
 
-We will use the following rule when assigning docker images to containers
-- Attacker Container: use the Scapy image, unless it doesn't use Pyhon.
-- Victim Container: use the Ubuntu 20.04 image.
-- User/Observer Container: use the Ubuntu 20.04 image.
+We will use the following rule when assigning docker images to containers and 
+when configuring containers:
+- Attacker Container: Use the Scapy image, unless it doesn't use Python
+- Victim Container: Use the Ubuntu 20.04 image
+- User/Observer Container: Use the Ubuntu 20.04 image.
+- A container should use the ```host``` mode if sniffing is needed
+- A container should use the ```privileged``` mode if it needs to 
+set kernel variables using ```sysctl```
 
 | Lab Name | Topology |  Ubuntu | Scapy | Flask  |
 | ---      | :---:  | :---: | :---:  | :---: |
@@ -49,9 +53,9 @@ We will use the following rule when assigning docker images to containers
 | DNS Rebinding Attack| 2 LANs | x |   | x |
 | Firewall Lab        | 2 LANs | x |   |   |
 | VPN Tunneling       | 2 LANs |   | x |   |
+| DNS-in-a-box        | 1 LAN  | x |   |   |
+| DNSSEC              | 1 LAN  | x |   |   | 
 |||||
-| Firewall Evasion    | | | | |
-| VPN Lab             | | | | |
+| Firewall Evasion    | No need | | | |
+| VPN Lab             | No need | | | |
 | Heartbleed Attack   | | | | |
-| DNS-in-a-box        | | | | |
-| DNSSEC              | | | | | 
