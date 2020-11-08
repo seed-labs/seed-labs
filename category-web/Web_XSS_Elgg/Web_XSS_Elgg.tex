@@ -6,8 +6,12 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+\newcommand{\webcommon}{../Web_Common}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
 
 
 \lhead{\bfseries SEED Labs -- Cross-Site Scripting Attack Lab}
@@ -62,11 +66,6 @@ his/her friend list. This lab covers the following topics:
  \item Content Security Policy (CSP) 
 \end{itemize}
 
-\vspace{0.1in}
-\newnote{This lab was revised on July 26, 2020.
-Task 7 (countermeasures) is redesigned. It is now 
-based on Content Security Policy (CSP).} 
-
 
 \paragraph{Readings.}
 Detailed coverage of the Cross-Site Scripting attack can be found in the following:
@@ -76,7 +75,7 @@ Detailed coverage of the Cross-Site Scripting attack can be found in the followi
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironmentAB
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -93,7 +92,7 @@ section.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{../Web_Common/Web_Elgg_Setup}
+\input{\webcommon/Web_Elgg_Setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \paragraph{DNS Configuration.}
@@ -109,8 +108,8 @@ described in the following:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\urlorurls}{URL }
 \newcommand{\urlisorurlsare}{URL is }
-\input{../Web_Common/Web_DNS_Setup}
-\input{../Web_Common/Web_Apache_Setup}
+\input{\webcommon/Web_DNS_Setup}
+\input{\webcommon/Web_Apache_Setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -486,10 +485,10 @@ function calls in each file.
 
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 7: Defeating XSS Attacks Using CSP}
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 7: Defeating XSS Attacks Using CSP}
 
 The fundamental problem of the XSS vulnerability is that HTML allows JavaScript code to be
 mixed with data. Therefore, to fix this fundamental problem, we need to separate code from
@@ -522,73 +521,102 @@ whether a page can be put inside an iframe or not (used for defeating ClickJacki
 attacks). Here, we will only focus on how to use CSP to defeat XSS attacks.
 
 
-\paragraph{Run a web server.} CSP is set by the web server. 
-Let us use a web page to see CSP in action.
-Although we can use the Apache server (already installed in our VM) to host the web page,
-we decide to write a simple HTTP server to do this job. The following Python program runs an
-HTTP server that listens to port \texttt{8000}. 
-Upon receiving a request, it loads a static file
-and return it to the client. In the response, 
-the server adds a CSP header, setting the policy on the 
-JavaScript code inside the page.
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Experiment Website setup} 
+
+To conduct experiments on CSP, we will set up several websites. 
+Inside the \texttt{Labsetup/image\_www} docker image folder, 
+there is a file called \texttt{apache\_csp.conf}.
+It defines five websites, which share the same folder, but
+they will use different files in this folder. 
+The \texttt{example60} and \texttt{example70} sites are 
+used for hosting JavaScript code.  The 
+\texttt{example32a}, \texttt{example32b}, and 
+\texttt{example32c} are the three websites that 
+have different CSP setup. Details of the setup 
+will be explained later.
 
 
-\begin{lstlisting}[caption={A simple HTTP server \texttt{http\_server.py}}]
-#!/usr/bin/env python3
+\paragraph{Changing the configuration file.}
+In the experiment, you need to modify the Apache 
+configuration file (\texttt{apache\_csp.conf}. If you make a modification
+directly on the file inside the image folder, you need to rebuild the image
+and restart the container, so the change can take effect. 
 
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import *
 
-class MyHTTPRequestHandler(BaseHTTPRequestHandler):
-  def do_GET(self):
-    o = urlparse(self.path)
-    f = open("." + o.path, 'rb')
-    self.send_response(200)
-    self.send_header('Content-Security-Policy',
-          "default-src 'self';"
-          "script-src 'self' *.example68.com:8000 'nonce-1rA2345' ")
-    self.send_header('Content-type', 'text/html')
-    self.end_headers()
-    self.wfile.write(f.read())
-    f.close()
+You can also modify the file while the container is running. 
+The downside of this 
+option is that in order to keep the docker image small, 
+we have only installed a very simple text editor called \texttt{nano} 
+inside the container. It should be sufficient for simple editing.   
+On the running container, you can find the configuration
+file \texttt{apache\_csp.conf} inside the 
+\path{/etc/apache2/sites-available} folder.  
+After making changes, you need to restart the Apache server for the 
+changes to take effect:
 
-httpd = HTTPServer(('127.0.0.1', 8000), MyHTTPRequestHandler)
-httpd.serve_forever()
+\begin{lstlisting}
+# service apache2 restart
 \end{lstlisting}
- 
-
-Please download the zip file \texttt{csp.zip} from the lab's website,
-unzip it, and then enter the \texttt{csp} folder. Make 
-\texttt{http\_server.py} executable, and then run this 
-server program inside the \texttt{csp} folder.  
 
 
-\paragraph{The web page for the experiment.}
-To see how the CSP policies work,
-we wrote the following HTML page, which contains six areas, \texttt{area1} to \texttt{area6}.
+\paragraph{Set up DNS.}
+We will access the above websites from our VM. 
+To access them through their respective URLs, 
+we need to add the following three entries to the 
+\texttt{/etc/hosts} file, so these hostnames are mapped to 
+the IP address of our server container (\texttt{10.9.0.5}). 
+You need to use the root privilege to 
+change this file (using \texttt{sudo}).
+
+\begin{lstlisting}
+10.9.0.5       www.example32a.com
+10.9.0.5       www.example32b.com
+10.9.0.5       www.example32c.com
+10.9.0.5       www.example60.com
+10.9.0.5       www.example70.com
+\end{lstlisting}
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The web page for the experiment}
+
+The \texttt{example32(a|b|c)} servers host 
+the same web page \texttt{index.html}, which 
+is used to demonstrate how the CSP policies work. 
+In this page, there are six areas, \texttt{area1} to \texttt{area6}.
 Initially, each area displays \texttt{"Failed"}. The page
 also includes six pieces of JavaScript code, each trying to
 write \texttt{"OK"} to its corresponding area.  If we can see
 \texttt{OK} in an area, that means, the JavaScript code corresponding
 to that area has been executed successfully; otherwise, we would see
-\texttt{Failed}.
+\texttt{Failed}. There is also a button on this page. 
+If it is clicked, a message will pop up, if the underlying 
+JavaScript code gets triggered. 
 
 
-\begin{lstlisting}[caption={The experiment web page \texttt{csptest.html}}]
+\begin{lstlisting}[caption={The experiment web page \texttt{index.html}}]
 <html>
-<h2 >CSP Test</h2>
-<p>1. Inline: Correct Nonce: <span id='area1'>Failed</span></p>
-<p>2. Inline: Wrong Nonce: <span id='area2'>Failed</span></p>
+<h2 >CSP Experiment</h2>
+<p>1. Inline: Nonce (111-111-111): <span id='area1'>Failed</span></p>
+<p>2. Inline: Nonce (222-222-222): <span id='area2'>Failed</span></p>
 <p>3. Inline: No Nonce: <span id='area3'>Failed</span></p>
 <p>4. From self: <span id='area4'>Failed</span></p>
-<p>5. From example68.com: <span id='area5'>Failed</span></p>
-<p>6. From example79.com: <span id='area6'>Failed</span></p>
+<p>5. From www.example60.com: <span id='area5'>Failed</span></p>
+<p>6. From www.example70.com: <span id='area6'>Failed</span></p>
+<p>7. From button click: 
+      <button onclick="alert('JS Code executed!')">Click me</button></p>
 
-<script type="text/javascript" nonce="1rA2345">
+<script type="text/javascript" nonce="111-111-111">
 document.getElementById('area1').innerHTML = "OK";
 </script>
 
-<script type="text/javascript" nonce="2rB3333">
+<script type="text/javascript" nonce="222-222-222">
 document.getElementById('area2').innerHTML = "OK";
 </script>
 
@@ -596,46 +624,120 @@ document.getElementById('area2').innerHTML = "OK";
 document.getElementById('area3').innerHTML = "OK";
 </script>
 
-<script src="script1.js"> </script>
-<script src="http://www.example68.com:8000/script2.js"> </script>
-<script src="http://www.example79.com:8000/script3.js"> </script>
-
-<button onclick="alert('hello')">Click me</button>
+<script src="script_area4.js"> </script>
+<script src="http://www.example60.com/script_area5.js"> </script>
+<script src="http://www.example70.com/script_area6.js"> </script>
 </html>
+
 \end{lstlisting}
  
 
 
-\paragraph{Set up DNS.}
-We need to set up the DNS entry, so the above web server can be accessed 
-via three different URLs. Add the following three entries
-to the \texttt{/etc/hosts} file. You need to use the root privilege to 
-change this file (using \texttt{sudo}).
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Setting CSP Policies}  
+
+CSP is set by the web server as 
+an HTTP header. There are two typical ways to set the header, 
+by the web server (such as Apache) or by the web application. 
+In this experiment, we will conduct experiments using 
+both approaches. 
+
+\paragraph{CSP configuration by Apache.}
+Apache can set HTTP headers for all the responses, so we can
+use Apache to set CSP policies. In our configuration, 
+we set up three websites, but only the second one sets 
+CSP policies (the lines marked by \ding{110}). 
+With this setup, when we visit \texttt{example32b}, 
+Apache will add the specified CSP header to all the 
+the response from this site. 
+
 
 \begin{lstlisting}
-127.0.0.1       www.example32.com
-127.0.0.1       www.example68.com
-127.0.0.1       www.example79.com
+# Purpose: Do not set CSP policies
+<VirtualHost *:80>
+    DocumentRoot /var/www/csp
+    ServerName www.example32a.com
+    DirectoryIndex index.html
+</VirtualHost>
+
+# Purpose: Setting CSP policies in Apache configuration
+<VirtualHost *:80>
+    DocumentRoot /var/www/csp
+    ServerName www.example32b.com
+    DirectoryIndex index.html
+    Header set Content-Security-Policy " \          (*@\ding{110}@*)
+             default-src 'self'; \                  (*@\ding{110}@*)
+             script-src 'self' *.example70.com \    (*@\ding{110}@*)
+           "
+</VirtualHost>
+
+# Purpose: Setting CSP policies in web applications
+<VirtualHost *:80>                                  (*@\ding{108}@*)
+    DocumentRoot /var/www/csp
+    ServerName www.example32c.com
+    DirectoryIndex phpindex.php
+</VirtualHost>
 \end{lstlisting}
+ 
+
+\paragraph{CSP configuration by web applications.}
+For the third \texttt{VirtualHost} entry in our configuration
+file (marked by \ding{108}), we did not set up any CSP policy.
+However, instead of accessing \texttt{index.html}, the 
+entry point of this site is \texttt{phpindex.php}, which
+is a PHP program. This program, listed below, adds 
+a CSP header to the response. 
+
+\begin{lstlisting}
+<?php
+  $cspheader = "Content-Security-Policy:".
+               "default-src 'self';".
+               "script-src 'self' 'nonce-111-111-111' *.example70.com".
+               "";
+  header($cspheader);
+?>
+
+<?php include 'index.html';?>
+\end{lstlisting}
+ 
 
 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Lab tasks} 
 
-\paragraph{Lab tasks.} Please complete the following tasks. 
+
+After starting the containers and making changes to the \texttt{/etc/hosts}, please visit
+the following URLs from your VM. 
+
+\begin{lstlisting}
+  http://www.example32a.com
+  http://www.example32b.com
+  http://www.example32c.com
+\end{lstlisting}
 
 \begin{enumerate}
-\item Point your browser to the following URLs. Describe and explain your observation.
 
-\begin{lstlisting}
-  http://www.example32.com:8000/csptest.html
-  http://www.example68.com:8000/csptest.html
-  http://www.example79.com:8000/csptest.html
-\end{lstlisting}
+\item Describe and explain your observations when you visit the above three websites.
 
-\item Change the server program (not the web page), so 
-Fields 1, 2, 4, 5, and 6 all display \texttt{OK}. Please include your code 
-in the lab report.
+\item Click the button of in the web pages from all the three websites, describe and 
+explain your observations. 
+
+\item Change the server configuration on \texttt{example32b} (modify the Apache 
+configuration), so Areas 5 and 6 display OK. 
+
+\item Change the server configuration on \texttt{example32c} (modify the PHP code), so 
+Areas 1, 2, 4, 5, and 6 all display \texttt{OK}. Please include your 
+modified configuration in the lab report.
+
+\item Please explain why would CSP help prevent Cross-Site Scripting attacks. 
+
 \end{enumerate}
  
+
 
 
 
@@ -647,7 +749,7 @@ in the lab report.
 \label{xss:sec:guidelines}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{../Web_Common/Web_Dev_Tools}
+\input{\webcommon/Web_Dev_Tools}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -657,7 +759,10 @@ in the lab report.
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
