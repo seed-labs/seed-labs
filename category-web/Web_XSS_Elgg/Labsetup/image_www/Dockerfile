@@ -47,12 +47,13 @@ COPY csp /var/www/csp
 
 # Enable the XSS site
 COPY apache_elgg_xss.conf  /etc/apache2/sites-available
-COPY apache_csp.conf  /etc/apache2/sites-available
-COPY apache2.conf  /etc/apache2
+COPY apache_csp.conf   /etc/apache2/sites-available
+COPY server_name.conf  /etc/apache2/sites-available
 COPY start.sh /
-RUN  a2ensite apache_elgg_xss.conf \
-     && a2ensite apache_csp.conf \
-     && chmod +x /start.sh
+RUN  chmod +x /start.sh \
+     && a2ensite server_name.conf \
+     && a2ensite apache_elgg_xss.conf \
+     && a2ensite apache_csp.conf 
 
 CMD [ "/start.sh"]
 
