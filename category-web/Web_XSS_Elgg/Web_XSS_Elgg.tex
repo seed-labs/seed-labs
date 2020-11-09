@@ -145,31 +145,12 @@ of the URL to the IP address \texttt{10.9.0.5}:
 \end{lstlisting}
 
 
+% MySQL database
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\webcommon/mysql}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\paragraph{MySQL database.} 
-Containers are usually disposable, so once it 
-is destroyed, all the data inside the containers are lost. 
-For this lab, we do want to keep the data in the 
-MySQL database, so we do not lose our work when we shutdown
-our container. To achieve this,
-we have mounted the \texttt{mysql\_data} folder on
-the host machine (inside 
-\texttt{Labsetup}, it will be created after the
-MySQL container runs once) to the 
-\texttt{/var/lib/mysql} folder
-inside the MySQL container. 
-This folder is where
-MySQL stores its database. Therefore, 
-even if the container is destroyed, 
-data in the database are still kept. 
-If you do want to start from a clean
-database, you can remove this folder:
 
-\begin{lstlisting}
-$ sudo rm -rf mysql_data
-\end{lstlisting}
- 
- 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\webcommon/elgg_accounts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
