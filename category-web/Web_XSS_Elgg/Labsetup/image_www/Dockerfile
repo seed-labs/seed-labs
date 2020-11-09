@@ -1,0 +1,59 @@
+FROM ubuntu:20.04
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update  \
+    && apt-get -y install  \
+        apache2 \
+	libapache2-mod-php7.4 \
+        php7.4-cli \
+	php7.4-gd \
+	php7.4-pdo \ 
+	php7.4-json \
+	php7.4-xml \
+	php7.4-mbstring \
+	php7.4-mysql \
+        curl   \
+        nano   \
+        unzip  \
+    && rm -rf /var/lib/apt/lists/* \
+    && a2enmod rewrite \
+    && a2enmod ssl \
+    && a2enmod cgi \
+    && a2enmod headers 
+
+ARG DOWNLOAD=/tmp/download
+ARG WWWDir=/var/www/elgg
+ARG DataDir=/var/elgg-data
+
+RUN mkdir -p $DOWNLOAD \
+    && curl https://elgg.org/download/elgg-3.3.3.zip --output $DOWNLOAD/elgg-3.3.3.zip \
+    && unzip $DOWNLOAD/elgg-3.3.3.zip -d /var/www/ \
+    && mv /var/www/elgg-3.3.3 $WWWDir
+
+COPY elgg/elgg_data.zip $DOWNLOAD
+RUN mkdir -p $DataDir \
+    && unzip $DOWNLOAD/elgg_data.zip -d $DataDir \
+    && chown -R www-data $DataDir \
+    && chgrp -R www-data $DataDir \
+    && rm -rf $DOWNLOAD 
+
+COPY elgg/settings.php $WWWDir/elgg-config/settings.php
+COPY elgg/dropdown.php $WWWDir/vendor/elgg/elgg/views/default/output/
+COPY elgg/text.php     $WWWDir/vendor/elgg/elgg/views/default/output/
+COPY elgg/url.php      $WWWDir/vendor/elgg/elgg/views/default/output/
+COPY elgg/input.php    $WWWDir/vendor/elgg/elgg/engine/lib/
+COPY elgg/ajax.js      $WWWDir/vendor/elgg/elgg/views/default/core/js/
+COPY csp /var/www/csp
+
+# Enable the XSS site
+COPY apache_elgg_xss.conf  /etc/apache2/sites-available
+COPY apache_csp.conf  /etc/apache2/sites-available
+COPY apache2.conf  /etc/apache2
+COPY start.sh /
+RUN  a2ensite apache_elgg_xss.conf \
+     && a2ensite apache_csp.conf \
+     && chmod +x /start.sh
+
+CMD [ "/start.sh"]
+
+
