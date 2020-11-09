@@ -87,7 +87,6 @@ Detailed coverage of the Cross-Site Scripting attack can be found in the followi
 \section{Lab Environment Setup}
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
@@ -114,12 +113,12 @@ The IP addresses for these two containers are hardcoded in various
 places in the configuration, so please do not change them from
 the \texttt{docker-compose.yml} file. 
 
-
-
 \paragraph{The Elgg container.}
 We host the Elgg web application using the Apache web server. 
 The website setup is included in 
 \texttt{apache\_elgg\_xss.conf} inside the Elgg image folder. 
+The configuration specifies the URL for the website and 
+the folder where the web application code is stored. 
 
 \begin{lstlisting}
 <VirtualHost *:80>
@@ -132,7 +131,6 @@ The website setup is included in
      </Directory>
 </VirtualHost>
 \end{lstlisting}
- 
 
 
 \paragraph{DNS configuration.} 
@@ -149,12 +147,22 @@ of the URL to the IP address \texttt{10.9.0.5}:
 
 
 \paragraph{MySQL database.} 
-In our container setup, the MySQL database stores data 
-in the \texttt{mysql\_data} folder (inside \texttt{Labsetup})  
-on the host machine (the 
-folder will be created after the MySQL container runs once). 
-This way, even if the MySQL container is destroyed, the 
-data in the database are still kept. If you do want to start from a clean
+Containers are usually disposable, so once it 
+is destroyed, all the data inside the containers are lost. 
+For this lab, we do want to keep the data in the 
+MySQL database, so we do not lose our work when we shutdown
+our container. To achieve this,
+we have mounted the \texttt{mysql\_data} folder on
+the host machine (inside 
+\texttt{Labsetup}, it will be created after the
+MySQL container runs once) to the 
+\texttt{/var/lib/mysql} folder
+inside the MySQL container. 
+This folder is where
+MySQL stores its database. Therefore, 
+even if the container is destroyed, 
+data in the database are still kept. 
+If you do want to start from a clean
 database, you can remove this folder:
 
 \begin{lstlisting}
