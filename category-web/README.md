@@ -12,18 +12,18 @@ The meaning of the Changes column can be found from
 | Lab Name | Changes | Status |  Notes |
 | ---      | ---     | ---    |  ---   |
 | XSS Attack    | Major | Done | [README](Web_XSS_Elgg/README.md)|
-| CSRF Attack   |       |      | [README](Web_CSRF_Elgg/README.md)|
+| CSRF Attack   | Major | Done | [README](Web_CSRF_Elgg/README.md)|
 | SQL Injection |       |      | [README](Web_SQL_Injection/README.md)|
 ||||
 
 
 ## Network Topology and Docker Images Used
 
-| Lab Name      | Topology | PHP | SQL |
-| ---           | :---:    | :---: | :---:  | :---: |
-| XSS Attack    | 1 LAN    | x | x |
-| CSRF Attack   | 1 LAN    | x | x |
-| SQL Injection | 1 LAN    | x | x |
+| Lab Name      | Topology | PHP   | SQL   |
+| ---           | :---:    | :---: | :---: | 
+| XSS Attack    | 1 LAN    | x     | x     |
+| CSRF Attack   | 1 LAN    | x     | x     |
+| SQL Injection | 1 LAN    | x     | x     |
 |||||
 
 
