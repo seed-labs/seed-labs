@@ -6,8 +6,11 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+\newcommand{\webcommon}{../Web_Common}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \lhead{\bfseries SEED Labs -- CSRF Lab}
@@ -20,7 +23,7 @@
 {\Large (Web Application: {\tt Elgg})}
 \end{center}
 
-\seedlabcopyright{2006 - 2016}
+\seedlabcopyright{2006 - 2020}
 
 
 
@@ -59,63 +62,120 @@ Detailed coverage of the CSRF attack can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironmentAB
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
 % *******************************************
 % SECTION
-% ******************************************* 
-\section{Lab Environment}
+% *******************************************
+\section{Lab Environment Setup}
+
+In this lab, we will use two websites. 
+The first website is the vulnerable Elgg
+site accessible at \url{www.csrflabelgg.com}. The second
+website is the attacker's malicious web site that is used for
+attacking Elgg. This web site is accessible via
+\url{www.csrflab-attacker.com}. We use containers to
+set up the lab environment.
 
 
-This lab can only be conducted in our Ubuntu 16.04 VM, because of the configurations that we
-have performed to support this lab. We summarize these configurations in this
-section.
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{../Web_Common/Web_Elgg_Setup}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Elgg Web Application}
 
-\paragraph{DNS Configuration.}
-This lab involves two websites, the victim website and the attacker's website. 
-Both websites are set up on our VM. Their URLs and folders are 
-described in the following: 
+We use an open-source web application called Elgg in this lab.
+Elgg is a web-based social-networking application.
+It is already set up in the provided container images.
+We use two containers, one running the web server (\texttt{10.9.0.5}) ,
+and the other running the MySQL database (\texttt{10.9.0.6}).
+The IP addresses for these two containers are hardcoded in various
+places in the configuration, so please do not change them from
+the \texttt{docker-compose.yml} file.
 
+\paragraph{The Elgg container.}
+We host the Elgg web application using the Apache web server.
+The website setup is included in
+\texttt{apache\_elgg\_csrf.conf} inside the Elgg image folder.
+The configuration specifies the URL for the website and
+the folder where the web application code is stored.
 
 \begin{lstlisting}
- Attacker's website
-    URL: http://www.csrflabattacker.com
-    Folder: /var/www/CSRF/Attacker/ 
-  
- Victim website (Elgg)
-    URL: http://www.csrflabelgg.com 
-    Folder: /var/www/CSRF/Elgg/ 
+<VirtualHost *:80>
+     DocumentRoot /var/www/elgg
+     ServerName www.csrflabelgg.com
+     <Directory /var/www/elgg>
+          Options FollowSymlinks
+          AllowOverride All
+          Require all granted
+     </Directory>
+</VirtualHost>
+\end{lstlisting}
+
+\paragraph{The Attacker container.}
+We use another container (\texttt{10.9.0.105}) for the 
+attacker machine, which hosts a malicious website. 
+The Apache configuration for this website is listed
+in the following:
+
+\begin{lstlisting}
+<VirtualHost *:80>
+    ServerName www.csrflab-attacker.com
+    DocumentRoot /var/www/attacker
+</VirtualHost>
+\end{lstlisting}
+ 
+Since we need to create web pages inside this container,
+for convenience, as well as for keeping the pages we have created, 
+we mounted a folder (\texttt{Labsetup/attacker} on the 
+hosting VM) to the container's \texttt{/var/www/attacker}
+folder, which is the \texttt{DocumentRoot} folder in our Apache
+configuration. Therefore, the web pages we 
+put inside the \texttt{attacker} folder on the VM
+will be hosted by the attacker's website. 
+We have already placed some code skeletons inside 
+this folder. 
+
+
+\paragraph{DNS configuration.}
+We access the Elgg website and attacker 
+websites on the VM using their respective URLs. 
+The URLs are only accessible from inside of the virtual machine, because we
+have modified the \texttt{/etc/hosts} file to map the hostname
+of the URLs to the IP address of their containers:
+
+\begin{lstlisting}
+10.9.0.5    www.csrflabelgg.com
+10.9.0.105  www.csrflab-attacker.com
 \end{lstlisting}
 
 
+% MySQL database
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\urlorurls}{URLs }
-\newcommand{\urlisorurlsare}{URLs are }
-\input{../Web_Common/Web_DNS_Setup}
-\input{../Web_Common/Web_Apache_Setup}
+\input{\webcommon/mysql}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\webcommon/elgg_accounts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Tasks}
-
-For the lab tasks, you will use two web sites that are locally setup in
-the virtual machine. The first web site is the vulnerable \texttt{Elgg}
-site accessible at \url{www.csrflabelgg.com} inside the virtual machine. The second
-web site is the attacker's malicious web site that is used for
-attacking {\tt Elgg}. This web site is accessible via
-\url{www.csrflabattacker.com} inside the virtual machine. 
-
+\section{Lab Tasks: Attacks}
 
 
 % -------------------------------------------
@@ -132,7 +192,7 @@ The goal of this task is to get familiar with this tool.
 Instructions on how to use this tool is given in the Guideline
 section~(\S~\ref{web:sec:httpheaderlive}).
 Please use this tool to capture an HTTP GET request and an HTTP POST
-request in \texttt{Elgg}. In your report, please identify the parameters
+request in Elgg. In your report, please identify the parameters
 used in this these requests, if any. 
 
 
@@ -142,15 +202,15 @@ used in this these requests, if any.
 % ------------------------------------------- 
 \subsection{Task 2: CSRF Attack using GET Request}
 
-In this task, we need two people in the {\tt Elgg} social network: Alice
-and Boby. Boby wants to become a friend to Alice, but Alice refuses to add 
-him to her {\tt Elgg} friend list. Boby decides to use the CSRF attack to
-achieve his goal. He sends Alice an URL (via an email or a posting in {\tt
-Elgg}); Alice, curious about it, clicks on the URL, which leads her to Boby's web site:    
-{\tt www.csrflabattacker.com}. Pretend that you are Boby, describe how you
+In this task, we need two people in the Elgg social network: Alice
+and Samy. Samy wants to become a friend to Alice, but Alice refuses to add 
+him to her Elgg friend list. Samy decides to use the CSRF attack to
+achieve his goal. He sends Alice an URL (via an email or a posting in 
+Elgg); Alice, curious about it, clicks on the URL, which leads her to Samy's web site:    
+{\tt www.csrflab-attacker.com}. Pretend that you are Samy, describe how you
 can construct the content of the web page, so as soon as Alice visits the
-web page, Boby is added to the friend list of Alice (assuming Alice has an
-active session with {\tt Elgg}).
+web page, Samy is added to the friend list of Alice (assuming Alice has an
+active session with Elgg).
 
 
 To add a friend to the victim, we need to identify what the legitimate 
@@ -163,11 +223,11 @@ any click on the page (hint: you can use the {\tt img} tag, which
 automatically triggers an HTTP GET request).
  
 
-\texttt{Elgg} has implemented a countermeasure to defend against 
+Elgg has implemented a countermeasure to defend against 
 CSRF attacks. In Add-Friend HTTP requests, you may notice that each 
 request includes two wired-looking parameters, \texttt{\_\_elgg\_ts} and 
 \texttt{\_\_elgg\_token}. These parameters are used by the countermeasure, so if they do not
-contain correct values, the request will not be accepted by \texttt{Elgg}.   
+contain correct values, the request will not be accepted by Elgg.   
 We have disabled the countermeasure for this lab, so there is no need to include these two 
 parameters in the forged requests. 
 
@@ -177,24 +237,24 @@ parameters in the forged requests.
 % ------------------------------------------- 
 \subsection{Task 3: CSRF Attack using POST Request}
 
-After adding himself to Alice's friend list, Boby wants to do something more. He 
-wants Alice to say ``Boby is my Hero'' in her profile, so everybody knows 
-about that. Alice does not like Boby, let alone putting that statement 
-in her profile. Boby plans to use a CSRF attack to achieve that goal. 
+After adding himself to Alice's friend list, Samy wants to do something more. He 
+wants Alice to say ``Samy is my Hero'' in her profile, so everybody knows 
+about that. Alice does not like Samy, let alone putting that statement 
+in her profile. Samy plans to use a CSRF attack to achieve that goal. 
 That is the purpose of this task. 
 
 
-One way to do the attack is to post a message to Alice's {\tt Elgg} account, hoping that 
-Alice will click the URL inside the message. This URL will lead Alice to your (i.e., Boby's)
-malicious web site \url{www.csrflabattacker.com}, where you can launch the
+One way to do the attack is to post a message to Alice's Elgg account, hoping that 
+Alice will click the URL inside the message. This URL will lead Alice to your (i.e., Samy's)
+malicious web site \url{www.csrflab-attacker.com}, where you can launch the
 CSRF attack. 
 
 The objective of your attack is to modify the victim's profile. 
 In particular, the attacker needs to forge a request 
-to modify the profile information of the victim user of {\tt Elgg}. 
+to modify the profile information of the victim user of Elgg. 
 Allowing users to modify their profiles is a feature of 
-{\tt Elgg}. If  users want to modify their profiles,
-they go to the profile page of {\tt Elgg}, fill out 
+Elgg. If  users want to modify their profiles,
+they go to the profile page of Elgg, fill out 
 a form, and then submit the form---sending a POST request---to 
 the server-side script {\tt /profile/edit.php}, which 
 processes the request and does the profile modification.
@@ -307,180 +367,226 @@ answer the following questions in your report:
    \item \textbf{Question 1}: The forged HTTP request needs Alice's user
    id (guid) to work properly. If Boby targets Alice specifically, before
    the attack, he can find ways to get Alice's user id. Boby does not know 
-   Alice's {\tt Elgg} password, so he cannot log into Alice's account to get
+   Alice's Elgg password, so he cannot log into Alice's account to get
    the information. Please describe how Boby can solve this problem.
 
    
    \item \textbf{Question 2:} If Boby would like to launch the attack to
    anybody who visits his malicious web page. In this case, he does not
    know who is visiting the web page beforehand. Can he still launch the CSRF attack
-   to modify the victim's {\tt Elgg} profile? Please explain.
+   to modify the victim's Elgg profile? Please explain.
 \end{itemize}
 
 
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Tasks: Defense} 
+
+CSRF is not difficult to defend against. Initially, most applications
+put a secret token in its pages, and by checking whether the token
+is present in the request or not, they can tell whether a request
+is a same-site request or a cross-site request. This is called
+\textit{secret token} approach. 
+More recently,
+most browsers have implemented a mechanism called 
+\textit{SameSite cookie}, which is intended to simplify the 
+implementation of CSRF countermeasures. We will 
+conduct experiments on both methods. 
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Implementing a countermeasure for {\tt Elgg}} 
+\subsection{Task 4: Enabling Elgg's Countermeasure} 
+
+To defend against CSRF attacks, web applications can embed a secret token
+in their pages. All the requests coming from these pages must carry this 
+token, or they will be considered as a cross-site request, and will
+not have the same privilege as the same-site requests. 
+Attacker will not be able to get this secret token, so their requests
+are easily identified as cross-site requests. 
 
 
-{\tt Elgg} does have a built-in countermeasures to 
-defend against the CSRF attack. 
-We have commented out the countermeasures to make the attack work. 
-CSRF is not difficult to defend against, and there are several common approaches:
-
-\begin{itemize}
-   \item {\em Secret-token approach}: Web applications can embed a secret token
-   in their pages, and all requests coming from these pages will carry this 
-   token. Because cross-site requests cannot obtain this token, their 
-   forged requests will be easily identified by the server.
-
-   \item {\em Referrer header approach}: Web applications can also verify the origin page 
-   of the request using the \emph{referrer} header. However, due to privacy
-   concerns, this header information may have already been filtered out 
-   at the client side.
-\end{itemize}
+Elgg uses this secret-token approach as its 
+built-in countermeasures to defend against CSRF attacks. 
+We have disabled the countermeasures to make the attack work. 
+Elgg embeds two parameters
+{\tt\_\_elgg\_ts} and {\tt\_\_elgg\_token} in the request.
+The two parameters are added to the HTTP message body for the POST requests and to the URL
+string for the HTTP GET requests. The server will validate them
+before processing a request. 
 
 
-The web application {\tt Elgg} uses secret-token approach. 
-It embeds two parameters {\tt\_\_elgg\_ts} and {\tt\_\_elgg\_token} in the request as a countermeasure to CSRF attack. 
-The two parameters are added to the HTTP message body for the POST requests and to the URL string for the HTTP GET requests.
-
-
-\paragraph{{\tt Elgg} secret-token and timestamp in the body of the request.}
-{\tt Elgg} adds security token and timestamp to all the user actions to be performed.
+\paragraph{Embedding secret token and timestamp to web pages.}
+Elgg adds security token and timestamp to all the HTTP requests. 
 The following HTML code is present in all the forms where user action is required. 
-This code adds two new hidden parameters {\tt\_\_elgg\_ts} and {\tt\_\_elgg\_token} to the POST request:
+These are two hidden fields; when the form is submitted, these
+two hidden parameters are added to the request:
 
 \begin{lstlisting}
 <input type = "hidden" name = "__elgg_ts" value = "" />
 <input type = "hidden" name = "__elgg_token" value = "" />
 \end{lstlisting}
 
-The {\tt\_\_elgg\_ts} and {\tt\_\_elgg\_token} are generated by the 
-\url{views/default/input/securitytoken.php} 
-module and added to the web page. 
-The code snippet below shows how it is dynamically added to the web page.
-{\footnotesize
+Elgg also assign the values of the security token and timestamp to JavaScript variables, 
+so they can be easily accessed by the JavaScript code on the same page.
+
+\begin{lstlisting}
+elgg.security.token.__elgg_ts;
+elgg.security.token.__elgg_token;
+\end{lstlisting}
+
+
+The secret token and timestamp are added to Elgg's web pages by the 
+\path{vendor/elgg/elgg/views/default/input/securitytoken.php} 
+module. The code snippet below shows how they are dynamically 
+added to web pages.
+
 \begin{lstlisting}
 $ts = time();
-$token = generate_action_token($ts);
+$token = elgg()->csrf->generateActionToken($ts);
 
-echo elgg_view('input/hidden', array('name' => '__elgg_token', 'value' => $token));
-echo elgg_view('input/hidden', array('name' => '__elgg_ts', 'value' => $ts));
-\end{lstlisting}
-}
-
-{\tt Elgg} also adds the security tokens and timestamp to the JavaScript which can be accessed by 
-
-\begin{lstlisting}
-  elgg.security.token.__elgg_ts;
-  elgg.security.token.__elgg_token;
+echo elgg_view('input/hidden', ['name' => '__elgg_token', 'value' => $token]);
+echo elgg_view('input/hidden', ['name' => '__elgg_ts', 'value' => $ts]);
 \end{lstlisting}
 
-{\tt Elgg} security token is a hash value (md5 message digest) of the site secret value (retrieved from database),
-timestamp, user sessionID and random generated session string. There by defending against the CSRF attack.  
-The code below shows the secret token generation in {\tt Elgg}.
+
+\paragraph{Secret token generation.}
+Elgg's security token is a hash value (md5 message digest) of the site 
+secret value (retrieved from database),
+timestamp, user session ID and random generated session string. 
+The code below shows the secret token generation in Elgg 
+(in \path{vendor/elgg/elgg/engine/classes/Elgg/Security/Csrf.php}).
 
 \begin{lstlisting}
-function generate_action_token($timestamp) 
-{
-  $site_secret = get_site_secret();
-  $session_id = session_id();
-  // Session token
-  $st = $_SESSION['__elgg_session'];
-
-  if (($site_secret) && ($session_id)) 
-  {
-     return md5($site_secret . $timestamp . $session_id . $st);
+/**
+ * Generate a token from a session token (specifying the user), 
+ * the timestamp, and the site key.
+ */
+public function generateActionToken($timestamp, $session_token = '') {
+  if (!$session_token) {
+          $session_token = $this->session->get('__elgg_session');
+          if (!$session_token) {
+                  return false;
+          }
   }
 
-  return FALSE;
+  return $this->hmac
+          ->getHmac([(int) $timestamp, $session_token], 'md5')
+          ->getToken();
 }
 \end{lstlisting}
 
 
-The PHP function {\tt session\_id()} is used to get or set the session id
-for the current session.  The below code snippet shows random generated
-string for a given session {\tt\_\_elgg\_session} apart from public user
-Session ID.
-
-\begin{lstlisting}
-  ...... 
-  // Generate a simple token (private from potentially public session id)
-  if (!isset($_SESSION['__elgg_session'])) {
-  $_SESSION['__elgg_session'] = ElggCrypto::getRandomString(32,ElggCrypto::CHARS_HEX);
-	........
-\end{lstlisting}
-
-\paragraph{{\tt Elgg} secret-token validation.}
+\paragraph{Secret token validation.}
 The elgg web application validates the generated token and timestamp to
-defend against the CSRF attack.  Every user action calls {\tt
-validate\_action\_token} function and this function validates the tokens.
+defend against the CSRF attack.  Every user action calls the 
+\texttt{validate} function inside \texttt{Csrf.php}, and this function validates the tokens.
 If tokens are not present or invalid, the action will be denied and the
-user will be redirected.
- 
- 
-The below code snippet shows the function {\tt validate\_action\_token}.
+user will be redirected. In our setup, we added 
+a \texttt{return} at the beginning of this function, essentially
+disabling the validation.
 
 \begin{lstlisting}
-function validate_action_token($visibleerrors = TRUE, $token = NULL, $ts = NULL) 
-{
-  if (!$token) {	$token = get_input('__elgg_token');	}
-  if (!$ts) {$ts = get_input('__elgg_ts');	}
-  $session_id = session_id();
-  if (($token) && ($ts) && ($session_id)) {
-    // generate token, check with input and forward if invalid
-    $required_token = generate_action_token($ts);
+public function validate(Request $request) {
+   (*@\textbf{return;}@*) // Added for SEED Labs (disabling the CSRF countermeasure)
 
-    // Validate token
-    if ($token == $required_token) {
-			
-      if (_elgg_validate_token_timestamp($ts)) {
-        // We have already got this far, so unless anything
-        // else says something to the contrary we assume we're ok
-        $returnval = true;
-        ......
-      }
-      else {     
-        ......
-        register_error(elgg_echo('actiongatekeeper:tokeninvalid'));
-        ......
-      }
-      ......
+   $token = $request->getParam('__elgg_token');
+   $ts = $request->getParam('__elgg_ts');
+   ... (code omitted) ...
 }
 \end{lstlisting}
 
 
 
-\paragraph{Turn on countermeasure.}
-To turn on the countermeasure, please go to the directory
-\url{/var/www/CSRF/Elgg/vendor/elgg/elgg/engine/classes/Elgg} and 
-find the function {\tt gatekeeper} in the {\tt ActionsService.php} file. 
-In function {\tt gatekeeper()} please comment out the 
-{\tt "return true;"} statement as specified in the code comments.
-
-\begin{lstlisting}
-public function gatekeeper($action) {
-   //SEED:Modified to enable CSRF. 
-   //Comment the below return true statement to enable countermeasure
-   return true;
-   ......
-}
-\end{lstlisting}
-
-
-\paragraph{Task:}
-After turning on the countermeasure above, try the CSRF attack again, 
-and describe your observation. Please point out the secret tokens in the 
-HTTP request captured using Firefox's HTTP inspection tool.
-%{\tt LiveHTTPHeaders}. 
+\paragraph{Task: Turn on countermeasure.}
+To turn on the countermeasure, just remove the \texttt{return}
+from the \texttt{Csrf.php} file inside the \texttt{image\_elgg/elgg} 
+folder (on your host VM), rebuild the container images, and restart all 
+the containers. Then repeat the attack again, and see whether your attack will
+be successful or not. 
+Please point out the secret tokens in the captured HTTP requests.
 Please explain why
 the attacker cannot send these secret tokens in the CSRF attack; what
 prevents them from finding out the secret tokens from the web page?   
 
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 5: Experimenting with the SameSite Cookie Method} 
+
+Most browsers have now implemented a mechanism called SameSite cookie, 
+which is a property associated with cookies. When sending out 
+requests, browsers will check this property, and decide whether 
+to attach the cookie in a cross-site. A web application can
+set a cookie as SameSite if it does not want the cookie to be 
+attached to cross-site requests. For example, they can mark
+the session ID cookie as SameSite, so no cross-site request
+can use the session ID, and will therefore not be able to 
+launch CSRF attacks. 
+
+
+To help students get an idea on how the SameSite cookies can
+help defend against CSTF attacks, we have created a website
+called \url{www.csrflab-defense.com} on one of the containers. Please 
+visit the following URL (the hostname is already mapped 
+to \texttt{10.9.0.5} in the \texttt{/etc/hosts} file; if you are 
+not using the SEED VM, you should add this mapping to your machine): 
+
+\begin{lstlisting}
+URL: http://www.csrflab-defense.com/
+\end{lstlisting}
+
+Once you have visited this website once, three cookies will be 
+set on your browser, \texttt{cookie-normal}, \texttt{cookie-lax},
+and \texttt{cookie-strict}. As indicated by the name,
+the first cookie is just a normal one, the second and third cookies
+are samesite cookies of two different types (\texttt{Lax} and \texttt{Strict}
+types). We have designed two sets of experiments to see 
+which cookies will be attached when you send an HTTP request
+back to the server. Typically, all the cookies belonging to the server
+will be attached, but this is not the case if a cookie is a samesite type. 
+
+
+Please follow the links for the two experiments. Link A points to a page 
+on \url{csrflab-defense.com}, while Link B points to a page 
+on \url{csrflab-attacker.com}. Both pages are identical (except for the background
+color), and they both send three different types of requests to
+\url{www.csrflab-defense.com/showcookies.php}, which
+simply displays the cookies sent by the browser. By looking 
+at the display results, you can tell which cookies were sent 
+by the browser. Please do the following: 
+
+
+\begin{itemize}
+\item Please describe what you see and explain why some cookies are 
+not sent in certain scenarios. 
+ 
+\item Based on your understanding, please describe how the SameSite
+cookies can help a server detect whether a request 
+is a cross-site or same-site request. 
+
+\item Please describe how you would use
+the SameSite cookie mechanism to help Elgg defend against CSRF attacks. 
+You only need to describe general ideas, and there is no need to 
+implement them. 
+\end{itemize}
+
+
+\paragraph{Bonus points.} Although it is not required, students
+are encouraged to modify the Elgg application, so they
+can use the samesite cookie mechanism to defend against
+CSRF attacks. We recommend instructors to give bonus points 
+to the students who can do this. Students should check with 
+their instructors regarding the bonus points.
 
 
 % -------------------------------------------
@@ -488,7 +594,9 @@ prevents them from finding out the secret tokens from the web page?
 % ------------------------------------------- 
 \section{Guidelines}
 
-\input{../Web_Common/Web_Dev_Tools}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\webcommon/Web_Dev_Tools}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -497,7 +605,10 @@ prevents them from finding out the secret tokens from the web page?
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
