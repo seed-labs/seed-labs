@@ -13,7 +13,7 @@ The meaning of the Changes column can be found from
 | ---      | ---     | ---    |  ---   |
 | XSS Attack    | Major | Done | [README](Web_XSS_Elgg/README.md)|
 | CSRF Attack   | Major | Done | [README](Web_CSRF_Elgg/README.md)|
-| SQL Injection |       |      | [README](Web_SQL_Injection/README.md)|
+| SQL Injection | Minor | Done | [README](Web_SQL_Injection/README.md)|
 ||||
 
 
