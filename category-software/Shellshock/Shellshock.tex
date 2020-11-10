@@ -6,8 +6,11 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+\newcommand{\webcommon}{../Web_Common}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \newcommand{\bash}{{\tt bash}\xspace}
@@ -57,9 +60,76 @@ Detailed coverage of the Shellshock attack can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironmentB
+\paragraph{Lab environment.} \seedenvironmentB \nodependency
 
 
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Environment Setup} 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Web Server and CGI}
+
+In this lab, we will launch a Shellshock attack on the web server container. 
+Many web servers enable CGI, which is a standard method used to generate
+dynamic content on Web pages and Web applications. Many CGI programs are
+written using shell scripts. Therefore, before a CGI program is executed,
+a shell program will be invoked first, and such an invocation is
+triggered by a user from a remote computer. If the shell program is
+a vulnerable Bash program, we can exploit the Shellshock vulnerable to
+gain privileges on the server.
+
+
+In our web server container, we have already set up a very simple CGI
+program (called \texttt{vul.cgi}). 
+It simply prints out {\tt "Hello World"} using a shell script.
+The CGI program is put inside Apache's default CGI folder \texttt{/usr/lib/cgi-bin},
+and it must be executable. 
+
+\begin{lstlisting}[caption=\texttt{vul.cgi}] 
+(*@\textbf{\#!/bin/bash\_shellshock}@*)          
+
+echo "Content-type: text/plain"
+echo
+echo
+echo "Hello World"
+\end{lstlisting}
+
+The CGI program uses \texttt{/bin/bash\_shellshock} (the first line),
+instead of using \texttt{/bin/bash}. This line specifies
+what shell program should be invoked to run the script. We do need to use
+the vulnerable Bash in this lab.
+
+
+To access the CGI program from the Web, we can either use a browser by
+typing the following URL: \url{http://www.seedlab-shellshock.com/cgi-bin/vul.cgi}, 
+or use the following command line program {\tt curl} to do the same thing:
+
+\begin{lstlisting}
+$ curl http://www.seedlab-shellshock.com/cgi-bin/vul.cgi
+\end{lstlisting}
+
+\paragraph{DNS Setting.}
+In our setup, the web server container's IP address is
+\texttt{10.9.0.80}. The hostname of the server is called
+\texttt{www.seedlab-shellshock.com}.  
+In the SEED VM, we have already 
+mapped this hostname to \texttt{10.9.0.80} in \texttt{/etc/hosts}. 
+If you are not using the SEED VM, you should add this mapping to your machine. 
 
 
 % *******************************************
@@ -78,89 +148,37 @@ The Bash program in Ubuntu 20.04 has already been patched, so it is no
 longer vulnerable to the Shellshock attack. For the purpose of this lab, we
 have installed a vulnerable version of Bash inside the \texttt{/bin}
 folder; its name is \texttt{bash\_shellshock}. We need to use 
-this Bash in our task. Please run this vulnerable version of Bash like the
+this Bash in our task. Please first get a shell in the 
+web server container ((see the container manual for
+instruction; the manual is linked to the lab's website).
+Inside the container, run this vulnerable version of Bash like the
 following and then design an experiment to verify whether this Bash is
 vulnerable to the Shellshock attack or not. 
 
 \begin{lstlisting}
-$ /bin/bash_shellshock
+# /bin/bash_shellshock
 \end{lstlisting}
- 
 
 Try the same experiment on the patched version of bash (\texttt{/bin/bash})
 and report your observations.
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2: Setting up CGI programs}
-
-In this lab, we will launch a Shellshock attack on a remote web server. 
-Many web servers enable CGI, which is a standard method used to generate 
-dynamic content on Web pages and Web applications. Many CGI programs are 
-written using shell scripts. Therefore, before a CGI program is executed,
-a shell program will be invoked first, and such an invocation is
-triggered by a user from a remote computer. If the shell program is 
-a vulnerable Bash program, we can exploit the Shellshock vulnerable to 
-gain privileges on the server. 
-
-
-In this task, we will set up a very simple CGI 
-program (called \texttt{myprog.cgi}) like the
-following. It simply prints out {\tt "Hello World"} using a shell script.
-
-
-\begin{lstlisting}
-#!/bin/bash_shellshock             (*@\ding{192}@*)
-
-echo "Content-type: text/plain"
-echo
-echo
-echo "Hello World"
-\end{lstlisting}
-
-Please make sure you use \texttt{/bin/bash\_shellshock} in 
-Line \ding{192}, instead of using \texttt{/bin/bash}. The line specifies
-what shell program should be invoked to run the script. We do need to use
-the vulnerable Bash in this lab. Please place the above CGI program in the
-\texttt{/usr/lib/cgi-bin} directory and set its permission to 755 (so it is
-executable). You need to use the root privilege to do these, as the folder
-is only writable by the root.  This folder is the default CGI directory for
-the Apache web server. 
-
-
-To access this CGI program from the Web, you can either use a browser by
-typing the following URL: \url{http://localhost/cgi-bin/myprog.cgi}, or 
-use the following command line program {\tt curl} to do the same thing:
-
-\begin{lstlisting}
-$ curl http://localhost/cgi-bin/myprog.cgi
-\end{lstlisting}
-
-In our setup, we run the Web server and the attack from the same computer,
-and that is why we use \texttt{localhost}. In real attacks, the server is running on a remote
-machine, and instead of using \texttt{localhost}, we use the hostname or the
-IP address of the server. 
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3: Passing Data to Bash via Environment Variable}
+\subsection{Task 2: Passing Data to Bash via Environment Variable}
 
 
 To exploit a Shellshock vulnerability in a Bash-based CGI program, attackers need to 
 pass their data to the vulnerable Bash program, and the data need to be
 passed via an environment variable. In this task, we need to see how we can
-achieve this goal. You can use the following CGI program to demonstrate
-that you can send out an arbitrary string to the CGI program, and the
-string will show up in the content of one of the environment variables. 
+achieve this goal. We have provided another CGI program (\texttt{getenv.cgi}) on the 
+server to help you identify what user data can get into the environment
+variables of a CGI program. This CGI program prints out all
+its environment variables. 
 
 
-\begin{lstlisting}
+\begin{lstlisting}[caption=\texttt{getenv.cgi}]
 #!/bin/bash_shellshock             
 
 echo "Content-type: text/plain"
@@ -172,21 +190,22 @@ strings /proc/$$/environ            (*@\ding{192}@*)
 
 In the code above, Line \ding{192} prints out the contents of all the
 environment variables in the current process. If your experiment is
-successful, you should be able to see your data string in the page that you get 
-back from the server. In your report, please explain how the data from a remote user can get into
+successful, you should be able to see your data string in the page returned
+from the server. 
+In your report, please explain how the data from a remote user can get into
 those environment variables. 
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Launching the Shellshock Attack}
+\subsection{Task 3: Launching the Shellshock Attack}
 
-After the above CGI program is set up, we can now launch the Shellshock attack. 
+We can now launch the Shellshock attack. 
 The attack does not depend on what is in the CGI program, as it targets
 the Bash program, which is invoked first, before the CGI script is
 executed. Your goal is to launch the attack through the URL
-\url{http://localhost/cgi-bin/myprog.cgi}, such that you can achieve
+\url{http://www.seedlab-shellshock.com/cgi-bin/vul.cgi}, such that you can achieve
 something that you cannot do as a remote user. In this task, you should
 demonstrate the following:
 
@@ -201,12 +220,10 @@ the shadow file \texttt{/etc/shadow}? Why or why not?
   
 
 
-
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 5: Getting a Reverse Shell via Shellshock Attack}
+\subsection{Task 4: Getting a Reverse Shell via Shellshock Attack}
 
 The Shellshock vulnerability allows attacks to run arbitrary commands on
 the target machine. In real attacks, instead of hard-coding the command 
@@ -220,8 +237,8 @@ controlled by somebody from a remote computer. Basically, the shell runs
 on the victim's machine, but it takes input from the attacker machine and
 also prints its output on the attacker's machine. Reverse shell
 gives attackers a convenient way to run commands on a compromised machine. 
-Detailed explanation of how to create reverse shell can be found in Chapter
-3 (\S 3.4.5) in the SEED book. We also summarize the explanation in
+Detailed explanation of how to create reverse shell can be found in 
+the SEED book. We also summarize the explanation in
 the guideline section later.
 
 
@@ -236,13 +253,13 @@ attack.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 6: Using the Patched Bash}
+\subsection{Task 5: Using the Patched Bash}
 
 Now, let us use a Bash program that has already been patched.
 The program \texttt{/bin/bash} is a patched version.
 Please replace the first line of 
-your CGI programs with this program. 
-Redo Tasks 3 and 5 and describe your observations. 
+the CGI programs with this program. 
+Redo Task 3 and describe your observations. 
 
 
 % *******************************************
@@ -332,7 +349,9 @@ message displayed by \texttt{netcat}.
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
