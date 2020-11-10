@@ -48,9 +48,9 @@ Update: Implemented Form class from bootstrap to get a nice UI for edit profile 
   $uname = $_SESSION['name'];
   // Function to create a sql connection.
   function getDB() {
-    $dbhost="localhost";
+    $dbhost="10.9.0.6";
     $dbuser="seed";
-    $dbpass="dees@9DEES";
+    $dbpass="dees";
     $dbname="sqllab_users";
 
     // Create a DB connection

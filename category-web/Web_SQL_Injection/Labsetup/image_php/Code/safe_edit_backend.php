@@ -28,10 +28,11 @@ Update: The password was stored in the session was updated when password is chan
   $id = $_SESSION['id'];
 
   function getDB() {
-    $dbhost="localhost";
+    $dbhost="10.9.0.6";
     $dbuser="seed";
-    $dbpass="dees@9DEES";
+    $dbpass="dees";
     $dbname="sqllab_users";
+
     // Create a DB connection
     $conn = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
     if ($conn->connect_error) {
@@ -48,12 +49,17 @@ Update: The password was stored in the session was updated when password is chan
     $hashed_pwd = sha1($input_pwd);
     //Update the password stored in the session.
     $_SESSION['pwd']=$hashed_pwd;
-    $sql = "UPDATE credential SET nickname='$input_nickname',email='$input_email',address='$input_address',Password='$hashed_pwd',PhoneNumber='$input_phonenumber' where ID=$id;";
+    $sql = $conn->prepare("UPDATE credential SET nickname= ?,email= ?,address= ?,Password= ?,PhoneNumber= ? where ID=$id;");
+    $sql->bind_param("sssss",$input_nickname,$input_email,$input_address,$hashed_pwd,$input_phonenumber);
+    $sql->execute();
+    $sql->close();
   }else{
     // if passowrd field is empty.
-    $sql = "UPDATE credential SET nickname='$input_nickname',email='$input_email',address='$input_address',PhoneNumber='$input_phonenumber' where ID=$id;";
+    $sql = $conn->prepare("UPDATE credential SET nickname=?,email=?,address=?,PhoneNumber=? where ID=$id;");
+    $sql->bind_param("ssss",$input_nickname,$input_email,$input_address,$input_phonenumber);
+    $sql->execute();
+    $sql->close();
   }
-  $conn->query($sql);
   $conn->close();
   header("Location: unsafe_home.php");
   exit();
