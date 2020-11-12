@@ -290,18 +290,30 @@ openssl rsa -in server.key -text -noout
 
 
 \paragraph{Adding Alternative names.}
-Many websites have different names. For example, \texttt{www.example.com},
+Many websites have different URLs. For example, \texttt{www.example.com},
 \texttt{example.com}, \texttt{example.net}, and \texttt{example.org} 
-are all pointing to the same web server. This causes a problem
-to the certificate, because in the common name field, we can
-only put one name. To solve this problem, X509 adds an 
-\texttt{subjectAltName} extension, allowing alternative names 
-to be put in the extension field. 
+are all pointing to the same web server.
+Due to the hostname matching policy
+enforced by browsers, the common name in a certificate
+must match with the server's hostname, or browsers
+will refuse to communicate with the server. 
 
-You should add two alternative names to you server. 
-You can achieve that by adding the following option to the \texttt{openssl req} command. 
-It should be noted that the list must also include the one used in the common name field; 
-otherwise, the name specified in the common name field will not be accepted as a valid name.
+To allow a certificate to have multiple names,
+the X.509 specification defines extensions to be attached to a certificate.
+This extension is called Subject Alternative Name (SAN).
+Using the SAN extension, it’s possible
+to specify several hostnames in the \texttt{subjectAltName} 
+field of a certificate.
+
+To generate a certificate signing request with such a field, we can
+put all the necessary information in a 
+configuration file or at the command line. We will use the 
+command-line approach in this task (the configuration file
+approach is used in another SEED lab, the TLS lab).
+We can add the following option to the \texttt{"openssl req"} command. 
+It should be noted that the \texttt{subjectAltName} extension field must also 
+include the one from the common name field; 
+otherwise, the common name will not be accepted as a valid name.
 
 \begin{lstlisting}
 -addext "subjectAltName = DNS:www.bank32.com,  \
@@ -309,6 +321,9 @@ otherwise, the name specified in the common name field will not be accepted as a
                           DNS:www.bank32B.com" 
 \end{lstlisting}
 
+
+Please add two alternative names to your certificate signing request.
+They will be needed in the tasks later. 
 
 
 % -------------------------------------------
@@ -344,8 +359,8 @@ does not enforce any matching rule.
 
 
 \paragraph{Copy the extension filed.}
-The default setting in \texttt{openssl.cnf} does not allow
-the \texttt{openssl ca} command to copy the extension field 
+For security reasons, the default setting in \texttt{openssl.cnf} does not allow
+the \texttt{"openssl ca"} command to copy the extension field 
 from the request to the final certificate. To enable that, we 
 can go to our copy of the configuration file,
 uncomment the following line: 
