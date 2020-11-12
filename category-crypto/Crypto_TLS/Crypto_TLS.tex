@@ -6,8 +6,12 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
 
 \newcommand{\tlsFigs}{./Figs}
 
@@ -24,10 +28,11 @@
 
 \seedlabcopyright{2020}
 
-\newcounter{task}
-\setcounter{task}{1}
-\newcommand{\tasks} {\bf {\noindent (\arabic{task})} \addtocounter{task}{1} \,}
 
+
+% *******************************************
+% SECTION
+% *******************************************
 \section{Overview}
 
 Nowadays more and more data transmissions are done through the Internet. However, when data are
@@ -71,9 +76,7 @@ Detailed coverage of PKI and TLS can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab Environment.} 
-This lab has been tested on our pre-built Ubuntu 16.04 
-and Ubuntu 20.04 VMs (the 20.04 VM will be officially released in Summer 2021). 
+\paragraph{Lab Environment.} \seedenvironmentB
 
 
 %Note: there are two SSL wrapper modules in Python, one is 
@@ -85,6 +88,41 @@ and Ubuntu 20.04 VMs (the 20.04 VM will be officially released in Summer 2021).
 
 
 \newpage
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Environment}
+
+In this lab, we use three machines, one for client, one for server,
+and the other for proxy. We will use containers for these machines.  
+Their IP addresses are listed in the following:
+
+
+\begin{lstlisting}
+client: 10.9.0.5
+server: 10.9.0.43
+proxy:  10.9.0.143
+\end{lstlisting}
+ 
+
+
+\paragraph{Container Setup and Commands.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\paragraph{Volumes.} 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/volumes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
 % *******************************************
 % SECTION
 % ******************************************* 
@@ -94,7 +132,8 @@ and Ubuntu 20.04 VMs (the 20.04 VM will be officially released in Summer 2021).
 In this task, we will incrementally build a simple TLS 
 client program. Through the process, students will 
 understand the essential elements and 
-security considerations in TLS programming.
+security considerations in TLS programming. We will run 
+this client program on the client container.
 
 
 % -------------------------------------------
@@ -113,7 +152,7 @@ a TLS server (the name of the server needs to be specified as the first command 
 
 
 \begin{lstlisting}[caption={\texttt{handshake.py}}, label={tls:handshake}]
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import socket, ssl, sys, pprint
 
@@ -122,8 +161,7 @@ port = 443
 cadir = '/etc/ssl/certs'   
 
 # Set up the TLS context 
-# context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT) # For Ubuntu 20.04 VM
-context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)      # For Ubuntu 16.04 VM
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT) 
 context.load_verify_locations(capath=cadir)
 context.verify_mode = ssl.CERT_REQUIRED
 context.check_hostname = True
@@ -312,11 +350,20 @@ Before working on this task, students need to create a
 certificate authority (CA), and use this CA's private key
 to create a server certificate for this task. 
 How to do these is already covered in another SEED lab (the PKI lab),
-which is the prerequisite for this lab. In this task, we assume 
+which is the prerequisite for this lab. In this task, we assume that
 all the required certificates have already been created, including
 CA's public-key certificate and private key (\texttt{ca.crt} and \texttt{ca.key}), 
 and the server's public-key certificate and private 
 key (\texttt{server.crt} and \texttt{server.key}). 
+It should be noted that the common name used in the server certificate 
+must contain the student's last name and the current year. 
+
+
+We will use the server container to run this TLS server program.
+Make sure you set up the DNS mapping accordingly, so 
+the name of your TLS server points to the IP address of the 
+server container. 
+
 
 
 
@@ -331,7 +378,7 @@ A sample server code is provided in the following.
 
 
 \begin{lstlisting}[caption={\texttt{server.py}}, label={tls:server}]
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import socket
 import ssl
@@ -345,12 +392,11 @@ SERVER_CERT    = './certs/server.crt'
 SERVER_PRIVATE = './certs/server.key'
 
 
-# context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER) # For Ubuntu 20.04 VM
-context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)      # For Ubuntu 16.04 VM
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER) 
 context.load_cert_chain(SERVER_CERT, SERVER_PRIVATE)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
-sock.bind(('0.0.0.0', 4433))
+sock.bind(('0.0.0.0', 443))
 sock.listen(5)
 
 while True:
@@ -389,34 +435,35 @@ Please describe your observation and explain why.
 \subsection{Task 2.b. Testing the server program using browsers}
 
 
-In this task, we will test our TLS server program using a browser, such as Firefox.  First,
-point your browser to the server, report what you see from the browser and explain why.
-The server listens to port \texttt{4433}. If you change it to 
-the standard HTTPS port \texttt{443}, you need to run the 
-server program using the root privilege. 
-
+In this task, we will test our TLS server program using the browser on the host VM.  
+First, point your browser to the server, report what you see from the browser and explain why.
+The server listens to port \texttt{443}, which is the default port for 
+HTTPS. 
 
 In order for browsers to communicate with your TLS server, the 
 browser needs to verify your server's certificate. It has to use 
 the certificate issuer CA's certificate to do the verification, but 
 since this CA is created in our lab, the browser does not have it 
 on its trusted certificate list. 
-We need to manually add our CA's certificate to it. For the
-Firefox browser, click the following menu sequence:
+We need to manually add our CA's certificate to it.
+To do that, type the following URL in the address bar, 
+and click the \texttt{View Certificates} button
+on the page (scroll to the bottom).
 
-\begin{lstlisting}[backgroundcolor=]
-   Edit -> Preference -> Privacy & Security -> View Certificates.
+\begin{lstlisting}
+about:preferences#privacy
 \end{lstlisting}
 
-You will see a list of certificates that are already accepted by Firefox. From here, we
-can ``import'' our own certificate. Please import {\tt ca.crt}, and select the
-following option: ``Trust this CA to identify web sites''.  You will see that
-our CA's certificate is now in Firefox's list of the accepted certificates.
+In the \texttt{Authorities} tab,  you will see a list of certificates
+that are already accepted by Firefox. From here, we
+can import our own certificates. After choosing the certificate
+file, please select the following option: ``Trust this CA to identify web sites''.
+You will see that our certificate is now in Firefox's list of
+accepted certificates.
 
 
 Please demonstrate that your browser can successfully communicate with
 your TLS server, and can display the content returned by the server. 
-
 
 
 
@@ -438,12 +485,16 @@ This extension is called Subject Alternative Name (SAN).
 Using the SAN extension, it’s possible
 to specify several hostnames in the \texttt{subjectAltName} field of a certificate.
 
-To generate a certificate signing request with such a field, we need to 
-use a configuration file, and put all the necessary information in this file.  
+To generate a certificate signing request with such a field, we can 
+use a configuration file, and put all the necessary information in this file (the PKI
+lab shows how you can do everything in the command line).  
 The following configuration file gives an example. It specifies 
 the content for the subject field and add a 
 \texttt{subjectAltName} field in the extension. The field specifies 
 several alternative names, including a wildcard name \texttt{*.bank32.com}.  
+It should be noted that the field must also
+include the one from the common name field;
+otherwise, the common name will not be accepted as a valid name.
 
 
 \begin{lstlisting}[caption={\texttt{server\_openssl.cnf}}]
@@ -467,14 +518,13 @@ DNS.1   = www.bank32.com
 DNS.2   = www.example.com
 DNS.3   = *.bank32.com
 \end{lstlisting}
- 
 
 We can use the following \texttt{"openssl req"} command to generate 
 a pair of public/private keys and a certificate signing request:
 
 \begin{lstlisting}
 openssl req -newkey rsa:2048 -config ./server_openssl.cnf -batch \
-            -sha256  -days 3650 -keyout  server.key -out server.csr 
+            -sha256  -days 3650 -keyout server.key -out server.csr 
 \end{lstlisting}
 
 
@@ -508,7 +558,7 @@ openssl ca -md sha256 -days 3650 -config ./myopenssl.cnf -batch \
 
 
 Students need to demonstrate that their server can support multiple hostnames, including 
-any hostname in the \texttt{example.com} domain. 
+any hostname in their respective domains.
 
 
 
@@ -518,11 +568,10 @@ any hostname in the \texttt{example.com} domain.
 \section{Task 3: A Simple HTTPS Proxy}
 
 TLS can protect against the Man-In-The-Middle attack, but only
-if the underlying public-key infrastructure is not compromised.
+if the underlying public-key infrastructure is secured. 
 In this task, we will demonstrate the Man-In-The-Middle
 attack against TLS servers if the PKI infrastructure is 
-compromised, i.e.,  
-some trusted CA is compromised or 
+compromised, i.e., some trusted CA is compromised or 
 the server's private key is stolen. 
 
 
@@ -531,6 +580,7 @@ called \texttt{mHTTPSproxy} (\texttt{m} stands
 for \texttt{mini}). The proxy program simply
 integrates the client and server programs from Task 1 and 
 2 together. How it works is illustrated in Figure~\ref{tls:fig:proxy}. 
+We will run the proxy on the proxy container. 
 
 
 \begin{figure}[htb]
@@ -617,72 +667,57 @@ def process_request(ssock_for_browser):
     ssock_for_browser.shutdown(socket.SHUT_RDWR)
     ssock_for_browser.close()
 \end{lstlisting}
- 
-
-\paragraph{Task.} Students should implement the simple \texttt{mHTTPSproxy}. To demonstrate it,  
-pick a real HTTPS website as your targeted server, and then launch the
-Man-In-The-Middle attack against the server. Your victim is a user inside another virtual
-machine. Find a web server that requires login, and then use your MITM proxy to 
-steal the password. Many popular servers, such as facebook, have complicated 
-login mechanisms, so feel free to find a server that has simple login mechanisms. 
-Please remember to hide your real password in your lab report. 
-
-The assumption of this MITM attack is that the attacker has compromised a trusted CA, and is 
-able to generate fake (but valid) certificate using this CA's private key, for any
-hostname. In this lab, we assume that the CA you used to sign your server's certificate is 
-compromised, and you can use it to forge certificate for any web server. 
 
 
-\paragraph{Setup (Option 1: using two VMs).} 
-You may want to run the victim browser on one VM (victim VM), and run your 
-proxy on another VM (attacker VM). In the real-world attack, when the victim tries to visit
+\paragraph{The client Setup.} 
+For this task, since we will use a browser, we will 
+use the hosting VM as the client/victim, instead of using 
+the client container. 
+In the real-world attack, when the victim tries to visit
 a web server (say \url{www.example.com}), we will launch attacks to redirect
 the victim to our proxy. This is usually done by DNS attacks, BGP attacks, or other 
-redirection attacks. We will not actually do such attacks. We simply modify
-the \texttt{/etc/hosts} file, and add the following entry to the victim VM (\texttt{10.0.2.12} is 
-the IP address of the attacker VM). 
+redirection attacks. We will not actually do such attacks. We simply 
+add the following entry to the \texttt{/etc/hosts} file on the host VM (\texttt{10.9.0.143} 
+is the IP address of the mitm-proxy container in our setup). 
 
 \begin{lstlisting}
-10.0.2.12   www.example.com
+10.9.0.143   www.example.com
 \end{lstlisting}
 
 By doing the above, we simulates the result of redirection attacks:
 the victim's traffic to \url{www.example.com} 
 will be redirected to the attacker's VM, where your \texttt{mHTTPSproxy} 
-is waiting for HTTP requests. It should be noted that on the attacker VM, the 
-hostname \url{www.example.com} should point to the real web server. 
-
-
-\paragraph{Setup (Option 2: using one VM).} 
-If you want to use one VM for this lab, i.e., using one VM for both victim and attacker, 
-this is doable. To do that, add the following entry to \texttt{/etc/hosts} to simulate the
-DNS attack.
-
-\begin{lstlisting}
-127.0.0.1   www.example.com
-\end{lstlisting}
-
-Since the hostname \texttt{www.example.com} is already mapped to the localhost, we cannot 
-use this name in the proxy code to connect to the real web server. We will get 
-the IP address of this domain, and directly use the IP address in our proxy code,
-instead of using the hostname. See the following modification.
-
-\begin{lstlisting}
-def process_request(ssock_for_browser):
-    hostname = 'www.example.com'
-    real_ip_address = "93.184.216.34"
-
-    # Make a connection to the real server
-    sock_for_server  = socket.create_connection((real_ip_address, 443))
-    ...
-\end{lstlisting}
+is waiting for HTTP requests. 
  
+
+\paragraph{Task.} Students should implement the simple \texttt{mHTTPSproxy},
+and run it on the proxy container. 
+In this MITM attack, we assume that the attacker has compromised a trusted CA, and is 
+able to use the CA's private key to generate fake (but valid) certificates for any
+domain name. In this lab, the CA certificate generated in Task 2
+is already trusted by the browser, and we assume this CA's private key
+is compromised, so you/attacker can use it to forge certificate for any web server. 
+Please demonstrate your MITM attack in the following scenarios:
+
+
+\begin{itemize}
+
+\item Launch the MITM attack against your own server. 
+
+\item Launch the MITM attack on a real HTTPS website. You can pick 
+a website. Find one that requires login, and then use your MITM proxy to 
+steal the password. Many popular servers, such as facebook, have complicated 
+login mechanisms, so feel free to find a server that has simple login mechanisms. 
+Please remember to hide your password in your lab report if you 
+are using a real password. 
+\end{itemize}
+
 
 
 \paragraph{Cleanup.} After finishing this task, 
 please remember to remove the CA's certificate from your browser, and 
-also remove any entry that you have added to \texttt{/etc/hosts}
-for this lab. 
+also remove any entry that you have added to \texttt{/etc/hosts} 
+on your VM.
 
 
 
@@ -691,7 +726,9 @@ for this lab.
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}
 

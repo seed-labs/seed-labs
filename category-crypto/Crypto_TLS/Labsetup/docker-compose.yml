@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+    Client:
+        build: ./image_python
+        image: seed-image-python-tls
+        container_name: client-10.9.0.5
+        tty: true
+        volumes:
+                - ./volumes:/volumes
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.5
+                  
+    Server:
+        image: seed-image-python-tls
+        container_name: server-10.9.0.43
+        tty: true
+        volumes:
+                - ./volumes:/volumes
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.43
+
+    MITM-Proxy:
+        image: seed-image-python-tls
+        container_name: mitm-proxy-10.9.0.143
+        tty: true
+        volumes:
+                - ./volumes:/volumes
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.143
+
+networks:
+    net-10.9.0.0:
+        name: net-10.9.0.0
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+
