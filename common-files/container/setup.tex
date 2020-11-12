@@ -15,7 +15,8 @@ used commands related to Docker and Compose.
 Since we are going to use 
 these commands and several docker commands very
 frequently, we have created aliases for these commands
-in the \texttt{.bashrc} file.  
+in the \texttt{.bashrc} file (in our provided 
+SEEDUbuntu 20.04 VM).
 
 
 \begin{lstlisting}
@@ -37,11 +38,24 @@ command to find out the ID of the container, and then
 use \texttt{"docker exec"} to start a shell on that 
 container. Since we are going to use these two commands
 very frequently, we have also created aliases
-for them:
+for them. 
 
 \begin{lstlisting}
 $ dockps        # Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
 $ docksh <id>   # Alias for: docker exec -it <id> /bin/bash
+
+# The following example shows how to get a shell inside hostC
+$ dockps
+b1004832e275  hostA-10.9.0.5
+0af4ea7a3e2e  hostB-10.9.0.6
+9652715c8e0a  hostC-10.9.0.7
+
+$ docksh 96
+root@9652715c8e0a:/#  
+
+# Note: If a docker command requires a container ID, you do not need to 
+#       type the entire ID string. Typing the first few characters will 
+#       be sufficient, as long as they are unique among all the containers. 
 \end{lstlisting}
 
 
