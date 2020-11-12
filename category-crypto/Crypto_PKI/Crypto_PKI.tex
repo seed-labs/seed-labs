@@ -6,14 +6,16 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \newcommand{\pkiFigs}{./Figs}
 
 \newcommand{\OpenSSL} {\texttt{OpenSSL}\xspace}
-\newcommand{\pkiserver}{\texttt{SEEDPKILab2020.com}\xspace} 
+\newcommand{\pkiserver}{\texttt{bank32.com}\xspace} 
 
 \lhead{\bfseries SEED Labs -- PKI Lab}
 
@@ -54,13 +56,13 @@ understand the root of the trust in the public-key infrastructure, and what prob
 will arise if the root trust is broken.  This lab covers the following topics:
 
 \begin{itemize}[noitemsep]
-\item Public-key encryption
-\item Public-Key Infrastructure (PKI)
-\item Certificate Authority (CA) and root CA 
-\item X.509 certificate and self-signed certificate
+\item Public-key encryption, Public-Key Infrastructure (PKI)
+\item Certificate Authority (CA), X.509 certificate, and root CA 
 \item Apache, HTTP, and HTTPS
 \item Man-in-the-middle attacks
 \end{itemize}
+
+
 
 
 
@@ -79,7 +81,43 @@ In addition, we have a lab called \textit{RSA Public-Key Encryption and Signatur
 which focuses on the algorithm part of the public-key cryptography.
 
 
-\paragraph{Lab environment.} \seedenvironment 
+\paragraph{Lab environment.} \seedenvironmentB 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Environment}
+
+In this lab, we will generate public-key certificates, and then
+use them to secure web servers. The certificate generation 
+tasks will be conducted on the VM, but we will use 
+a container to host the web server. 
+
+\paragraph{Container Setup and Commands.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\paragraph{DNS setup.} In this document, we use \texttt{www.bank32.com} 
+as an example to show how to set up an HTTPS web server with this name. 
+Students need to use a different name for their lab. Unless the name
+is specified by the instructors, students should 
+include their last name and the current year in the server name. 
+For example, if \texttt{John Smith} does this lab in 2020,
+the server name should be \texttt{www.smith2020.com}. You do not need to
+own this domain; you just need to map this name to the container's
+IP address by adding the following entries to
+\texttt{/etc/hosts} (the first entry is required, otherwise, the example
+in this lab description will not work):
+
+\begin{lstlisting}
+10.9.0.80   www.bank32.com
+10.9.0.80   www.smith2020.com
+\end{lstlisting}
+ 
 
 
 
@@ -117,21 +155,32 @@ In order to use \OpenSSL to create certificates, you have to have a
 configuration file.
 The configuration file usually has an extension
 {\tt .cnf}. It is used by three \OpenSSL commands: {\tt ca}, {\tt req} and {\tt x509}. 
-The manual page of \texttt{openssl.conf} can be found using Google search.
-You can also get a  copy of the configuration file from \path{/usr/lib/ssl/openssl.cnf}. 
-After copying this file into your current directory, you need to 
-create several sub-directories as specified in the configuration file (look
-at the {\tt [CA\_default]} section):
+The manual page of \texttt{openssl.conf} can be found from online resources. 
+By default, \OpenSSL use the configuration file from \path{/usr/lib/ssl/openssl.cnf}. 
+Since we need to make changes to this file, we will copy it 
+into our current directory, and instruct \OpenSSL to use this copy instead. 
 
 
-\begin{lstlisting}
-   dir             = ./demoCA        # Where everything is kept
-   certs           = $dir/certs      # Where the issued certs are kept
-   crl_dir         = $dir/crl        # Where the issued crl are kept
-   new_certs_dir   = $dir/newcerts   # default place for new certs.
-   database        = $dir/index.txt  # database index file.
-   serial          = $dir/serial     # The current serial number
+The \texttt{[CA\_default]} section of the configuration file shows the 
+default setting that we need to prepare.  
+We need to create several sub-directories. Please 
+uncomment the \texttt{unique\_subject} line to allow 
+creation of certifications with the same subject, because it is very
+likely that we will do that in the lab. 
+
+
+\begin{lstlisting}[caption={Default CA setting}]
+[ CA_default ]
+dir             = ./demoCA         # Where everything is kept
+certs           = $dir/certs       # Where the issued certs are kept
+crl_dir         = $dir/crl         # Where the issued crl are kept
+database        = $dir/index.txt   # database index file.
+#unique_subject = no               # Set to 'no' to allow creation of
+                                   # several certs with same subject.
+new_certs_dir   = $dir/newcerts    # default place for new certs.
+serial          = $dir/serial      # The current serial number
 \end{lstlisting}
+
 
 For the \texttt{index.txt} file, simply create an empty file. For 
 the \texttt{serial} file, put a single number in string format (e.g. 1000) in the file.
@@ -146,75 +195,128 @@ as the root certificate.  You can run the following command to generate
 the self-signed certificate for the CA:
 
 
-\begin{lstlisting}[backgroundcolor=]
-$ openssl req -new -x509 -keyout ca.key -out ca.crt -config openssl.cnf
+\begin{lstlisting}
+openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 \
+            -keyout ca.key -out ca.crt  
 \end{lstlisting}
 
-You will be prompted for information and a password. Do not lose this password,
+You will be prompted for a password. Do not lose this password,
 because you will have to type the passphrase 
 each time you want to use this CA to sign certificates for others.
-You will also be asked to fill in some information,
+You will also be asked to fill in the subject information,
 such as the Country Name, Common Name, etc. 
 The output of the command are stored in two files: {\tt ca.key} and 
 {\tt ca.crt}. The file {\tt ca.key} contains the 
 CA's private key, while {\tt ca.crt} contains the public-key certificate.
 
 
+You can also specify the subject information and password in the command
+line, so you will not be prompted for any additional information. In the 
+following command, we use \texttt{-subj} to set the subject information
+and we use \texttt{-passout pass:dees} to set the password to \texttt{dees}.  
+
+\begin{lstlisting}
+openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 \
+            -keyout ca.key -out ca.crt  \
+            -subj "/CN=www.modelCA.com/O=Model CA LTD./C=US" \
+            -passout pass:dees  
+\end{lstlisting}
+
+
+We can use the following commands 
+to look at the decoded content of the X509 certificate
+and the RSA key (\texttt{-text} means decoding the content
+into plain text; \texttt{-noout} means not printing 
+out the encoded version): 
+
+\begin{lstlisting}
+openssl x509 -in ca.crt -text -noout
+openssl rsa  -in ca.key -text -noout 
+\end{lstlisting}
+
+
+Please run the above commands. From the output, please identify
+the followings: 
+
+\begin{itemize}[noitemsep]
+\item What part of the certificate indicates this is a CA's certificate?
+\item What part of the certificate indicates this is a self-signed certificate?
+\item In the RSA algorithm, we have a public exponent $e$, a private 
+exponent $d$, a modulus $n$, and two secret numbers $p$ and $q$, such 
+that $n = pq$. Please identify the values for these elements in 
+your certificate and key files. 
+\end{itemize}
+
+
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2: Creating a Certificate for \pkiserver}
+\subsection{Task 2: Generating a Certificate Request for Your Web Server}
 
-Now, we become a root CA, we are ready to sign digital certificates for 
-our customers. Our first customer is a company called \pkiserver.
-For this company to get a digital certificate from a CA, it needs to
-go through three steps.
-
-
-\paragraph{Step 1: Generate public/private key pair.}
-The company needs to first create its own public/private key pair. We can run  
-the following command to generate an RSA key pair (both private and public keys).  
-You will also be required to provide a password to encrypt the private 
-key (using the AES-128 encryption algorithm, as is specified in the command option). 
-The keys will be stored in the file \texttt{server.key}:
-
-\begin{lstlisting}[backgroundcolor=]
-$ openssl genrsa -aes128 -out server.key 1024
-\end{lstlisting}
-
-The \texttt{server.key} is an encoded text file (also encrypted), 
-so you will not be able to see the actual content, such as the modulus, private exponents, etc. To see
-those, you can run the following command:
-
-\begin{lstlisting}[backgroundcolor=]
-$ openssl rsa -in server.key -text
-\end{lstlisting}
+A company called \pkiserver (replace this with the name of your own 
+web server) wants to get a public-key certificate 
+from our CA. First it needs to
+generate a Certificate Signing Request (CSR), 
+which basically includes the company's public key and identity information. 
+The CSR will be sent to the CA, who will verify the identity information
+in the request, and then generate a certificate. 
 
 
-
-\paragraph{Step 2: Generate a Certificate Signing Request (CSR).}
-Once the company has the key file, it should generates a Certificate Signing Request (CSR), 
-which basically includes the company's public key. 
-The CSR will be sent to the CA, who will generate a certificate 
-for the key (usually after ensuring that identity information in 
-the CSR matches with the server's true identity). Please 
-use \pkiserver as the common name of the certificate 
-request.
-
-\begin{lstlisting}[backgroundcolor=]
-$ openssl req -new -key server.key -out server.csr -config openssl.cnf
-\end{lstlisting}
-
-
-It should be noted that the above command is quite similar to the one
+The command to generate a CSR is quite similar to the one
 we used in creating the self-signed certificate for the CA. The only
-difference is the {\tt -x509} option. Without it, the command 
+difference is the \texttt{-x509} option. Without it, the command 
 generates a request; with it, the command generates a self-signed 
-certificate.
+certificate. The following command generate a CSR for 
+\texttt{www.bank32.com}  (you should use your own server name):
+
+\begin{lstlisting}
+openssl req -newkey rsa:2048 -sha256  \
+            -keyout server.key   -out server.csr  \
+            -subj "/CN=www.bank32.com/O=Bank32 Inc./C=US" \
+            -passout pass:dees  
+\end{lstlisting}
+
+The command will generate a pair of public/private key, and 
+then create a certificate signing request from the public key. 
+We can use the following command 
+to look at the decoded content of the  CSR and private key files: 
+
+\begin{lstlisting}
+openssl req -in server.csr -text -noout
+openssl rsa -in server.key -text -noout 
+\end{lstlisting}
+ 
 
 
-\paragraph{Step 3: Generating Certificates.}
+\paragraph{Adding Alternative names.}
+Many websites have different names. For example, \texttt{www.example.com},
+\texttt{example.com}, \texttt{example.net}, and \texttt{example.org} 
+are all pointing to the same web server. This causes a problem
+to the certificate, because in the common name field, we can
+only put one name. To solve this problem, X509 adds an 
+\texttt{subjectAltName} extension, allowing alternative names 
+to be put in the extension field. 
+
+You should add two alternative names to you server. 
+You can achieve that by adding the following option to the \texttt{openssl req} command. 
+It should be noted that the list must also include the one used in the common name field; 
+otherwise, the name specified in the common name field will not be accepted as a valid name.
+
+\begin{lstlisting}
+-addext "subjectAltName = DNS:www.bank32.com,  \
+                          DNS:www.bank32A.com, \
+                          DNS:www.bank32B.com" 
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 3: Generating a Certificate for your server}
+
+
 The CSR file needs to have the CA's signature to form a certificate. In 
 the real world, the CSR files are usually sent to a trusted CA for their 
 signature. In this lab, we will use our own trusted CA 
@@ -223,123 +325,44 @@ certificate signing request~({\tt server.csr}) into
 an X509 certificate~({\tt server.crt}), using the CA's
 {\tt ca.crt} and {\tt ca.key}:
 
-\begin{lstlisting}[backgroundcolor=]
-$ openssl ca -in server.csr -out server.crt -cert ca.crt -keyfile ca.key \
-             -config openssl.cnf
+\begin{lstlisting}
+openssl ca -config myCA_openssl.cnf -policy policy_anything \
+           -md sha256 -days 3650 \
+           -in server.csr -out server.crt -batch \
+           -cert ca.crt -keyfile ca.key 
 \end{lstlisting}
 
-
-If \OpenSSL refuses to generate certificates, it is very likely that
-the names in your requests do not match with those of CA. The matching
-rules are specified in the configuration file (look at 
-the \texttt{[policy\_match]} section). You can change the names of your 
-requests to comply with the policy, or you can change the 
-policy.  The configuration file 
-also includes another policy (called \texttt{policy\_anything}), 
-which is less restrictive. You can choose that policy by
-changing the following line: 
-
-\begin{lstlisting}[backgroundcolor=]
-   "policy = policy_match"  change to "policy = policy_anything".
-\end{lstlisting} 
+In the above command, \texttt{myCA\_openssl.cnf} is the 
+configuration file we copied from 
+\path{/usr/lib/ssl/openssl.cnf} (we also made changes to this file in
+Task 1). We use the \texttt{policy\_anything} policy defined in the configuration
+file. This is not the default policy; the default policy has
+more restriction, requiring some of the subject information
+in the request to match those in the CA's certificate. 
+The policy used in the command, as indicated by its name,
+does not enforce any matching rule.
 
 
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3: Deploying Certificate in an HTTPS Web Server}
-
-In this lab, we will explore how public-key certificates 
-are used by websites to secure web browsing. We will set up
-an HTTPS website using \openssl's built-in web server. 
-
-
-\paragraph{Step 1: Configuring DNS.}
-We choose \pkiserver as the name of our website.
-To get our computers recognize this name,
-let us add the following entry to \texttt{/etc/hosts}; this entry
-basically maps the hostname \pkiserver to 
-our localhost (i.e., 127.0.0.1):
-
-   
-\begin{lstlisting}[backgroundcolor=]
-   127.0.0.1  SEEDPKILab2018.com
-\end{lstlisting}
-
-
-\paragraph{Step 2: Configuring the web server.}
-Let us launch a simple web server with the certificate 
-generated in the previous task. \OpenSSL allows us 
-to start a simple web server using the \texttt{s\_server} command: 
+\paragraph{Copy the extension filed.}
+The default setting in \texttt{openssl.cnf} does not allow
+the \texttt{openssl ca} command to copy the extension field 
+from the request to the final certificate. To enable that, we 
+can go to our copy of the configuration file,
+uncomment the following line: 
 
 \begin{lstlisting}
-  # Combine the secret key and certificate into one file
-  % cp server.key server.pem
-  % cat server.crt >> server.pem
+# Extension copying option: use with caution.
+copy_extensions = copy
+\end{lstlisting}
  
-  # Launch the web server using server.pem
-  % openssl s_server -cert server.pem -www
+
+After signing the certificate, please use the following command to print out 
+the decoded content of the certificate, and check whether the 
+alternative names are included.
+
+\begin{lstlisting}
+openssl x509 -in server.key -text -noout 
 \end{lstlisting}
-
-By default, the server will listen on port {\tt 4433}. You can alter that using 
-the {\tt -accept} option. Now, you can access the server using the following
-URL: \url{https://SEEDPKILab2018.com:4433/}.
-Most likely, you will get an error message from the browser. In Firefox, you will
-see a message like the following:
-{\em ``seedpkilab2018.com:4433 uses an invalid security certificate.
-The certificate is not trusted because the issuer certificate is unknown''.}
-
-
-\paragraph{Step 3: Getting the browser to accept our CA certificate.}
-Had our certificate been assigned by VeriSign, we will not have such an error
-message, because VeriSign's certificate is very likely preloaded into
-Firefox's certificate repository already. Unfortunately, the 
-certificate of \pkiserver is signed by our own CA (i.e., using 
-{\tt ca.crt}), and this CA is not recognized by Firefox. There are two ways to
-get Firefox to accept our CA's self-signed certificate. 
-
-\begin{itemize}
-
-\item We can request Mozilla to include our CA's certificate in its Firefox software, so
-everybody using Firefox can recognize our CA.  This is how the real CAs, such as VeriSign, get
-their certificates into Firefox. Unfortunately, our own CA does not have a large enough market
-for Mozilla to include our certificate, so we will not pursue this direction.
-
-\item {\bf Load {\tt ca.crt} into Firefox:} We can manually add our CA's certificate to the
-Firefox browser by clicking the following menu sequence:
-
-\begin{lstlisting}[backgroundcolor=]
-   Edit -> Preference -> Privacy & Security -> View Certificates.
-\end{lstlisting}
-
-You will see a list of certificates that are already accepted by Firefox. From here, we 
-can ``import'' our own certificate. Please import {\tt ca.crt}, and select the
-following option: ``Trust this CA to identify web sites''.  You will see that 
-our CA's certificate is now in Firefox's list of the accepted certificates.
-\end{itemize}
-
-
-\paragraph{Step 4. Testing our HTTPS website.}
-Now, point the browser to \url{https://SEEDPKILab2018.com:4433}. Please 
-describe and explain your observations. Please also do the following
-tasks:
-
-\begin{enumerate}
-\item Modify a single byte of {\tt server.pem}, and restart the 
-      server, and reload the URL. 
-      What do you observe? Make sure you restore the 
-      original {\tt server.pem} afterward. Note:
-      the server may not be able to restart if certain places of
-      {\tt server.pem} is corrupted; in that case, choose 
-      another place to modify.
-      
-
-\item Since \pkiserver points to the localhost, if we
-      use \url{https://localhost:4433} instead, we will be connecting to the 
-      same web server. Please do so, describe and explain your observations. 
-\end{enumerate}
-
 
 
 % -------------------------------------------
@@ -347,81 +370,120 @@ tasks:
 % ------------------------------------------- 
 \subsection{Task 4: Deploying Certificate in an Apache-Based HTTPS Website}
 
-
-The HTTPS server setup using \openssl's \texttt{s\_server} command is primarily for debugging and
-demonstration purposes. In this lab, we set up a real HTTPS web server based
-on Apache. The Apache server, which is already installed in our VM, supports 
-the HTTPS protocol. To create an HTTPS website, we just need to 
+In this task, we will see how public-key certificates 
+are used by websites to secure web browsing. We will set up
+an HTTPS website based Apache.  The Apache server, which is already 
+installed in our container, supports the HTTPS protocol. 
+To create an HTTPS website, we just need to 
 configure the Apache server, so it knows where to get the private key and certificates. 
-We give an example in the following to show how to enable HTTPS for a website \url{www.example.com}.
-You task is to do the same for \pkiserver using the certificate
-generated from previous tasks. 
+Inside our container, we have already set up an HTTPS site for \pkiserver. 
+Students can follow this example to set up their own HTTPS site.
 
 An Apache server can simultaneously host multiple websites. It needs to know
 the directory where a website's files are stored. This is done via its 
 \texttt{VirtualHost} file, located in the \url{/etc/apache2/sites-available}
-directory. To add an HTTP website, we add a \texttt{VirtualHost} entry
-to the file \texttt{000-default.conf}. See the following example. 
-
-\begin{lstlisting}
-<VirtualHost *:80>
-    ServerName one.example.com
-    DocumentRoot /var/www/Example_One
-    DirectoryIndex index.html
-</VirtualHost>
-\end{lstlisting}
-
-To add an HTTPS website, we need to add a \texttt{VirtualHost}
-entry to the \texttt{default-ssl.conf} file in the same folder. 
+directory. In our container, we have a file called
+\texttt{bank32\_apache\_ssl.conf}, which contains the following entry:
 
 \begin{lstlisting}
 <VirtualHost *:443>
-    ServerName two.example.com
-    DocumentRoot /var/www/Example_Two
+    DocumentRoot /var/www/bank32
+    ServerName www.bank32.com
+    ServerAlias www.bank32A.com
+    ServerAlias www.bank32B.com
     DirectoryIndex index.html
-
     SSLEngine On
-    SSLCertificateFile      /etc/apache2/ssl/example_cert.pem  (*@\ding{192}@*)
-    SSLCertificateKeyFile   /etc/apache2/ssl/example_key.pem   (*@\ding{193}@*)
+    SSLCertificateFile    /certs/bank32.crt    (*@\ding{192}@*)
+    SSLCertificateKeyFile /certs/bank32.key    (*@\ding{193}@*)
 </VirtualHost>
 \end{lstlisting}
 
+The above example sets up the HTTPS site \url{https://www.bank32.com} (port \texttt{443} 
+is the default HTTPS port). 
 The \texttt{ServerName} entry specifies the name of the website, while
 the \texttt{DocumentRoot} entry specifies where the files for 
-the website are stored. 
-The above example sets up the HTTPS site \url{https://two.example.com} (port \texttt{443} 
-is the default HTTPS port).  In the setup, we need to tell Apache where
+the website are stored. Using the \texttt{ServerAlias} entries, we allow
+the website to have different names. You should also provide two
+alias entries. 
+
+We also need to tell Apache where
 the server certificate~(Line~\ding{192}) and private key~(Line~\ding{193}) are stored. 
+In the \texttt{Dockerfile}, we have already included the commands to copy
+the certificate and key to the \texttt{/certs} folder of the container.  
 
 
-After the \texttt{default-ssl.conf} file is modified, we need to run a series of commands 
-to enable SSL.  Apache will ask us to type the password used
-for encrypting the private key.
-Once everything is set up properly, we can
-browse the web site, and all the traffic between the browser and the server will be encrypted.
+In order to make the website work, we need to enable Apache's \texttt{ssl} module and 
+then enable this site. They can be done using the following commands, 
+which are already executed when the container is built. 
 
 \begin{lstlisting}
- // Test the Apache configuration file for errors
- $ sudo apachectl configtest
-
- // Enable the SSL module 
- $ sudo a2enmod ssl
-
- // Enable the site we have just edited
- $ sudo a2ensite default-ssl
-
- // Restart Apache
- $ sudo service apache2 restart
+# a2enmod ssl                 // Enable the SSL module 
+# a2ensite bank32_apache_ssl  // Enable the sites described in this file
 \end{lstlisting}
  
 
 
-Please use the above example as guidance to set up an HTTPS server for 
-\pkiserver. Please describe the steps that 
+\paragraph{Starting the Apache server.} The Apache server 
+is not automatically started in the container. Let's go to the container and 
+run the following command to start the server (we also list
+some related commands): 
+
+
+\begin{lstlisting}
+// Start the server 
+# service apache2 start
+
+// Stop the server 
+# service apache stop
+
+// Restart a server 
+# service apache restart
+\end{lstlisting}
+
+
+When Apache starts, it needs to load the private key for each HTTPS 
+site. Our private key is encrypted, so Apache will ask us to type the password 
+for decryption. Inside the container, the password used for \texttt{bank32}
+is \texttt{dees}.  Once everything is set up properly, we can
+browse the web site, and all the traffic between the browser and the server 
+will be encrypted.
+
+
+Please use the above example as a guidance to set up an HTTPS server for 
+your website. Please describe the steps that 
 you have taken, the contents that you add to Apache's configuration file, and 
 the screenshots of the final outcome showing that you can successfully browse
 the HTTPS site. 
 
+
+
+\paragraph{Browsing the website.} 
+Now, point the browser to your web server (note: you should 
+put \texttt{https} at the beginning of your URL, instead of using \texttt{http}).  
+Please describe and explain your observations. 
+Most likely, you will not be able to succeed,  this is
+because ... (the reasons are omitted here; students should 
+provide the explanation in their lab reports). Please fix the problem
+and demonstrate that you can successfully visit the HTTPS website. 
+
+
+In the following, we provide instructions on how to load 
+a certificate into Firefox. We intentionally do not explain why and what 
+certificate should be loaded; students need to figure that out.
+To manually add a certificate to the Firefox browser,  type the following
+URL in the address bar, and click the \texttt{View Certificates} button 
+on the page (scroll to the bottom).
+
+\begin{lstlisting}
+about:preferences#privacy
+\end{lstlisting}
+
+In the \texttt{Authorities} tab,  you will see a list of certificates 
+that are already accepted by Firefox. From here, we 
+can import our own certificates. After choosing the certificate 
+file, please select the following option: ``Trust this CA to identify web sites''.  
+You will see that our certificate is now in Firefox's list of 
+accepted certificates. 
 
 
 
@@ -463,12 +525,16 @@ students should pick a popular website, such as a banking site and social networ
 
 
 \paragraph{Step 1: Setting up the malicious website.} 
-In Task 4, we have already set up an HTTPS website for \pkiserver. We will
-use the same Apache server to impersonate \texttt{example.com} (or the site chosen by students).  
+In Task 4, we have already set up an HTTPS website. We will
+use the same Apache server to impersonate \texttt{www.example.com} (or the site chosen by students).  
 To achieve that, we will follow the instruction in Task 4 to 
 add a \texttt{VirtualHost} entry to Apache's SSL configuration file: the
 \texttt{ServerName} should be \texttt{example.com}, but the rest of the
-configuration can be the same as that used in Task 4.
+configuration can be the same as that used in Task 4. Obviously, in the real world,
+you won't be able to get a valid certificate for \texttt{www.example.com}, 
+so we will use the same certificate that we used for our own server. 
+
+
 Our goal is the following: when a user tries to visit \texttt{example.com}, 
 we are going to get the user to land in our server, which hosts 
 a fake website for \texttt{example.com}. If this were a social network
@@ -481,14 +547,15 @@ in the fake webpage, essentially disclosing the credentials to the attacker.
 There are several ways to get the user's HTTPS request to land in our web server. One way is to
 attack the routing, so the user's HTTPS request is routed to our web server. Another way is
 to attack DNS, so when the victim's machine tries to find out the IP address of the target
-web server, it gets the IP address of our web server. In this task, we use ``attack'' DNS. Instead of
+web server, it gets the IP address of our web server. In this task, we simulate
+the attack-DNS approach. Instead of
 launching an actual DNS cache poisoning attack, we simply modify the victim's machine's 
-\texttt{/etc/hosts} file to emulate the result of a DNS cache positing attack (the
-\texttt{IP\_Address} in the following should be replaced by the actual 
-IP address of the malicious server).
+\texttt{/etc/hosts} file to emulate the result of a DNS cache positing attack by 
+mapping the hostname \texttt{www.example.com} to our malicious web server.
 
-\begin{lstlisting}[backgroundcolor=]
-   <IP_Address>  example.com
+
+\begin{lstlisting}
+10.9.0.80  www.example.com
 \end{lstlisting}
 
 
@@ -504,8 +571,8 @@ see what your browser would say. Please explain what you have observed.
 % ------------------------------------------- 
 \subsection{Task 6: Launching a Man-In-The-Middle Attack with a Compromised CA}
 
-Unfortunately, the root CA that we created in Task 1 is compromised by an attacker, and its private
-key is stolen. Therefore, the attacker can generate any arbitrary certificate 
+In this task, we assume that the root CA created in Task 1 is compromised by an attacker, 
+and its private key is stolen. Therefore, the attacker can generate any arbitrary certificate 
 using this CA's private key. In this task, we will see 
 the consequence of such a compromise. 
 
@@ -518,13 +585,14 @@ fake website.
 
 
 
-
 % *******************************************
 % SECTION
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
