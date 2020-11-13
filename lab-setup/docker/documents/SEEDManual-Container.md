@@ -6,12 +6,23 @@
  
 
 ## Setting Up Lab Environment Using Docker Compose
-- [Setting up A LAN Using Docker Compose](./compose-onelan.md) 
-- [Setting up Two LANs Using Docker Compose](./compose-twolans.md) 
+
+In many of the SEED labs, we need several containers;
+some labs may need more than 10 containers.
+Creating them one by one and setting up their networks become tedious.
+Docker provides a tool called Compose, which
+simplifies the entire process. All the SEED labs will use
+Compose to set up its container-based lab environments.
+
+- [Using Docker Compose: Setting up a LAN](./compose-onelan.md) 
+- [Setting up Multiple Networks](./compose-twolans.md) 
 - [Building, Starting, and Stopping Containers](./compose-commands.md) 
 - [Special Settings for Containers](./container-settings.md)
 
+
 ## Working with Containers
+
+We provide manuals to help students who are not familiar with containers. 
 
 - [Running Commands inside Containers](./container-execute.md)
 - [Packet sniffing inside container](./container-sniffing.md)

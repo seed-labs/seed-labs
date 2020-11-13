@@ -1,18 +1,6 @@
 # Lab Environment Setup Using Docker Compose
 
-In many of the SEED labs, we need several containers;
-some labs may need more than 10 containers.
-We can definitely create and run them one by one described
-in the previous section, but as the number of containers
-increases, the process become tedious.
-Moreover, the network setup in some SEED labs
-may also be quite complicated, so configuring them
-becomes a challenge.
-
-
-Fortunately, docker provides a tool called Compose, which
-is for defining and running multi-container Docker applications.
-In this section, we will use Compose to
+In this manual, we will use Compose to
 create a lab environment setup that consists of a LAN
 and containers. The setup is depicted in the following
 Figure.
