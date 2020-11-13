@@ -10,7 +10,12 @@
 - [Setting up Two LANs Using Docker Compose](./compose-twolans.md) 
 - [Building, Starting, and Stopping Containers](./compose-commands.md) 
 - [Special Settings for Containers](./container-settings.md)
+
+## Working with Containers
+
 - [Running Commands inside Containers](./container-execute.md)
+- [Packet sniffing inside container](./container-sniffing.md)
+- [Finding out network interface name](./container-interface.md)
 - [Detaching the VM From a Network](./detaching.md)
 
 ## Setting Up A DNS Infrastructure
@@ -27,9 +32,5 @@ can use this section as a reference to understand the setup.
 - [User Machine](./dns_user_machine.md)
 - [Testing the DNS Infrastructure](./dns_testing.md)
 
-## Miscellanous Instructions
-
-- Packet sniffing inside container
-- Network interface name
 
 ## [Common Problems](./problems.md)
