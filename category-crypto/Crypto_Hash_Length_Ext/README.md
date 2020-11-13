@@ -1,8 +1,12 @@
-# Folders
+# Hash Length Extension Attack
 
 
-## Code/ 
-Contain the source code for the server program.
-The code should be zip to server.zip and 
-put on the lab's website. 
+## For Ubuntu 20.04
 
+No change is needed.
+
+
+## For Container
+
+We run the web server `www.seedlab-hashlen.com` inside a 
+container.  

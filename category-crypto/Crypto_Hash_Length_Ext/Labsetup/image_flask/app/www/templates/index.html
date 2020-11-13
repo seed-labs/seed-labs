@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Length Extension Lab</title>
+</head>
+<body>
+    <nav class="navbar fixed-top navbar-light" style="background-color: #3EA055;">
+        <a class="navbar-brand" href="#" >
+            SEEDLabs
+        </a>
+    </nav>
+
+    <div style="padding-top: 50px; text-align: center;">
+        <h2><b>Hash Length Extension Attack Lab</b></h2>
+        <div style="max-width: 35%; text-align: center; margin: auto;">
+            {% if not valid %}
+                <b>Sorry, your MAC is not valid</b>
+            {% else %}
+                <b>Yes, your MAC is valid</b>
+                {% if files %}
+                    <h3>List Directory</h3>
+                    <ol>
+                        {% for file in files %}
+                            <li>{{ file }}</li>
+                        {% endfor %}
+                    </ol>
+                {% endif %}
+
+                {% if content %}
+                    <h3>File Content</h3>
+                    {% for line in content %}
+                        <p>{{ line }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

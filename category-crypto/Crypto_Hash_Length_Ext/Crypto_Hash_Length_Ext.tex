@@ -6,16 +6,14 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \lhead{\bfseries SEED Labs -- Hash Length Extension Attack Lab}
-%\newcommand{\hashextFigs}{Figs//Figures}
 
-
-%\usepackage{tipa}
-%\lstset{upquote=true}
 
 \begin{document}
 
@@ -25,10 +23,6 @@
 \end{center}
 
 \seedlabcopyright{2019}
-
-\newcounter{task}
-\setcounter{task}{1}
-\newcommand{\tasks} {\bf {\noindent (\arabic{task})} \addtocounter{task}{1} \,}
 
 
 \section{Introduction}
@@ -63,63 +57,52 @@ fond in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%% Section
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Lab Setup}
 
-We have set up a server for this lab. 
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Environment}
+
+We have set up a web server for this lab. 
 A client can send a list of commands to this server. 
 Each request must attach a MAC computed based on a secret
 key and the list of commands. The server will 
 only execute the commands in the request if 
 the MAC is verified successfully. 
+We will use the host VM as the client and use 
+a container for the web server.
 
-\paragraph{Setting up the hostname.}
-We use the domain \texttt{www.seedlablenext.com} to host the server program. 
-Since we only use one VM for this lab, we map this hostname to 
-\texttt{localhost} (\texttt{127.0.0.1}). This can be
+
+\paragraph{Container Setup and Commands.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\paragraph{About the web server.}
+We use the domain \texttt{www.seedlab-hashlen.com} to host the server program. 
+In our VM, we map this hostname to 
+the web server container (\texttt{10.9.0.80}). This can be
 achieved by adding the following entry to the 
 \texttt{/etc/hosts} file.
 
 \begin{lstlisting}
-127.0.0.1  www.seedlablenext.com
+10.9.0.80  www.seedlab-hashlen.com
 \end{lstlisting}
 
 
-\paragraph{The server program.} The server program (\texttt{server.zip})
-can be found on the lab's webpage. After downloading this zip file,
-uncompress it and check its contents:
-
-\begin{lstlisting}
-$ unzip server.zip
-$ cd Server
-$ ls 
-LabHome  run_server.sh  www
-\end{lstlisting}
-
+The server code is in the \path{Labsetup/image_flask/app} folder.
+It has two directories. 
 The \texttt{www} directory contains the server code, and the 
 \texttt{LabHome} directory contains a secret file and 
-the key used for computing the MAC. We 
-can run the following command to start the server program.
+the key used for computing the MAC. 
 
-\begin{lstlisting}
-$ chmod +x run_server.sh
-$ ./run_server.sh
-\end{lstlisting}
 
-The server uses a Python module named \texttt{Flask}. By the time this lab is
-officially released, the VM should have this module installed. 
-If you see an error message that says ``Flask not found'',
-you can use the command below to install Flask. 
-
-\begin{lstlisting}
-$ sudo pip3 install Flask==1.1.1
-\end{lstlisting}
 
 
 \paragraph{Sending requests.} The server program accepts the following commands:
@@ -142,7 +125,7 @@ Before executing the command, the server will verify the MAC to ensure
 the command's integrity. 
 
 \begin{lstlisting}
-http://www.seedlablenext.com:5000/?myname=JohnDoe&uid=1001&lstcmd=1
+http://www.seedlab-hashlen.com/?myname=JohnDoe&uid=1001&lstcmd=1
 &mac=dc8788905dbcbceffcdd5578887717c12691b3cf1dac6b2f2bcfabc14a6a7f11
 \end{lstlisting}
 
@@ -160,14 +143,13 @@ themselves. No point will be given if students do not use
 their real names in this task.
 
 
-
 The following shows another example. The request includes 
 two commands: list all the files and download the 
 file \texttt{secret.txt}. Similarly, a valid MAC needs to be attached, 
 or the server will not execute these commands.  
 
 \begin{lstlisting}
-http://www.seedlablenext.com:5000/?myname=JohnDoe&uid=1001&lstcmd=1
+http://www.seedlab-hashlen.com/?myname=JohnDoe&uid=1001&lstcmd=1
 &download=secret.txt
 &mac=dc8788905dbcbceffcdd5578887717c12691b3cf1dac6b2f2bcfabc14a6a7f11
 \end{lstlisting}
@@ -190,7 +172,7 @@ can see how the server responds to the request. The request we want to send
 is as follows:
 
 \begin{lstlisting}
-http://www.seedlabhashlengthext.com:5000/?myname=<name>&uid=<need-to-fill>
+http://www.seedlab-hashlen.com/?myname=<name>&uid=<need-to-fill>
 &lstcmd=1&mac=<need-to-calculate>
 \end{lstlisting}
 
@@ -199,7 +181,7 @@ two missing arguments. Students need
 to pick a uid number from the \texttt{key.txt} in the \texttt{LabHome}
 directory. This file contains a list of colon-separated uid and key values. Students
 can use any uid and its associated key value. For example, students can use uid
-1001 and its key 123456.
+\texttt{1001} and its key \texttt{123456}.
 
 The second missing argument is the MAC, which can be calculated by
 concatenating the key with the contents of the requests \texttt{R} 
@@ -221,7 +203,7 @@ We can then construct the complete request and send it to the server program usi
 the browser:
 
 \begin{lstlisting}
-http://www.seedlablenext.com:5000/?myname=JohnDoe&uid=1001&lstcmd=1
+http://www.seedlab-hashlen.com/?myname=JohnDoe&uid=1001&lstcmd=1
 &mac=7d5f750f8b3203bd963d75217c980d139df5d0e50d19d6dfdb8a7de1f8520ce3 
 \end{lstlisting}
 
@@ -337,7 +319,7 @@ the MAC for the following request (assume that we know
 the secret MAC key):
 
 \begin{lstlisting}
-http://www.seedlablenext.com:5000/?myname=<name>&uid=<uid>
+http://www.seedlab-hashlen.com/?myname=<name>&uid=<uid>
 &lstcmd=1<padding>&download=secret.txt
 &mac=<hash-value>
 \end{lstlisting}
@@ -432,15 +414,16 @@ following request (where \texttt{<uid>} and the MAC key should be
 obtained from the \texttt{LabHome/key.txt} file): 
 
 \begin{lstlisting}
-http://www.seedlablenext.com:5000/?myname=<name>&uid=<uid>
+http://www.seedlab-hashlen.com/?myname=<name>&uid=<uid>
 &lstcmd=1&mac=<mac>
 \end{lstlisting}
 
-Based on the \texttt{<mac>} value calculated above, please construct 
-a new request that includes the \texttt{download} command. You are not allowed to use the secret key this time.  The URL looks like below.
+Based on the \texttt{<mac>} value calculated above, please construct a new request that
+includes the \texttt{download} command. You are not allowed to use the secret key this time.
+The URL looks like below.
 
 \begin{lstlisting}
-http://www.seedlablenext.com:5000/?myname=<name>&uid=<uid>
+http://www.seedlab-hashlen.com/?myname=<name>&uid=<uid>
 &lstcmd=1<padding>&download=secret.txt&mac=<new-mac>
 \end{lstlisting}
  
@@ -495,7 +478,10 @@ HMAC.
 % ******************************************* 
 \section{Submission} 
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \end{document}
 
