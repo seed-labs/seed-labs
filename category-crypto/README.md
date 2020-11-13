@@ -11,11 +11,11 @@ The meaning of the Changes column can be found from
 | Lab Name | Changes | Status | Container |  Notes |
 | ---      | ---     | ---    |  ---      |  ---   |
 | PKI        | Major | Done   | Yes | [README](Crypto_PKI/README.md)
-| TLS        | Minor |        | Yes | [README](Crypto_TLS/README.md)
+| TLS        | Minor | Done   | Yes | [README](Crypto_TLS/README.md)
 | RSA        | None  |        | No  | [README](./README.md)
 | Encryption | None  |        | No  | [README](./README.md)
 | MD5        | None  |        | No  | [README](./README.md)
-| Length Ext | Major |        | Yes | [README](./README.md)
+| Length Ext | Major | Done   | Yes | [README](./README.md)
 | Random #   | None  |        | No  | [README](./README.md)
 ||||
 
