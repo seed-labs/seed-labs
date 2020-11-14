@@ -6,8 +6,10 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \newcommand{\formatFigs}{./Figs}
@@ -111,9 +113,8 @@ Detailed coverage of the format string attack can be found in the following:
 % ------------------------------------------- 
 \subsection{The Vulnerable Program}
 
-You can get the server program from the lab's website. 
-This program has a format string vulnerability.
-The 64-bit server program is slight different from the 32-bit version. 
+You will be provided with a server program, and 
+this program has a format string vulnerability. 
 When it runs, it listens to UDP port
 \texttt{9090}. Whenever a UDP packet comes to this port, the program
 gets the data and invokes \texttt{myprintf()} to print out the data. 
@@ -250,13 +251,26 @@ the value of \texttt{N}.
 % ------------------------------------------- 
 \subsection{Setting Up Containers for the Server} 
 
-We will use two computers for this lab, one for the attacker,
+We will use two machines for this lab, one for the attacker,
 and the other for running the vulnerable server. Instead of 
 using two virtual machines, we will containers. 
 We run the vulnerable server inside a Docker container, and 
 launch the attack from the VM. The files needed for 
-container creation is included in the zip file
-that can be downloaded from the lab's website. 
+container creation is included in the \texttt{Labsetup.zip}
+file, which can be downloaded from the lab's website. 
+
+
+
+\paragraph{Turning off randomization.} 
+To simplify the tasks in this lab, we turn off the address randomization
+using the following command. This needs to be done on the VM, because
+containers do not have privilege to modify this kernel variables. 
+The change is global, affecting all the containers. 
+
+\begin{lstlisting}
+ $ sudo  sysctl -w kernel.randomize_va_space=0
+\end{lstlisting}
+
 
 
 \paragraph{\texttt{Dockerfile}}. 
@@ -276,7 +290,7 @@ RUN  apt-get update  \
      && apt-get clean
 
 
-COPY server /
+COPY server_64 /
 EXPOSE 9090
 
 CMD [ "/bin/bash"]
@@ -393,14 +407,235 @@ $ nc -u 172.17.0.2 9090 < badfile
 \section{Lab Tasks}
 
 
-The lab tasks are the same as the 32-bit version, so we will not 
-repeat them. Students should read the 32-bit version of the 
-lab description for detailed tasks. Here, we will
-only emphasize one of the challenges caused by
-the x64 architecture. 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1: Crashing the Server Program}
+
+The objective of this task is to provide an input to the server, such that
+when the server program tries to print out the user input in the
+\texttt{myprintf()} function, it will crash.
 
 
-\paragraph{Challenge.} The main challenge caused by x64 is the zeros in the address.
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2: Printing Out Server Memory}
+
+The objective of this task is to get the server to print out some data
+from its memory. The data will be printed out on the server side, so
+the attacker cannot see it. Therefore, this is not a meaningful
+attack, but the technique used in this task will be essential for
+the subsequent tasks.
+
+
+There is a secret message stored in the heap area. 
+The address of this message will be printed out by the server 
+program, and we assume that the attacker knows this address. 
+Your job is to print out the content of the secret message.
+To achieve this goal, you need to place the address (in the binary form)
+of the secret message in your input (i.e., the format string), but
+it is difficult to type the binary data inside a terminal. We can use the following commands
+do that.
+
+
+It should be noted that most computers are small-endian machines, so to store
+\texttt{0x11223344AABBCCDD} in memory,
+the least significant byte \texttt{0xDD} is stored in the lower address,
+while the most significant byte \texttt{0x11} is stored in the higher
+address. Therefore, when we store the address in a buffer, we need to
+save it using this order: \texttt{0xDD}, \texttt{0xCC}, ..., \texttt{0x11}. 
+
+
+\paragraph{Python code.} Because the format string that
+we need to construct may be quite long, it is more convenient
+to write a Python program to do the construction. The
+following sample code shows how to construct
+a string that contains binary numbers.
+
+
+\begin{lstlisting}[label=format:code:buildstring, caption={Sample code
+\texttt{build\_string.py} (included in Labsetup.zip)}]
+#!/usr/bin/env python3
+import sys
+
+# Initialize the content array
+N = 1500
+content = bytearray(0x0 for i in range(N))
+
+# This line shows how to store an integer at offset 0
+number  = 0x11223344aabbccdd
+content[0:8]  =  (number).to_bytes(8,byteorder='little')
+
+# This line shows how to construct a string s with
+#   12 of "%.8x", concatenated with a "%s"
+s = "%.8x"*12 + "%s"
+
+# The line shows how to store the string s at offset 16
+fmt  = (s).encode('latin-1')
+content[16:16+len(fmt)] = fmt
+
+# Write the content to badfile
+file = open("badfile", "wb")
+file.write(content)
+file.close()
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 3: Changing Server Memory}
+
+The objective of this task is to modify the value of the
+\texttt{target} variable that is defined in the server program.
+Its original value is \texttt{0x1122334455667788}.
+Assume that this variable holds an important value, which can affect the
+control flow of the program. If remote attackers can change its value,
+they can change the behavior of this program. We have three sub-tasks.
+
+
+
+\begin{itemize}
+\item \textbf{Task 3.A: Change the value to a different value.}
+In this sub-task, we need to change the content of the \texttt{target} variable
+to something else. Your task is considered as a success if you can change it to a
+different value, regardless of what value it may be.
+
+
+\item \textbf{Task 3.B: Change the value to \texttt{0x500}.}
+In this sub-task, we need to change the content of the \texttt{target} variable
+to a specific value \texttt{0x500}. Your task is considered as
+a success only if the variable's value becomes \texttt{0x500}.
+
+
+\item \textbf{Task 3.C: Change the value to \texttt{0x11dd22cc33bb44aa}.}
+This sub-task is similar to the previous one, except that the target value is
+now a large number. In a format string attack, this
+value is the total number of characters that
+are printed out by the \texttt{printf()} function; printing out
+this large number of characters is not practical. You need to use a faster approach. The
+basic idea is to use \texttt{\%hn} or \texttt{\%hhn}, 
+instead of \texttt{\%n}, so we can modify
+a two-byte or one-byte memory space at a time. 
+\end{itemize}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 4: Injecting Malicious Code}
+
+Now we are ready to go after the crown jewel of this attack, i.e., to
+inject a piece of malicious code to the server program, so we can 
+get a root shell on the server machine. Even though we cannot 
+control this shell, this task lay the ground work for our next task, 
+which is to gain the complete control
+of the server computer.
+
+To do this task, we need to inject a piece of malicious code, in its binary format,
+into the server's memory, and then use the format string vulnerability
+to modify the return address field of a function, so when the function returns,
+it jumps to our injected code. This malicious code is called shellcode,
+and it is provided to students for this lab (in \texttt{shellcode.py}) .
+Students who are interested in learning 
+how to write shellcode can work on another SEED lab specifically 
+designed for shellcode development. 
+
+
+The technique used for this task is similar to that in the previous task:
+they both modify a 8-byte number in the memory. The previous task
+modifies the target variable, while this task modifies the return 
+address field of a function. Students need to figure out the address 
+for the return-address field based on the server printout. 
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 5: Getting a Reverse Shell} 
+
+When attackers are able to inject a command to the victim's machine,
+they are not interested in running one simple
+command on the victim machine; they are more interested in running many
+commands. What attackers want to achieve is to use the
+attack to set up a back door, so they can use this
+back door to conveniently conduct further damages.
+
+A typical way to set up back doors is to run a reverse shell from the
+victim machine to give the attacker the shell access to the victim machine.
+Reverse shell is a shell process running on a remote machine, connecting
+back to the attacker's machine. This gives an attacker a convenient way to
+access a remote machine once it has been compromised. Explanation on how a
+reverse shell works is provided in the SEED book (2nd edition).
+
+To get a reverse shell, we need to first run a TCP server on the attacker
+machine. This server waits for our malicious code to call back from the
+victim server machine. Instructions on setting up
+a reverse shell is provided in Section~\ref{fmt:rev_shellcmd}, and 
+the shellcode that executes a reverse shell is 
+provided in Section~\ref{fmt:rev_shellcode}. The code is also included 
+in the lab setup file (inside \texttt{shellcode.py}). 
+
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Guidelines}
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Selecting the \texttt{k}-th Optional Argument} 
+\label{subsec:kth}
+
+In a format string, we can use \texttt{\%x} to move the 
+argument pointer \texttt{va\_list} to the next optional arguments. 
+We can also directly move the pointer to the \texttt{k}-th optional argument. 
+This is done using the format string's parameter field (in the form of
+\texttt{k\$}). 
+The following code example uses \texttt{"\%3\$.20x"} to print out the value of the
+3rd optional argument (number 3), and then uses \texttt{"\%6\$n"} to write
+a value to the 6th optional argument (the variable \texttt{var}, its
+value will become \texttt{20}). Finally, 
+using \texttt{\%2\$.10x}, it moves the pointer back to the 2nd 
+optional argument (number 2), and print it out. You can see,
+using this method, we can move the pointer freely back and forth.
+
+\begin{lstlisting}
+#include <stdio.h>
+int main()
+{
+    int var = 1000;
+    printf("%3$.20x%6$n%2$.10x\n", 1, 2, 3, 4, 5, &var);
+    printf("The value in var: %d\n",var);
+    return 0;
+}
+----- Output ------
+seed@ubuntu:$ a.out
+000000000000000000030000000002
+The value in var: 20
+\end{lstlisting}
+
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{A Challenge Related to 64-bit Address} 
+
+A challenge caused by the x64 architecture is the zeros in the address.
 Although the x64 architecture
 supports 64-bit address space, only the address from
 \texttt{0x00} through \texttt{0x00007FFFFFFFFFFF} is allowed. That means for
@@ -427,20 +662,34 @@ we leave this to students. In the lab report, students
 should explain how they have solved this problem. 
 
 
-\paragraph{Note.} If students have already done 
-the 32-bit version of this lab, they can skip all the 
-warm-up tasks, and only conduct the code injection attack (Task 6
-and Task 7). 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The Reverse Shell Command} 
+\label{fmt:rev_shellcmd}
+\input{\commonfolder/guidelines/reverse_shell}
 
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The Rverse Shellcode} 
+\label{fmt:rev_shellcode}
+\input{\commonfolder/guidelines/reverse_shellcode_x64}
+
+ 
 
 % *******************************************
 % SECTION
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
