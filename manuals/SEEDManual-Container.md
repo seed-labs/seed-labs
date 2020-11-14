@@ -1,1 +1,0 @@
-../lab-setup/docker/documents/SEEDManual-Container.md
