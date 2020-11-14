@@ -4,6 +4,10 @@ Another common setup used by SEED labs involves two LANs that
 are connected by a router. The setup is depicted in the following
 Figure. We will use Compose to build this lab environment.
 
+
+![two LANs diagram](./Figs/TwoLANs.jpg)
+
+
 ## Creating Networks
 
 In the `networks` section of the docker compose file,
@@ -38,8 +42,6 @@ services:
         image: seed-ubuntu-base-image
         container_name: router-11
         tty: true
-        cap_add:
-                - ALL
         sysctls:
                 - net.ipv4.ip_forward=1
         networks:
@@ -57,7 +59,7 @@ services:
 In the configuration, we use the `sysctls` entry
 to enable the IP forwarding inside the container;
 otherwise, this container will not be able to route packets.
-From the `networks} entry, we can see that
+From the `networks` entry, we can see that
 this container is attached to two networks, and thus
 it has two IP addresses.
 
@@ -69,7 +71,7 @@ multiple commands, we can run a shell command and then ask the shell
 to further execute our commands.
 
 In this command, we set `10.9.0.1` as the
-default router. It should be noted that the `10.9.0.1} is the
+default router. It should be noted that the `10.9.0.1` is the
 VM, i.e., the router use the VM as the default router
 to reach the outside world.
 
@@ -88,16 +90,14 @@ preventing the container from exiting.
 ## Host Containers
 
 In the `services` section of the docker compose file, we
-create four host containers.
-We put `HostA` on `10.9.0.0/24`
-network, while putting `Host1`,
-`Host2`, and `Host3`
+create four host containers. We put `HostA` on `10.9.0.0/24`
+network, while putting `Host1`, `Host2`, and `Host3`
 on `10.168.60.0/24` network.
 
 ```
 services:
     HostA:
-        ... (omitted: same as before) ...
+        ... (omitted) ...
         networks:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.5
@@ -107,7 +107,7 @@ services:
                  "
 
     Host1:
-        ... (omitted: same as before) ...
+        ... (omitted) ...
         networks:
             net-192.168.60.0:
                 ipv4_address: 192.168.60.5
