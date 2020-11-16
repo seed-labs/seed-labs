@@ -6,8 +6,10 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \lhead{\bfseries SEED Labs -- Race Condition Vulnerability Lab}
@@ -18,9 +20,6 @@
 
 \begin{center}
 {\LARGE Race Condition Vulnerability Lab}
-
-\vspace{0.05in}
-Updated on July 26, 2020
 \end{center}
 
 
@@ -96,7 +95,7 @@ to hardware.
 % ------------------------------------------- 
 \subsection{Initial Setup}
 
-Ubuntu 10.10 and later come with a built-in protection against race condition 
+Ubuntu has a built-in protection against race condition 
 attacks. This scheme works by restricting who can follow a symlink. 
 According to the documentation, ``symlinks in world-writable sticky 
 directories (e.g. {\tt /tmp}) cannot be followed if the follower and directory 
@@ -105,11 +104,11 @@ In this lab, we need to disable this protection. You can achieve
 that using the following commands:
 
 \begin{lstlisting}
-  // On Ubuntu 16.04 and 20.04, use the following:
-  $ sudo sysctl -w fs.protected_symlinks=0
+// On Ubuntu 16.04 and 20.04, use the following:
+$ sudo sysctl -w fs.protected_symlinks=0
 
-  // On Ubuntu 12.04, use the following:
-  $ sudo sysctl -w kernel.yama.protected_sticky_symlinks=0
+// On Ubuntu 12.04, use the following:
+$ sudo sysctl -w kernel.yama.protected_sticky_symlinks=0
 \end{lstlisting}
 
 
@@ -205,8 +204,8 @@ Basically, the power of the root account does not come from its name, but instea
 the user ID field. If we want to create an account with the root privilege,
 we just need to put a zero in this field.
 
-\begin{lstlisting}[backgroundcolor=,]
-   root:x:0:0:root:/root:/bin/bash
+\begin{lstlisting}
+root:x:0:0:root:/root:/bin/bash
 \end{lstlisting}
 
 Each entry also contains a password field, which is the second field. In the example above, the
@@ -233,8 +232,8 @@ manually (as a superuser) add the following entry to the end of the \texttt{/etc
 Please report whether you can log into the \texttt{test} account without
 typing a password, and check whether you have the root privilege.
 
-\begin{lstlisting}[backgroundcolor=,]
-    test:U6aMy0wojraho:0:0:test:/root:/bin/bash
+\begin{lstlisting}
+test:U6aMy0wojraho:0:0:test:/root:/bin/bash
 \end{lstlisting}
 
 After this task, please remove this entry from the password file. In the
@@ -288,8 +287,8 @@ The following C code snippet shows how to remove a link and then make
 {\tt /tmp/XYZ} point to {\tt /etc/passwd}:
 
 \begin{lstlisting}
-  unlink("/tmp/XYZ");
-  symlink("/etc/passwd","/tmp/XYZ");
+unlink("/tmp/XYZ");
+symlink("/etc/passwd","/tmp/XYZ");
 \end{lstlisting}
 
 You can also use \linux command {\tt "ln -sf"} to create symbolic links.
@@ -554,11 +553,11 @@ attacks. In this task, you need to turn the protection back on using the
 following commands:
 
 \begin{lstlisting}
-  // On Ubuntu 16.04 and 20.04, use the following command:
-  $ sudo sysctl -w fs.protected_symlinks=1
+// On Ubuntu 16.04 and 20.04, use the following command:
+$ sudo sysctl -w fs.protected_symlinks=1
 
-  // On Ubuntu 12.04, use the following command:
-  $ sudo sysctl -w kernel.yama.protected_sticky_symlinks=1
+// On Ubuntu 12.04, use the following command:
+$ sudo sysctl -w kernel.yama.protected_sticky_symlinks=1
 \end{lstlisting}
 
 Conduct your attack after the protection is turned on.  
@@ -576,7 +575,9 @@ the followings: (1) How does this protection scheme work?
 % *******************************************
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
