@@ -186,9 +186,9 @@ is to exploit this vulnerability and gain the root privilege.
 /* Changing this size will change the layout of the stack.
  * Instructors can change this value each year, so students
  * won't be able to use the solutions from the past.
- * Suggested value: between 0 and 400  */
+ * Suggested value: between 100 and 400  */
 #ifndef BUF_SIZE
-#define BUF_SIZE 24
+#define BUF_SIZE 100
 #endif
 
 int bof(char *str)
@@ -273,7 +273,7 @@ posted on the Internet), instructors can change the
 value for \texttt{BUF\_SIZE} by requiring students to compile the
 server code using a different \texttt{BUF\_SIZE} value.
 Without the \texttt{-DBUF\_SIZE}
-option, \texttt{BUF\_SIZE} is set to the default value 24 (defined
+option, \texttt{BUF\_SIZE} is set to the default value 100 (defined
 in the program).
 When this value changes, the layout of the stack
 will change, and the solution will be different.
@@ -373,7 +373,7 @@ content = bytearray(0x90 for i in range(517))
 
 ##################################################################
 # Put the shellcode somewhere in the payload
-start =  0                    # replace this number
+start =  200                   # replace this number
 content[start:start + len(shellcode_64)] = shellcode_64
 
 
