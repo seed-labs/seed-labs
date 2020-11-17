@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Run "xxd -p -c 20 rev_sh.o",
 # copy and paste the machine code to the following:
