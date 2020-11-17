@@ -6,8 +6,10 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 
@@ -251,7 +253,7 @@ lab's website.
 
 
 \begin{lstlisting}[caption=\texttt{convert.py}] 
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Run "xxd -p -c 20 mysh.o", and
 # copy and paste the machine code part to the following:
@@ -657,10 +659,9 @@ need to show that there is no zero in your code.
 % *******************************************
 \section{Submission}
 
-\seedsubmission
-
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
