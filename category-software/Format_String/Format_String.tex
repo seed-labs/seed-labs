@@ -15,16 +15,13 @@
 \newcommand{\formatFigs}{./Figs}
 
 
-\lhead{\bfseries SEED Labs -- Format String Vulnerability Lab}
+\lhead{\bfseries SEED Labs -- Format String Vulnerability Lab (32-bit)}
 
 
 \begin{document}
 
 \begin{center}
-{\LARGE Format String Vulnerability Lab}
-
-\vspace{0.05in}
-Updated on January 12, 2020
+{\LARGE Format String Vulnerability Lab (32-bit)}
 \end{center}
 
 \seedlabcopyright{2018}
@@ -95,8 +92,7 @@ Detailed coverage of the format string attack can be found in the following:
 
 
 
-\paragraph{Lab environment.} \seedenvironment
-
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -110,7 +106,7 @@ To simplify the tasks in this lab, we turn off the address randomization
 using the following command: 
 
 \begin{lstlisting}
- $ sudo  sysctl -w kernel.randomize_va_space=0
+$ sudo sysctl -w kernel.randomize_va_space=0
 \end{lstlisting}
 
 
