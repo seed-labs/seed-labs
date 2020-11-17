@@ -5,18 +5,16 @@ use the \texttt{docker-compose.yml} file to
 set up the lab environment. Detailed explanation
 of the content in this file and all the involved 
 \texttt{Dockerfile} can be found from the 
-user manual, which can be downloaded from the website. 
+user manual, which is linked to the website of this lab.
 If this is the first time you set up a SEED lab environment
-using Docker and Compose, it is very important that you read 
+using containers, it is very important that you read 
 the user manual. 
 
 In the following, we list some of the commonly
 used commands related to Docker and Compose. 
 Since we are going to use 
-these commands and several docker commands very
-frequently, we have created aliases for these commands
-in the \texttt{.bashrc} file (in our provided 
-SEEDUbuntu 20.04 VM).
+these commands very frequently, we have created aliases for them
+in the \texttt{.bashrc} file (in our provided SEEDUbuntu 20.04 VM).
 
 
 \begin{lstlisting}
@@ -36,9 +34,8 @@ commands on a container, we often need to get a shell on
 that container. We first need to use the \texttt{"docker ps"}  
 command to find out the ID of the container, and then
 use \texttt{"docker exec"} to start a shell on that 
-container. Since we are going to use these two commands
-very frequently, we have also created aliases
-for them. 
+container. We have created aliases for them in
+the \texttt{.bashrc} file.
 
 \begin{lstlisting}
 $ dockps        # Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
