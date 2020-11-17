@@ -6,8 +6,10 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
 \lhead{\bfseries SEED Labs -- Return-to-libc Attack Lab}
@@ -20,12 +22,9 @@
 
 \begin{center}
 {\LARGE Return-to-libc Attack Lab}
-
-\vspace{0.05in}
-Updated on January 12, 2020
 \end{center}
 
-\seedlabcopyright{2006 - 2016}
+\seedlabcopyright{2006 - 2020}
 
 
 % *******************************************
@@ -129,14 +128,14 @@ the program into 32-bit binary.
 % ------------------------------------------- 
 \subsection{Turning off countermeasures}
 
-You can execute the lab tasks using our pre-built \ubuntu virtual machines.
-\ubuntu and other Linux distributions have implemented several
+You can execute the lab tasks using our pre-built Ubuntu virtual machines.
+Ubuntu and other Linux distributions have implemented several
 security mechanisms to make the buffer-overflow attack difficult.
 To simplify our attacks, we need to disable them first.
 
 
 \paragraph{Address Space Randomization.}
-\ubuntu and several other Linux-based systems use address space
+Ubuntu and several other Linux-based systems use address space
 randomization to randomize the starting address of heap and
 stack, making guessing the exact addresses difficult. Guessing
 addresses is one of the critical steps of buffer-overflow attacks.  In
@@ -161,7 +160,7 @@ $ gcc -m32 -fno-stack-protector example.c
 \end{lstlisting}
 
 
-\paragraph{Non-Executable Stack.} \ubuntu used to allow executable stacks,
+\paragraph{Non-Executable Stack.} Ubuntu used to allow executable stacks,
 but this has now changed. The binary images of programs (and shared
 libraries) must declare whether they require executable stacks or not,
 i.e., they need to mark a field in the program header. Kernel or dynamic
@@ -187,17 +186,18 @@ protection does not work, you should always compile your program using the
 {\tt "-z noexecstack"} option in this lab.
 
 
-\paragraph{Configuring \texttt{/bin/sh} (Ubuntu 16.04 VM only).} In both Ubuntu 12.04 and
-Ubuntu 16.04 VMs, the \texttt{/bin/sh} symbolic link points to
-the \texttt{/bin/dash} shell. However, the \texttt{dash} program
-in these two VMs have an important difference.
-The \texttt{dash} shell in Ubuntu 16.04 has a countermeasure
+\paragraph{Configuring \texttt{/bin/sh}.} In Ubuntu 20.04, 
+the \texttt{/bin/sh} symbolic link points to
+the \texttt{/bin/dash} shell. 
+%However, the \texttt{dash} program
+%in these two VMs have an important difference.
+The \texttt{dash} shell has a countermeasure
 that prevents itself from being executed in a \setuid process.
 If \texttt{dash} is 
 executed in a \setuid process, it immediately
 changes the effective user ID to the process's real user ID, essentially
-dropping its privilege. The \texttt{dash} program in Ubuntu 12.04 does not have this
-behavior.
+dropping its privilege. 
+%The \texttt{dash} program in Ubuntu 12.04 does not have this behavior.
 
 Since our victim program is a \setuid program, and our
 attack uses the \texttt{system()} function to run a command of our
@@ -210,9 +210,7 @@ we link \texttt{/bin/sh} to another shell that does not
 have such a countermeasure.
 We have installed a shell program
 called \texttt{zsh} in our Ubuntu 16.04 VM. We use the following
-commands to link \texttt{/bin/sh} to \texttt{zsh} (there is no need to do
-these in Ubuntu 12.04):
-
+commands to link \texttt{/bin/sh} to \texttt{zsh}:
 
 \begin{lstlisting}
 $ sudo ln -sf /bin/zsh /bin/sh
@@ -473,7 +471,6 @@ parts left for you to fill out.
 
 \begin{lstlisting}
 /* exploit.c */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -655,10 +652,12 @@ is just a special case of ROP.
 
 
 \paragraph{Note to students and instructors.}
-This task is quite challenging, and we suggest making it optional. Do check with
+This task is very challenging, and we suggest making it optional. Do check with
 your instructor and confirm whether this is optional or required. 
 ROP has been a quite active research area, so for students who are into
 research in this area, we strongly suggest them to do this task.  
+Before doing the task, please read Chapter 5.5 of the SEED book (2nd edition),
+because it spends 16 pages on how to do this task. 
 
 
 
@@ -668,9 +667,8 @@ research in this area, we strongly suggest them to do this task.
 \section{Guidelines: Understanding the Function Call Mechanism}
 
 The guidelines in this section only address Tasks 1 to 5. 
-Guidelines for Task 6 are quite complicated, 
-and the SEED book (2nd edition) spends 16 pages (Chapter 5.5) 
-to explain how to do it. Please refer to the book for guidelines. 
+Guidelines for Task 6 are too complicated to be included here, 
+please refer to the SEED book for guidelines. 
 
 
 % -------------------------------------------
@@ -819,7 +817,9 @@ before entering the function {\tt foo} (i.e., before line 28).
 % *******************************************
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
