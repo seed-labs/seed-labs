@@ -161,12 +161,14 @@ of the URLs to the IP address of their containers:
 \end{lstlisting}
 
 
+\vspace{-0.1in}
 % MySQL database
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\webcommon/mysql}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+\vspace{-0.1in}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\webcommon/elgg_accounts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -387,7 +389,7 @@ answer the following questions in your report:
 \section{Lab Tasks: Defense} 
 
 CSRF is not difficult to defend against. Initially, most applications
-put a secret token in its pages, and by checking whether the token
+put a secret token in their pages, and by checking whether the token
 is present in the request or not, they can tell whether a request
 is a same-site request or a cross-site request. This is called
 \textit{secret token} approach. 
@@ -526,7 +528,7 @@ prevents them from finding out the secret tokens from the web page?
 Most browsers have now implemented a mechanism called SameSite cookie, 
 which is a property associated with cookies. When sending out 
 requests, browsers will check this property, and decide whether 
-to attach the cookie in a cross-site. A web application can
+to attach the cookie in a cross-site request. A web application can
 set a cookie as SameSite if it does not want the cookie to be 
 attached to cross-site requests. For example, they can mark
 the session ID cookie as SameSite, so no cross-site request
