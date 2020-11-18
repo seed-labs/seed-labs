@@ -72,9 +72,9 @@ Detailed coverage of the SQL injection can be found in the following:
 \item Chapter 12 of the SEED Book, \seedbook
 \end{itemize}
 
-\paragraph{Lab Environment.} \seedenvironmentB \nodependency
-You do need to add the required IP address mapping to
-the \texttt{/etc/hosts} file.  
+\paragraph{Lab Environment.} 
+\seedenvironmentB 
+\nodependency
 
 
 % *******************************************
@@ -83,9 +83,8 @@ the \texttt{/etc/hosts} file.
 \section{Lab Environment}
 
 
-We have developed a web application for this lab. It is 
-accessible via \url{http://www.SEEDLabSQLInjection.com}. 
-We use containers to set up this web application. There 
+We have developed a web application for this lab, and 
+we use containers to set up this web application. There 
 are two containers in the lab setup, one for hosting 
 the web application, and the other for hosting the database 
 for the web application. 
@@ -93,7 +92,13 @@ The IP address for the web application container is \texttt{10.9.0.5}, and
 the mapping between the URL and the IP address is 
 already added to the \texttt{/etch/hosts} file in the 
 SEED VM. If you are not using the SEED VM, you
-need to add this mapping to your system. 
+need to add this mapping to your system. The URL
+for the web application is the following:
+
+\begin{lstlisting}
+http://www.SEEDLabSQLInjection.com
+\end{lstlisting}
+ 
 
 
 % -------------------------------------------
