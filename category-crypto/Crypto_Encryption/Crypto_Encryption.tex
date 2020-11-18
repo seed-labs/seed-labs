@@ -6,8 +6,11 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
 
 \lhead{\bfseries SEED Labs -- Secret-Key Encryption Lab}
 
@@ -62,7 +65,7 @@ Detailed coverage of the secret-key encryption can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab Environment.} \seedenvironment
+\paragraph{Lab Environment.} \seedenvironmentB
 
 
 
@@ -129,7 +132,8 @@ $ tr 'abcdefghijklmnopqrstuvwxyz' 'sxtrwinqbedpvgkfmalhyuojzc' \
 
 
 We have created a ciphertext using a different encryption key (not the one described above).
-You can download it from the lab's website. Your job is to use the frequency analysis 
+It is included in \texttt{Labsetup.zip} file, which  
+can be downloaded from the lab's website. Your job is to use the frequency analysis 
 to figure out the encryption key and the original plaintext.  
 
 
@@ -212,8 +216,8 @@ command in the following:
 % ******************************************* 
 \section{Task 3: Encryption Mode -- ECB vs. CBC} 
 
-The file {\tt pic\_original.bmp} can be downloaded from 
-this lab's website, and it contains a simple picture. 
+The file {\tt pic\_original.bmp} is included in the 
+\texttt{Labsetup.zip} file, and it is a simple picture. 
 We would like to encrypt this picture, so people without the 
 encryption keys cannot know what is in the picture. Please 
 encrypt the file using the ECB (Electronic Code Book)  
@@ -357,7 +361,7 @@ Chapter 21.5 of the SEED book.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 6.1} 
+\subsection{Task 6.1. IV Experiment} 
 
 A basic requirement for IV is \textit{uniqueness},
 which means that no IV may be reused under the same key. To understand why,
@@ -506,9 +510,9 @@ are appended to the end of the word to form a key of 128 bits.
 
 Your goal is to write a program to 
 find out the encryption key. You can download a English word list 
-from the Internet.  We have also linked one on the web page
-of this lab. The plaintext, ciphertext, and IV are listed
-in the following:
+from the Internet.  We have also included one in
+the \texttt{Labsetup.zip} file.  
+The plaintext, ciphertext, and IV are listed in the following:
 
 
 \begin{lstlisting}
@@ -583,7 +587,9 @@ e5accdb667e8e569b1b34f423508c15422631198454e104ceb658f5918800c22
 % *******************************************
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
