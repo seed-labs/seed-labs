@@ -6,8 +6,11 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
 
 
 \lhead{\bfseries SEED Labs -- RSA Public-Key Encryption and Signature Lab}
@@ -37,7 +40,7 @@ number theories, and it can be quite easily implemented with the support of
 libraries. 
 
 
-\underline{The learning objective} of this lab is for students to gain hands-on experiences on
+The learning objective of this lab is for students to gain hands-on experiences on
 the RSA algorithm. From lectures, students should have learned the 
 theoretic part of the RSA algorithm, so they know 
 mathematically how to generate public/private keys and 
@@ -66,16 +69,7 @@ Detailed coverage of the public-key cryptography can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment \ \
-This lab requires the \openssl library, which is already
-installed on the Ubuntu16.04 VM. If you choose to use 
-a different VM, you can run the following commands to install \openssl:
-
-\begin{lstlisting}
-$ sudo apt-get update
-$ sudo apt-get install libssl-dev
-\end{lstlisting}
- 
+\paragraph{Lab environment.} \seedenvironmentB
 
 \paragraph{Acknowledgment} This lab was developed with the help of
 Shatadiya Saha, a graduate student in the Department of
@@ -132,7 +126,7 @@ BN_CTX *ctx = BN_CTX_new()
 \end{lstlisting}
 
 
-\item Initialize a BIGNUM variable
+\item Initialize a BIGNUM variable.
 
 \begin{lstlisting}
 BIGNUM *a = BN_new()
@@ -275,7 +269,7 @@ compile \texttt{bn\_sample.c} (the
 character after - is the letter $\ell$, not the number 1; it tells the compiler to use the
 \texttt{crypto} library).
 
-\begin{lstlisting}[backgroundcolor=]
+\begin{lstlisting}
 $ gcc bn_sample.c -lcrypto
 \end{lstlisting}
  
@@ -284,12 +278,8 @@ $ gcc bn_sample.c -lcrypto
 \section{Lab Tasks}
 
 
-To avoid mistakes, please avoid manually typing the numbers used the lab tasks. 
-Instead, copy and paste the numbers from this PDF file. 
-
-
-\paragraph{Submission requirement:} In your report, you should describe your steps and include
-your code and running results. 
+To avoid mistakes, please avoid manually typing the numbers used in the lab tasks. 
+Instead, copy and paste them from this PDF file. 
 
 
 \subsection{Task 1: Deriving the Private Key}
@@ -386,7 +376,7 @@ The public key and signature (hexadecimal) are listed in the following:
 \end{lstlisting}
 
 
-Suppose that the signature in is corrupted, such that the 
+Suppose that the signature is corrupted, such that the 
 last byte of the signature changes from \texttt{2F} to \texttt{3F}, i.e, there is only one bit
 of change.  Please repeat this task, 
 and describe what will happen to the verification process. 
@@ -571,14 +561,14 @@ certificate.  We can use the
 \texttt{-strparse} option to get the field from the offset 4, which will give us the body of
 the certificate, excluding the signature block.  
 
-\begin{lstlisting}[backgroundcolor=]
+\begin{lstlisting}
 $ openssl asn1parse -i -in c0.pem -strparse 4 -out c0_body.bin -noout
 \end{lstlisting}
 
 Once we get the body of the certificate, we can calculate its hash using the following
 command: 
 
-\begin{lstlisting}[backgroundcolor=]
+\begin{lstlisting}
 $ sha256sum c0_body.bin
 \end{lstlisting}
 
@@ -594,7 +584,9 @@ credit for this task.
 
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}
 

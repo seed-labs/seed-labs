@@ -58,7 +58,7 @@ the one-way property, they cannot easily grasp why the collision-resistance prop
 necessary, and what impact these attacks can cause.   
 
 
-\underline{The learning objective} of this lab is for students to really
+The learning objective of this lab is for students to really
 understand the impact of collision attacks, and see in first hand what
 damages can be caused if a widely-used one-way hash function's
 collision-resistance property is broken. To achieve this goal, students
@@ -68,10 +68,9 @@ that share the same MD5 hash but have completely different behaviors.
 This lab covers a number of topics described in the following:
 
 \begin{itemize}[noitemsep]
-\item One-way hash function
+\item One-way hash function, MD5
 \item The collision-resistance property
 \item Collision attacks
-\item MD5
 \end{itemize}
 
 
@@ -84,7 +83,7 @@ Detailed coverage of the one-way hash function can be found in the following:
 
 
 
-\paragraph{Lab Environment.} \seedenvironment \ \ 
+\paragraph{Lab Environment.} \seedenvironmentB \ \ 
 The lab uses a tool 
 called ``Fast MD5 Collision Generation'', which was written by Marc Stevens. 
 The name of the binary is called \texttt{md5collgen} in our VM, and it is 
@@ -127,8 +126,8 @@ The way how the program works is illustrated in Figure~\ref{md5:fig:md5collgen}.
 The following command generates two output files,
 \texttt{out1.bin}  and \texttt{out2.bin}, for a given a prefix file \texttt{prefix.txt}: 
 
-\begin{lstlisting}[backgroundcolor=]
-  $ md5collgen -p prefix.txt -o out1.bin out2.bin
+\begin{lstlisting}
+$ md5collgen -p prefix.txt -o out1.bin out2.bin
 \end{lstlisting}
 
 
@@ -228,8 +227,8 @@ into one. The following command concatenates the contents of
 \texttt{file3}.  
 
 
-\begin{lstlisting}[backgroundcolor=]
-  $ cat file1 file2 > file3
+\begin{lstlisting}
+$ cat file1 file2 > file3
 \end{lstlisting}
  
 
@@ -325,16 +324,16 @@ Let us use \texttt{P} and \texttt{Q} to represent the
 second part (each having 128 bytes) of these outputs (i.e., the part after the prefix). 
 Therefore, we have the following:
 
-\begin{lstlisting}[backgroundcolor=]
-      MD5 (prefix (*@$\|$@*) P) = MD5 (prefix (*@$\|$@*) Q)
+\begin{lstlisting}
+MD5 (prefix (*@$\|$@*) P) = MD5 (prefix (*@$\|$@*) Q)
 \end{lstlisting}
 
 Based on the property of MD5, we know that if we append the same suffix to 
 the above two outputs, the resultant data will also have the 
 same hash value. Basically, the following is true for any suffix:
 
-\begin{lstlisting}[backgroundcolor=]
-      MD5 (prefix (*@$\|$@*) P (*@$\|$@*) suffix) = MD5 (prefix (*@$\|$@*) Q (*@$\|$@*) suffix)
+\begin{lstlisting}
+MD5 (prefix (*@$\|$@*) P (*@$\|$@*) suffix) = MD5 (prefix (*@$\|$@*) Q (*@$\|$@*) suffix)
 \end{lstlisting}
 
 Therefore, we just need to use \texttt{P} and \texttt{Q} to replace 

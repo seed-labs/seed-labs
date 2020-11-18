@@ -151,7 +151,7 @@ The following sample code initiates a TLS handshake with
 a TLS server (the name of the server needs to be specified as the first command line argument).
 
 
-\begin{lstlisting}[caption={\texttt{handshake.py}}, label={tls:handshake}]
+\begin{lstlisting}[caption={\texttt{handshake.py} (in \texttt{Labsetup/volumes})}, label={tls:handshake}]
 #!/usr/bin/env python3
 
 import socket, ssl, sys, pprint
@@ -377,7 +377,7 @@ use the client program from Task 1 to test this server program.
 A sample server code is provided in the following.
 
 
-\begin{lstlisting}[caption={\texttt{server.py}}, label={tls:server}]
+\begin{lstlisting}[caption={\texttt{server.py} (in \texttt{Labsetup/volumes})}, label={tls:server}]
 #!/usr/bin/env python3
 
 import socket
@@ -684,7 +684,7 @@ is the IP address of the mitm-proxy container in our setup).
 10.9.0.143   www.example.com
 \end{lstlisting}
 
-By doing the above, we simulates the result of redirection attacks:
+By doing the above, we simulate the result of redirection attacks:
 the victim's traffic to \url{www.example.com} 
 will be redirected to the attacker's VM, where your \texttt{mHTTPSproxy} 
 is waiting for HTTP requests. 
