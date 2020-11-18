@@ -89,7 +89,8 @@ in Figure~\ref{arp:fig:labsetup}.
 In this setup, we have an attacker machine (Host M),
 which is used to launch attacks against the other two machines, Host A and
 Host B.  These three machines must be on the same LAN,
-because the ARP cache poisoning attack is limited to LAN.
+because the ARP cache poisoning attack is limited to LAN. We use 
+containers to set up the lab environment.
 
 \begin{figure}[htb]
 \begin{center}
@@ -123,7 +124,7 @@ containers. Here are the differences:
 \begin{itemize}
 \item \textit{Shared folder.} When we use the attacker container
 to launch attacks, we need to put the attacking code inside
-the attacker container.
+the container.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/volumes}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -196,7 +197,8 @@ hwdst      : MACField                            = ('00:00:00:00:00:00')
 pdst       : IPField                             = ('0.0.0.0')
 \end{lstlisting}
 
-In this task, we have three VMs, A, B, and M. We would like to attack A's ARP cache, such that
+In this task, we have three machines (containers), A, B, and M. 
+We would like to attack A's ARP cache, such that
 the following results is achieved in A's ARP cache. 
 
 \begin{lstlisting}

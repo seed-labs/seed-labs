@@ -33,7 +33,7 @@ services:
 
     HostM:
         image: seed-image-scapy
-        container_name: M-10.9.0.7
+        container_name: M-10.9.0.105
         tty: true
         cap_add:
                 - ALL
@@ -42,7 +42,7 @@ services:
                 - ./volumes:/volumes
         networks:
             net-10.9.0.0:
-                ipv4_address: 10.9.0.7
+                ipv4_address: 10.9.0.105
 
 networks:
     net-10.9.0.0:
