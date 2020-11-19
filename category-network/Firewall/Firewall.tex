@@ -88,11 +88,6 @@ Detailed coverage of firewalls can be found in the following:
 In this lab, we need to use multiple machines. 
 Their setup is depicted in Figure~\ref{fig:labsetup}.  
 We will use containers to set up this lab environment.
-Please download the 
-\texttt{labsetup.zip} file to your VM from the lab's website,
-unzip it, and enter the \texttt{labsetup} folder. 
-Then follow the instructions below
-to set up the lab environment.
 
 
 \begin{figure}[htb]
@@ -261,8 +256,8 @@ found in Chapter 17 of the SEED book.
 
 Using {\tt Netfilter} is quite straightforward. All we need to do
 is to hook our functions (in the kernel module) to the corresponding
-{\tt Netfilter} hooks. Here we show an example (the code can
-be downloaded from the lab's website):
+{\tt Netfilter} hooks. Here we show an example (the code is in
+\path{Labsetup/packet_filter}):
 
 
 \begin{lstlisting}
@@ -519,7 +514,7 @@ that your firewall does satisfy the requirements.
 
 \begin{itemize}
 \item Ingress: Prevent outsiders from accessing any internal ports (including
-both TCP and UDP), other than port TCP 8080. 
+both TCP and UDP), other than TCP port 8080. 
  
 \item Ingress: Your firewall should allow DNS replies to come back. 
 

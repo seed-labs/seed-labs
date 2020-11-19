@@ -13,20 +13,18 @@ In our setup, we only want the VM to be connected to
 We need to detach the VM from the other network. We cannot simply power down
 the interface, because that will affects all the containers on that network.
 Our solution is to remove the IP address
-of the interface, and then set the routing accordingly. The following
+of the interface, and then set the routing accordingly. 
 script does exactly that.
 
 
 \begin{lstlisting}
-#!/bin/bash
+// Get the name of the interface 
+$ ip addr
 
-# Get the interface name
-IFname=$(docker network ls | grep 192.168.60.0 | cut -d' ' -f 1)
+// Remove the IP address from the interface
+$ sudo ip addr flush <interface-name>
 
-# Remove the IP address from the interface
-sudo ip addr flush br-$IFname
-
-# Use 10.9.0.11 as the router to access 192.168.60.0/24
-sudo ip route add 192.168.60.0/24 via 10.9.0.11
+// Use 10.9.0.11 as the router to access 192.168.60.0/24
+$ sudo ip route add 192.168.60.0/24 via 10.9.0.11
 \end{lstlisting}
 

@@ -38,10 +38,10 @@ container. We have created aliases for them in
 the \texttt{.bashrc} file.
 
 \begin{lstlisting}
-$ dockps        # Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
-$ docksh <id>   # Alias for: docker exec -it <id> /bin/bash
+$ dockps        // Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
+$ docksh <id>   // Alias for: docker exec -it <id> /bin/bash
 
-# The following example shows how to get a shell inside hostC
+// The following example shows how to get a shell inside hostC
 $ dockps
 b1004832e275  hostA-10.9.0.5
 0af4ea7a3e2e  hostB-10.9.0.6
@@ -50,9 +50,9 @@ b1004832e275  hostA-10.9.0.5
 $ docksh 96
 root@9652715c8e0a:/#  
 
-# Note: If a docker command requires a container ID, you do not need to 
-#       type the entire ID string. Typing the first few characters will 
-#       be sufficient, as long as they are unique among all the containers. 
+// Note: If a docker command requires a container ID, you do not need to 
+//       type the entire ID string. Typing the first few characters will 
+//       be sufficient, as long as they are unique among all the containers. 
 \end{lstlisting}
 
 
