@@ -75,7 +75,7 @@ the following:
 
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
 
 
 
@@ -84,7 +84,6 @@ There are two sets of tasks in this lab. The first set focuses on using
 tools to conduct packet sniffing and spoofing. It only requires a
 little bit of Python programming (usually a few lines of code); students do
 not need to have a prior Python programming background. 
-The set of tasks can be used by students with a much broader background.
 
 The second set of tasks is designed primarily for Computer Science/Engineering students.
 Students need to write their own C programs from the scratch to do sniffing 
@@ -178,7 +177,7 @@ the attacker container.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Task Set 1: Using Tools to Sniff and Spoof Packets}
+\section{Lab Task Set 1: Using Scapy to Sniff and Spoof Packets}
 
 
 Many tools can be used to do sniffing and spoofing, but most of them only provide 
@@ -271,7 +270,7 @@ iface=['br-c93733e9f913', 'enp0s3']
  
 
 
-\paragraph{Task 1.1A.} The above program sniffs packets. For each captured
+\paragraph{Task 1.1A.} In the above program, for each captured
 packet, the callback function \texttt{print\_pkt()} will be invoked; this function will print out some of
 the information about the packet. Run the program with the root privilege and demonstrate that
 you can indeed capture packets. After that, run the program again, but without using the root
@@ -461,7 +460,8 @@ ip route get 1.2.3.4
 % ******************************************* 
 \section{Lab Task Set 2: Writing Programs to Sniff and Spoof Packets}
 
-
+For this set up of tasks, you should compile the C code 
+inside the host VM, and then run the code inside the container. 
 
 % -------------------------------------------
 % SUBSECTION
@@ -475,10 +475,7 @@ in the \pcap library. At the end of the sequence,
 packets will be put in buffer for further processing
 as soon as they are captured. All the details 
 of packet capturing are handled by the \pcap library.
-
-
-The SEED book ``\textit{Computer Security: A Hands-on Approach}'' provides a sample code 
-in Chapter 12, showing how  to write a simple sniffer program using 
+The SEED book provides a sample code, showing how  to write a simple sniffer program using 
 \pcap. We include the sample code in the following (see the book for detailed explanation). 
 
 \begin{lstlisting}
