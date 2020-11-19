@@ -98,7 +98,7 @@ safely in this lab.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Environment Setup Tasks}
+\section{Lab Environment Setup (Task 1)}
 \label{sec:environment}
 
 \begin{figure}[htb]
@@ -357,11 +357,11 @@ is in {\tt Apollo}'s DNS cache.
 
 \paragraph{Task overview.} Implementing the Kaminsky attack is quite challenging, 
 so we break it down into several sub-tasks. 
-In Task 4, we construct the DNS request for a random hostname 
-in the \texttt{example.com} domain. In Task 5, we construct a spoofed 
+In Task 2, we construct the DNS request for a random hostname 
+in the \texttt{example.com} domain. In Task 3, we construct a spoofed 
 DNS reply from \texttt{example.com}'s nameserver.
-In Task 6, we put everything together to launch the 
-Kaminsky attack. Finally in Task 7, we verify the impact of the attack. 
+In Task 4, we put everything together to launch the 
+Kaminsky attack. Finally in Task 5, we verify the impact of the attack. 
 
 
 % -------------------------------------------
@@ -455,7 +455,8 @@ we can send out, the higher the success rate is. If we use
 Scapy to send the spoofed DNS replies like what we did in the 
 previous task, the success rate is too low. Students can use 
 C, but constructing DNS packets in C is non-trivial. 
-We have introduced a hybrid approach using both Scapy and C. 
+We introduce a hybrid approach using both Scapy and C (see the SEED
+book for details). 
 
 
 With the hybrid approach, we first use Scapy to generate 
@@ -463,8 +464,8 @@ a DNS packet template, which is stored in a file.
 We then load this template into a C program, and make 
 small changes to some of the fields, and then send 
 out the packet. 
-We have include a code skeleton for the C code
-on the lab's website (\texttt{attack.c}). 
+We have included a skeleton C code
+in \path{Labsetup/Files/attack.c}. 
 Students can make changes
 in the marked areas. Detailed explanation
 of the code is given in the 
@@ -556,7 +557,7 @@ Details of such a hybrid method are provided in
 the Packet Sniffing and Spoofing chapter 
 of the SEED book~\cite{seedbook}.
 The following Scapy program creates a simple DNS reply packet, 
-which is saved into a file.
+and saves it into a file.
 
 
 \begin{lstlisting}[caption={\texttt{generate\_dns\_reply.py}}]

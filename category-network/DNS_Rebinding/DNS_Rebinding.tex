@@ -166,7 +166,7 @@ password; in real systems, the password will be re-generated periodically.
 
 In this lab, we will use six machines. 
 The lab environment setup is illustrated
-in Figure~\ref{dns:fig:rebind_environment}. Only the user machine 
+in Figure~\ref{rebind:fig:labsetup}. Only the user machine 
 will be using VM, and the others are all containers. 
 In the setup, we have two networks, a home network and 
 an outside network. The home network 
@@ -210,7 +210,7 @@ attack.
 % ------------------------------------------- 
 \subsection{Configure the User VM}
 
-We need to provide further configuration on the user VM.
+We need to provide further configuration on the User VM.
 
 
 \paragraph{Step 1. Reduce Firefox's DNS caching time.}
@@ -232,10 +232,10 @@ change will not take effect.
 \paragraph{Step 2. Change \texttt{/etc/hosts}.}
 We need to add the following entry to the \texttt{/etc/hosts} file. 
 We will use \texttt{www.seedIoT32.com} as the name for the 
-IoT server. Its IP address is \texttt{10.8.0.5}. 
+IoT server. Its IP address is \texttt{192.168.60.80}. 
 
 \begin{lstlisting}
-10.8.0.5   www.seedIoT32.com
+192.168.60.80  www.seedIoT32.com
 \end{lstlisting}
 
 
@@ -251,12 +251,12 @@ http://www.seedIoT32.com
 
 
 \paragraph{Step 3. Local DNS Server.}
-We need to configure the User VM to use a particular local DNS server. This is achieved by
+We need to get the User VM to use a particular local DNS server. This is achieved by
 setting the local DNS server as the first \texttt{nameserver} entry in the resolver
 configuration file (\texttt{/etc/resolv.conf}). 
 One challenge is that the provided VM uses the
 Dynamic Host Configuration Protocol (DHCP) to obtain network configuration parameters, such as
-IP address, local DNS server, etc. DHCP clients will overwrite the \texttt{/etc/resolv.conf}
+IP address, local DNS server, etc. DHCP clients overwrite the \texttt{/etc/resolv.conf}
 file with the information provided by the DHCP server.
 
 One way to get our information into \texttt{/etc/resolv.conf} without worrying about
@@ -284,7 +284,7 @@ $ sudo resolvconf -u
 % ------------------------------------------- 
 \subsection{Testing the Lab Setup.}
 
-After configuring the user VM, use the \texttt{dig} command
+After configuring the User VM, use the \texttt{dig} command
 to get the IP address of \texttt{www.attacker32.com}
 and \texttt{ns.attacker32.com}. You should get 
 \texttt{10.9.0.180} and \texttt{10.9.0.153}, respectively. 
@@ -293,7 +293,7 @@ set up correctly.
 
 
 We can now test the attacker's website. 
-Point the browser to the following URL on the Attacker VM, and you should 
+Point the browser to the following URL on the User VM, and you should 
 be able to see the attacker's website. 
 Please provide a screenshot in your lab report. 
 
@@ -414,7 +414,7 @@ let url_prefix = 'http://www.attacker32.com'
 \end{lstlisting}
  
 
-After making the change, restart the web server container (see the 
+After making the change, restart the attacker's web server container (see the 
 command below). Then go to the User VM, refresh the page, and click the button again. 
 Do you still see the error
 message in the web console? Please explain your observation. 
@@ -432,10 +432,11 @@ $ docker container restart 7835
 
 \paragraph{Step 2: Conduct the DNS rebinding.}
 Our JavaScript code sends requests to \url{www.attacker32.com}, 
-i.e., the requests will come back to the Attacker VM. That is not 
+i.e., the requests will come back to the Attacker's web server. That is not 
 what we want; we want the requests to go to the IoT server. 
 This can be achieved using the DNS rebinding 
-technique. We first map \url{www.attacker32.com} to the IP address of the attacker VM, so
+technique. We first map \url{www.attacker32.com} to the IP address of the attacker's
+web server, so
 the user can get the actual page from \url{http://www.attacker32.com/change}. 
 Before we click on the button on the page, we remap
 the \url{www.attacker32.com} hostname to the IP address of the IoT server, so
@@ -444,7 +445,7 @@ we want.
 
 
 To change the DNS mapping, students can modify the 
-\path{zone\_attacker32.com} file inside attacker's nameserver container.
+\path{zone_attacker32.com} file inside attacker's nameserver container.
 The zone file can be found in 
 the \texttt{/etc/bind} folder. 
 The following shows the content of the zone file. The first 
