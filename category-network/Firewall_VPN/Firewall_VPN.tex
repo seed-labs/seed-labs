@@ -6,9 +6,10 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
 
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 \newcommand{\firewallFigs}{./Figs}
 \lhead{\bfseries SEED Labs -- Firewall Evasion Lab}
@@ -81,7 +82,7 @@ the following
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironment
+\paragraph{Lab environment.} \seedenvironmentB
  
 
 
@@ -144,31 +145,16 @@ to make sure not to block the packets from getting to the virtual interface used
 VPN will not be able to get the packets.  Therefore, we cannot set the firewall rule before the
 routing, nor can we set the firewall rule on the virtual interface. We just need to set the
 rule on VM1's real network interface, so it will not affect the packets that go to the virtual
-interface.  
-
-We can use the \texttt{ufw} program\index{ufw} to set up firewall rules. This program is a
-front-end of the \texttt{iptables} program\index{iptables}. One can directly use
-\texttt{iptables}, but for this experiment, it is more convenient to use \texttt{ufw}.
-
+interface. The following command blocks all traffic to \texttt{93.184.216.0/24} 
+network (\texttt{example.com}). 
 
 \begin{lstlisting}
-$ sudo ufw enable
-$ sudo ufw deny out on eth12 to 128.230.210.0/24
-$ sudo ufw status
-Status: active
-
-To                         Action      From
---                         ------      ----
-128.230.210.0/24          DENY OUT    Anywhere on eth12
+$ sudo iptables -A OUTPUT -o enp0s3 -d 93.184.216.0/24 -j DROP
 \end{lstlisting}
 
-
- 
 Please identify a website that you would like to block, set up the firewall,
 and then demonstrate that your firewall is working and the target IP address is no longer 
 reachable. Provide screenshots in your lab report.  
-
-
 
 
 % -------------------------------------------
@@ -204,9 +190,7 @@ We have created a sample VPN program, including a client program (\texttt{vpncli
 a server program (\texttt{vpnserver}), both of which can be downloaded from
 this lab's web site. This simple VPN program only establishes a VPN tunnel 
 between the client and server; it does not encrypt the tunnel traffic.
-The program is explained in detail in Chapter 16 of the SEED book titled
-\textit{Computer Security: A Hands-on Approach}; the chapter also
-explains how TUN/TAP works and how to use it to create VPN.
+The program is explained in details in the SEED book (in the VPN chapter).
 
 
 \begin{figure}[htb]
@@ -327,7 +311,7 @@ therefore, \texttt{192.168.53.5} will not receive the ARP request (even if it do
 use). The NAT will then drop the packet, because the recipient does not exist.
 
 
-The actual recipient should be the VPN Server VM, even though it does not own the IP address 
+The actual recipient should be the VPN Server VM, even though it does not own 
 \texttt{192.168.53.5}.  If
 we can configure the NAT as a gateway, we can ask the NAT to route the packets for
 \texttt{192.168.53.5} to 
@@ -345,17 +329,11 @@ VirtualBox, but since the source IP is the Server VM, this second NAT will have 
 the returned packets from the Internet to the Server VM. Using this solution, we do not need to use ARP
 cache poisoning to ``fool'' the NAT any more. The following commands can enable the NAT on
 the Server VM~(in your case, the name of the \texttt{NAT Network} adapter may not be called 
-\texttt{eth8}; you just need to find its real name on your VM):
+\texttt{enp0s3}; you just need to find its real name on your VM):
 
     
 \begin{lstlisting}
-Clean all iptables rules:
-$ sudo iptables -F
-$ sudo iptables -t nat -F 
-
-Add a rule on postrouting position to the NatNetwork adapter (eth8)
-   connected to VPN server.
-$ sudo iptables -t nat -A POSTROUTING -j MASQUERADE -o eth8
+$ sudo iptables -t nat -A POSTROUTING -j MASQUERADE -o enp0s3
 \end{lstlisting}
     
 
@@ -381,8 +359,9 @@ mis-configured firewall (i.e. the targeted web site is not blocked at all) or du
 % ******************************************* 
 \section{Submission Requirement}
 
-
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
