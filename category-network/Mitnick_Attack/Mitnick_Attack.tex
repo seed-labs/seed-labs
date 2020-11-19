@@ -272,6 +272,12 @@ the attacker container.
 \input{\commonfolder/container/volumes}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\item \textit{Host mode.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/host_mode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \item \textit{Privileged mode.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/privileged_mode}
@@ -280,16 +286,10 @@ the attacker container.
 \end{itemize}
 
 
-
-
-
-
-
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Installing the \rsh program}
+\subsection{Installing the \rsh program (no action is needed)}
 
 The remote shell \rsh is a command line program that can execute shell commands
 remotely. Although we will use \rsh in this task, we should know that 
@@ -305,22 +305,21 @@ lrwxrwxrwx   1 root root    12 Jul 25  2017 rsh -> /usr/bin/ssh
 \end{lstlisting}
 
 
-
 To recreate the Mitnick attack, we need to install the unsecure version
 of the \rsh program. Obviously, the old version of 
 the \rsh no longer works, but an open-source project
 re-implements the remote shell clients and servers. 
 It is called \texttt{rsh-redone}. 
 We can use the following commands to install \rsh server and client. 
+\textbf{Note:} The \rsh programs are already installed in  
+the X-Terminal and Trusted Server containers (see the \texttt{Dockerfile} 
+inside the container image folder). 
 
 \begin{lstlisting}
 $ sudo apt-get install rsh-redone-client
 $ sudo apt-get install rsh-redone-server
 \end{lstlisting}
 
-\paragraph{Note.} The \rsh programs are already installed in our 
-VM and containers (see the \texttt{Dockerfile} inside the container image
-folder), so no action is needed. 
 
 
 
@@ -772,7 +771,7 @@ include the following command in our \rsh data.
 echo + + > .rhosts
 \end{lstlisting}
 
-Students should replace the \rsh command in Task 2 with
+Students should replace the \texttt{touch} command in Task 2 with
 the \texttt{echo} command above, and then repeat the attack.   
 If the attack succeeds, the attacker should be able to 
 remotely log into X-Terminal using the following command,
@@ -782,6 +781,12 @@ and no password is needed:
 $ rsh [X-Terminal's IP]
 \end{lstlisting}
 
+The \texttt{rsh} program may have not been installed on the attacker container, 
+but you can easily install it using the following commands:
+
+\begin{lstlisting}
+# apt-get update && apt-get -y install rsh-redone-client 
+\end{lstlisting}
 
 
 % *******************************************

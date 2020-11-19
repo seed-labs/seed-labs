@@ -2,9 +2,6 @@
 
 ## For Ubuntu 20.04 
 
-This lab requires three machines. We are going to use one VM, and then
-run 2 containers inside the VM.
-The lab description is updated to reflect the change on the setup. 
 
 - We did not encounter any problem during the VM upgrading.
 
@@ -12,7 +9,9 @@ The lab description is updated to reflect the change on the setup.
 ## Container Setup
 
 - There is no problem switching to the container setup (just make
-sure set the interface when calling ```sniff```). 
+sure set the interface when calling ```sniff```). The attacker
+container needs to be in the `host` mode, otherwise, it won't be
+able to sniff other container's packets.
 
 - The old ```rsh``` programs are installed inside the container. 
 
