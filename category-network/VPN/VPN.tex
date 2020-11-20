@@ -6,8 +6,11 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
 
 \usepackage{longtable}
 \usepackage{enumitem}
@@ -86,8 +89,8 @@ the crypto part), they should use the VPN Tunneling Lab, instead
 of this one.
 
 
-\paragraph{Lab Environment.}
-This lab has been tested on our pre-built Ubuntu 16.04 VM.
+\paragraph{Lab Environment.} 
+\seedenvironmentB
 We need to use the \openssl package in this lab. The package includes
 the header files, libraries, and commands. The package was 
 already installed in our pre-built VM image. 
