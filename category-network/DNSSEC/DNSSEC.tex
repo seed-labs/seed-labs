@@ -6,12 +6,13 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
 
 
-
-\newcommand{\dnsFigs}{./Figs}
+\newcommand{\dnsFigs}{../DNS_in_a_Box/Figs}
 \lhead{\bfseries SEED Labs -- DNSSEC Lab}
 
 
@@ -72,19 +73,39 @@ Detailed coverage of the DNS protocol and attacks can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} This lab has been tested on our pre-built
-Ubuntu 20.04 VM, which can be downloaded
-from this website: (not ready for downloading; before this VM is available,
-you can build your own and install the docker and docker-compose software).
+\paragraph{Lab environment.} 
+\seedenvironmentB
+\nodependency
 
 
 
-\paragraph{Prerequisite.} This lab depends on the DNS-In-a-Box lab, 
-so students should do that lab first. In this lab description,
-we assume that the miniature DNS system has already been set up
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Environment Setup} 
+
+
+This lab depends on the DNS-In-a-Box lab, 
+so students should do that lab first. After doing the lab,
+we will have a miniature DNS system depicted in 
+Figure~\ref{dnssec:fig:dns-in-a-box}. In this lab, we will
+enhance this infrastructure with DNSSEC. 
+In this lab description, we assume that the miniature DNS system 
+has already been set up
 correctly, and each nameserver is hosted inside a container. 
 We will modify each of the container, so the nameserver inside 
 can support DNSSEC.
+
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.95\textwidth]{\dnsFigs/DNS-in-a-box.pdf}
+\end{center}
+\caption{Lab environment setup}
+\label{dnssec:fig:dns-in-a-box}
+\end{figure}
+ 
 
 
 
@@ -108,7 +129,7 @@ can support DNSSEC queries.
 \subsection{Task 1.a: Enabling DNSSEC}
 
 To enable DNSSEC on this server, we need to add the following entry to the 
-configuration file \texttt{named.conf.options}. 
+configuration file \path{named.conf.options}. 
 It should be noted that \texttt{dnssec-enable} is already set by default. 
 
 \begin{lstlisting}
@@ -259,7 +280,7 @@ $ dig @172.20.0.65 example.edu DNSKEY +dnssec
 Run the following commands to get different types of records 
 from the \texttt{example.edu} nameserver. Provide an explanation
 for each of the records in the response. You need to 
-replace the IP address \texttt{172.20.0.65} with the actual
+replace \texttt{172.20.0.65} with the actual
 IP address assigned to the \texttt{example.edu} nameserver.
 
 \begin{lstlisting}
@@ -439,7 +460,7 @@ $ dig @172.20.0.20 www.example.edu +dnssec
 \end{lstlisting}
 
 If everything has been set up correctly, you should able to get the 
-answer, the IP address of \texttt{www.example.com}. All your containers
+answer, the IP address of \url{www.example.com}. All your containers
 should be running to get this result. 
 
 
@@ -587,7 +608,9 @@ and briefly explain your observation.
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
