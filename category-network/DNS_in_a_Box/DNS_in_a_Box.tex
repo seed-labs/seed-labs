@@ -6,8 +6,11 @@
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
-\input{../../common-files/copyright}
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
 
 
 \newcommand{\dnsFigs}{./Figs}
@@ -56,10 +59,10 @@ possible by the container technology.
 
 
 Even though this system is small, it has all the essential
-elements of the real DNS infrastructure. By building such a system,
+elements of a real DNS infrastructure. By building such a system,
 students will have a deeper understanding of how the DNS actually works. 
-Although this lab is not a security lab, it is a prerequisite for 
-our DNS security labs. This lab covers the following topics:
+Although this lab is not a security lab, it is the basis for
+several SEED labs. This lab covers the following topics:
 
 \begin{itemize}[noitemsep]
 \item DNS and how it works
@@ -79,10 +82,9 @@ Detailed coverage of the DNS protocol can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} This lab has been tested on our pre-built
-Ubuntu 20.04 VM, which can be downloaded 
-from this website: (not ready for downloading; before this VM is available,
-you can build your own and install the docker and docker-compose software).
+\paragraph{Lab environment.} 
+\seedenvironmentB
+\nodependency
 
 
 
@@ -92,7 +94,7 @@ you can build your own and install the docker and docker-compose software).
 \section{Task 1: Building the Base Container}
 
 We need to run six different DNS servers for this lab, each one running on one machine. 
-We will use Docker container to achieve that. In this task, we will
+We will use Docker containers to achieve that. In this task, we will
 build a container that will be used as the base for the other containers. 
 This container includes the 
 \texttt{bind9} DNS server program and some useful utilities. 
@@ -287,10 +289,21 @@ $ docker inspect 8a6075cf7d1a | grep IPAddress
 % ******************************************* 
 \section{Task 2: Building a miniature DNS system}
 
-Our base DNS system consists of four nameservers, each one representing 
-a specific role in the entire DNS infrastructure. In this task, we 
-will build their corresponding containers separately. In the next
-task, we will integrate them together to form a miniature DNS infrastructure. 
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.95\textwidth]{Figs/DNS-in-a-box.pdf}
+\end{center}
+\caption{A simplified DNS infrastructure}
+\label{dns:fig:dns-in-a-box}
+\end{figure}
+
+
+In this task, we will build a simplified DNS infrastructure, which 
+consists of four nameservers, each one representing 
+a specific role in the entire DNS infrastructure. 
+In the real world, these nameservers are on different 
+networks, but in this lab, for the sake of simplicity, we place them
+on the same network. Figure~\ref{dns:fig:dns-in-a-box} depicts the system setup. 
 Our DNS system includes the following nameservers: 
 
 \begin{itemize}[nosep]
@@ -299,6 +312,12 @@ Our DNS system includes the following nameservers:
 \item \texttt{edu} server: nameserver serving the \texttt{edu} zone, a Top Level Domain (TLD).  
 \item \texttt{example.edu} server: nameserver serving the \texttt{example.edu} zone. 
 \end{itemize}
+
+
+
+
+In this task, we will build a container for each name server separately. In the next
+task, we will integrate them together to form a miniature DNS infrastructure. 
  
 
 
@@ -915,7 +934,10 @@ syr.edu.		900	IN	NS	ns2.syr.edu.
 % ******************************************* 
 \section{Submission}
 
-\seedsubmission
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 \end{document}
