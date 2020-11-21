@@ -122,11 +122,15 @@ fi
 #=========================================
 # Added for SEED Labs
 
-# PS1 is already modified above
-
 alias ll='ls -l'
 PROMPT_DIRTRIM=1
 PATH=$PATH:.
 
+# Commands for for docker 
+alias dcbuild='docker-compose build'
+alias dcup='docker-compose up'
+alias dcdown='docker-compose down'
+alias dockps='docker ps --format "{{.ID}}  {{.Names}}"'
+docksh() { docker exec -it $1 /bin/bash; }
 #=========================================
 

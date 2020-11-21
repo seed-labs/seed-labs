@@ -8,17 +8,26 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 
-127.0.0.1       User
-127.0.0.1       Attacker
-127.0.0.1       Server
+# For DNS Rebinding Lab
+192.168.60.80   www.seedIoT32.com
 
-127.0.0.1       www.SeedLabSQLInjection.com
-127.0.0.1       www.xsslabelgg.com
-127.0.0.1       www.csrflabelgg.com
-127.0.0.1       www.csrflabattacker.com
-127.0.0.1	www.repackagingattacklab.com
-127.0.0.1	www.seedlabclickjacking.com
-127.0.0.1       www.seedIoT32.com
+# For SQL Injection Lab
+10.9.0.5        www.SeedLabSQLInjection.com
 
-127.0.0.1       www.seedlablenext.com
+# For XSS Lab
+10.9.0.5        www.xsslabelgg.com
+10.9.0.5        www.example32a.com
+10.9.0.5        www.example32b.com
+10.9.0.5        www.example32c.com
+10.9.0.5        www.example60.com
+10.9.0.5        www.example70.com
+
+# For CSRF Lab
+10.9.0.5        www.csrflabelgg.com
+10.9.0.5        www.csrflab-defense.com
+10.9.0.105      www.csrflab-attacker.com
+
+# For Shellshock Lab
+10.9.0.80       www.seedlab-shellshock.com
+
 

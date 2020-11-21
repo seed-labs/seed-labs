@@ -19,4 +19,4 @@ sudo cp /dev/null /var/log/apache2/other_vhosts_access.log
 
 # Clean up the apt cache 
 sudo apt clean
-
+sudo rm -rf /var/lib/apt/lists/*
