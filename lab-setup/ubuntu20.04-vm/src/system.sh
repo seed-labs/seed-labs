@@ -12,7 +12,7 @@ cp $FileDir/seed_bashrc  ~/.bashrc
 
 #-------------------------------------------------------------
 # Set up the background image
-sudo cp $FileDir/seed-vm-background-tesla-coil.jpg  /usr/share/background/
+sudo cp $FileDir/seed-vm-background-tesla-coil.jpg  /usr/share/backgrounds/
 sudo cp $FileDir/seed-wallpapers.xml /usr/share/gnome-background-properties/
 
 
@@ -43,11 +43,9 @@ sudo cp $FileDir/etc_default_apport  /etc/default/apport
 #------------------------------------------------
 # Configure Firefox
 # Need to manually find the value of tttt (the name is generated)
+# Look for the folder nnnnn.default-release
 FirefoxProfileDir=tttt
 cp $FileDir/firefox_profile_user.js  ~/.mozilla/firefox/$FirefoxProfileDir/user.js
-
-
-
 
 
 
