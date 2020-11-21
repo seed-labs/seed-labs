@@ -91,9 +91,10 @@ log into the seed account, the OS will prompt us to
 install the updates. Do it.
 
 **Step 3: Install the Guest Addition**.
-If we just go to the ```Device``` menu, click "Insert Guest Addition CD image",
+If we just go to the `Device` menu, click "Insert Guest Addition CD image",
 it will not work, because it requires the kernel building tools, which
-has not been installed yet. We can switch to the following step:
+has not been installed yet. We can switch to the following step (these 
+commands are already added to `guest-addition.sh`):
 
 ```
 $ sudo add-apt-repository multiverse
@@ -105,7 +106,7 @@ You will see the added kernel modules.
 
 After the above step, the guest addition is installed, 
 but still the copy and paste does not work. We can go
-to the ```Device``` menu, click "Insert Guest Addition CD image".
+to the `Device` menu, click "Insert Guest Addition CD image".
 Since the kernel building tools have already been installed, 
 this time, it will work, and after reboot, the copy and paste 
 will also work.
@@ -116,14 +117,14 @@ will also work.
 Most of the software package installation steps are automated with shell
 scripts. We will install many software packages, and we group them
 into individual shell scripts and they are stored 
-in the ```src``` folder. The main script is called ```main.sh```, 
+in the `src` and `src-slim` folders. The main script is called `main.sh`, 
 which will invoke all the other shell scripts in this folder. 
 
 During the installation, all the download files are put inside the 
-```/home/seed/Downloads```, and the folder will be cleaned. 
+`/home/seed/Downloads`, and the folder will be cleaned. 
 Make sure you don't have anything valuable stored in there.
 
-The ```src/Files``` folder contains configuration and customization
+The `Files` folder contains configuration and customization
 files for several software packages. For example,
 Desktop customization files and Firefox customization
 files are all stored in this folder. When we first 
