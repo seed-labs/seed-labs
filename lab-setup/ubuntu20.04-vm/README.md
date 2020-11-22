@@ -44,7 +44,7 @@ VirtualBox:
   Display:
      Screen:
         Video Memory: 28 MB
-        Graphic Controller: VBoxVGA
+        Graphic Controller: VMSVGA
         Acceleration: Enable 3D Acceleration
 
   Network:
@@ -54,6 +54,14 @@ VirtualBox:
            Promiscuous Mode: Allow All
            MAC Address: (click generate new MAC)
 ```
+
+**Note:** In the past, we had to use `VBoxVGA` for the display, otherwise,
+the desktop won't go full screen. In the new VirtualBox version (6.1.10),
+it seems that graphic controller is causing trouble (system crash). 
+We now switch to `VMSVGA` (the default). 
+Online resources indicate that `VBoxVGA` is for legacy system,
+`VBoxSVGA` is for Windows, while `VMSVGA` is for Linux. 
+
 
 ## 2. OS Installation and Configuration
 
