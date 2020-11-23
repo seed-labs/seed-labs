@@ -45,6 +45,12 @@ from the SEED website.
 
 ![choose vdi](./Figs/vm-hard-disk.png)
 
+**Note**: If you get an error message saying that the UUID already exists,
+this is because the UUID in the selected `vdi` file is the same as the 
+one used by an existing VM. You can either remove the other VM or 
+[change the UUID](https://tecadmin.net/change-the-uuid-of-virtual-disk/) 
+in the `vdi` file.
+
 ## Step 5: Configure the VM
 
 After the previous step, your VM will be created, and you will
