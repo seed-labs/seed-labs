@@ -1,6 +1,7 @@
 # Container Files
 
 
+
 Each SEED lab will have a folder called ```Labsetup```, which contains
 all the container files needed by that lab. Since many SEED labs 
 share a similar setup, to avoid duplication, we create this folder 
