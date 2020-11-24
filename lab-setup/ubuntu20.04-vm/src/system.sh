@@ -21,8 +21,12 @@ sudo cp $FileDir/seed-wallpapers.xml /usr/share/gnome-background-properties/
 
 cp $FileDir/config_user  ~/.config/dconf/user
 
-# Note: if we have copied the "user" file to ~/.config/dconf,
-#       we don't need to run the following commands. 
+# Note 1: copying this file is not always working. The file will be 
+#         changed back by the system. So, after copying, log out immediately,
+#         and then log in again. This will work
+
+# Note 2: if we have copied the "user" file to ~/.config/dconf,
+#         we don't need to run the following commands. 
 
 # First time, after configuring Gnome-Terminal, save the setting
 # dconf dump /org/gnome/terminal/ > gnome_terminal_settings.txt
