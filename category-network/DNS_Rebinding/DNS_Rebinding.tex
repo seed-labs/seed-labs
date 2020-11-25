@@ -261,10 +261,10 @@ file with the information provided by the DHCP server.
 
 One way to get our information into \texttt{/etc/resolv.conf} without worrying about
 the DHCP is to add the following entry to the \path{/etc/resolvconf/resolv.conf.d/head}
-file (\texttt{10.9.0.11} is the IP address of the local DNS server in our setup):
+file (\texttt{10.9.0.53} is the IP address of the local DNS server in our setup):
 
 \begin{lstlisting}
-nameserver 10.9.0.11
+nameserver 10.9.0.53
 \end{lstlisting}
 
 The content of the head file will be prepended to the dynamically generated resolver
