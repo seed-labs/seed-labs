@@ -1,9 +1,15 @@
 version: "3"
 
 services:
+    #### Base Images ##########################################################
+    seed-apache-php:
+        build: ./seed-apache-php
+        image: seed-apache-php
+    ###########################################################################
+
     www:
-        build: ./image_php
-        image: seed-image-php-sqli
+        build: ./image_www
+        image: seed-image-www-sqli
         container_name: www-10.9.0.5
         tty: true
         networks:

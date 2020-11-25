@@ -1,6 +1,12 @@
 version: "3"
 
 services:
+    #### Base Images ##########################################################
+    seed-apache-php:
+        build: ./seed-apache-php
+        image: seed-apache-php
+    ###########################################################################
+
     elgg:
         build: ./image_www
         image: seed-image-www-csrf
