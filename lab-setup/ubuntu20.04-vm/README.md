@@ -107,17 +107,13 @@ commands are already added to `guest-addition.sh`):
 ```
 $ sudo add-apt-repository multiverse
 $ sudo apt install virtualbox-guest-dkms virtualbox-guest-x11
-$ sudo reboot
+
+// Rebooting the machine
 $ lsmod | grep vbox
 You will see the added kernel modules.
 ```
 
-After the above step, the guest addition is installed, 
-but still the copy and paste does not work. We can go
-to the `Device` menu, click "Insert Guest Addition CD image".
-Since the kernel building tools have already been installed, 
-this time, it will work, and after reboot, the copy and paste 
-will also work.
+After rebooting the machine, the copy-and-paste will work. 
 
 
 ## 3. Installing Software Packages 
