@@ -4,7 +4,7 @@ services:
     local-server:
         build: ./images_dns/local_server
         image: seed-local-server
-        container_name: local-server
+        container_name: local-server-10.9.0.53
         tty: true
         cap_add:
                 - ALL
@@ -15,7 +15,7 @@ services:
     user:
         build: ./images_dns/user
         image: seed-user
-        container_name: user
+        container_name: user-10.9.0.5
         tty: true
         cap_add:
                 - ALL
@@ -38,7 +38,7 @@ services:
     ns-attacker:
         build: ./images_dns/ns_attacker
         image: seed-ns-attacker
-        container_name: ns-attacker
+        container_name: ns-attacker-10.9.0.153
         tty: true
         cap_add:
                 - ALL
