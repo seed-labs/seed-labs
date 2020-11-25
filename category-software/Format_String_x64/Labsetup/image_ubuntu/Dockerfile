@@ -1,12 +1,15 @@
 FROM ubuntu:20.04
+ARG DEBIAN_FRONTEND=noninteractive
 
-RUN  apt-get update  \
-     && apt-get -y install \
-        iputils-ping \
-        net-tools \
+RUN apt-get update  \
+    && apt-get -y install  \
+        binutils \
+        curl   \
         iproute2  \
-        nano \
-     && apt-get clean
+        iputils-ping \
+        nano   \
+        net-tools \
+        unzip
 
 COPY server_64 /
 EXPOSE 9090

@@ -1,6 +1,19 @@
 version: "3"
 
 services:
+
+    #### Base Image ###########################################################
+    # This container image serves as the base for other image(s) in this setup,
+    # but the container itself plays no role, and it will exit.
+    seed-apache-php:
+        build: ./seed-apache-php
+        image: seed-apache-php
+        container_name: seed-apache-php
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.199
+    ###########################################################################
+
     victim:
         build: ./image_apache
         image: seed-image-apache-shellshock
