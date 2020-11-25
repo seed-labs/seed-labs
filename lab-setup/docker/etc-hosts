@@ -30,3 +30,5 @@
 # For Shellshock Lab
 10.9.0.80       www.seedlab-shellshock.com
 
+# For Hash Length Extension Lab
+10.9.0.80       www.seedlab-hashlen.com
