@@ -1,4 +1,4 @@
-FROM seed-apache-php
+FROM base-apache-php
 
 ARG DOWNLOAD=/tmp/download
 ARG WWWDir=/var/www/elgg

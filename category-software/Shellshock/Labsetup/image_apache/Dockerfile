@@ -1,4 +1,4 @@
-FROM seed-apache-php
+FROM base-apache-php
 
 COPY bash_shellshock /bin/
 COPY vul.cgi getenv.cgi /usr/lib/cgi-bin/

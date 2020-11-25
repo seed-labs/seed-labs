@@ -1,4 +1,4 @@
-FROM seed-apache-php
+FROM base-apache-php
 
 # Enable the attacker site
 COPY apache_attacker.conf server_name.conf /etc/apache2/sites-available/

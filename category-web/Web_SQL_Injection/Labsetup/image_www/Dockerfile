@@ -1,4 +1,4 @@
-FROM seed-apache-php
+FROM base-apache-php
 
 ARG WWWDir=/var/www/SQL_Injection
 
