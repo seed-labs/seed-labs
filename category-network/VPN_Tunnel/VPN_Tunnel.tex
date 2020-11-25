@@ -698,6 +698,13 @@ and you can use the \texttt{"-f docker-compose2.yml"} option to ask
 default \texttt{docker-compose.yml} file. 
 
 
+\begin{lstlisting}
+$ docker-compose -f docker-compose2.yml build
+$ docker-compose -f docker-compose2.yml up
+$ docker-compose -f docker-compose2.yml down
+\end{lstlisting}
+
+
 This setup simulates a situation where an organization has two sites, 
 each having a private network. The only way to connect these two
 networks is through the Internet. 
