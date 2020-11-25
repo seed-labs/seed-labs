@@ -1,35 +1,33 @@
 FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
+# Ubuntu Layer 1
 RUN apt-get update  \
     && apt-get -y install  \
-          arping \
-          bind9  \
-          bind9utils \
-          conntrack \
-          curl   \
-          dnsutils  \
-          iputils-ping \
-          iproute2  \
-          iptables \
-          mtr-tiny  \
-          nano      \
-          net-tools \
-          netcat \
-          openbsd-inetd  \
-          procps \
-          tcpdump   \
-          telnet \
-          telnetd \
-    && rm -rf /var/lib/apt/lists/*
+        binutils \
+        curl   \
+        iproute2  \
+        iputils-ping \
+        nano   \
+        net-tools \
+        unzip
 
-# Package needed by the Mitnick Attack Lab
-RUN apt-get update \
-    && apt-get -y install \
-          rsh-redone-client \
-          rsh-redone-server \
+# Ubuntu Layer 2
+RUN apt-get update  \
+    && apt-get -y install  \
+        arping \
+        conntrack \
+        curl   \
+        dnsutils  \
+        iptables \
+        mtr-tiny  \
+        netcat \
+        openbsd-inetd  \
+        procps \
+        tcpdump   \
+        telnet \
+        telnetd \
     && rm -rf /var/lib/apt/lists/*
-
 
 # Create the "seed" user account
 # Change seed's and root's passwords to "dees"
@@ -44,4 +42,14 @@ COPY start.sh /
 RUN  chmod +x /start.sh
 
 CMD [ "/start.sh"]
+
+#### The above is the same as the image_ubuntu image
+#### This way, we can reuse these laysers 
+
+# Extra package needed by the Mitnick Attack Lab
+RUN apt-get update \
+    && apt-get -y install \
+          rsh-redone-client \
+          rsh-redone-server \
+    && rm -rf /var/lib/apt/lists/*
 
