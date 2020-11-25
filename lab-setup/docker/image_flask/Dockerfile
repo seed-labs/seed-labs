@@ -1,5 +1,5 @@
-# set base image (host OS)
 FROM python:3.8-slim-buster
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update  \
     && apt-get -y install  \
@@ -12,5 +12,4 @@ COPY bashrc /root/.bashrc
 COPY start.sh /
 RUN  chmod +x /start.sh
 
-# command to run on container start
 CMD [ "/start.sh"]

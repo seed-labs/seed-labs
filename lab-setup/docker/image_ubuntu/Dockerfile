@@ -26,8 +26,7 @@ RUN apt-get update  \
         procps \
         tcpdump   \
         telnet \
-        telnetd \
-    && rm -rf /var/lib/apt/lists/*
+        telnetd 
 
 # Create the "seed" user account
 # Change seed's and root's passwords to "dees"
@@ -39,7 +38,8 @@ COPY bashrc /home/seed/.bashrc
 COPY bashrc /root/.bashrc
 
 COPY start.sh /
-RUN  chmod +x /start.sh
+RUN  chmod +x /start.sh \
+     && rm -rf /var/lib/apt/lists/*
 
 CMD [ "/start.sh"]
 

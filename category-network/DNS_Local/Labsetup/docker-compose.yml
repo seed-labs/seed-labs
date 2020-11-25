@@ -2,7 +2,7 @@ version: "3"
 
 services:
     Router:
-        image: seed-image-base
+        image: seed-image-scapy
         container_name: seed-router
         tty: true
         cap_add:
