@@ -21,3 +21,8 @@ will no longer host the Elgg website. Since we only need
 a browser on the VM, this lab can be done using 
 generic machines, no longer depending on our VM. 
 
+
+## Labsetup
+
+- `old-Labsetup`: build the image from scratch (the initial approach)
+- `Labsetup`: use the pre-built SEED image stored in Docker Hub
