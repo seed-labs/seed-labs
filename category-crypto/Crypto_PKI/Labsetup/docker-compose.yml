@@ -2,8 +2,8 @@ version: "3"
 
 services:
     web-server:
-        build: ./image_apache
-        image: seed-image-apache-pki
+        build: ./image_www
+        image: seed-image-www-pki
         container_name: www-10.9.0.80
         tty: true
         networks:
