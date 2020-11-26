@@ -15,7 +15,7 @@ services:
                 ipv4_address: 10.9.0.5
         command: bash -c "
                       ip route add 192.168.60.0/24 via 10.9.0.11 &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     Host1:
@@ -30,7 +30,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 192.168.60.11  &&
-                      /start.sh
+                      tail -f /dev/null
                  "
                   
     Host2:
@@ -45,7 +45,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 192.168.60.11  &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     Host3:
@@ -60,7 +60,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 192.168.60.11  &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     Router:
@@ -79,7 +79,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 10.9.0.1 &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
 networks:

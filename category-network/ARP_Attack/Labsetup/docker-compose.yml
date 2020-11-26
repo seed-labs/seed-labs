@@ -2,8 +2,8 @@ version: "3"
 
 services:
     HostA:
-        build: ./image_scapy
-        image: seed-image-scapy
+        build: ./image_ubuntu
+        image: seed-image-ubuntu
         container_name: A-10.9.0.5
         tty: true
         cap_add:
@@ -13,11 +13,11 @@ services:
                 ipv4_address: 10.9.0.5
         command: bash -c "
                       /etc/init.d/openbsd-inetd start &&
-                      /start.sh
+                      tail -f /dev/null
                  "
                   
     HostB:
-        image: seed-image-scapy
+        image: seed-image-ubuntu
         container_name: B-10.9.0.6
         tty: true
         cap_add:
@@ -28,11 +28,11 @@ services:
 
         command: bash -c "
                       /etc/init.d/openbsd-inetd start &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     HostM:
-        image: seed-image-scapy
+        image: seed-image-ubuntu
         container_name: M-10.9.0.105
         tty: true
         cap_add:

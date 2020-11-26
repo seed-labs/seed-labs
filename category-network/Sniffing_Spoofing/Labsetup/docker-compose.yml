@@ -2,8 +2,8 @@ version: "3"
 
 services:
     attacker:
-        build: ./image_scapy
-        image: seed-image-scapy
+        build: ./image_ubuntu
+        image: seed-image-ubuntu
         container_name: seed-attacker
         tty: true
         cap_add:
@@ -14,7 +14,6 @@ services:
         network_mode: host
 
     host:
-        build: ./image_ubuntu
         image: seed-image-ubuntu
         container_name: host-10.9.0.5
         tty: true

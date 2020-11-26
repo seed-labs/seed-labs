@@ -2,8 +2,8 @@ version: "3"
 
 services:
     attacker:
-        build: ./image_scapy
-        image: seed-image-scapy
+        build: ./image_ubuntu
+        image: seed-image-ubuntu
         container_name: seed-attacker
         tty: true
         cap_add:
@@ -15,7 +15,6 @@ services:
 
 
     Victim:
-        build: ./image_ubuntu
         image: seed-image-ubuntu
         container_name: victim-10.9.0.5
         tty: true
@@ -30,7 +29,7 @@ services:
 
         command: bash -c "
                       /etc/init.d/openbsd-inetd start  &&
-                      /start.sh
+                      tail -f /dev/null
                  "
                   
     User1:
@@ -45,7 +44,7 @@ services:
 
         command: bash -c "
                       /etc/init.d/openbsd-inetd start  &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     User2:
@@ -60,7 +59,7 @@ services:
 
         command: bash -c "
                       /etc/init.d/openbsd-inetd start  &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
 networks:

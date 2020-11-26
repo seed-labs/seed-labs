@@ -2,8 +2,8 @@ version: "3"
 
 services:
     VPN_Client:
-        build: ./image_scapy
-        image: seed-image-scapy
+        build: ./image_ubuntu
+        image: seed-image-ubuntu
         container_name: client-10.9.0.5
         tty: true
         cap_add:
@@ -16,11 +16,11 @@ services:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.5
         command: bash -c "
-                      /start.sh
+                     tail -f /dev/null
                  "
 
     Host1:
-        image: seed-image-scapy
+        image: seed-image-ubuntu
         container_name: host-192.168.60.5
         tty: true
         cap_add:
@@ -32,11 +32,11 @@ services:
                       ip route del default  &&
                       ip route add default via 192.168.60.11  &&
                       /etc/init.d/openbsd-inetd start &&
-                      /start.sh
+                      tail -f /dev/null
                  "
                   
     Host2:
-        image: seed-image-scapy
+        image: seed-image-ubuntu
         container_name: host-192.168.60.6
         tty: true
         cap_add:
@@ -48,11 +48,11 @@ services:
                       ip route del default  &&
                       ip route add default via 192.168.60.11  &&
                       /etc/init.d/openbsd-inetd start &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     Router:
-        image: seed-image-scapy
+        image: seed-image-ubuntu
         container_name: server-router
         tty: true
         cap_add:
@@ -71,7 +71,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 10.9.0.1 &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
 networks:

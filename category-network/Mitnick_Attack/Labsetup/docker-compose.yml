@@ -2,8 +2,8 @@ version: "3"
 
 services:
     attacker:
-        build: ./image_scapy
-        image: seed-image-scapy
+        build: ./image_ubuntu_mitnick
+        image: seed-image-ubuntu-mitnick
         container_name: seed-attacker
         tty: true
         cap_add:
@@ -14,7 +14,6 @@ services:
         network_mode: host
 
     x-terminal:
-        build: ./image_ubuntu_mitnick
         image: seed-image-ubuntu-mitnick
         container_name: x-terminal-10.9.0.5
         tty: true
@@ -26,7 +25,7 @@ services:
 
         command: bash -c "
                       /etc/init.d/openbsd-inetd start  &&
-                      /start.sh
+                      tail -f /dev/null
                  "
                   
     trusted-server:

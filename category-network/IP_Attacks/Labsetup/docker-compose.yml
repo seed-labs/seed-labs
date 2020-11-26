@@ -16,12 +16,11 @@ services:
                 ipv4_address: 10.9.0.5
         command: bash -c "
                       ip route add 192.168.60.0/24 via 10.9.0.11 &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     attacker:
-        build: ./image_scapy
-        image: seed-image-scapy
+        image: seed-image-ubuntu
         container_name: attacker-10.9.0.105
         tty: true
         cap_add:
@@ -34,11 +33,11 @@ services:
                 ipv4_address: 10.9.0.105
         command: bash -c "
                       ip route add 192.168.60.0/24 via 10.9.0.11 &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     malicious-router:
-        image: seed-image-scapy
+        image: seed-image-ubuntu
         container_name: malicious-router-10.9.0.111
         tty: true
         cap_add:
@@ -56,7 +55,7 @@ services:
                 ipv4_address: 10.9.0.111
         command: bash -c "
                       ip route add 192.168.60.0/24 via 10.9.0.11 &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     HostB1:
@@ -71,7 +70,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add 10.9.0.0/24 via 192.168.60.11 &&
-                      /start.sh
+                      tail -f /dev/null
                  "
                   
     HostB2:
@@ -86,7 +85,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add 10.9.0.0/24 via 192.168.60.11 &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     Router:
@@ -105,7 +104,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 10.9.0.1 &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
 networks:
