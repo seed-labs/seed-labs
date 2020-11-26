@@ -1,22 +1,9 @@
 version: "3"
 
 services:
-
-    #### Base Image ###########################################################
-    # This container image serves as the base for other image(s) in this setup,
-    # but the container itself plays no role, and it will exit.
-    base-apache-php:
-        build: ./base-apache-php
-        image: base-apache-php
-        container_name: base-apache-php
-        networks:
-            net-10.9.0.0:
-                ipv4_address: 10.9.0.199
-    ###########################################################################
-
     victim:
-        build: ./image_apache
-        image: seed-image-apache-shellshock
+        build: ./image_www
+        image: seed-image-www-shellshock
         container_name: victim-10.9.0.80
         tty: true
         networks:
