@@ -1,16 +1,8 @@
-FROM python:3.8-slim-buster
-ARG DEBIAN_FRONTEND=noninteractive
+FROM handsonsecurity/seed-server:flask
 
-RUN apt-get update  \
-    && apt-get -y install  \
-          nano      \
-    && rm -rf /var/lib/apt/lists/* 
-
-RUN pip install flask==1.1.1
-
+# Copy the Flask app to the image
 COPY app  /app
 COPY bashrc /root/.bashrc
-COPY start.sh /
-RUN  chmod +x /start.sh
 
-CMD [ "/start.sh"]
+CMD cd /app && FLASK_APP=/app/www flask run --host 0.0.0.0 --port 80 && tail -f /dev/null
+
