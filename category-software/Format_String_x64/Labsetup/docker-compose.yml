@@ -1,0 +1,20 @@
+version: "3"
+  
+services:
+    victim:
+        build: ./image_ubuntu
+        image: seed-image-ubuntu-fmt64
+        container_name: victim-10.9.0.5
+        tty: true
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.80
+
+
+networks:
+    net-10.9.0.0:
+        name: net-10.9.0.0
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+
