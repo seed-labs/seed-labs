@@ -112,6 +112,7 @@ Detailed coverage of the format string attack can be found in the following:
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{The Vulnerable Program}
+\label{subsec:vul}
 
 You will be provided with a server program, and 
 this program has a format string vulnerability. 
@@ -253,7 +254,7 @@ the value of \texttt{N}.
 
 We will use two machines for this lab, one for the attacker,
 and the other for running the vulnerable server. Instead of 
-using two virtual machines, we will containers. 
+using two virtual machines, we will use container. 
 We run the vulnerable server inside a Docker container, and 
 launch the attack from the VM. The files needed for 
 container creation is included in the \texttt{Labsetup.zip}
@@ -273,32 +274,24 @@ The change is global, affecting all the containers.
 
 
 
-\paragraph{\texttt{Dockerfile}}. 
+\paragraph{The \dockerfile file} 
 Docker can build images automatically by reading the instructions from a 
-file called \dockerfile. 
-The content of \dockerfile is shown in the following:
+file called \dockerfile. The content of \dockerfile 
+inside the \texttt{image\_ubuntu} folder is shown in the following:
 
 \begin{lstlisting}
-FROM ubuntu:20.04
+FROM handsonsecurity/seed-ubuntu:medium
   
-RUN  apt-get update  \
-     && apt-get -y install \
-        iputils-ping \
-        net-tools \
-        iproute2  \
-        nano \
-     && apt-get clean
-
-
 COPY server_64 /
 EXPOSE 9090
 
-CMD [ "/bin/bash"]
+CMD /bin/bash
 \end{lstlisting}
  
 
-Our container is built on top of the official \texttt{Ubuntu 20.04} Docker image,
-and it installs several additional software packages. 
+The container is built on top of our pre-built Docker image 
+stored in the Docker Hub. The image is specified in the 
+\texttt{FROM} entry. 
 We copy the server program to the root folder inside the container (make sure 
 compile the server code first). We expose the port \texttt{9090}, because
 it is used by the server program. The final \texttt{CMD} entry
@@ -307,15 +300,27 @@ will be executed automatically.
 
 
 \paragraph{Building container image.}
-\dockerfile is placed inside a folder called \texttt{server\_container}. Enter 
-this folder, and run the following command to build the container image (the 
-name specified in the \texttt{-t} option is the name of the container image, and you can
-use any name you want): 
+To build the container image, we can enter the \texttt{image\_ubuntu} folder,
+first type \texttt{make} to compile the server code.
+If it gives you an error,
+that means you have not set the value for \texttt{N} inside 
+\texttt{Makefile}. Please set the value 
+in the \texttt{-DDUMMY\_SIZE=N} option, using the value provided by your 
+professor (see the previous sub-section for details). 
+
+After the compilation, run the 
+\texttt{"docker build"} command to build the container image. 
+The name specified in the \texttt{-t} option is the name of the container image, and you can
+use any name you want. The dot at the end means build the image from the current folder.  
 
 \begin{lstlisting}
+$ make     
 $ docker build -t server . 
 \end{lstlisting}
 
+If you are familiar with Docker Compose, you can use Compose to build and run the 
+image. The \texttt{docker-compose.yml} file is already provided in the 
+\texttt{Labsetup} folder.  
 
 
 \paragraph{Running the container.}
@@ -337,7 +342,8 @@ root@1a7468ce7eaa:/# ip addr
 \end{lstlisting}
 
 
-\paragraph{Several userful commands.}
+
+\paragraph{Several useful commands.}
 Students can refer to the Docker's manual to learn more Docker's commands. 
 We list some of the commands that might be useful in this lab. 
 
