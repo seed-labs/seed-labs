@@ -1,26 +1,14 @@
 # Container Files
 
+Each SEED lab will have a folder called `Labsetup`, which contains
+all the container files needed by that lab. We have made 
+some base images for SEED labs. The are stored in 
+the `docker-images` (in the parent folder). 
 
+For each lab, we will zip all the lab setup files into `Labsetup.zip`, 
+and link it to the lab's web page. The `zip` program will automatically 
+replace all the symbolic links with the actual files/folders. 
 
-Each SEED lab will have a folder called ```Labsetup```, which contains
-all the container files needed by that lab. Since many SEED labs 
-share a similar setup, to avoid duplication, we create this folder 
-to store the standard container files. 
-Here are the general guidelines how this folder should be 
-used by each SEED lab.
+## Manuals
 
-
-- Image file (standard): we put several standard container image files
-in this folder. If a SEED lab needs to use one of these standard images without
-making any change, use a symbolic link to link to the corresponding image 
-inside this folder. 
-
-- If a SEED lab needs to make some changes to a standard SEED container image,
-it can copy the image file from this folder. 
-
-
-## For Website
-
-We will zip all the files together into ```Labsetup.zip```, and link it 
-to the lab's web page. The ```zip``` program will automatically replace 
-all the symbolic links with the actual files/folders. 
+Manuals are stored inside `documents`. 
