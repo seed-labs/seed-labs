@@ -2,8 +2,7 @@ version: "3"
 
 services:
     victim:
-        build: ./image_ubuntu
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: victim-10.9.0.5
         tty: true
         cap_add:
@@ -20,7 +19,7 @@ services:
                  "
 
     attacker:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: attacker-10.9.0.105
         tty: true
         cap_add:
@@ -37,7 +36,7 @@ services:
                  "
 
     malicious-router:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: malicious-router-10.9.0.111
         tty: true
         cap_add:
@@ -59,7 +58,7 @@ services:
                  "
 
     HostB1:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: host-192.168.60.5
         tty: true
         cap_add:
@@ -74,7 +73,7 @@ services:
                  "
                   
     HostB2:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: host-192.168.60.6
         tty: true
         cap_add:
@@ -89,7 +88,7 @@ services:
                  "
 
     Router:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: router
         tty: true
         cap_add:

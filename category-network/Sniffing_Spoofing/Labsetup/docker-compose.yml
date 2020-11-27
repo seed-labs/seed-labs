@@ -2,8 +2,7 @@ version: "3"
 
 services:
     attacker:
-        build: ./image_ubuntu
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: seed-attacker
         tty: true
         cap_add:
@@ -14,7 +13,7 @@ services:
         network_mode: host
 
     host:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: host-10.9.0.5
         tty: true
         cap_add:

@@ -2,8 +2,7 @@ version: "3"
 
 services:
     attacker:
-        build: ./image_ubuntu
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: seed-attacker
         tty: true
         cap_add:
@@ -15,7 +14,7 @@ services:
 
 
     Victim:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: victim-10.9.0.5
         tty: true
         cap_add:
@@ -33,7 +32,7 @@ services:
                  "
                   
     User1:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: user1-10.9.0.6
         tty: true
         cap_add:
@@ -48,7 +47,7 @@ services:
                  "
 
     User2:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: user2-10.9.0.7
         tty: true
         cap_add:

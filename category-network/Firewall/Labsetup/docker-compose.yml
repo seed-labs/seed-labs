@@ -2,8 +2,7 @@ version: "3"
 
 services:
     HostA:
-        build: ./image_ubuntu
-        image: seed-base-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: hostA-10.9.0.5
         tty: true
         cap_add:
@@ -19,7 +18,7 @@ services:
                  "
 
     Host1:
-        image: seed-base-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: host1-192.168.60.5
         tty: true
         cap_add:
@@ -34,7 +33,7 @@ services:
                  "
                   
     Host2:
-        image: seed-base-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: host2-192.168.60.6
         tty: true
         cap_add:
@@ -49,7 +48,7 @@ services:
                  "
 
     Host3:
-        image: seed-base-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: host3-192.168.60.7
         tty: true
         cap_add:
@@ -64,7 +63,7 @@ services:
                  "
 
     Router:
-        image: seed-base-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: server-router
         tty: true
         cap_add:

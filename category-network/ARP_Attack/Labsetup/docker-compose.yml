@@ -2,8 +2,7 @@ version: "3"
 
 services:
     HostA:
-        build: ./image_ubuntu
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: A-10.9.0.5
         tty: true
         cap_add:
@@ -17,7 +16,7 @@ services:
                  "
                   
     HostB:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: B-10.9.0.6
         tty: true
         cap_add:
@@ -32,7 +31,7 @@ services:
                  "
 
     HostM:
-        image: seed-image-ubuntu
+        image: handsonsecurity/seed-ubuntu:large
         container_name: M-10.9.0.105
         tty: true
         cap_add:
