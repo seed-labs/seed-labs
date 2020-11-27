@@ -2,8 +2,7 @@ version: "3"
 
 services:
     iot:
-        build: ./image_flask
-        image: seed-image-flask
+        image:  handsonsecurity/seed-server:flask 
         container_name: iot-192.168.60.80
         tty: true
         cap_add:
@@ -18,8 +17,7 @@ services:
                  "
 
     Router:
-        build: ./image_ubuntu
-        image: router
+        image:  handsonsecurity/seed-ubuntu:large 
         container_name: router
         tty: true
         cap_add:
@@ -34,13 +32,13 @@ services:
         command: bash -c "
                       iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE &&
                       iptables -A FORWARD -d 192.168.60.80 -j DROP  &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
-    ns-attacker:
-        build: ./image_ns_attacker
-        image: ns-attacker
-        container_name: ns-attacker-10.9.0.153
+    attacker-ns:
+        build: ./image_attacker_ns
+        image: attacker-ns
+        container_name: attacker-ns-10.9.0.153
         tty: true
         cap_add:
                 - ALL
@@ -48,9 +46,9 @@ services:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.153
 
-    www-attacker:
-        image: seed-image-flask
-        container_name: www-attacker-10.9.0.180
+    attacker-www:
+        image:  handsonsecurity/seed-server:flask 
+        container_name: attacker-www-10.9.0.180
         tty: true
         cap_add:
                 - ALL
@@ -63,8 +61,8 @@ services:
                   FLASK_APP=/app/rebind_server flask run --host 0.0.0.0 --port 80
                  "
 
-    local-server:
-        build: ./image_local_server
+    local-dns-server:
+        build: ./image_local_dns_server
         image: local-dns-server
         container_name: local-dns-server-10.9.0.53
         tty: true

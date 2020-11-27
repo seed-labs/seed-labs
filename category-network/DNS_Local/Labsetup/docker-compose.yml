@@ -2,7 +2,7 @@ version: "3"
 
 services:
     Router:
-        image: seed-image-scapy
+        image: handsonsecurity/seed-ubuntu:large
         container_name: seed-router
         tty: true
         cap_add:
@@ -18,13 +18,13 @@ services:
                       ip route del default  &&
                       ip route add default via 10.8.0.1 &&
                       iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE &&
-                      /start.sh
+                      tail -f /dev/null
                  "
 
     local-server:
-        build: ./images_dns/local_server
-        image: seed-local-server
-        container_name: local-server-10.9.0.53
+        build: ./image_local_dns_server
+        image: seed-local-dns-server
+        container_name: local-dns-server-10.9.0.53
         tty: true
         cap_add:
                 - ALL
@@ -34,11 +34,11 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 10.9.0.11 &&
-                      /start.sh
+                      service named start && tail -f /dev/null
                 "
                   
     user:
-        build: ./images_dns/user
+        build: ./image_user
         image: seed-user
         container_name: user-10.9.0.5
         tty: true
@@ -54,8 +54,7 @@ services:
                  "
 
     attacker:
-        build: ./image_scapy
-        image: seed-image-scapy
+        image: handsonsecurity/seed-ubuntu:large
         container_name: seed-attacker
         tty: true
         cap_add:
@@ -65,10 +64,10 @@ services:
                 - ./volumes:/volumes
         network_mode: host
 
-    ns-attacker:
-        build: ./images_dns/ns_attacker
-        image: seed-ns-attacker
-        container_name: ns-attacker-10.9.0.153
+    attacker-ns:
+        build: ./image_attacker_ns
+        image: seed-attacker-ns
+        container_name: attacker-ns-10.9.0.153
         tty: true
         cap_add:
                 - ALL

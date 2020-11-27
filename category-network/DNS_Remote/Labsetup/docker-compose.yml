@@ -2,9 +2,9 @@ version: "3"
 
 services:
     local-server:
-        build: ./images_dns/local_server
-        image: seed-local-server
-        container_name: local-server-10.9.0.53
+        build: ./image_local_dns_server
+        image: seed-local-dns-server
+        container_name: local-dns-server-10.9.0.53
         tty: true
         cap_add:
                 - ALL
@@ -13,7 +13,7 @@ services:
                 ipv4_address: 10.9.0.53
                   
     user:
-        build: ./images_dns/user
+        build: ./image_user
         image: seed-user
         container_name: user-10.9.0.5
         tty: true
@@ -24,8 +24,7 @@ services:
                 ipv4_address: 10.9.0.5
 
     attacker:
-        build: ./image_scapy
-        image: seed-image-scapy
+        image: handsonsecurity/seed-ubuntu:large 
         container_name: seed-attacker
         tty: true
         cap_add:
@@ -35,10 +34,10 @@ services:
                 - ./volumes:/volumes
         network_mode: host
 
-    ns-attacker:
-        build: ./images_dns/ns_attacker
-        image: seed-ns-attacker
-        container_name: ns-attacker-10.9.0.153
+    attacker_ns:
+        build: ./image_attacker_ns
+        image: seed-attacker_ns
+        container_name: attacker-ns-10.9.0.153
         tty: true
         cap_add:
                 - ALL
