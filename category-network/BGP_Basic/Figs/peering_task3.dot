@@ -1,0 +1,27 @@
+graph "BGP Sessions" {
+    subgraph cluster_ix100 {
+        label="IX100";
+
+        as2_ix100   [label="AS2" shape=circle];
+        as150_ix100 [label="AS150" shape=rectangle];
+        as151_ix100 [label="AS151" shape=rectangle];
+
+        { rank=same; as2_ix100; }
+        { rank=same; as150_ix100; as151_ix100; }
+
+        as150_ix100 -- as151_ix100;
+        as2_ix100   -- as150_ix100;
+    }
+
+
+    subgraph cluster_ix101 {
+        label="IX101"
+
+        as152_ix101 [label="AS152" shape=retangle];
+        as2_ix101   [label="AS2" shape=circle];
+
+        as2_ix101 -- as152_ix101;
+    }
+
+    as2_ix100 -- as2_ix101 [constraint=false; penwidth=2.0;];
+}
