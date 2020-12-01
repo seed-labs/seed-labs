@@ -88,206 +88,13 @@ Detailed coverage of the DNS protocol can be found in the following:
 
 
 
-% *******************************************
-% SECTION
-% ******************************************* 
-\section{Task 1: Building the Base Container}
-
-We need to run six different DNS servers for this lab, each one running on one machine. 
-We will use Docker containers to achieve that. In this task, we will
-build a container that will be used as the base for the other containers. 
-This container includes the 
-\texttt{bind9} DNS server program and some useful utilities. 
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 1.a: Writing the \dockerfile}
-
-Docker can build images automatically by reading the instructions from a Dockerfile. 
-In this task, we will 
-create a file called \dockerfile, and put the following 
-content in the file. 
-
-\paragraph{Step 1: Adding the base elements.} Our container 
-will be built on top of the official \texttt{Ubuntu 20.04} Docker image. 
-That is the purpose of the \texttt{FROM} command. 
-On top of this base image, we use the \texttt{RUN} command
-to install a number of additional software packages, including
-\bind, its utilities, some network utilities, and the \texttt{nano}
-editor.
-The \texttt{rm} command at the end deletes the intermediate files
-created during the installation, so the final image size can be reduced. 
-
-
-\begin{lstlisting}
-FROM ubuntu:20.04
-
-RUN  apt update  \
-     && apt -y install \
-        bind9  \
-        bind9utils \
-        iputils-ping \
-        nano \
-     && rm -rf /var/lib/apt/lists/*
-\end{lstlisting}
-
-
-
-\paragraph{Step 2: Copying the DNS configuration files.} 
-When we build our own nameservers, we will make changes
-to \bind's configuration file. Let us copy
-the following files to the current container folder (where 
-the \dockerfile resides). 
-
-\begin{lstlisting}
-$ cp /etc/bind/named.conf .
-$ cp /etc/bind/named.conf.options .
-\end{lstlisting}
-
-
-In this task, we will not make any change to these files, but 
-in future tasks, we will. Assuming that we have made 
-the changes, we want the nameserver inside the container
-to use these modified configuration files, instead of the original
-one provided by the system. We need to overwrite the 
-original files with these ones (inside the container). Add 
-the following entries to the \texttt{Dockerfile}, so when
-the container is built, these files are copied to their 
-system locations. 
-
-
-\begin{lstlisting}
-COPY named.conf           /etc/bind/
-COPY named.conf.options   /etc/bind/
-\end{lstlisting}
- 
-
-
-\paragraph{Step 3: The command to run.} 
-When the container starts, inside the container, we will start the nameserver 
-and then get a root shell. To do that, we put the commands in a shell script 
-file called \texttt{start.sh}.  
-
-\begin{lstlisting}
-#!/bin/bash
-
-service named start
-/bin/bash
-\end{lstlisting}
- 
-
-We then add the following entries to the \dockerfile. The first entry
-copies the script to the root folder inside the container, 
-and the \texttt{CMD} entry specifies the 
-command that will be executed after the container starts. 
-
-\begin{lstlisting}
-COPY start.sh /
-
-CMD [ "/start.sh" ]
-\end{lstlisting}
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 1.b: Building and starting the container}
- 
-
-We will statically assign IP addresses to our container. To do that,
-we will first create a network using the following 
-docker command, which creates a network called \texttt{seednetwork},
-and its network prefix is \texttt{172.20.0.0/24}.  
-We can further use \texttt{"docker network"} command to manage
-all the created networks (listing, deleting, etc.).
-
-\begin{lstlisting}
-$ docker network create --subnet=172.20.0.0/24 seednetwork
-\end{lstlisting}
-
-
-
-We are now ready to build and run our container. The first command 
-in the following builds a container called \texttt{my\_dns\_server} using
-the \dockerfile in the current directory. 
-The second container starts the container. 
-The flags \texttt{-it} tells Docker we want an interactive session 
-with a tty attached. The \texttt{--rm} option will remove the container 
-when it stops. The \texttt{--ip} option specifies the static 
-IP address, and the \texttt{--net} option specifies 
-the network this container should be attached to.
-
-
-\begin{lstlisting}
-$ docker build -t my_dns_server .
-$ docker run --net seednetwork --ip 172.20.0.5 --rm -it my_dns_server
-\end{lstlisting}
-
-
-Once the container runs successfully, you will see that the nameserver is started,
-and a shell prompt appears. Any command you type in this shell prompt will
-run inside the container, not in the host machine.  
-
-
-\paragraph{Some related commands.} Docker has many useful commands. Since this lab
-description is not a Docker tutorial, we refer students to online resources (there 
-are many) to learn those commands. In the following, we 
-summarize some of the commands relevant to this lab. 
-
-
-\begin{itemize}
-\item \texttt{docker ps}:  List all the running containers.
-\item \texttt{docker ps -a}:  List all the containers, regardless of whether they are 
-                              running or not.
-\item \texttt{docker exec -it <container> /bin/bash}: Execute the \texttt{/bin/bash} command 
-                              in a running container. We will get a shell prompt. 
-\item \texttt{docker rm <container>}: Remove a container. 
-\end{itemize}
- 
-
-\paragraph{Getting its IP address.}
-In this lab, we need to get the IP address of containers. There are two typical ways
-to do so. The first method is to do from inside the container, by typing 
-the \texttt{"ip addr"} command inside a shell prompt. See the following example (the interface
-name and IP address on your computer may be different): 
-
-\begin{lstlisting}
-# ip addr 
-1: lo: <LOOPBACK,UP,LOWER_UP> ...
-   ...
-4: (*@\textbf{eth0@if5}@*): <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 ...
-    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
-    inet (*@\textbf{172.17.0.2/16}@*) brd 172.17.255.255 scope global eth0
-    ...
-\end{lstlisting}
-
- 
-Another way to get the IP address is to do it from outside of the container
-by using the \texttt{"docker inspect"} command. See the 
-following example (we need to get the container ID first):
-
-\begin{lstlisting}
-$ docker ps
-CONTAINER ID             IMAGE             COMMAND          ...
-(*@\textbf{8a6075cf7d1a}@*)           local_server      "/start.sh"        ...
-
-$ docker inspect 8a6075cf7d1a | grep IPAddress
-      "SecondaryIPAddresses": null,
-      "IPAddress": "172.17.0.2",
-            "IPAddress": "172.17.0.2",
-\end{lstlisting}
- 
-
-
 
 
 % *******************************************
 % SECTION
-% ******************************************* 
-\section{Task 2: Building a miniature DNS system}
+% *******************************************
+\section{Lab Setup} 
+
 
 \begin{figure}[htb]
 \begin{center}
@@ -298,13 +105,36 @@ $ docker inspect 8a6075cf7d1a | grep IPAddress
 \end{figure}
 
 
-In this task, we will build a simplified DNS infrastructure, which 
+In this lab, we will build a simplified DNS infrastructure. We will
+start with a small one, and then gradually make it bigger. 
+The first DNS system that we build 
 consists of four nameservers, each one representing 
-a specific role in the entire DNS infrastructure. 
+a specific role in the DNS infrastructure. 
 In the real world, these nameservers are on different 
 networks, but in this lab, for the sake of simplicity, we place them
-on the same network. Figure~\ref{dns:fig:dns-in-a-box} depicts the system setup. 
-Our DNS system includes the following nameservers: 
+on the same network. 
+Figure~\ref{dns:fig:dns-in-a-box} depicts the system setup. 
+We will use containers to run these nameservers. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The Docker Compose File} 
+
+Our DNS system includes the four nameservers. 
+The purpose of these four nameservers are summarized in the following:
 
 \begin{itemize}[nosep]
 \item Local DNS server: conduct the DNS resolution process for other computers.
@@ -314,29 +144,117 @@ Our DNS system includes the following nameservers:
 \end{itemize}
 
 
+We use a container for each of the nameservers above. 
+How these containers are built and run is described in 
+the \texttt{docker-compose.yml} file, which is included in
+the lab setup file. Inside this file, we create a network \texttt{10.9.0.0/24}
+and four containers: each entry in the \texttt{services} section represents
+a container. We also assign IP addresses to those containers. 
+See the following snippet:
 
+\begin{lstlisting}
+services:
+  seed_base_router:                       (*@\ding{80}@*)
+    build: ./base_image
+    image: seed-base-image-bind
+    container_name: seed-base-bind
+    command: " echo 'exiting ...' "
 
-In this task, we will build a container for each name server separately. In the next
-task, we will integrate them together to form a miniature DNS infrastructure. 
- 
+  example_edu_server:
+    build:
+        context: ./nameserver
+        args:
+            BIND_CONF_DIR: edu.example
+    image: example-edu-server
+    container_name: example-edu-10.9.0.65
+    tty: true
+    networks:
+      seed-net:
+        ipv4_address: 10.9.0.65
+
+  edu_server:        ... (omitted, similar to example_edu_server) ...
+        ipv4_address: 10.9.0.60
+  root_server:       ... (omitted, similar to example_edu_server) ...
+        ipv4_address: 10.9.0.30
+  local_dns_server:  ... (omitted, similar to example_edu_server) ...
+        ipv4_address: 10.9.0.53
+\end{lstlisting}
+
+Line \ding{80} specifies a base image, which basically builds an 
+image based on the \path{handsonsecurity/seed-server:bind} image 
+we placed on Docker Hub (see \texttt{Dockerfile} in the \texttt{base\_image} folder). 
+Although all the nameservers can directly build their containers using
+this base image from the Docker Hub, to reduce
+the number of access to the Docker Hub (the company
+puts a limit on how many accesses one can make
+during a six-hour time window), we first build a
+local base image using the one from Docker Hub, and then
+use the local base image to build the rest of the
+container images in this lab.
 
 
 % -------------------------------------------
 % SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 2.a: Building the nameserver for \texttt{example.edu}}
+% -------------------------------------------
+\subsection{Container Images} 
+
+Except for the local DNS server, all the nameservers use the same 
+folder (\texttt{nameserver}) to build Docker images. The 
+\texttt{Dockerfile} is shown in the following:  
+
+\begin{lstlisting}
+FROM seed-base-image-bind                         (*@\ding{202}@*)
+
+ARG BIND_CONF_DIR
+
+# Copy the BIND confirguration files
+COPY named.conf named.conf.options  /etc/bind/    (*@\ding{203}@*)
+COPY ${BIND_CONF_DIR}     /etc/bind/              (*@\ding{204}@*)
+
+# Start the nameserver
+CMD service named start  && tail -f /dev/null
+\end{lstlisting}
+
+Line \ding{202} indicates this is local image (the base image).
+Line \ding{203} copies the BIND 9's configuration files to
+the \texttt{/etc/bind} folder inside the container. These two files
+are the same for all the nameservers, but each nameserver's 
+does have its own zone files. That is why we use 
+the \texttt{BIND\_CONF\_DIR} argument (Line \ding{204}) to 
+indicate which configuration folder should be used (there is 
+a folder for each nameserver). The value of \texttt{BIND\_CONF\_DIR} 
+is set in the Compose file. 
+
+
+\paragraph{Local DNS server.}
+The container image for the local DNS server is quite similar to
+that in the nameservers. We will explain the difference later, 
+as building the image is one of the tasks. 
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task l: Building the nameserver for \texttt{example.edu}}
 
 In this task, we will build a nameserver for a domain 
-called \texttt{example.edu}. We will build a container 
-for this nameserver. First, we need to create a new folder to
-store all the files necessary for building the container.
-We will copy all the files from Task 1 to this folder, and these files serve
-as the base for our new container. We will make changes to this base image. 
+called \texttt{example.edu}. The container files are 
+put inside the \texttt{nameserver} folder. 
+The configuration files for this particular domain
+is placed inside the \path{edu.example} sub-folder.  
 
 
-\paragraph{Step 1. Adding the zone entry}. We will 
-add the following zone entry to the 
-\path{named.conf} file. This entry indicates that the current nameserver 
+\paragraph{Step 1. Adding the zone entry}. To host
+a server for the \texttt{example.edu} domain, we need to
+add a zone entry to the BIND 9's configuration file \texttt{named.conf}, 
+so it knows what zones it is going to host. For convenience,
+we will add the entry to the \path{named.conf.seedlabs} file, which
+is included in our modified \texttt{named.conf} file.
+
+
+This entry indicates that the current nameserver 
 is the master server for this domain, and the zone file is 
 specified in the \texttt{file} entry.  
 
@@ -349,28 +267,13 @@ zone "example.edu" {
 \end{lstlisting}
 
 
-\paragraph{Step 2. Creating the zone file}. We will 
-create a zone file called \texttt{example.edu.db} 
-in the current folder, and then add the following
-\texttt{COPY} command to the \dockerfile. It should be 
-noted that in Task 1, we have already added a few 
-\texttt{COPY} entries to the \dockerfile, so make sure they 
-stay there. 
-
-
-\begin{lstlisting}
-COPY example.edu.db       /etc/bind/
-\end{lstlisting}
-
-
-Students should create their own zone file. An example
-zone file is provided in the following. Most of the IP 
-addresses in this zone file can be fake for the lab tasks, except 
-the one for \texttt{ns.example.edu}, which needs to
-be the real IP address of the container. 
-In this example, we use \texttt{172.20.0.65} as the IP
-address for the container.
-
+\paragraph{Step 2. Creating the zone file}. 
+When building the docker image, the zone file 
+\path{example.edu.db} will be copied into
+the \path{/etc/bind} folder of the container. 
+To get students started, we have provided some 
+information in this zone file, but students need to make 
+all then necessary changes.
 
 \begin{lstlisting}
 $TTL 3D
@@ -381,27 +284,32 @@ $TTL 3D
                 4W
                 1D)
 
-@       IN      NS    ns.example.edu.
+; Records for this nameserver (you need to make changes)
+@               IN   NS    ns.example.edu.
+ns.example.edu  IN   A     1.2.3.4
 
-@       IN      A     1.2.3.4
+
+; IP addresses for the hostnames in the example.du domain
+@       IN      A     1.2.3.5
 www     IN      A     1.2.3.5
-ns      IN      A     172.20.0.65
-*       IN      A     1.2.3.6
+xyz     IN      A     1.2.3.6
+*       IN      A     1.2.3.7
 \end{lstlisting}
  
- 
 
 
-\paragraph{Step 3. Testing.} Follow the instruction in Task 1 
-to build and start the container. Once the container is running,
+\paragraph{Step 3. Testing.} Using \texttt{docker-compose} commands
+to build and start all the containers. 
+Once the containers are running,
 run the following command from your VM (i.e., outside of the 
-container). You need to replace the IP address in the 
-command with the actual IP address of your container. If your 
-setup is successful, you can get the IP address specified
-in your zone file. 
+container). We use the \texttt{@10.9.0.65} option to send our DNS query
+directly to texttt{10.9.0.65}, which is the IP
+address of the \texttt{example.edu} nameserver in our setup. 
+If everything is done correctly, you can get the IP address specified
+in your zone file. Please report your observations.
 
 \begin{lstlisting}
-$ dig @172.20.0.65 example.edu
+$ dig @10.9.0.65 www.example.edu
 ... 
 ;; ANSWER SECTION:
 www.example.edu.    259200   IN  A   (*@\textbf{1.2.3.5}@*)
@@ -411,27 +319,20 @@ www.example.edu.    259200   IN  A   (*@\textbf{1.2.3.5}@*)
 
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 2.b: Building the \texttt{edu} TLD server}
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 2: Building the \texttt{edu} TLD server}
+
 
 In this task, we will build a nameserver for a TLD domain, 
 the \texttt{edu} domain.
-Just like Task 2.a, we will
-create a new folder for this container, and copy all the 
-files from the base containers created in Task 1. 
-
-%
-%Note: try to avoid using \texttt{com} and \texttt{net}. It 
-%is harder, because they depend on each other.
-
-\paragraph{Step 1. Adding the zone entry}. We will
-add the following zone entry to the
-\path{named.conf} file. This entry indicates that the current nameserver
+We will modify the files in the \texttt{nameserver/edu} folder. 
+First, we need to  add the following zone entry to the
+\path{named.conf.seedlabs} file. This entry indicates that the current nameserver
 is the master server for this domain, and the zone file is
 specified in the \texttt{file} entry.
-
 
 \begin{lstlisting}
 zone "edu" {
@@ -441,136 +342,123 @@ zone "edu" {
 \end{lstlisting}
 
 
-\paragraph{Step 2. Creating the zone file}. We will
-create a zone file called \texttt{edu.db}
-in the current folder, and then add a corresponding
-entry in the \dockerfile to copy \texttt{edu.db}
-to the container. 
+\paragraph{Creating the zone file.} Next, we need to
+add records to the zone file. 
+We have already created the zone file \texttt{edu.db},
+but it is incomplete. Students should make all the 
+necessary changes. 
 
-
-In this zone file, we will use the 
-nameserver container developed in the previous task as the nameserver
-for the \texttt{example.edu} domain. To achieve that,
-we need to add an \texttt{NS} record and an {A} record 
-in the zone file. This way, when a client ask us for
-anything inside the \texttt{example.edu} domain, we can
-tell them the nameserver (and its IP address) for this domain. 
-See the following example.
-
+All the nameservers within the \texttt{edu} domain
+must register their nameservers with this 
+TLD server; otherwise, nobody can find them. As an example,
+we have added two records for the \texttt{syr.edu} domain: 
+an \texttt{NS} record and an \texttt{A} record.
+The \texttt{NS} record specifies the nameserver for the 
+\texttt{syr.edu} domain, while the \texttt{A} record
+specifies the IP address of the nameserver. The
+data used in the records are real data, as it simulates
+the fact the \texttt{syr.edu} domain has registered 
+itself with our \texttt{edu} TLD server.
 
 \begin{lstlisting}
-$TTL 3600
-@       IN      SOA   a.tld-edu-servers.edu. admin.tld-edu-servers.edu. (
-                2008111001
-                8H
-                2H
-                4W
-                1D)
-
-@       IN      NS    a.tld-edu-servers.edu.
-
-a.tld-edu-servers.edu.	IN 	A	172.20.0.60
-
-example.edu.		IN	NS	ns.example.edu.
-ns.example.edu.		IN	A	172.17.0.65
-
+; Real records for syr.edu
 syr.edu.                IN      NS      ns1.syr.edu.
 ns1.syr.edu.            IN      A       128.230.12.8
 \end{lstlisting}
+ 
+
+\paragraph{Lab Task.}
+Students need to do the following tasks: (1) register 
+your \texttt{example.edu} nameserver with this TLD server;
+(2) choose three real domain names, and register them
+with this TLD server. You can find the nameserver of a domain
+using \texttt{"dig <name> NS"} (e.g., \texttt{"dig syr.edu NS"}). 
 
 
-In addition to the record of the \texttt{example.edu}, please add at least 
-three real domain names to this zone file. You can find their real
-nameservers using \texttt{"dig <name> NS"} (e.g., \texttt{"dig syr.edu NS"}). 
-In the example above, I have added two records for the \texttt{syr.edu} 
-domain. 
+Using \texttt{docker-compose} commands, students can 
+build and start all the containers. 
+Once the containers are running,
+run the following \texttt{dig} commands from your VM to
+send DNS queries to the \texttt{edu} nameserver (its IP address
+is \texttt{10.9.0.60} in our setup). 
+Please report your observations. 
 
-
-\paragraph{Step 3. Testing.}
-Follow the instruction in Task 1
-to build and start the container. Once the container is running,
-run the following command from your VM (i.e., outside of the
-container). You  need to replace the IP address in the
-command with the actual IP address of your 
-\texttt{edu} container. If your
-setup is successful, you can get the IP address specified
-in your zone file (I have assigned \texttt{172.20.0.60} as the 
-IP address for this nameserver).
 
 \begin{lstlisting}
-$ dig @172.20.0.60 www.example.edu
-...
-;; AUTHORITY SECTION:
-example.edu.		3600	IN	NS	ns.example.edu.
-
-;; ADDITIONAL SECTION:
-ns.example.edu.		3600	IN	A	(*@\textbf{172.20.0.65}@*)
-...
+$ dig @10.9.0.60 www.example.edu
+$ dig @10.9.0.60 www.syr.edu
+$ dig @10.9.0.60 <the other three domains you have chosen>
+$ dig @10.9.0.60 <a domain not included in your zone file>
 \end{lstlisting}
 
-
-Try some domain names (ended with \texttt{edu}) that are not 
-specified in your zone file, and see what happens. 
-
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 2.c: Building root server}
-
-In this task, we will build a root nameserver, serving the 
-root zone. The procedure is quite similar to building
-the \texttt{edu} zone, so we will not repeat it.  
+It should be noted, the \texttt{edu} TLD server is configured 
+not to conduct the recursive query, so it will only tell you
+the nameserver for the domain name in the query; it will not
+resolve the query for you. In the last command, you should
+try some domains (ended with \texttt{edu}) that are not included in your zone file. 
 
 
-We will create a zone file called \texttt{root.db}. 
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 4: Building root server}
+
+
+In this task, we will build a nameserver for the 
+root zone. All TLD nameservers need to register
+with the root nameserver, so they can be found
+in the DNS query process. 
+In our container, the root zone is defined in 
+\texttt{bind.conf.seedlabs}, which loads the records 
+from the zone file \texttt{root.db}. 
+
+
 For every TLD zone that we would like to include in our 
-miniature DNS system, we need to add at least two entries 
+miniature DNS system, we need to add at least two records
 in the zone file, including an \texttt{NS} record 
 and an \texttt{A} record.  In the following example,
 we have added the nameserver information for the 
-\texttt{com} zone (the data in both records are real data).
-We have also added the nameserver information 
-for the \texttt{edu} zone, but since we are 
-hosting the \texttt{edu} nameserver ourselves, the 
-information is based on our own setup.
-
+\texttt{com} and \texttt{net} zones (the data in the records are real data).
+These two zones are managed by the same company, so they share the 
+same set of nameservers (we have only included one nameserver).
 
 \begin{lstlisting}
-com.                    IN   NS  a.gtld-servers.net.
-a.gtld-servers.net.     IN   A   192.5.6.30
-
-edu.                    IN   NS  a.tld-edu-servers.edu.
-a.tld-edu-servers.edu.  IN   A   172.20.0.60
+com.                 IN   NS   a.gtld-servers.net.
+net.                 IN   NS   a.gtld-servers.net.
+a.gtld-servers.net.  IN   A    192.5.6.30
 \end{lstlisting}
  
 
-You should include records for at least five different TLDs, including two
-hosted by you and the others hosted in the real world. 
+\paragraph{Lab task.} Students need to add records to the 
+zone file \texttt{root.db} to satisfy the following requirements:  
+
+\begin{itemize}[nosep]
+\item Register your \texttt{edu} nameserver with this root server.
+
+\item Choose two more real TLD names, and register them
+with this TLD server. One of the TLDs should be 
+a country-code TLD (ccTLD), which is the root for 
+a country. You can find the nameserver of a TLD domain
+using \texttt{"dig <tld> NS"} (e.g., \texttt{"dig com NS"}).
+You can also find all the TLD information from
+\url{https://www.internic.net/domain/root.zone}.
+\end{itemize}
+ 
+
+Using \texttt{docker-compose} commands, students can
+build and start all the containers. 
+Once the containers are running,
+run the \texttt{dig} command from your VM to
+send DNS queries to the root nameserver (using 
+\texttt{"dig @10.9.0.30"}). Please use the 
+testing to demonstrate that your DNS setup 
+is working as expected. 
 
 
-
-\paragraph{Testing.} 
-Follow the instruction in Task 1 to build and start the container. 
-In this description, we choose to assign the 
-IP address \texttt{172.20.0.30} to root server container.
-Once the container is running,
-run the following \texttt{dig} commands from your VM.
-You should provide evidences to show that your root server does support the 
-five required TLDs.
-
-\begin{lstlisting}
-$ dig @172.20.0.30 www.example.edu
-$ dig @172.20.0.30 www.example.com
-\end{lstlisting}
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 2.d: Building the Local DNS Server} 
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 5: Building the Local DNS Server} 
 
 When a computer needs to resolve the IP address from a hostname (or vice versa),
 it sends a request to its helper, which is called local DNS server (it
@@ -579,8 +467,7 @@ entire DNS resolution process, and then send the result back to the computer.
 In this task, we will set up this local DNS server. 
 
 
-\paragraph{Step 1. Get the root hint file.}
-
+\paragraph{The root hint file.}
 If the local DNS server cannot find the answer from its cache, it 
 will go through an iterative process to get the answer from outside 
 nameservers.  The process starts from the root server. 
@@ -615,48 +502,38 @@ A.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:ba3e::2:30
 ...
 \end{lstlisting}
 
-
-We will copy this file to our container folder, because we need to make changes
-to this file for our container image. Add the 
-following entry to the \dockerfile, so when the container is built, our 
-modified file \texttt{root.hints} will be copied into the container
-image. 
-
-
-\begin{lstlisting}
-COPY root.hints           /usr/share/dns/
-\end{lstlisting}
- 
+Inside our \texttt{local\_dns\_server} folder in the lab setup file,
+we have created an empty file called \texttt{root.hints}. This file 
+will be copied into the \path{/usr/share/dns/} folder when
+we build the container image for the Local DNS server. 
+You need to add records to this file, so your local DNS server 
+can use your root server, instead of using the ones in the real world.
 
 
-\paragraph{Step 2. Starting the server.} We run the following commands
-to build and start the local DNS server container.
 
-\begin{lstlisting}
-$ docker build -t dns_local_server .
-$ docker run --net seednetwork --ip 172.20.0.20 --rm -it dns_local_server
-\end{lstlisting}
- 
-
-\paragraph{Step 3. Testing.} Once the container is started, we can
-send the following query to it. This time, we should get the actual IP address 
-that is hosted in our \texttt{example.edu} zone. 
+\paragraph{Testing.} Using \texttt{docker-compose} commands
+to build and start all the containers.
+Once the containers are running,
+run the following \texttt{"dig @10.9.0.53"} commands from your VM to
+send DNS queries to the local DNS nameserver (its IP address
+is \texttt{10.9.0.53} in our setup). 
+Please report your observations.
 
 \begin{lstlisting}
-$ dig @172.20.0.20 www.example.edu
-
-...
-;; ANSWER SECTION:
-www.example.edu.	259165	IN	A	1.2.3.5
-...
+$ dig @10.9.0.53 www.example.edu
+$ dig @10.9.0.53 www.example.com
+$ dig @10.9.0.53 www.example.net
+$ dig @10.9.0.53 www.syr.edu
+$ dig @10.9.0.53 www.xyz.<TLD registered with your root server>
+$ dig @10.9.0.53 www.xyz.<TLD not registered with your root server>
 \end{lstlisting}
 
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 2.e: Configure our VM to use this local DNS server} 
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 6: Configure our VM to use this local DNS server} 
 
 So far, we need to use \texttt{@<ip>} in our \texttt{dig} command
 to indicate what DNS server the \texttt{dig} command should talk to. While this 
@@ -671,7 +548,7 @@ so the container's IP address is added as the first \texttt{nameserver} entry in
 this server will be used as the primary DNS server.
 Unfortunately, our provided VM uses the Dynamic Host Configuration Protocol (DHCP) to obtain
 network configuration parameters, such as IP address, local DNS server, etc.
-DHCP clients will overwrite the \texttt{/etc/resolv.conf} file with the information
+DHCP clients will overwrite \texttt{/etc/resolv.conf} with the information
 provided by the DHCP server.
 
 One way to get our information into \texttt{/etc/resolv.conf} without worrying about
@@ -680,7 +557,7 @@ file:
 
 \begin{lstlisting}
 Add the following entry to /etc/resolvconf/resolv.conf.d/head
-  nameserver 172.20.0.20
+  nameserver 10.9.0.53
 
 Run the following command for the change to take effect
 $ sudo resolvconf -u
@@ -692,241 +569,65 @@ configuration file. Normally, this is just a comment line (the comment in
 
 
 After you finish configuring the user machine, repeat 
-the testing commands in Task 2.d, but this time, do not 
+the testing commands in Task 5, but this time, do not 
 include the \texttt{@<ip>} in the command. Pay attention to 
 the highlighted IP address to check whether the response does 
 come from your container. If the setup is unsuccessful,
-the IP will be \texttt{127.0.0.53}. 
+the IP will be different.
 
 \begin{lstlisting}
 $ dig abc.example.edu
 
 ...
 ;; ANSWER SECTION:
-abc.example.edu.	259200	IN	A	1.2.3.6
+abc.example.edu.	259200	IN	A	1.2.3.7
 
 ;; Query time: 3 msec
-;; SERVER: (*@\textbf{172.20.0.20}@*)#53(172.20.0.20)
+;; SERVER: (*@\textbf{10.9.0.53}@*)#53(10.9.0.53)
 ...
 \end{lstlisting}
  
 
-
-
-
-% *******************************************
-% SECTION
-% ******************************************* 
-\section{Task 3: System Integration}
-
-In the previous task, we have been building our nameserver containers 
-individually. As the number of 
-nameservers increases, the process become tedious. Fortunately,
-docker provides a tool called \texttt{Compose}, which 
-is for defining and running multi-container Docker applications. 
-With Compose, we use a YAML file to configure our containers. Then, with a single command, 
-we can create and start all the containers from your configuration.
-
-\paragraph{Step 1. Writing the \texttt{docker-compose.yml} file.}
-In the \texttt{docker-compose.yml} file, we can use \texttt{services} to 
-create individual containers, and use \texttt{networks} to 
-create networks. The following example lists two 
-service entries and one network entry. 
-
-\begin{lstlisting}[caption={\texttt{docker-compose.yml}}]
-version: '3'
-
-services:
-  local_server:                  
-    build: ./local_server
-    tty: true
-    networks:
-      mynetwork:
-        ipv4_address: 172.20.0.20
-
-  root_server:
-    build: ./root_server
-    tty: true
-    networks:
-      mynetwork:
-        ipv4_address: 172.20.0.30
-
-  ... other entries are omitted ...
-   
-
-networks:
-    mynetwork:
-      ipam:
-        config:
-        - subnet: 172.20.0.0/24
-\end{lstlisting}
-
-Let us use the first service entry to explain how it works. 
-
-\begin{itemize}
-\item \texttt{build: ./local\_server}: This entry indicate that the container's folder 
-is \texttt{local\_server}, and will use the \texttt{Dockerfile} inside to build the container.
-
-\item \texttt{tty: true}: Indicate that when running the container, use the 
-\texttt{-t} option, which is necessary for getting a shell prompt 
-on the container later on. 
-
-\item \texttt{networks}: specify the name of the networks that this container is attached to,
-and the IP address statically assigned to the container. You can attach multiple networks
-to the container. 
-\end{itemize}
- 
-
-\paragraph{Step 2. Starting the containers.}
-We can use the following commands to build the containers first, and then 
-use the \texttt{up} command to start all the containers. Once we are done,
-we can use the \texttt{down} command to stop and delete all the running containers.  
-
-
-\begin{lstlisting}
-// Build the containers 
-$ docker-compose build
-
-// Start all the containers 
-$ docker-compose up
-
-// Stop all the containers
-$ docker-compose down
-\end{lstlisting}
-
-
-\paragraph{Note 1: Network issues.}
-Since we have created a network in Task 2, and that network
-conflicts with the one used in the docker compose file. If we want to 
-stick to the same IP address assignment, we can delete the existing 
-network before running the \texttt{docker-compose} commands. 
-Use the following commands to find and delete networks. 
-
-
-\begin{lstlisting}
-// List all the existing networks 
-$ docker network ls 
-
-// Remove a network
-$ docker network rm <name of network>
-\end{lstlisting}
- 
-
-\paragraph{Note 2: Running commands on a running container}.
-When we use \texttt{docker-compose} to run the container, those 
-containers will run in the background. 
-Sometimes, we need to run additional commands on a running container.
-To do that, we can use the following commands to first 
-get a container's ID, and then use \texttt{"docker exec"} 
-to start a shell. 
-
-
-\begin{lstlisting}
-// Find the container's ID 
-$ docker ps 
-
-$ docker exec -it <container ID> /bin/bash
-#  -- you will get a root shell 
-\end{lstlisting}
- 
-
+\paragraph{\ding{72}\ding{72} Note (very very important) \ding{72}\ding{72}.} 
+After finishing the lab, please do remember to remove the added entry
+from \path{/etc/resolvconf/resolv.conf.d/head}; otherwise, it will 
+cause lot of problems for your future labs. If in the future,
+you have trouble connecting to the Internet, but your network is fine, 
+the chances are that you may have forgotten to remove this entry, and it 
+messes up the DNS query process. This happens to me many times,
+as I often forgot to remove the entry.
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 4: Making It More Realistic}
+\section{Task 7: Making It More Realistic}
 
 
 In this task, we will make our miniature DNS system
-a little bit more realistic. 
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 4.a: Hosting more nameservers}
+a little bit more realistic by adding the following 
+nameservers or records to our system. 
 
 
 \begin{itemize}
 \item Adding 2 more root servers. The real-world DNS system has 13 different 
 IP address for the root server. We will create 3 in this lab.
 
-\item Hosting two TLD servers. One is \texttt{edu}, which is already 
-done in Task 2. The other one is your choice. 
-You can find all the existing TLD names from the 
-real root zone file: \url{https://www.internic.net/domain/root.zone}.
-You can pick one from there or come up with one yourself. 
-It costs a lot to buy a new TLD name in the real world, but in this lab, you 
-can ``own'' one for free. 
 
-\item For each TLD, build a second-level domain, in
-addition to \texttt{example.edu} that is already built in Task 2. 
-Use your first name as the domain name. 
-For example, if your first name is \texttt{Bob}, you need to build the containers 
-for the \texttt{bob.edu} and \texttt{bob.<tld>} domains,
-where \texttt{<tld>} is the name for a Top-Level Domain selected
-by you. 
+\item Pick two of the TLDs registered with your root server, 
+build a second-level domain for each of them, use your last name as the domain name. 
+For example, if your last name is \texttt{Smith}, you need to build the 
+nameservers for the \texttt{smith.<tld1>} and \texttt{smith.<tld2>} domains,
+You need to host both domains on the same nameserver. 
 \end{itemize}
- 
 
 
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 4.b: Supporting more TLDs}
-
-
-At least supporting the following: 
-\texttt{com}, \texttt{net}, \texttt{org}, and 
-a selected country-code TLD (ccTLD).
-
-We will not host the nameservers for these TLD domain, but 
-if a user query a hostnames in these domains using our miniature
-DNS system, they should get correct answers.  
-
-To achieve that, we just need to ``register'' these TLD nameservers
-with our root servers. 
-There are many ways to find out the nameserver for a TLD. For example,
-you can use the real-world zone file; you can directly
-get it using \texttt{dig}. By running \texttt{"dig com NS"}, you
-can get a list of nameservers for the \texttt{com} domain.
-You can then get the IP address for each nameserver. 
-
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 4.c: Supporting other domain names in \texttt{edu}}
-
-
-You should support at least five real-world domain names 
-in the \texttt{edu} domain. For these domains, when you run
-the \texttt{dig} command, you should get their real IP address. Your
-DNS system should support this. You should not run 
-the nameservers for these domains; instead, you should modify
-your \texttt{edu} nameserver, so it can direct the client
-to the corresponding nameservers. 
-
-
-You can use the \texttt{"dig <domain> NS"} command to get the nameservers
-for a specified domain. See the following example. 
-
-\begin{lstlisting}
-$ dig syr.edu NS 
-;; ANSWER SECTION:
-syr.edu.		900	IN	NS	ns1.syr.edu.
-syr.edu.		900	IN	NS	ns2.syr.edu.
-\end{lstlisting}
- 
+%Note: try to avoid using \texttt{com} and \texttt{net}. It 
+%is harder, because they depend on each other.
 
  
-
-
-
 
 
 % *******************************************
@@ -938,6 +639,8 @@ syr.edu.		900	IN	NS	ns2.syr.edu.
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\paragraph{Cleanup.} This is another reminder regarding the 
+removing of the entry added to \path{/etc/resolvconf/resolv.conf.d/head}. 
 
 
 \end{document}
