@@ -24,35 +24,35 @@
 
 % *******************************************
 % SECTION
-% ******************************************* 
+% *******************************************
 \section{Overview}
 
 RSA (Rivest–Shamir–Adleman) is one of the first public-key cryptosystems
-and is widely used for secure communication. 
-The RSA algorithm first generates two large random prime numbers, 
+and is widely used for secure communication.
+The RSA algorithm first generates two large random prime numbers,
 and then use them to generate public and private key pairs, which can be
-used to do encryption, decryption, digital signature generation, 
-and digital signature verification. The RSA algorithm is built upon 
+used to do encryption, decryption, digital signature generation,
+and digital signature verification. The RSA algorithm is built upon
 number theories, and it can be quite easily implemented with the support of
-libraries. 
+libraries.
 
 
 \underline{The learning objective} of this lab is for students to gain hands-on experiences on
-the RSA algorithm. From lectures, students should have learned the 
-theoretic part of the RSA algorithm, so they know 
-mathematically how to generate public/private keys and 
-how to perform encryption/decryption and signature generation/verification. 
-This lab enhances student's understanding of RSA 
+the RSA algorithm. From lectures, students should have learned the
+theoretic part of the RSA algorithm, so they know
+mathematically how to generate public/private keys and
+how to perform encryption/decryption and signature generation/verification.
+This lab enhances student's understanding of RSA
 by requiring them to go through every essential step of the RSA algorithm
-on actual numbers, so they can apply the theories learned from the class. 
-Essentially, students will be implementing the RSA algorithm using 
+on actual numbers, so they can apply the theories learned from the class.
+Essentially, students will be implementing the RSA algorithm using
 the C program language. The lab covers the following security-related topics:
 
 \begin{itemize}[noitemsep]
 \item Public-key cryptography
 \item The RSA algorithm and key generation
 \item Big number calculation
-\item Encryption and Decryption using RSA 
+\item Encryption and Decryption using RSA
 \item Digital signature
 \item X.509 certificate
 \end{itemize}
@@ -68,14 +68,14 @@ Detailed coverage of the public-key cryptography can be found in the following:
 
 \paragraph{Lab environment.} \seedenvironment \ \
 This lab requires the \openssl library, which is already
-installed on the Ubuntu16.04 VM. If you choose to use 
+installed on the Ubuntu16.04 VM. If you choose to use
 a different VM, you can run the following commands to install \openssl:
 
 \begin{lstlisting}
 $ sudo apt-get update
 $ sudo apt-get install libssl-dev
 \end{lstlisting}
- 
+
 
 \paragraph{Acknowledgment} This lab was developed with the help of
 Shatadiya Saha, a graduate student in the Department of
@@ -87,33 +87,33 @@ Electrical Engineering and Computer Science at Syracuse University.
 
 % *******************************************
 % SECTION
-% ******************************************* 
+% *******************************************
 \section{Background}
 
 
-The RSA algorithm involves computations on large numbers. These computations 
+The RSA algorithm involves computations on large numbers. These computations
 cannot be directly conducted using simple arithmetic operators in programs, because those
 operators can only operate on primitive data types, such as 32-bit integer and 64-bit long
 integer types. The numbers involved in the RSA algorithms are typically more than 512 bits
 long. For example, to multiple two 32-bit integer numbers \texttt{a} and \texttt{b},
 we just need to use \texttt{a*b} in our program. However, if they are big numbers, we cannot
-do that any more; instead, we need to use an algorithm (i.e., a function) to compute 
-their products. 
+do that any more; instead, we need to use an algorithm (i.e., a function) to compute
+their products.
 
 
-There are several libraries that can perform arithmetic operations on integers of 
-arbitrary size. In this lab, we will use the Big Number library provided 
-by \openssl. To use this library, we will define each big number as 
+There are several libraries that can perform arithmetic operations on integers of
+arbitrary size. In this lab, we will use the Big Number library provided
+by \openssl. To use this library, we will define each big number as
 a \texttt{BIGNUM} type, and then use the APIs provided by the library
-for various operations, such as addition, multiplication, exponentiation, 
-modular operations, etc. 
+for various operations, such as addition, multiplication, exponentiation,
+modular operations, etc.
 
 
 
 \subsection{BIGNUM APIs}
 
-All the big number APIs can be found from 
-\url{https://linux.die.net/man/3/bn}. In the following, 
+All the big number APIs can be found from
+\url{https://linux.die.net/man/3/bn}. In the following,
 we describe some of the APIs that are needed for this lab.
 
 
@@ -122,8 +122,8 @@ we describe some of the APIs that are needed for this lab.
 
 \item Some of the library functions requires temporary variables.
 Since dynamic memory allocation to create BIGNUMs is quite expensive
-when used in conjunction with repeated subroutine calls, 
-a \texttt{BN\_CTX} structure is created to holds BIGNUM temporary variables 
+when used in conjunction with repeated subroutine calls,
+a \texttt{BN\_CTX} structure is created to holds BIGNUM temporary variables
 used by library functions. We need to create such a structure, and pass
 it to the functions that requires it.
 
@@ -157,7 +157,7 @@ BN_generate_prime_ex(a, 128, 1, NULL, NULL, NULL);
 \end{lstlisting}
 
 
-\item Print out a big number. 
+\item Print out a big number.
 
 \begin{lstlisting}
 void printBN(char *msg, BIGNUM * a)
@@ -174,29 +174,29 @@ void printBN(char *msg, BIGNUM * a)
 \end{lstlisting}
 
 
-\item Compute \texttt{res = $a - b$} and \texttt{res = $a + b$}: 
+\item Compute \texttt{res = $a - b$} and \texttt{res = $a + b$}:
 
 \begin{lstlisting}
 BN_sub(res, a, b);
 BN_add(res, a, b);
 \end{lstlisting}
- 
 
 
-\item Compute \texttt{res = $a * b$}. It should be noted that a 
-\texttt{BN\_CTX} structure is need in this API. 
+
+\item Compute \texttt{res = $a * b$}. It should be noted that a
+\texttt{BN\_CTX} structure is need in this API.
 
 \begin{lstlisting}
 BN_mul(res, a, b, ctx)
 \end{lstlisting}
- 
+
 
 \item Compute \texttt{res = $a * b$  mod n}:
 
 \begin{lstlisting}
 BN_mod_mul(res, a, b, n, ctx)
 \end{lstlisting}
- 
+
 
 
 \item Compute \texttt{res = $a^c$ mod n}:
@@ -206,22 +206,22 @@ BN_mod_exp(res, a, c, n, ctx)
 \end{lstlisting}
 
 
-\item Compute modular inverse, i.e., given \texttt{a}, find \texttt{b}, 
+\item Compute modular inverse, i.e., given \texttt{a}, find \texttt{b},
 such that \texttt{$a * b$  mod n = 1}. The value \texttt{b} is called
-the inverse of \texttt{a}, with respect to modular \texttt{n}.  
- 
+the inverse of \texttt{a}, with respect to modular \texttt{n}.
+
 \begin{lstlisting}
 BN_mod_inverse(b, a, n, ctx);
 \end{lstlisting}
- 
+
 
 \end{itemize}
- 
- 
+
+
 
 \subsection{A Complete Example}
 
-We show a complete example in the following. In this example, we 
+We show a complete example in the following. In this example, we
 initialize three BIGNUM variables, \texttt{a}, \texttt{b}, and \texttt{n};
 we then compute $a*b$ and \texttt{($a^b$ mod n)}.
 
@@ -267,7 +267,7 @@ int main ()
   return 0;
 }
 \end{lstlisting}
- 
+
 
 
 \paragraph{Compilation.} We can use the following command to
@@ -278,25 +278,25 @@ character after - is the letter $\ell$, not the number 1; it tells the compiler 
 \begin{lstlisting}[backgroundcolor=]
 $ gcc bn_sample.c -lcrypto
 \end{lstlisting}
- 
+
 
 
 \section{Lab Tasks}
 
 
-To avoid mistakes, please avoid manually typing the numbers used the lab tasks. 
-Instead, copy and paste the numbers from this PDF file. 
+To avoid mistakes, please avoid manually typing the numbers used the lab tasks.
+Instead, copy and paste the numbers from this PDF file.
 
 
 \paragraph{Submission requirement:} In your report, you should describe your steps and include
-your code and running results. 
+your code and running results.
 
 
 \subsection{Task 1: Deriving the Private Key}
 
-Let \texttt{p}, \texttt{q}, and \texttt{e} be three prime numbers. Let \texttt{n = p*q}. 
+Let \texttt{p}, \texttt{q}, and \texttt{e} be three prime numbers. Let \texttt{n = p*q}.
 We will use \texttt{(e, n)} as the public key. Please calculate the private key \texttt{d}.
-The hexadecimal values of \texttt{p}, \texttt{q}, and \texttt{e} are listed in the following. It should be 
+The hexadecimal values of \texttt{p}, \texttt{q}, and \texttt{e} are listed in the following. It should be
 noted that although \texttt{p} and \texttt{q} used in this task are quite large numbers, they are not large
 enough to be secure. We intentionally make them small for the sake of simplicity. In practice,
 these numbers should be at least 512 bits long (the one used here are only 128 bits).
@@ -304,18 +304,18 @@ these numbers should be at least 512 bits long (the one used here are only 128 b
 \begin{lstlisting}
  p = F7E75FDC469067FFDC4E847C51F452DF
  q = E85CED54AF57E53E092113E62F436F4F
- e = 0D88C3 
+ e = 0D88C3
 \end{lstlisting}
- 
+
 
 \subsection{Task 2: Encrypting a Message}
 
-Let \texttt{(e, n)} be the public key. Please encrypt the message 
-\texttt{"A top secret!"} (the quotations are not included).  
+Let \texttt{(e, n)} be the public key. Please encrypt the message
+\texttt{"A top secret!"} (the quotations are not included).
 We need to convert this ASCII string to a hex string, and then
-convert the hex string to a BIGNUM using the hex-to-bn API \texttt{BN\_hex2bn()}. 
-The following \texttt{python} command can be used 
-to convert a plain ASCII string to a hex string. 
+convert the hex string to a BIGNUM using the hex-to-bn API \texttt{BN\_hex2bn()}.
+The following \texttt{python} command can be used
+to convert a plain ASCII string to a hex string.
 
 \begin{lstlisting}
 $ python  -c 'print("A top secret!".encode("hex"))'
@@ -323,23 +323,23 @@ $ python  -c 'print("A top secret!".encode("hex"))'
 \end{lstlisting}
 
 
-The public keys are listed in the followings (hexadecimal).  We also provide the private key \texttt{d} 
+The public keys are listed in the followings (hexadecimal).  We also provide the private key \texttt{d}
  to help you verify your encryption
-result. 
+result.
 
 \begin{lstlisting}
  n = DCBFFE3E51F62E09CE7032E2677A78946A849DC4CDDE3A4D0CB81629242FB1A5
  e = 010001 (this hex value equals to decimal 65537)
  M = A top secret!
- d = 74D806F9F3A62BAE331FFE3F0A68AFE35B3D2E4794148AACBC26AA381CD7D30D 
+ d = 74D806F9F3A62BAE331FFE3F0A68AFE35B3D2E4794148AACBC26AA381CD7D30D
 \end{lstlisting}
 
 
 
 \subsection{Task 3: Decrypting a Message}
 
-The public/private keys used in this task are the same as the ones used in Task 2. 
-Please decrypt the following ciphertext \texttt{C}, and convert it back to 
+The public/private keys used in this task are the same as the ones used in Task 2.
+Please decrypt the following ciphertext \texttt{C}, and convert it back to
 a plain ASCII string.
 
 \begin{lstlisting}
@@ -347,20 +347,20 @@ a plain ASCII string.
 \end{lstlisting}
 
 
-You can use the following \texttt{python} command to convert 
-a hex string back to to a plain ASCII string. 
+You can use the following \texttt{python} command to convert
+a hex string back to to a plain ASCII string.
 \begin{lstlisting}
 $ python  -c 'print("4120746f702073656372657421".decode("hex"))'
 A top secret!
 \end{lstlisting}
 
- 
+
 
 \subsection{Task 4: Signing a Message}
 
 The public/private keys used in this task are the same as the ones used in Task 2.
 Please generate a signature for the following message (please directly sign this message,
-instead of signing its hash value): 
+instead of signing its hash value):
 
 \begin{lstlisting}
  M = I owe you $2000.
@@ -368,54 +368,54 @@ instead of signing its hash value):
 
 Please make a slight change to the message \texttt{M}, such as changing \texttt{\$2000}
 to \texttt{\$3000}, and sign the modified message. Compare both signatures and describe what
-you observe. 
- 
+you observe.
+
 
 \subsection{Task 5: Verifying a Signature}
 
 Bob receives a message M = \texttt{"Launch a missile."} from
 Alice, with her signature \texttt{S}. We know that Alice's public key is \texttt{(e, n)}.
-Please verify whether the signature is indeed Alice's or not. 
+Please verify whether the signature is indeed Alice's or not.
 The public key and signature (hexadecimal) are listed in the following:
 
 \begin{lstlisting}
  M = Launch a missile.
  S = 643D6F34902D9C7EC90CB0B2BCA36C47FA37165C0005CAB026C0542CBDB6802F
  e = 010001 (this hex value equals to decimal 65537)
- n = AE1CD4DC432798D933779FBD46C6E1247F0CF1233595113AA51B450F18116115 
+ n = AE1CD4DC432798D933779FBD46C6E1247F0CF1233595113AA51B450F18116115
 \end{lstlisting}
 
 
-Suppose that the signature above is corrupted, such that the 
+Suppose that the signature above is corrupted, such that the
 last byte of the signature changes from \texttt{2F} to \texttt{3F}, i.e, there is only one bit
-of change.  Please repeat this task, 
-and describe what will happen to the verification process. 
+of change.  Please repeat this task,
+and describe what will happen to the verification process.
 
 
 
 
 \subsection{Task 6: Manually Verifying an X.509 Certificate}
 
-In this task, we will manually verify an X.509 certificate using our program. 
-An X.509 contains data about a public key and an issuer's signature on the data. 
+In this task, we will manually verify an X.509 certificate using our program.
+An X.509 contains data about a public key and an issuer's signature on the data.
 We will download a real X.509 certificate from a web server, get its issuer's public key, and then
-use this public key to verify the signature on the certificate. 
+use this public key to verify the signature on the certificate.
 
 
-\paragraph{Step 1: Download a certificate from a real web server.} 
-We use the \texttt{www.example.org} server in this document. Students 
+\paragraph{Step 1: Download a certificate from a real web server.}
+We use the \texttt{www.example.org} server in this document. Students
 should choose a different web server that has a different certificate than the one used in this
 document (it should be noted that \texttt{www.example.com} share the same certificate with
-\texttt{www.example.org}). 
-We can download certificates using browsers or use the following command: 
+\texttt{www.example.org}).
+We can download certificates using browsers or use the following command:
 
 \begin{lstlisting}
 $ openssl s_client -connect www.example.org:443 -showcerts
 
 Certificate chain
- 0 s:/C=US/ST=California/L=Los Angeles/O=Internet Corporation for Assigned 
+ 0 s:/C=US/ST=California/L=Los Angeles/O=Internet Corporation for Assigned
      Names and Numbers/OU=Technology/CN=www.example.org
-   i:/C=US/O=DigiCert Inc/OU=www.digicert.com/CN=DigiCert SHA2 High Assurance 
+   i:/C=US/O=DigiCert Inc/OU=www.digicert.com/CN=DigiCert SHA2 High Assurance
      Server CA
    -----BEGIN CERTIFICATE-----
    MIIF8jCCBNqgAwIBAgIQDmTF+8I2reFLFyrrQceMsDANBgkqhkiG9w0BAQsFADBw
@@ -423,65 +423,65 @@ Certificate chain
    ......
    wDSiIIWIWJiJGbEeIO0TIFwEVWTOnbNl/faPXpk5IRXicapqiII=
    -----END CERTIFICATE-----
- 1 s:/C=US/O=DigiCert Inc/OU=www.digicert.com/CN=DigiCert SHA2 High 
+ 1 s:/C=US/O=DigiCert Inc/OU=www.digicert.com/CN=DigiCert SHA2 High
      Assurance Server CA
-   i:/C=US/O=DigiCert Inc/OU=www.digicert.com/CN=DigiCert High Assurance 
+   i:/C=US/O=DigiCert Inc/OU=www.digicert.com/CN=DigiCert High Assurance
      EV Root CA
    -----BEGIN CERTIFICATE-----
    MIIEsTCCA5mgAwIBAgIQBOHnpNxc8vNtwCtCuF0VnzANBgkqhkiG9w0BAQsFADBs
    MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
-   ...... 
+   ......
    cPUeybQ=
    -----END CERTIFICATE-----
 \end{lstlisting}
 
 The result of the command contains two certificates. The subject field (the entry starting with
 \texttt{s:})  of the certificate is \texttt{www.example.org}, i.e.,
-this is \texttt{www.example.org}'s certificate. The issuer field (the entry starting with 
-\texttt{i:}) provides the issuer's information. The subject field of the second certificate 
-is the same as the issuer field of the first certificate. Basically, the second certificate 
-belongs to an intermediate CA. In this task, we will use CA's certificate to 
-verify a server certificate.  
+this is \texttt{www.example.org}'s certificate. The issuer field (the entry starting with
+\texttt{i:}) provides the issuer's information. The subject field of the second certificate
+is the same as the issuer field of the first certificate. Basically, the second certificate
+belongs to an intermediate CA. In this task, we will use CA's certificate to
+verify a server certificate.
 
 If you only get one certificate back using the above command, that means the certificate you
 get is signed by a root CA. Root CAs' certificates can be obtained from the Firefox browser
 installed in our pre-built VM.  Go to the \texttt{Edit} \ding{213} \texttt{Preferences}
-\ding{213} \texttt{Privacy}  and then \texttt{Security} \ding{213} \texttt{View Certificates}. 
+\ding{213} \texttt{Privacy}  and then \texttt{Security} \ding{213} \texttt{View Certificates}.
 Search for the name of the issuer and download its certificate.
 
 Copy and paste each of the certificate (the text between the line
-containing \texttt{"Begin CERTIFICATE"} and the line 
-containing \texttt{"END CERTIFICATE"}, including these two lines) to a file. 
+containing \texttt{"Begin CERTIFICATE"} and the line
+containing \texttt{"END CERTIFICATE"}, including these two lines) to a file.
 Let us call the first one \texttt{c0.pem} and
-the second one \texttt{c1.pem}.  
+the second one \texttt{c1.pem}.
 
- 
+
 
 \paragraph{Step 2: Extract the public key \texttt{(e, n)} from the issuer's certificate.}
-Openssl provides commands to extract certain attributes from the x509 certificates. 
-We can extract the value of \texttt{n} using \texttt{-modulus}. There is no specific 
+Openssl provides commands to extract certain attributes from the x509 certificates.
+We can extract the value of \texttt{n} using \texttt{-modulus}. There is no specific
 command to extract \texttt{e}, but we can print out all the fields and can easily
-find the value of \texttt{e}. 
+find the value of \texttt{e}.
 
 \begin{lstlisting}
-For modulus (n): 
+For modulus (n):
 $ openssl x509 -in c1.pem -noout -modulus
 
-Print out all the fields, find the exponent (e): 
-$ openssl x509 -in c1.pem -text -noout 
+Print out all the fields, find the exponent (e):
+$ openssl x509 -in c1.pem -text -noout
 \end{lstlisting}
 
 
 \paragraph{Step 3: Extract the signature from the server's certificate.}
-There is no specific \openssl command to extract the signature field. 
-However, we can print out all the fields and then copy and paste 
-the signature block into a file (note: 
-if the signature algorithm used in the certificate is not based on RSA, 
-you can find another certificate). 
+There is no specific \openssl command to extract the signature field.
+However, we can print out all the fields and then copy and paste
+the signature block into a file (note:
+if the signature algorithm used in the certificate is not based on RSA,
+you can find another certificate).
 
 
 \begin{lstlisting}
-$ openssl x509 -in c0.pem -text -noout 
+$ openssl x509 -in c0.pem -text -noout
 ...
 Signature Algorithm: sha256WithRSAEncryption
   84:a8:9a:11:a7:d8:bd:0b:26:7e:52:24:7b:b2:55:9d:ea:30:
@@ -491,10 +491,10 @@ Signature Algorithm: sha256WithRSAEncryption
   aa:6a:88:82
 \end{lstlisting}
 
-We need to remove the spaces and colons from the data, so we can get 
-a hex-string that we can feed into our program. The following command 
-commands can achieve this goal. The \texttt{tr} command is a Linux utility tool for 
-string operations. In this case, the \texttt{-d} option is used to delete \texttt{":"} and 
+We need to remove the spaces and colons from the data, so we can get
+a hex-string that we can feed into our program. The following command
+commands can achieve this goal. The \texttt{tr} command is a Linux utility tool for
+string operations. In this case, the \texttt{-d} option is used to delete \texttt{":"} and
 \texttt{"space"} from the data.
 
 \begin{lstlisting}
@@ -503,15 +503,15 @@ $ cat signature | tr -d '[:space:]:'
 ......
 5c045564ce9db365fdf68f5e99392115e271aa6a8882
 \end{lstlisting}
- 
+
 
 
 \begin{comment}
 \begin{lstlisting}
-$ openssl x509 -in Chase.crt -text -noout -certopt ca_default 
-               -certopt no_validity -certopt no_serial 
-	       -certopt no_subject -certopt no_extensions 
-	       -certopt no_signame | grep -v 'Signature Algorithm' 
+$ openssl x509 -in Chase.crt -text -noout -certopt ca_default
+               -certopt no_validity -certopt no_serial
+	       -certopt no_subject -certopt no_extensions
+	       -certopt no_signame | grep -v 'Signature Algorithm'
 	                           | tr -d '[:space:]:'
 \end{lstlisting}
 \end{comment}
@@ -519,64 +519,64 @@ $ openssl x509 -in Chase.crt -text -noout -certopt ca_default
 
 
 \paragraph{Step 4: Extract the body of the server's certificate.}
-A Certificate Authority (CA) generates the signature for a server certificate by first 
+A Certificate Authority (CA) generates the signature for a server certificate by first
 computing the hash of the certificate, and then sign the hash. To
-verify the signature, we also need to generate the hash from a 
-certificate. Since the hash is generated before the signature is computed, 
-we need to exclude the signature block of a certificate when computing the 
-hash. Finding out what part of the certificate is used to 
-generate the hash is quite challenging without a good understanding 
-of the format of the certificate. 
+verify the signature, we also need to generate the hash from a
+certificate. Since the hash is generated before the signature is computed,
+we need to exclude the signature block of a certificate when computing the
+hash. Finding out what part of the certificate is used to
+generate the hash is quite challenging without a good understanding
+of the format of the certificate.
 
 
-%The certificate that we have seen in the previous steps is 
-%not the actual certificate in its binary form; it is Base64 encoded 
-%form (i.e., the PEM format). The actual certificate is 
-%stored using the DER format. We can convert the PEM data to 
+%The certificate that we have seen in the previous steps is
+%not the actual certificate in its binary form; it is Base64 encoded
+%form (i.e., the PEM format). The actual certificate is
+%stored using the DER format. We can convert the PEM data to
 %DER data and then extract the part for the hash function. We still need to know where
-%the actual body of the certificate (excluding the signature) starts and end. 
+%the actual body of the certificate (excluding the signature) starts and end.
 
 
-X.509 certificates are encoded using the ASN.1 (Abstract Syntax Notation.One) standard, 
-so if we can parse the ASN.1 structure, we can easily extract any field from a certificate. 
-Openssl has a command called \texttt{asn1parse}, which can be used 
-to parse a X.509 certificate. 
+X.509 certificates are encoded using the ASN.1 (Abstract Syntax Notation.One) standard,
+so if we can parse the ASN.1 structure, we can easily extract any field from a certificate.
+Openssl has a command called \texttt{asn1parse} used to extract data from ASN.1 formatted data,
+and is able to parse our X.509 certificate.
 
 
 \begin{lstlisting}
 $ openssl asn1parse -i -in c0.pem
-    0:d=0  hl=4 l=1522 cons: SEQUENCE          
+    0:d=0  hl=4 l=1522 cons: SEQUENCE
     4:d=1  hl=4 l=1242 cons:  SEQUENCE           (*@\ding{202}@*)
-    8:d=2  hl=2 l=   3 cons:   cont [ 0 ]        
+    8:d=2  hl=2 l=   3 cons:   cont [ 0 ]
    10:d=3  hl=2 l=   1 prim:    INTEGER           :02
    13:d=2  hl=2 l=  16 prim:   INTEGER           :0E64C5FBC236ADE14B172AEB41C78CB0
    ... ...
- 1236:d=4  hl=2 l=  12 cons:     SEQUENCE          
+ 1236:d=4  hl=2 l=  12 cons:     SEQUENCE
  1238:d=5  hl=2 l=   3 prim:      OBJECT            :X509v3 Basic Constraints
  1243:d=5  hl=2 l=   1 prim:      BOOLEAN           :255
  1246:d=5  hl=2 l=   2 prim:      OCTET STRING      [HEX DUMP]:3000
  1250:d=1  hl=2 l=  13 cons:  SEQUENCE           (*@\ding{203}@*)
  1252:d=2  hl=2 l=   9 prim:   OBJECT            :sha256WithRSAEncryption
- 1263:d=2  hl=2 l=   0 prim:   NULL              
- 1265:d=1  hl=4 l= 257 prim:  BIT STRING        
+ 1263:d=2  hl=2 l=   0 prim:   NULL
+ 1265:d=1  hl=4 l= 257 prim:  BIT STRING
 \end{lstlisting}
 
 
 The field starting from \ding{202} is the body of the certificate that is used to generate the hash; the
-field starting from \ding{203} is the signature block. Their offsets are the numbers at the beginning 
-of the lines. In our case, the certificate body is from offset 4 to 1249, while the 
+field starting from \ding{203} is the signature block. Their offsets are the numbers at the beginning
+of the lines. In our case, the certificate body is from offset 4 to 1249, while the
 signature block is from 1250 to the end of the file. For X.509 certificates, the starting
 offset is always the same (i.e., 4), but the end depends on the content length of a
-certificate.  We can use the 
+certificate.  We can use the
 \texttt{-strparse} option to get the field from the offset 4, which will give us the body of
-the certificate, excluding the signature block.  
+the certificate, excluding the signature block.
 
 \begin{lstlisting}[backgroundcolor=]
 $ openssl asn1parse -i -in c0.pem -strparse 4 -out c0_body.bin -noout
 \end{lstlisting}
 
 Once we get the body of the certificate, we can calculate its hash using the following
-command: 
+command:
 
 \begin{lstlisting}[backgroundcolor=]
 $ sha256sum c0_body.bin
@@ -584,12 +584,12 @@ $ sha256sum c0_body.bin
 
 
 
-\paragraph{Step 5: Verify the signature.} 
+\paragraph{Step 5: Verify the signature.}
 Now we have all the information, including the CA's public key, the CA's signature, and the
-body of the server's certificate. We can run our own program to verify whether the 
+body of the server's certificate. We can run our own program to verify whether the
 signature is valid or not. Openssl does provide a command to verify the certificate for
 us, but students are required to use their own programs to do so, otherwise, they get zero
-credit for this task. 
+credit for this task.
 
 
 \section{Submission}
