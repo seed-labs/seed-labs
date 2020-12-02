@@ -1,0 +1,11 @@
+FROM seed-base-image-bind
+  
+# Copy the BIND confirguration files
+COPY named.conf named.conf.options   /etc/bind/
+
+# Copy the Root Hints
+COPY root.hints  /usr/share/dns/
+
+# Start the nameserver
+CMD service named start  && tail -f /dev/null
+

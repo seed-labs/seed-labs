@@ -1,0 +1,8 @@
+options {
+	directory "/var/cache/bind";
+        recursion no;
+	allow-query { any; };
+        dnssec-validation no;
+        dnssec-enable no;
+        dump-file "/var/cache/bind/dump.db";
+};

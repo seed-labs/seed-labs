@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  # This image will serve as the base for the other images
+  # We do this to avoid making too many image pulls from 
+  # the Docker Hub, which has set limit for anonymous users.  
+  # This container will exit as soon as it starts.
+  seed_base_router:
+    build: ./base_image
+    image: seed-base-image-bind
+    container_name: seed-base-bind
+    command: " echo 'exiting ...' "
+
+  example_edu_server:
+    build:
+        context: ./nameserver
+        args:
+            BIND_CONF_DIR: edu.example
+    image: example-edu-server
+    container_name: example-edu-10.9.0.65
+    tty: true
+    networks:
+      seed-net:
+        ipv4_address: 10.9.0.65
+
+  edu_server:
+    build:
+        context: ./nameserver
+        args:
+            BIND_CONF_DIR: edu
+    image: edu-server
+    container_name: edu-10.9.0.60
+    tty: true
+    networks:
+      seed-net:
+        ipv4_address: 10.9.0.60
+
+  root_server:
+    build:
+        context: ./nameserver
+        args:
+            BIND_CONF_DIR: root
+    image: root-server
+    container_name: root-10.9.0.30
+    tty: true
+    networks:
+      seed-net:
+        ipv4_address: 10.9.0.30
+
+  local_dns_server:
+    build: ./local_dns_server
+    image: local-dns-server
+    container_name: local-dns-10.9.0.53
+    tty: true
+    networks:
+      seed-net:
+        ipv4_address: 10.9.0.53
+
+networks:
+    seed-net: 
+      ipam:
+        config:
+        - subnet: 10.9.0.0/24
+      name: seed-net
+

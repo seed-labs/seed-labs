@@ -1,0 +1,6 @@
+
+zone "." {
+        type master;
+        file "/etc/bind/root.db";
+};
+
