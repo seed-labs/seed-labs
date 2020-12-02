@@ -2,11 +2,12 @@
 LAB    = BGP_Basic
 LABPDF = $(LAB).pdf
 
+CF      = ../../common-files
+DEPEND  = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex
 
-all: $(LABPDF) 
+all: $(LABPDF)
 
-
-%.pdf: %.tex
+%.pdf: %.tex $(DEPEND)
 	pdflatex $<
 	pdflatex $<
 

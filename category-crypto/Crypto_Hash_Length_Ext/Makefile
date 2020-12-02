@@ -1,16 +1,17 @@
-LABNAME = Crypto_Hash_Length_Ext
-LABPDF  = $(LABNAME).pdf
+
+LAB     = Crypto_Hash_Length_Ext
+LABPDF  = $(LAB).pdf
+
+CF     = ../../common-files
+DEPEND  = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex
+DEPEND2 = $(CF)/container/setup.tex
 
 
-$(LABNAME).pdf: $(LABNAME).tex
-	pdflatex $(LABNAME).tex
-	pdflatex $(LABNAME).tex
+all: $(LABPDF)
 
-bib:
-	pdflatex $(LABNAME).tex
-	bibtex   $(LABNAME)
-	pdflatex $(LABNAME).tex
-	pdflatex $(LABNAME).tex
+%.pdf: %.tex $(DEPEND) $(DEPEND2)
+	pdflatex $<
+	pdflatex $<
 
 clean:
 	rm -f *.log *.dvi *.aux *.bbl *.blg *~ *.out *.det 

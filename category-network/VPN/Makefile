@@ -1,10 +1,13 @@
 LAB    = VPN
 LABPDF = $(LAB).pdf 
 
-all: VPN.pdf 
+CF      = ../../common-files
+DEPEND  = $(CF)/header.tex $(CF)/copyright.tex 
+DEPEND2 = Demo_Checklist.tex demo.tex
 
+all: $(LABPDF)
 
-%.pdf: %.tex Demo_Checklist.tex
+%.pdf: %.tex $(DEPEND) $(DEPEND2) 
 	pdflatex $<
 	pdflatex $<
 

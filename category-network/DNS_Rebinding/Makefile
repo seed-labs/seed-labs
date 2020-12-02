@@ -1,10 +1,15 @@
-LABNAME = DNS_Rebinding
-LABPDF = $(LABNAME).pdf
+LAB    = DNS_Rebinding
+LABPDF = $(LAB).pdf
 
-$(LABNAME).pdf: $(LABNAME).tex
-	pdflatex $(LABNAME).tex
-	pdflatex $(LABNAME).tex
+CF      = ../../common-files
+DEPEND  = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex
+DEPEND2 = $(CF)/container/setup.tex 
 
+all: $(LABPDF)
+
+%.pdf: %.tex $(DEPEND) $(DEPEND2)
+	pdflatex $<
+	pdflatex $<
 
 clean:
 	rm -f *.log *.dvi *.aux *.bbl *.blg *~ *.out *.det 

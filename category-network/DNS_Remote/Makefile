@@ -2,14 +2,14 @@
 LAB    = DNS_Remote
 LABPDF = $(LAB).pdf
 
-COMMONFOLDER = ../../common-files
-DEPENDENCE = $(COMMONFOLDER)/container/setup.tex $(COMMONFOLDER)/manual.tex 
-
+CF      = ../../common-files
+DEPEND  = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex
+DEPEND2 = $(CF)/container/setup.tex $(CF)/container/volumes.tex $(CF)/container/host_mode.tex
+DEPEND3 = $(CF)/DNS/summary_of_config.tex $(CF)/DNS/setup_testing.tex
 
 all: $(LABPDF)
 
-
-%.pdf: %.tex $(DEPENDENCE) 
+%.pdf: %.tex $(DEPEND) $(DEPEND2) $(DEPEND3)
 	pdflatex $<
 	pdflatex $<
 

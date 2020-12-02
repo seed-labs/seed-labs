@@ -2,14 +2,14 @@
 LAB    = Mitnick_Attack
 LABPDF = $(LAB).pdf
 
-COMMONFOLDER = ../../common-files
-DEPENDENCE = $(COMMONFOLDER)/container_setup.tex $(COMMONFOLDER)/container_interface.tex
+CF      = ../../common-files
+DEPEND  = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex
+DEPEND2 = $(CF)/container/setup.tex $(CF)/container/volumes.tex 
+DEPEND3 = $(CF)/container/privileged_mode.tex $(CF)/container/host_mode.tex
 
+all: $(LABPDF)
 
-all: $(LABPDF) 
-
-
-%.pdf: %.tex $(DEPENDENCE)
+%.pdf: %.tex $(DEPEND) $(DEPEND2) $(DEPEND3)
 	pdflatex $<
 	pdflatex $<
 

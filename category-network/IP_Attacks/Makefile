@@ -2,10 +2,13 @@
 LAB    = IP_Attacks
 LABPDF = $(LAB).pdf
 
+CF      = ../../common-files
+DEPEND  = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex
+DEPEND2 = $(CF)/container/setup.tex $(CF)/container/volumes.tex $(CF)/container/privileged_mode.tex
 
-all: $(LABPDF) 
+all: $(LABPDF)
 
-%.pdf: %.tex 
+%.pdf: %.tex $(DEPEND) $(DEPEND2) 
 	pdflatex $<
 	pdflatex $<
 

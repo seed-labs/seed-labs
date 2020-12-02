@@ -1,16 +1,14 @@
 
-
 LAB    = Firewall
 LABPDF = $(LAB).pdf
 
-COMMONFOLDER = ../../common-files
-DEPENDENCE = $(COMMONFOLDER)/container/setup.tex $(COMMONFOLDER)/container/detach_from_interface.tex
-
+CF      = ../../common-files
+DEPEND  = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex
+DEPEND2 = $(CF)/container/setup.tex $(CF)/container/detach_from_interface.tex
 
 all: $(LABPDF)
 
-
-%.pdf: %.tex $(DEPENDENCE)
+%.pdf: %.tex $(DEPEND) $(DEPEND2)
 	pdflatex $<
 	pdflatex $<
 
