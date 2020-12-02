@@ -7,6 +7,7 @@ RUN apt-get update  \
         curl   \
         iproute2  \
         iputils-ping \
+        mtr-tiny \
         nano   \
         net-tools \
         unzip \
