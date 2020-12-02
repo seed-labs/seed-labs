@@ -1,12 +1,12 @@
 
 LAB    = Return_to_Libc
 LABPDF = $(LAB).pdf
-
+CF     = ../../common-files
+DEPEND  = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex
 
 all: $(LABPDF)
 
-
-%.pdf: %.tex
+%.pdf: %.tex $(DEPEND)
 	pdflatex $<
 	pdflatex $<
 
