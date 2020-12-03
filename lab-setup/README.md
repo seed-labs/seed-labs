@@ -7,7 +7,7 @@ computer, cloud, and container. We would like to support them. Here is the
 structure of this folder:
 
 - ```ubuntu20.04-vm```: Building the Ubuntu 20.04 VM for personal computer
-- ```docker```: Docker images for the container setup
+- ```docker-images```: Docker images for the container setup
 - ```aws```: For the AWS cloud platform
 - ```cyber-range```: For the Virginia Cyber Range cloud platform
 
