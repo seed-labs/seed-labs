@@ -1,5 +1,11 @@
 # Lab Environment Setup for SEED Labs
 
+This folder is for the developers of the SEED Labs and 
+lab environment. It shows how to build the SEED Ubuntu 20.04 VM,
+docker images used in the SEED Labs, and how to port the 
+lab environment to various cloud platforms. 
+
+
 ## Folder Structure
 
 The SEED labs can be deployed using a variety of platforms, including personal 

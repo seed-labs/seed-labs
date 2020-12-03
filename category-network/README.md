@@ -18,44 +18,23 @@ The meaning of the Changes column can be found from
 | Local DNS Attack    | Major | Done | [README](DNS_Local/README.md)|
 | Remote DNS Attack   | Minor | Done | [README](DNS_Remote/README.md)|
 | DNS Rebinding Attack| Minor | Done | [README](DNS_Rebinding/README.md)|
+| DNS-in-a-box        |  New  | Done | [Designed for Ubuntu 20.04](DNS_in_a_Box/README.md) |
 | Firewall Lab        | Major | Done | [README](Firewall/README.md)|
 | VPN Tunneling       | Major | Done | [README](VPN_Tunnel/README.md) |
-| DNS-in-a-box        |  New  | Done   | Designed for Ubuntu 20.04 |
-| DNSSEC              |  New  | Done   | Designed for Ubuntu 20.04 |
+| VPN Lab             |  None | Done | [README](VPN/README.md)|
+| BGP Lab             |  New  | Done | [Designed for Ubuntu 20.04](BGP_Basic/README.md)|
 |||||
-| Firewall Evasion    |  --   | --   | [README](Firewall_VPN/README.md) |
-| VPN Lab             |  --   | --   | [README](VPN/README.md)|
-| Heartbleed Attack   |  --   | --   | Work in progress       |
+| DNSSEC              |  New  | Work in progress   | [Designed for Ubuntu 20.04](DNSSEC/README.md) |
+| Firewall Evasion    |       | Work in progress   | [README](Firewall_VPN/README.md) |
+| Heartbleed Attack   |       | Work in progress   | [README](Heartbleed/README.md) |
 ||||
 
 
-
-## Network Topology and Docker Images Used
+## Notes Related to Containers
 
 We will use the following rule when assigning docker images to containers and 
 when configuring containers:
-- Attacker Container: Use the Scapy image, unless it doesn't use Python
-- Victim Container: Use the Ubuntu 20.04 image
-- User/Observer Container: Use the Ubuntu 20.04 image.
 - A container should use the ```host``` mode if sniffing is needed
 - A container should use the ```privileged``` mode if it needs to 
 set kernel variables using ```sysctl```
 
-| Lab Name | Topology |  Ubuntu | Scapy | Flask  |
-| ---      | :---:  | :---: | :---:  | :---: |
-| Sniffing/Spoofing   | 1 LAN  | x | x |   |
-| ARP Cache Poisoning | 1 LAN  | x | x |   |
-| IP/ICMP             | 2 LANs | x | x |   |
-| TCP Attacks         | 1 LAN  | x | x |   |
-| Mitnick Attack      | 1 LAN  | x | x |   |
-| Local DNS Attack    | 2 LANS | x | x |   |
-| Remote DNS Attack   | 1 LAN  | x | x |   |
-| DNS Rebinding Attack| 2 LANs | x |   | x |
-| Firewall Lab        | 2 LANs | x |   |   |
-| VPN Tunneling       | 2 LANs |   | x |   |
-| DNS-in-a-box        | 1 LAN  | x |   |   |
-| DNSSEC              | 1 LAN  | x |   |   | 
-|||||
-| Firewall Evasion    | No need | | | |
-| VPN Lab             | No need | | | |
-| Heartbleed Attack   | | | | |
