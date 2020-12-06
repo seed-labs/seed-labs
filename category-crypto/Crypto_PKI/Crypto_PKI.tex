@@ -375,7 +375,7 @@ the decoded content of the certificate, and check whether the
 alternative names are included.
 
 \begin{lstlisting}
-openssl x509 -in server.key -text -noout 
+openssl x509 -in server.crt -text -noout 
 \end{lstlisting}
 
 
@@ -534,7 +534,7 @@ so the attacker can decrypt the encrypted communication.
 The goal of this task is to help students understand how PKI can defeat such MITM attacks. 
 In the task, we will emulate an MITM attack, and see how exactly PKI can defeat it.
 We will select a target website first. In this document, we use 
-\texttt{example.com} as the target website, but in the task, to make it more meaningful,
+\texttt{www.example.com} as the target website, but in the task, to make it more meaningful,
 students should pick a popular website, such as a banking site and social network site. 
 
 
@@ -543,15 +543,15 @@ In Task 4, we have already set up an HTTPS website. We will
 use the same Apache server to impersonate \texttt{www.example.com} (or the site chosen by students).  
 To achieve that, we will follow the instruction in Task 4 to 
 add a \texttt{VirtualHost} entry to Apache's SSL configuration file: the
-\texttt{ServerName} should be \texttt{example.com}, but the rest of the
+\texttt{ServerName} should be \texttt{www.example.com}, but the rest of the
 configuration can be the same as that used in Task 4. Obviously, in the real world,
 you won't be able to get a valid certificate for \texttt{www.example.com}, 
 so we will use the same certificate that we used for our own server. 
 
 
-Our goal is the following: when a user tries to visit \texttt{example.com}, 
+Our goal is the following: when a user tries to visit \texttt{www.example.com}, 
 we are going to get the user to land in our server, which hosts 
-a fake website for \texttt{example.com}. If this were a social network
+a fake website for \texttt{www.example.com}. If this were a social network
 website, The fake site can display a login page similar to the
 one in the target website. If users cannot tell the difference, they may type their account credentials
 in the fake webpage, essentially disclosing the credentials to the attacker. 
