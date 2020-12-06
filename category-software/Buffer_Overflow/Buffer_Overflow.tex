@@ -198,7 +198,7 @@ launch a shell. It has to be loaded into the memory so that we can force the
 vulnerable program to jump to it. Consider the following program:
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 #include <stdio.h>
 
 int main() {
@@ -218,7 +218,7 @@ the program from the website. If you are interested in writing your own shellcod
 we have a separate SEED lab for that purpose. 
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 /* call_shellcode.c: You can get it from the lab's website */
 /* Launches a shell using shellcode */
 #include <stdlib.h>
@@ -299,7 +299,7 @@ You will be provided with the following program, which has
 a buffer-overflow vulnerability in Line~\ding{192}. Your job
 is to exploit this vulnerability and gain the root privilege. 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 /* Vunlerable program: stack.c */
 /* You can get this program from the lab's website */
 
@@ -463,7 +463,7 @@ values in the code.
 is called \texttt{exploit.py}, which
 can be downloaded from the lab's website.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=python]
 #!/usr/bin/python3
 import sys
 
@@ -521,7 +521,7 @@ for \texttt{badfile}. In this code, the shellcode is given to you.
 You need to develop the rest. 
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 /* exploit.c  */
 /* A program that creates a file containing code for launching shell */
 #include <stdlib.h>
@@ -627,7 +627,7 @@ be root); please describe your observations. We then uncomment Line~\ding{192} a
 run the program again; please describe your observations.
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 // dash_shell_test.c
 
 #include <stdio.h>
@@ -662,7 +662,7 @@ From the above experiment, we will see that
 code for invoking this system call at the beginning of our shellcode, before 
 we invoke \texttt{execve()}. 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=python]
 shellcode= (
   "\x31\xc0"    # xor eax, eax  (eax = 0)
   "\x31\xdb"    # xor ebx, ebx  (ebx = 0)
@@ -707,7 +707,7 @@ attack succeeds, the script will stop; otherwise, it will keep running. Please b
 as this may take a while. Let it run overnight if needed. Please describe your observation.
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=bash]
 #!/bin/bash
 
 SECONDS=0
@@ -888,7 +888,7 @@ following code shows how to assign an {\tt long} integer to a buffer
 starting at \texttt{buffer[i]}:
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
    char buffer[20];
    long addr = 0xFFEEDD88;
 
