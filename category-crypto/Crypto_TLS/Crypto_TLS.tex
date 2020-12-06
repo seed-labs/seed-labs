@@ -271,7 +271,9 @@ steps using the client program.
 
 \begin{itemize}
 \item Step 1: Get the IP address of \texttt{www.example.com} using 
-the \texttt{dig} command, such as the following: 
+the \texttt{dig} command, such as the following (you may want to run
+this command in your VM or host computers, because the \texttt{dig}
+command is not installed inside the container): 
 
 
 \begin{lstlisting}
@@ -281,7 +283,8 @@ $ dig www.example.com
 www.example.com.	403	IN	A	93.184.216.34
 \end{lstlisting}
 
-\item Step 2: Modify the \texttt{/etc/hosts} file, add the following 
+\item Step 2: Modify the \texttt{/etc/hosts} file (inside the 
+container), add the following 
 entry at the end of the file (the IP address is what you get from
 the \texttt{dig} command). 
 
