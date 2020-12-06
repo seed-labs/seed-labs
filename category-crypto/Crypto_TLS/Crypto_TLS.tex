@@ -234,11 +234,11 @@ own folder. Run your client program again. If you have done everything correctly
 your client program should be able to talk to the server.
 
 
-It should be noted that copying CA's certificate to the \texttt{"./cert"} folder is
+It should be noted that copying CA's certificate to the \texttt{"./certs"} folder is
 not enough.  When
 TLS tries to verify a server certificate, it will generate a hash value from the
 issuer's identify information, use this hash value as part of the file name, and
-then use this name to find the issuer's certificate in the \texttt{"./cert"} folder.
+then use this name to find the issuer's certificate in the \texttt{"./certs"} folder.
 Therefore, we need to rename each CA's certificate using the hash value generated from its
 subject field, or we can make a symbolic link out of the hash value. In the following command,
 we use \openssl to generate a hash value, which is then used to create a symbolic link.
