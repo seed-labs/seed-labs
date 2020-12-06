@@ -9,7 +9,7 @@ zone file (they should look like `10.9.0.x`); otherwise,
 the lab environment is not set up correctly.
 
 
-```
+``` shell
 $ dig www.attacker32.com
 ...
 ;; ANSWER SECTION:
@@ -20,7 +20,7 @@ www.attacker32.com.     259200  IN      A       10.9.0.180
 ...
 ```
 
-Pay attention to the `SERVER` entry and verify that the response does come from 
-your local DNS server `10.9.0.53`. If the response comes from a different IP 
+Pay attention to the `SERVER` entry and verify that the response does come from
+your local DNS server `10.9.0.53`. If the response comes from a different IP
 address, either the setup on your user machine is not correct or the local
-DNS server is not running. 
+DNS server is not running.

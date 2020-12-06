@@ -16,7 +16,7 @@ from creating the container.
 We just need to use the following commands
 to stop and remove the container using its ID.
 
-```
+``` shell
 $ docker container stop b24b
 $ docker container rm b24b
 ```

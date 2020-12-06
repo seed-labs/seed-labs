@@ -15,7 +15,7 @@ to configure our containers. Then, with a single command,
 we can create and start all the containers from your configuration.
 The following is an example of the file.
 
-```
+``` yaml
 version: "3"
 
 services:
@@ -61,26 +61,24 @@ networks:
 
 Let us explain explain how it works.
 
-- The `services` section lists all the
-containers that we want to build and run 
+- The `services` section lists all the containers that we want to build and run
 
-- The `networks` section lists
-all the networks that we need to create.
-Each network is given a name, and the name
-is used by the container entries.
+- The `networks` section lists all the networks that we need to create.
+Each network is given a name, and the name is used by the container entries.
 
 - The `build` entry: This entry indicates that the container
 image's folder name, and will use the `Dockerfile` inside to build
-a container image. If a service does not have a `build` entry, 
+a container image. If a service does not have a `build` entry,
 it means the container does not need to build its own
 image; it uses the existing image specified in the `image` entry.
 It should be noted that one image can be used by multiple container instances.
 
-- The `image` entry: The name of the image is specified in this entry. 
+- The `image` entry: The name of the image is specified in this entry.
 Without this entry, docker will generate a name for this image.
 
-- The `container_name` entry: After building the image, Compose will start a container instance from this image,
-and the name of the container instance is specified in this entry. 
+- The `container_name` entry: After building the image,
+Compose will start a container instance from this image,
+and the name of the container instance is specified in this entry.
 In our naming convention,
 we attach the IP address to the hostname.
 
@@ -88,7 +86,7 @@ we attach the IP address to the hostname.
 `-t` option, which is necessary for getting a shell prompt
 on the container later on.
 
-- The `networks` entry: It specifies the name of the networks that 
+- The `networks` entry: It specifies the name of the networks that
 this container is attached to,
 along with the IP address assigned to the container.
 Multiple networks can be attached to a container.

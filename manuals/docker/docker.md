@@ -6,7 +6,7 @@ Docker can build images automatically by reading the instructions from
 a `Dockerfile`, which is a text file that contains all commands needed to
 build a container image. We show an example of `Dockerfile` in the following.
 
-```
+``` dockerfile
 FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -48,28 +48,28 @@ we need to attach our container to a network first. We can let docker
 attach our container to the default network. If you ca take this option,
 you can skip the following network-creation step.
 
-In many situations, we would like to attach our containers to a
-custom network. To achieve that, we need to first create a network using the following
+In many situations, we would like to attach our containers to a custom network.
+To achieve that, we need to first create a network using the following
 docker command, which creates a network called `seednetwork`,
 and its network prefix is `172.20.0.0/24`.
 We can further use `"docker network"` command to manage
 all the created networks (listing, deleting, etc.).
 
-```
+``` shell
 $ docker network create --subnet=172.20.0.0/24 seednetwork
 ```
 
 We are now ready to build and run our container. The first command
-in the following builds a container called \texttt{seedhost} using
+in the following builds a container called `seedhost` using
 the `Dockerfile` in the current directory.
-The second container starts the container.
-The flags `-it` tells Docker we want an interactive session
+The second command starts the container.
+The flags `-it` tell Docker we want an interactive session
 with a tty attached. The `--rm` option will remove the container
 when it stops. The `--ip` option specifies the static
 IP address, and the `--net` option specifies
 the network this container should be attached to.
 
-```
+``` shell
 $ docker build -t seedhost .
 $ docker run --net seednetwork --ip 172.20.0.5 --rm -it seedhost
 ```
