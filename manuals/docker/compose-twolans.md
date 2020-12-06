@@ -14,7 +14,7 @@ In the `networks` section of the docker compose file,
 we create two networks, and their IP prefixes are `10.9.0.0/24`
 and `192.168.60.0/24`, respectively.
 
-```
+``` yaml
 networks:
     net-10.9.0.0:
         name: net-10.9.0.0
@@ -36,7 +36,7 @@ also create a router container, called  `Router`, which
 connects to both networks. It
 can route packets between these two networks.
 
-```
+``` yaml
 services:
     Router:
         image: seed-ubuntu-base-image
@@ -63,7 +63,7 @@ From the `networks` entry, we can see that
 this container is attached to two networks, and thus
 it has two IP addresses.
 
-We added a `command` entry to all the all the containers. The command
+We added a `command` entry to all the containers. The command
 will be executed once the container starts; it overrides the
 `CMD` entry inside `Dockerfile`. We can only put one
 single comment inside the `command` entry, so if we want to run
@@ -94,7 +94,7 @@ create four host containers. We put `HostA` on `10.9.0.0/24`
 network, while putting `Host1`, `Host2`, and `Host3`
 on `10.168.60.0/24` network.
 
-```
+``` yaml
 services:
     HostA:
         ... (omitted) ...

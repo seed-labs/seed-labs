@@ -31,7 +31,7 @@ The following two commands are related to DNS cache. The first command
 dumps the content of the cache to the file specified above, and the second
 command clears the cache.
 
-```
+``` shell
 # rndc dumpdb -cache    // Dump the cache to the specified file
 # rndc flush            // Flush the DNS cache
 ```
@@ -99,7 +99,7 @@ use the purchased name in the attack, instead of using `attacker32.com`.
 This way, students can configure their DNS
 servers to answer queries. The cost of this approach is too high for students.
 
-Fortunately, BIND9 allows us to add a forward zone in the DNS configuration.
+Fortunately, BIND 9 allows us to add a forward zone in the DNS configuration.
 Add the following zone entry to the `/etc/bind/named.conf` file.
 This entry indicates that for all queries of the `attacker32.com`
 domain, forward the queries to `10.9.0.153`.

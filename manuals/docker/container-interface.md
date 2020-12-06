@@ -2,8 +2,8 @@
 
 When we use the provided Compose file to create
 containers for this lab, a new network is created
-to connect the VM and the containers. The
-IP prefix for this network is `10.9.0.0/24`,
+to connect the VM and the containers.
+The IP prefix for this network is `10.9.0.0/24`,
 which is specified in the `docker-compose.yml`
 file. The IP address assigned to our VM is
 `10.9.0.1`. We need to find the name of
@@ -16,7 +16,7 @@ we will see quite a few. Look for the IP address
 `10.9.0.1`.
 
 
-```
+``` shell
 $ ifconfig
 br-c93733e9f913: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         inet 10.9.0.1 netmask 255.255.255.0  broadcast 10.9.0.255
@@ -24,8 +24,8 @@ br-c93733e9f913: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
 ```
 
 
-Another way to get the interface name is to use the `"docker network"` 
-command to find out the network ID ourselves (the name of the network is 
+Another way to get the interface name is to use the `"docker network"`
+command to find out the network ID ourselves (the name of the network is
 `seed-net`:
 
 ```

@@ -20,7 +20,7 @@ nameserver 10.9.0.53
 
 We can do the same thing for the user VM, but
 there is a challenge: the provided SEED VM uses the
-Dynamic Host Configuration Protocol (DHCP) to obtain network configuration parameters, such as IP address, local DNS server, etc. DHCP clients will 
+Dynamic Host Configuration Protocol (DHCP) to obtain network configuration parameters, such as IP address, local DNS server, etc. DHCP clients will
 overwrite the `/etc/resolv.conf` file with the information provided by the DHCP server.
 
 One way to get our information into `/etc/resolv.conf` without worrying about
@@ -31,12 +31,12 @@ file (`10.9.0.53` is the IP address of the local DNS server in our setup):
 nameserver 10.9.0.53
 ```
 
-The content of the head file will be prepended to the dynamically generated 
+The content of the head file will be prepended to the dynamically generated
 resolver configuration file. Normally, this is just a comment line (the comment in
 `/etc/resolv.conf` comes from this head file). After making the change,
 we need to run the following command for the change to take effect:
 
-```
+``` shell
 $ sudo resolvconf -u
 ```
 
