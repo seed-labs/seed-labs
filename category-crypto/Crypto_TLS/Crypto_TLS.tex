@@ -151,7 +151,8 @@ The following sample code initiates a TLS handshake with
 a TLS server (the name of the server needs to be specified as the first command line argument).
 
 
-\begin{lstlisting}[caption={\texttt{handshake.py} (in \texttt{Labsetup/volumes})}, label={tls:handshake}]
+\begin{lstlisting}[caption={\texttt{handshake.py} (in \texttt{Labsetup/volumes})}, 
+                   label={tls:handshake},language=Python]
 #!/usr/bin/env python3
 
 import socket, ssl, sys, pprint
@@ -323,7 +324,7 @@ The following code example shows how to send HTTP requests and how
 to read the response. 
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Python]
 # Send HTTP Request to Server
 request = b"GET / HTTP/1.0\r\nHost: " + \
           hostname.encode('utf-8') + b"\r\n\r\n"
@@ -380,7 +381,8 @@ use the client program from Task 1 to test this server program.
 A sample server code is provided in the following.
 
 
-\begin{lstlisting}[caption={\texttt{server.py} (in \texttt{Labsetup/volumes})}, label={tls:server}]
+\begin{lstlisting}[caption={\texttt{server.py} (in \texttt{Labsetup/volumes})}, 
+                   label={tls:server}, language=Python]
 #!/usr/bin/env python3
 
 import socket
@@ -629,7 +631,7 @@ to process that request, so the proxy program can handle multiple simultaneous
 requests. The following code snippet shows how to create a thread to handle 
 each TLS connection.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Python]
 import threading
 
 while True:
@@ -647,7 +649,7 @@ then forward the HTTP response from the server to the browser. A code skeleton
 is provided in the following:
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Python]
 def process_request(ssock_for_browser):
     hostname = 'www.example.com'
 
