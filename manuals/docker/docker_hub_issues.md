@@ -18,7 +18,7 @@ in the following:
 {
   "registry-mirrors": [
     "https://<my-docker-mirror-1>",
-    "https://<my-docker-mirror-2>",
+    "https://<my-docker-mirror-2>"
   ]
 }
 ```
