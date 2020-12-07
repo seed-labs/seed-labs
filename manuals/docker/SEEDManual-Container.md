@@ -43,4 +43,7 @@ Students can use this section as a reference to understand the setup.
 - [Testing the DNS Infrastructure](./dns_testing.md)
 
 
-## [Common Problems](./problems.md)
+## Common Problems
+
+- [In my country, it is too slow to download docker images](./docker_hub_issues.md)
+- [Miscellaneous Problems](./problems.md)
