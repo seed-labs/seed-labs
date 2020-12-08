@@ -33,3 +33,33 @@ The `zip` program will automatically
 replace all the symbolic links with the actual files/folders.
 
 
+## Design Philosophy
+
+These images are very important for the SEED labs. We will make improvement
+to these images, but to avoid making mistakes, I would like to document 
+the thinking process behind the design. Eventually, we will come up 
+with some design guidelines.
+
+- **Image size:** Trying to minimize the image size is important, but we often got
+carried away by this. We should keep in mind that image size is not the only factor 
+in the design. It is an important one, but it is one of the parameters 
+in our optimization formula. 
+
+- **Considering caching:** Building all our images on top of the same base (or 
+at least on a small number of them) increases the chance for caching. 
+Students usually do several SEED labs during a semester, so
+once they download the base (ubuntu), the basis layer will be cached. Even though
+a particular image we choose is larger than some alternatives, chances are that students
+already have the base layer cached.
+
+- **Consistency:** Students may need to run commands or do simple coding on the flask image for
+  some tasks. I would like provide them with a similar environment. I have observed
+  differences when I was using Debian-based images, compared to Ubuntu-based images, 
+  and had to modify my code to make it work (didn't have an issue in the Ubuntu-based 
+  image, because the code was tested in the Ubuntu-based VM). 
+
+- **Minimizing dependency:** We should reduce the dependence on others. 
+Using too many base images increase the dependency. This may cause issues in the long term.
+Currently, all the images we build are based on `Ubuntu 20.04`.  
+
+
