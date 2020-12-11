@@ -14,8 +14,8 @@ const char shellcode64[] = \
 
 int main(int argc, char **argv)
 {
-   char buf[sizeof(shellcode)];
-   strcpy(buf, shellcode);
+   char buf[sizeof(shellcode64)];
+   strcpy(buf, shellcode64);
    ((void(*)( ))buf)( );
 }
 
