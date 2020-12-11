@@ -1,6 +1,8 @@
 
-This folder stores the script to build a SEED VM on
-the Google Cloud. 
+# Creating SEED VM on Google Cloud 
+
+This folder stores the script and files needed for building a SEED VM on
+the Google Cloud. This README file serves as the manual.
 
 ## Create VM Instance
 
@@ -10,8 +12,12 @@ When you create the VM instance, we suggest the following parameters:
 - Machine configuration: 2 vCPU and 4GB of memory should be sufficient. 
   However, one core and 2GB should be OK.
 
+  ![machine configuration](./Figs/machine_config.jpg) 
+
 - Book disk: Operating system (Ubuntu) and Version (Ubuntu 20.04 LTS). 
   Disk size (20 GB). 
+
+  ![machine configuration](./Figs/boot_disk.jpg) 
 
 
 ## SSH into VM and Create `seed` Account
@@ -24,7 +30,11 @@ example, if an email is `bob@gmail.com`, the corresponding username would be
 
 It is better to create an account for `seed`, and change the default username 
 for SSH session to `seed`. You can achieve it by clicking the gear icon
-on the top-right corner of the SSH window. On the drop-down menu, select
+on the top-right corner of the SSH window (see the following). 
+
+![ssh menu](./Figs/ssh_menu.jpg)
+
+On the drop-down menu, select
 `Change Linux Username`, and type `seed`. A new account called `seed` will be 
 created on the VM, you will be logged ino that account. In the future,
 when you SSH into the VM from the browser, the default user name
