@@ -89,7 +89,7 @@ if the performance seems to be an issue, increase the number.
 
 ### Step 5.c: Display
 
-Go to the `Display` category, and select the `Processor` tab. If the 
+Go to the `Display` category, and select the `Screen` tab. If the 
 display does not seem to work properly, try to increase the amount of video memory.
 In our testing, `28 MB` seems to be sufficient. 
 
