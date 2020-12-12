@@ -623,7 +623,8 @@ code snippet shows how to generate a random name consisting of
 char a[26]="abcdefghijklmnopqrstuvwxyz";
 
 // Generate a random name of length 5
-char name[5];
+char name[6];
+name[5] = 0;
 for (int k=0; k<5; k++)  
    name[k] = a[rand() % 26];
 \end{lstlisting}
