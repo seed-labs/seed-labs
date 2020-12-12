@@ -14,7 +14,7 @@ When you create the VM instance, we suggest the following parameters:
 
   ![machine configuration](./Figs/machine_config.jpg) 
 
-- Book disk: Operating system (Ubuntu) and Version (Ubuntu 20.04 LTS). 
+- Boot disk: Operating system (Ubuntu) and Version (Ubuntu 20.04 LTS). 
   Disk size (20 GB). 
 
   ![machine configuration](./Figs/boot_disk.jpg) 
@@ -36,14 +36,14 @@ on the top-right corner of the SSH window (see the following).
 
 On the drop-down menu, select
 `Change Linux Username`, and type `seed`. A new account called `seed` will be 
-created on the VM, you will be logged ino that account. In the future,
+created on the VM, you will be logged into that account. In the future,
 when you SSH into the VM from the browser, the default user name
 will be `seed`.  
 
 
 ## Software Intallation 
 
-Now we can start installing the sftware for the SEED VM. 
+Now we can start installing the software for the SEED VM. 
 Download the `seedvm_gcp.zip`. To unzip it, we need to 
 first install the `unzip` program: 
 ```
@@ -52,7 +52,7 @@ sudo apt -y install unzip
 ```
 
 Unzip `seedvm_gcp.zip`, and run `install.sh`. Make sure 
-run run this script inside the `seed` account because it 
+to run this script inside the `seed` account because it 
 will conduct some configurations on the account. 
 
 ```
@@ -61,7 +61,7 @@ will conduct some configurations on the account.
 
 This shell script will download and install all the software needed for 
 the SEED labs. The whole process will take a few minutes. Please 
-don't leave, because you do to manually make two decisions
+don't leave, because you need to manually make two decisions
 during the installation:
 
 - During the installation of Wireshark, you will be asked 
@@ -69,12 +69,12 @@ during the installation:
   Select `No`.
 
 - During the installation of `xfce4`, you will be asked to 
-  choose a default display manager, chose `LightDM`. 
+  choose a default display manager. Choose `LightDM`. 
 
 
 ## Accessing the Desktop GUI
 
-For most labs, being able to SSH into the VM should be sufficient,
+For most labs, being able to SSH into the VM should be sufficient.
 Some labs do need to access GUI applications on the VM, such as 
 Firefox and Wireshark. If your network bandwidth is not too 
 bad, being able to access the desktop of the remote VM is 
@@ -88,7 +88,7 @@ There are two more things that you need to do:
   This viewer software is the VNC client program. 
   The TigerVNC server program is already installed on the VM.   
 
-- By default, Google cloud does not allow VNC traffics, 
+- By default, Google cloud does not allow VNC traffic, 
   we need to set up a firewall rule on to allow that.
   See [this link](https://cloud.google.com/vpc/docs/using-firewalls) for 
   instructions on how to add firewall rules. 
@@ -113,11 +113,11 @@ vncserver -localhost no
 
 By default, TigerVNC server only listens to localhost/127.0.0.1. 
 The purpose of the `-localhost no` option means accepting 
-accesses from the outside. When we first start the `vncserver`, 
-we will be asked to provid a password. Make sure this password 
+access from the outside. When we first start the `vncserver`, 
+we will be asked to provide a password. Make sure this password 
 is strong enough. Moreover, VNC communication itself is not 
 encrypted, so you should not send anything personal. If you 
-do want to secure it, you can run a SSH tunnel or VPN tunnel
+do want to secure it, you can run an SSH tunnel or VPN tunnel
 to protect the VNC communication.
 
 Here are some commands to help you list and kill VNC
