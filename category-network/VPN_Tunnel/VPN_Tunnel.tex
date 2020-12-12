@@ -588,7 +588,7 @@ descriptor.
 
 while True:
   # this will block until at least one interface is ready
-  ready, _, _ = select([sock, tun], [], [])
+  ready, _, _ = select.select([sock, tun], [], [])
 
   for fd in ready:
     if fd is sock:
