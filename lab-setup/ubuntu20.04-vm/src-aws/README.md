@@ -9,7 +9,7 @@ When creating an EC2 instance, we suggest the following parameters:
 
 - Instance: Ubuntu Server 20.04 64-bit (x86)
 
-  ![instance-ami](./Figs/instance-ami.png)
+  ![instance-ami](./Figs/instance-AMI.png)
 
 - Instance type: t1-medium recommendend (2 vCPUs, 4GB RAM), t1-small
   possible (1 vCPU, 2GB RAM)
