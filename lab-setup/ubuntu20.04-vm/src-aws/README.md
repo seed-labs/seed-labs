@@ -53,8 +53,10 @@ want to be able to log in as the user `seed` and have sudo privileges as that us
 As the `ubuntu` user on the VM, execute the following commands to create
 the `seed` user and add to the `sudo` group:
 
-`sudo adduser seed`
-`sudo usermod -aG sudo seed`
+```
+sudo adduser seed
+sudo usermod -aG sudo seed
+```
 
 Follow prompts on the screen when adding the `seed` user. Be sure to
 provide a secure password.
@@ -71,7 +73,7 @@ sudo apt update
 sudo apt -y install unzip
 ```
 
-Unzip `seedvm_gcp.zip`, and run `install.sh`. Make sure 
+Unzip `seedvm_aws.zip`, and run `install.sh`. Make sure 
 to run this script inside the `seed` account because it 
 will conduct some configurations on the account. 
 
