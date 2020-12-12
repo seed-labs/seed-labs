@@ -321,7 +321,7 @@ def spoof_pkt(pkt):
          #    Scapy will recalculate them if these fields are missing. 
          # 2) We also delete the original TCP payload.
 
-         newpkt = IP(pkt[IP])
+         newpkt = IP(bytes(pkt[IP]))
          del(newpkt.chksum)
          del(newpkt[TCP].payload)
          del(newpkt[TCP].chksum)
@@ -343,7 +343,7 @@ def spoof_pkt(pkt):
          # Create new packet based on the captured one 
          # Do not make any change 
 
-         newpkt = IP(pkt[IP])
+         newpkt = IP(bytes(pkt[IP]))
          del(newpkt.chksum)
          del(newpkt[TCP].chksum)
          send(newpkt)
