@@ -90,19 +90,20 @@ desktop.
   tunnel to protect the VNC communication.
 
 - On your computer: You need to have a VNC viewer installed 
-  on your computer. If you don't have one, you can easily install 
-  [TigerVNC](https://tigervnc.org/). If you prefer other VNC viewers,
+  on your computer, such as [TigerVNC](https://tigervnc.org/), and
+  [RealVNC](https://www.realvnc.com/en/connect/download/viewer/).
+  If you prefer other VNC viewers,
   it is fine. Most of them are compatible with one another.
 
   Start your VNC viewer program, and type the IP address of the VM, along with
-  the port number, such as `35.236.212.171:5901`. Most cloud VMs have two
+  the port number, such as `35.236.203.131:5901`. Most cloud VMs have two
   IP addresses; make sure you use the external IP address, not the internal
   one. You will be prompted for password, which is the one you typed 
   when you first run the VNC server. If everything is done correctly, 
   you will see the desktop of your remote VM.
   
 - If you VNC does not work, check your firewall to make sure TCP traffics
-  to the port `5901` on the VM is allowed. Also check wheter your VNC server 
+  to the port `5901` on the VM is allowed. Also check whether your VNC server 
   is running properly. Here are some useful commands to help you manage the VNC server on the VM:
   ```
   vncserver -list       # List the VNC server sessions

@@ -25,3 +25,15 @@ For the disk size, 20 GB is more desirable, but 10 GB will work.
 ## Step 3: Set up Firewall
 
 Will be added soon ...
+
+
+## Notes
+
+Keep an eye on your bill. Sometimes, there are costs that you may 
+not be aware of, such as bandwidth cost, storage cost, etc. 
+Understanding where your expense is can help you reduce it. 
+Moreover, to save cost, please remember to 
+suspend your VMs if you are not working on them. Although a 
+suspended VM still incurs storage cost (usually very small), it 
+does not incur any computing costs. You can easily resume them
+when you are ready to continue your work.
