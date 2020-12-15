@@ -19,7 +19,12 @@ so others can benefit.
 - [Alibaba Cloud](./create_vm_ali.md) (in Chinese; not finished yet)
 
 
+If you used the `SEEDUbuntu20.04LTS` community AMI image in AWS in this step, 
+you should skip Step 2, because everything is already installed and configured
+in this AMI image. Jump to Step 3.
+
 ## Step 2: Install Software and Configure System 
+
 
 When the Ubuntu 20.04 VM is built, a default username with the root privilege 
 will be created in the system. The actual name of the user is typically
@@ -27,7 +32,9 @@ chosen by the cloud operator. Most cloud platforms will provide
 a method for you to SSH into this account. Please get the VM, and do the followings:
 
 - Step 2.a: Download [`src-cloud.zip`](https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip) 
-  from the link or using the following command:
+  from the link or using the following command (if copy-and-paste does not work
+  for your SSH client, you may have to type the command; make sure you type 
+  the URL correctly):
   ```
   curl -o src-cloud.zip https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip
   ```
