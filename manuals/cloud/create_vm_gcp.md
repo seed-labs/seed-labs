@@ -40,15 +40,3 @@ VNC: Allow ingress traffic to TCP port 5901 - 5910
 Note: VNC servers use port 5900 + N, where N is the display number.
 ```
 
-
-## Notes
-
-
-Keep an eye on your bill. Sometimes, there are costs that you may 
-not be aware of, such as bandwidth cost, storage cost, etc. 
-Understanding where your expense is can help you reduce it. 
-Moreover, to avoid wasting money, remember to 
-suspend your VMs if you are not working on them. Although a 
-suspended VM still incurs storage cost (usually very small), it 
-does not incur any computing costs. You can easily resume them
-when you are ready to continue your work.

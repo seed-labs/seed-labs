@@ -36,7 +36,7 @@ Steps 4 and 6 to add storage and configure the firewalls.
 
 ## Step 4: Add Storage
 
-By default, AWS set the storage size to 8GB. This is barely enough for SEED
+By default, AWS sets the storage size to 8GB. This is barely enough for SEED
 labs. We need to increase it to 12GB minimal. You should be 
 noted that the size does affect the cost, although not by much. 
 
@@ -47,9 +47,9 @@ noted that the size does affect the cost, although not by much.
 
 We need to add firewall rules to allow two types of access, SSH and VNC. 
 By default, AWS already added the rule to allow SSH, so we just need to 
-add one rule to allow VNC. By default, VNC server listens to port 5900 + N,
+add one rule to allow VNC. VNC server listens to port 5900 + N,
 where N is the display number. For display `:1`, the port number is 
-`5901`. To allow VNC server to have multiple windows, we specify 
+`5901`. To allow VNC server to have multiple displays, we specify 
 a port range in the rule. 
 After this step, the VM instance is created, and we are ready to launch this 
 instance. 
@@ -59,7 +59,7 @@ instance.
 
 ## Step A.1: Create/Select Key Pair
 
-In order to be able to SSH into the VM instance, we need to create 
+To SSH into the VM instance, we need to create 
 a key pair or use an existing one that you created before. AWS will
 save the public key part of this pair to the `.ssh/authorized_keys` 
 file inside the accounts created in the VM. This allows you to log into

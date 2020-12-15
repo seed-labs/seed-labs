@@ -1,5 +1,6 @@
 # Creating a SEED VM on the Cloud
 
+
 ## Step 1: Create a VM Instance
 
 First we need to create a VM instance on the cloud, and install the Ubuntu 20.04 LTS
@@ -29,7 +30,7 @@ in this AMI image. Jump to Step 3.
 When the Ubuntu 20.04 VM is built, a default username with the root privilege 
 will be created in the system. The actual name of the user is typically
 chosen by the cloud operator. Most cloud platforms will provide 
-a method for you to SSH into this account. Please get the VM, and do the followings:
+a method for you to SSH into this account. Please log into the VM, and do the followings:
 
 - Step 2.a: Download [`src-cloud.zip`](https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip) 
   from the link or using the following command (if copy-and-paste does not work
@@ -141,3 +142,16 @@ cloud VM:
   the server machine. You can easily find 
   instructions from online resources, so we will not provide one here. 
 
+
+## Notes on Cost
+
+Unless you have a special deal with cloud company, you will
+be charged for using the cloud VM. Please keep an eye on your bill, 
+because sometimes, there are costs that you may 
+not be aware of, such as bandwidth cost, storage cost, etc. 
+Understanding where your expense is can help you reduce it. 
+Moreover, to avoid wasting money, remember to 
+suspend your VMs if you are not working on them. Although a 
+suspended VM still incurs storage cost (usually very small), it 
+does not incur any computing costs. You can easily resume them
+when you are ready to continue your work.
