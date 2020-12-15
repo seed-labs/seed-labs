@@ -88,12 +88,20 @@ always more desirable than getting a text terminal via SSH.
 We will use VNC (Virtual Network Computing) to get the remote 
 desktop. 
 
-- **On the cloud VM:** Our installation script has already installed 
+- **On the cloud VM:** We need to make sure that we are in
+  the `seed` account. If you are still in the default account, do
+  the following, and you will be in the `seed` account:
+  ```
+  sudo su seed
+  ```
+
+  Our installation script has already installed 
   the TigerVNC server program on the VM. You need to start the 
-  server (make sure do it inside the `seed` account).
+  server.
   ```
   vncserver -localhost no
   ```  
+
   By default, TigerVNC server only listens to localhost/127.0.0.1. The
   purpose of the `-localhost no` option means accepting access from the
   outside. When we first start the `vncserver`, we will be asked to provide a
