@@ -26,9 +26,10 @@ will be created in the system. The actual name of the user is typically
 chosen by the cloud operator. Most cloud platforms will provide 
 a method for you to SSH into this account. Please get the VM, and do the followings:
 
-- Step 2.a: Download the `seedcloud.zip` using the following command
+- Step 2.a: Download [`src-cloud.zip`](https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip) 
+  from the link or using the following command:
   ```
-  wget URL (to be decided)
+  curl -o src-cloud.zip https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip
   ```
 
 - Step 2.b: In order to unzip the file, we first need to install the `unzip` program 
@@ -36,10 +37,10 @@ a method for you to SSH into this account. Please get the VM, and do the followi
   ```
   sudo apt update 
   sudo apt -y install unzip
-  unzip seedcloudvm.zip 
+  unzip src-cloud.zip 
   ```
 
-- Step 2.c: After unzipping the file, you will see a `seedcloud` folder. 
+- Step 2.c: After unzipping the file, you will see a `src-cloud` folder. 
   Enter this folder, and run the following command to install software 
   and configure the system.
   ```
