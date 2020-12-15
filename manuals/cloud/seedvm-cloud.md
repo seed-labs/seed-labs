@@ -9,13 +9,14 @@ performance is not good enough, you can always change the machine
 configuration later. 
 
 There are many cloud platforms to choose from. We have written instructions 
-for the following clouds. If you are using one that is not on this list,
-we invite you to write a manual for it, so others can benefit. 
+for the following clouds. If you are using one that is popular, but it is 
+not on this list, we invite you to write a manual for it, 
+so others can benefit. 
 
 - [Amazon AWS](./create_vm_aws.md)
 - [Google Cloud](./create_vm_gcp.md)
-- [Microsoft Azure](./create_vm_azure.md)
-- [Alibaba Cloud](./create_vm_ali.md) (in Chinese)
+- [Microsoft Azure](./create_vm_azure.md) (not finished yet)
+- [Alibaba Cloud](./create_vm_ali.md) (in Chinese; not finished yet)
 
 
 ## Step 2: Install Software and Configure System 
