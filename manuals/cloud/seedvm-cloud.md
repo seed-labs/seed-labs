@@ -84,7 +84,6 @@ Some labs do need to access GUI applications on the VM, such as
 Firefox and Wireshark. If your network bandwidth is not too
 bad, being able to get a graphical desktop of the remote VM is
 always more desirable than getting a text terminal via SSH.
-
 We will use VNC (Virtual Network Computing) to get the remote 
 desktop. 
 
