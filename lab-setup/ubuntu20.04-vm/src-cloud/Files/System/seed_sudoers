@@ -1,0 +1,3 @@
+
+# User rules for seed
+seed ALL=(ALL) NOPASSWD:ALL
