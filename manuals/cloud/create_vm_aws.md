@@ -80,10 +80,10 @@ start it from the AWS console if it is not running.
 
 **From a web browser:** After selecting an VM instance on the AWS Console, 
 you can click the `Connect` button. A new window will come up. You need to 
-type a user name. If you use a generic Ubuntu AMI, typically, `root` and `ubuntu` 
-are the accounts created. If you use our SEEDUbuntu AMI, in addition to these
-two accounts, we have created a `seed` account. In this case, you can just
-directly type `seed`.
+type a user name. In a typical Ubuntu 20.04 AMI, `root` and `ubuntu` 
+are the accounts created, and their `.ssh/authorized_keys` have already
+been set up using the keys you provided in the previous step.
+
 
   ![connect](./Figs/aws-connect.jpg)
 
