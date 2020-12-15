@@ -2,17 +2,19 @@
 
 ## Step 1: Create a VM Instance
 
-We will first create a VM instance on the cloud, and install the Ubuntu 20.04 LTS
+First we need to create a VM instance on the cloud, and install the Ubuntu 20.04 LTS
 operating system on the VM. The minimal machine configuration
-is 2 CPU cores, 2GB of memory, and 10GB of disk space. Some labs may need less, so
-if you are concerned about the cost, you can always start from a less expensive 
-instance. Most clouds allow you to change the machine configuration very easily.  
+is 1 CPU core, 2GB of memory, and 10GB of disk space. If you feel that the 
+performance is not good enough, you can always change the machine 
+configuration later. 
 
-There are many cloud platforms to choose from. Different countries may have 
-their own popular clouds. We have instructions for some of the popular clouds. 
+There are many cloud platforms to choose from. We have written instructions 
+for the following clouds. If you are using one that is not on this list,
+we invite you to write a manual for it, so others can benefit. 
 
 - [Amazon AWS](./create_vm_aws.md)
 - [Google Cloud](./create_vm_gcp.md)
+- [Microsoft Azure](./create_vm_azure.md)
 - [Alibaba Cloud](./create_vm_ali.md) (in Chinese)
 
 
@@ -21,14 +23,14 @@ their own popular clouds. We have instructions for some of the popular clouds.
 When the Ubuntu 20.04 VM is built, a default username with the root privilege 
 will be created in the system. The actual name of the user is typically
 chosen by the cloud operator. Most cloud platforms will provide 
-a means for you to SSH into this account. 
+a method for you to SSH into this account. Please get the VM, and do the followings:
 
-- Download the `seedcloud.zip` using the following command
+- Step 2.a: Download the `seedcloud.zip` using the following command
   ```
   wget URL (to be decided)
   ```
 
-- In order to unzip the file, we first need to install the `unzip` program 
+- Step 2.b: In order to unzip the file, we first need to install the `unzip` program 
   using the following command. After that, unzip the file. 
   ```
   sudo apt update 
@@ -36,13 +38,14 @@ a means for you to SSH into this account.
   unzip seedcloudvm.zip 
   ```
 
-- After unzipping the file, you will see a `seedcloud` folder. Enter this folder,
-  and run the following command to install software and configure the system.
+- Step 2.c: After unzipping the file, you will see a `seedcloud` folder. 
+  Enter this folder, and run the following command to install software 
+  and configure the system.
   ```
   ./install.sh
   ```
 
-- This shell script will download and install all the software needed for
+- **Note:** This shell script will download and install all the software needed for
   the SEED labs. The whole process will take a few minutes. Please
   don't leave, because you will be asked twice to make choices: 
 
@@ -75,7 +78,7 @@ always more desirable than getting a text terminal via SSH.
 We will use VNC (Virtual Network Computing) to get the remote 
 desktop. 
 
-- On the cloud VM: Our installation script has already installed 
+- **On the cloud VM:** Our installation script has already installed 
   the TigerVNC server program on the VM. You need to start the 
   server (make sure do it inside the `seed` account).
   ```
@@ -89,7 +92,7 @@ desktop.
   personal. If you do want to secure it, you can run an SSH tunnel or VPN
   tunnel to protect the VNC communication.
 
-- On your computer: You need to have a VNC viewer installed 
+- **On your computer:** You need to have a VNC viewer installed 
   on your computer, such as [TigerVNC](https://tigervnc.org/), and
   [RealVNC](https://www.realvnc.com/en/connect/download/viewer/).
   If you prefer other VNC viewers,
