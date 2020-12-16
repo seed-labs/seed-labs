@@ -37,4 +37,4 @@ sudo apt -y install whois
 sudo apt -y install zsh
 
 # Install vscode  
-#sudo snap install --classic code
+sudo snap install --classic code

@@ -4,7 +4,6 @@
 # Install tools using apt
 source base.sh        
 
-
 source wireshark.sh   
 source python.sh      
 source openssl.sh     
@@ -17,6 +16,9 @@ source misc.sh
 
 # Configuration 
 source system.sh      
+
+# Add guest addition
+source guest-addition.sh
 
 # Clean up
 source cleanup.sh

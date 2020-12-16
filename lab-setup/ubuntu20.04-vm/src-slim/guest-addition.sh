@@ -1,1 +1,0 @@
-../src/guest-addition.sh
