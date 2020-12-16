@@ -146,28 +146,16 @@ After rebooting the machine, the copy-and-paste will work.
 
 Most of the software package installation steps are automated with shell
 scripts. We will install many software packages, and we group them
-into individual shell scripts and they are stored 
-in the  `src-slim` folders. The main script is called `main.sh`, 
+into individual shell scripts and they are stored in the  
+[`lab-setup/ubuntu20.04-vm/src-slim`](https://github.com/seed-labs/seed-labs/tree/master/lab-setup/ubuntu20.04-vm/src-slim) 
+folders of the SEED Labs GitHub repo. The main script is called `main.sh`, 
 which will invoke all the other shell scripts in this folder. 
 
-- Step 1: Download the `seedvm.zip` and unzip it:
-  ```
-  wget URL (to be decided)
-  unzip seedvm.zip
-  ```
-
-- Step 2: After unzipping the file, you will see a `seedvm` folder.
-  Enter this folder, and run the following command to install software
-  and configure the system.
-  ```
-  ./install.sh
-  ```
-
-- **Note:** This shell script will download and install all the software needed for
-  the SEED labs. The whole process will take a few minutes. Please
-  don't leave, because during the installation of Wireshark, you will be asked
-  whether non-superuser should be able to capture packets.
-  Select `No`.
+**Note:** This installation script will download and install all the software needed for
+the SEED labs. The whole process will take a few minutes. Please
+don't leave, because during the installation of Wireshark, you will be asked
+whether non-superuser should be able to capture packets.
+Select `No`.
 
 
 ## 5. Additional Manual Steps 
