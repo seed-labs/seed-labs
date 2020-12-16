@@ -1,5 +1,9 @@
 # Install SEED VM on VirtualBox
 
+## Account Information of this VM
+
+- User name: `seed`
+- Password: `dees`
 
 ## Preparation 
 
