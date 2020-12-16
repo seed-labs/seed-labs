@@ -147,7 +147,7 @@ After rebooting the machine, the copy-and-paste will work.
 Most of the software package installation steps are automated with shell
 scripts. We will install many software packages, and we group them
 into individual shell scripts and they are stored in the  
-[`lab-setup/ubuntu20.04-vm/src-slim`](https://github.com/seed-labs/seed-labs/tree/master/lab-setup/ubuntu20.04-vm/src-slim) 
+[`lab-setup/ubuntu20.04-vm/src-vm`](https://github.com/seed-labs/seed-labs/tree/master/lab-setup/ubuntu20.04-vm/src-vm) 
 folders of the SEED Labs GitHub repo. The main script is called `main.sh`, 
 which will invoke all the other shell scripts in this folder. 
 
