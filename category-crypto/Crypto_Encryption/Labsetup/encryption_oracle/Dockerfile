@@ -1,10 +1,10 @@
-FROM handsonsecurity/seed-ubuntu:small
+FROM handsonsecurity/seed-ubuntu:dev
 
-# Copy the Flask app to the image
+# Copy the source code to the image
 COPY .  /oracle
 
 WORKDIR /oracle
 
-RUN apt-get update && apt-get install -y build-essential libssl-dev && apt-get clean && make
+RUN make
 
 CMD ./server
