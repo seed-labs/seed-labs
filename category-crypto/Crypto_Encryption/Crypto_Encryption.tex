@@ -68,6 +68,24 @@ Detailed coverage of the secret-key encryption can be found in the following:
 \paragraph{Lab Environment.} \seedenvironmentB
 
 
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Environment}
+
+In this lab, we use a container to run an encryption oracle
+and a padding oracle.
+It's IP address is:
+\begin{lstlisting}
+  10.9.0.80
+\end{lstlisting}
+
+
+\paragraph{Container Setup and Commands.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 % *******************************************
@@ -424,24 +442,25 @@ be randomly generated. In this task, we will see what is going to happen if
 IVs are predictable.
 
 Assume that Bob just sent out an encrypted message, and Eve knows that its
-content is either \texttt{Yes} or \texttt{No}; Eve can see the ciphertext and the IV used
+content is either \texttt{Yes} or \texttt{No};
+Eve can see the ciphertext and the IV used
 to encrypt the message, but since the encryption algorithm AES is quite
 strong, Eve has no idea what the actual content is. However, since Bob uses
 predictable IVs, Eve knows exactly what IV Bob is going to use next.
-The following summarizes what Bob and Eve know:
+% The following summarizes what Bob and Eve know:
 
-\begin{lstlisting}
-Encryption method: 128-bit AES with CBC mode.
+% \begin{lstlisting}
+% Encryption method: 128-bit AES with CBC mode.
 
-Key (in hex):    00112233445566778899aabbccddeeff (known only to Bob)
-Ciphertext (C1): bef65565572ccee2a9f9553154ed9498 (known to both)
-IV used on P1 (known to both)
-     (in ascii): 1234567890123456
-     (in hex)  : 31323334353637383930313233343536
-Next IV (known to both)
-     (in ascii): 1234567890123457
-     (in hex)  : 31323334353637383930313233343537
-\end{lstlisting}
+% Key (in hex):    00112233445566778899aabbccddeeff (known only to Bob)
+% Ciphertext (C1): bef65565572ccee2a9f9553154ed9498 (known to both)
+% IV used on P1 (known to both)
+%      (in ascii): 1234567890123456
+%      (in hex)  : 31323334353637383930313233343536
+% Next IV (known to both)
+%      (in ascii): 1234567890123457
+%      (in hex)  : 31323334353637383930313233343537
+% \end{lstlisting}
 
 
 A good cipher should not only tolerate the known-plaintext attack described
@@ -453,11 +472,29 @@ plaintext given by Eve; he does use a different IV for each plaintext,
 but unfortunately, the IVs he generates are not random, and they can
 always be predictable.
 
+Your job is to construct a message \texttt{ptext2} and ask Bob to encrypt it
+and give you the ciphertext.
+Your objective is to use this opportunity to figure out
+whether the actual content of \texttt{ptext1} is \texttt{Yes} or \texttt{No}.
+For this task, your are given an encryption oracle
+which simulates Bob and encrypts message with 128-bit AES with CBC mode.
+You can get access to the oracle by running the following command:
 
-Your job is to construct a message \texttt{P2} and ask Bob to encrypt it and give you the
-ciphertext. Your objective is to use this opportunity to
-figure out whether the actual content of \texttt{P1}  is \texttt{Yes} or \texttt{No}.
+\begin{lstlisting}
+$ nc 10.9.0.80 3000
+ciphertext 1: 1baf79c133609584792d34120807cf1a
+iv 1        : 5b6ac1907f992f11c81310ae81e3b017
+iv 2        : c9302ed6046bd711a228db5d68c8eaaf
 
+plaintext 2 :
+\end{lstlisting}
+
+After showing \texttt{ctext1}, \texttt{iv1} and \texttt{iv2},
+the oracle will require you to input \texttt{ptext2} as a hex string.
+Then it encrypts the \texttt{ptext2} with \texttt{iv2}
+and outputs the new ciphertext.
+You can try different \texttt{ptext2}s and terminate the oracle
+by pressing \text{Ctrl+C}.
 
 
 %\item \textbf{Task 6.4. Encrypting IV or not.}
@@ -481,12 +518,36 @@ generator, so it is unpredictable by adversaries.
 See another SEED lab (Random Number Generation Lab) for
 details on how to generate cryptographically strong pseudo random numbers.
 
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 7: Padding Oracle Attack}
+
+Typically, encryting messages using AES with CBC mode requires to
+pad the message with PKCS\#5 padding scheme.
+Some implementation of the deciphers verify
+if the padding is valid after decrypting the ciphertext,
+and throws an error if the padding is corrupted.
+
+In this task, we provide such a padding oracle hosted on port \texttt{5000}.
+The oracle provides a ciphertext.
+You may construct your own ciphertext and ask the oracle to check
+if the ciphertext has a valid padding.
+
+Your objective is to \begin{enumerate}
+  \item Find the length of the plaintext.
+  \item Find the actual content of the plaintext.
+\end{enumerate}
+
+There is a python script named \texttt{padding\_oracle\_attack.py}
+included in the \texttt{Labsetup.zip}.
+You may use the skeleton to develope your own program.
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 7: Programming using the Crypto Library}
+\section{Task 8: Programming using the Crypto Library}
 
 This task is mainly designed for students in Computer Science/Engineering
 or related fields, where programming is required. Students should
