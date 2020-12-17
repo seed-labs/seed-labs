@@ -472,29 +472,35 @@ plaintext given by Eve; he does use a different IV for each plaintext,
 but unfortunately, the IVs he generates are not random, and they can
 always be predictable.
 
-Your job is to construct a message \texttt{ptext2} and ask Bob to encrypt it
+Your job is to construct a message and ask Bob to encrypt it
 and give you the ciphertext.
 Your objective is to use this opportunity to figure out
-whether the actual content of \texttt{ptext1} is \texttt{Yes} or \texttt{No}.
+whether the actual content of Bob's secret message is \texttt{Yes} or \texttt{No}.
 For this task, your are given an encryption oracle
 which simulates Bob and encrypts message with 128-bit AES with CBC mode.
 You can get access to the oracle by running the following command:
 
 \begin{lstlisting}
 $ nc 10.9.0.80 3000
-ciphertext 1: 1baf79c133609584792d34120807cf1a
-iv 1        : 5b6ac1907f992f11c81310ae81e3b017
-iv 2        : c9302ed6046bd711a228db5d68c8eaaf
+Bob's secret message is either "Yes" or "No", without quotations.
+Bob's ciphertex: 1baf79c133609584792d34120807cf1a
+The IV used    : 5b6ac1907f992f11c81310ae00000000
 
-plaintext 2 :
+Next IV        : 5b6ac1907f992f11c81310ae00000001
+You plaintext  : <provided by you>
+
+Next IV        : 5b6ac1907f992f11c81310ae00000002
+You plaintext  : <provided by you>
 \end{lstlisting}
 
-After showing \texttt{ctext1}, \texttt{iv1} and \texttt{iv2},
-the oracle will require you to input \texttt{ptext2} as a hex string.
-Then it encrypts the \texttt{ptext2} with \texttt{iv2}
+After showing you the next IV, 
+the oracle will ask you to input a plaintext message (as a hex string, the 
+length of the data needs to be exactly 16 bytes, which is the block size of AES).
+The oracle will encrypt the message with the next IV, 
 and outputs the new ciphertext.
-You can try different \texttt{ptext2}s and terminate the oracle
-by pressing \text{Ctrl+C}.
+You can try different plaintexts, but keep in mind that every time, the 
+IV will change, but it is predictable. To simply your job, we let the 
+oracle print out the next IV. To exit from the interaction, press \text{Ctrl+C}.
 
 
 %\item \textbf{Task 6.4. Encrypting IV or not.}
@@ -523,25 +529,44 @@ details on how to generate cryptographically strong pseudo random numbers.
 % *******************************************
 \section{Task 7: Padding Oracle Attack}
 
-Typically, encryting messages using AES with CBC mode requires to
-pad the message with PKCS\#5 padding scheme.
-Some implementation of the deciphers verify
-if the padding is valid after decrypting the ciphertext,
-and throws an error if the padding is corrupted.
+Encrypting messages using AES with CBC mode needs to
+pad the message, and the PKCS\#5 padding scheme is typically used.
+Some systems, when decrypting a given ciphertext,
+verify whether the padding is valid or not,  
+and throw an error if the padding is invalid. This 
+seemly-harmless behavior enables a type of attack 
+called \textit{padding oracle attack}.
+The attack was originally published in 2002 by Serge Vaudenay, and 
+many well-known systems were found vulnerable to this type of 
+attacks, including Ruby on Rails, ASP.NET, and OpenSSL. 
 
-In this task, we provide such a padding oracle hosted on port \texttt{5000}.
-The oracle provides a ciphertext.
-You may construct your own ciphertext and ask the oracle to check
-if the ciphertext has a valid padding.
 
-Your objective is to \begin{enumerate}
+In this task, we provide a padding oracle hosted on port \texttt{5000}.
+The oracle first prints out a ciphertext of a secret message,
+and your ultimate job is to figure out the content of this message 
+using the padding oracle attack. 
+You can provide any ciphertext to the oracle, and the
+oracle will check whether the ciphertext has a valid padding or not, and 
+let you know the result (the oracle will not reveal the 
+secret message). Here is the task:
+
+\begin{enumerate}
   \item Find the length of the plaintext.
   \item Find the actual content of the plaintext.
 \end{enumerate}
 
-There is a python script named \texttt{padding\_oracle\_attack.py}
-included in the \texttt{Labsetup.zip}.
-You may use the skeleton to develope your own program.
+You can interact with the oracle via \texttt{"nc 10.9.0.80 5000"}.
+To simplify your job, we provide a python code named \texttt{padding\_oracle\_attack.py},
+which is included in \texttt{Labsetup.zip}. 
+This code will interact with the oracle server, and display the results
+returned from the oracle.  
+
+It should be noted that every time you make a new connection with the 
+oracle, the oracle will generate a new key and IV to encrypt the 
+secret message (the message is still the same). That is why
+you will see a different ciphertext. 
+However, if you stay inside an existing connection, 
+the key and IV will not change. 
 
 
 % *******************************************
@@ -654,6 +679,30 @@ e5accdb667e8e569b1b34f423508c15422631198454e104ceb658f5918800c22
 
 
 
+% *******************************************
+% SECTION
+% *******************************************
+\section{Acknowledgment}
+
+We would like to acknowledge the contribution made by the following people and organizations:
+
+\begin{itemize}
+\item Jiamin Shen developed the following: the code running inside the container, 
+      the padding oracle attack task, and the container version of the 
+      task on predictable IV.
+
+\item The US National Science Foundation provided the funding for the SEED project from 2002 
+      to 2020.
+
+\item Syracuse University provided the resources for the SEED project from 2001 onwards.
+\end{itemize}
+ 
+
+
+
+
+
+
 \end{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -717,3 +766,4 @@ satisfy the following requirements:
     execution (hint: try to fix your IV in your client program, then type the same message, and
     use Wireshark to see what you can infer about the encrypted data).
 \end{itemize}
+
