@@ -23,8 +23,9 @@ int main(int argc, char const *argv[])
     Bytes ctext1 = aes_encrypt(key.data(), iv.data(), ptext1);
 
     // print essential information
-    cout << "iv1   : " << hexlify(iv) << endl;
-    cout << "ctext1: " << hexlify(ctext1) << endl;
+    cout << "Bob's secret message is either \"Yes\" or \"No\", without quotations." << endl
+         << "Bob's ciphertex: " << hexlify(ctext1) << endl
+         << "The IV used    : " << hexlify(iv) << endl;
 
     srand(*reinterpret_cast<unsigned *>(&iv[8]));
     string buf;
@@ -33,8 +34,8 @@ int main(int argc, char const *argv[])
         (*reinterpret_cast<uint64_t *>(&iv[0])) += rand();
 
         cout << endl
-             << "iv    : " << hexlify(iv) << endl
-             << "ptext : ";
+             << "Next IV        : " << hexlify(iv) << endl
+             << "Your plaintext : ";
         cin >> buf;
 
         try
@@ -42,7 +43,7 @@ int main(int argc, char const *argv[])
             Bytes ptext2 = unhexlify(buf);
             Bytes ctext2 = aes_encrypt(key.data(), iv.data(), ptext2);
 
-            cout << "ctext : " << hexlify(ctext2) << endl;
+            cout << "Your ciphertext: " << hexlify(ctext2) << endl;
         }
         catch (const std::bad_alloc &err)
         {
