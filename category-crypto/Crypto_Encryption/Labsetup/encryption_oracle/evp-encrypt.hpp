@@ -23,7 +23,7 @@ Bytes aes_encrypt(const Byte key[KEY_SIZE], const Byte iv[BLOCK_SIZE], const Byt
     Bytes ctext;
 
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
-    int rc = EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_cbc(), NULL, key, iv);
+    int rc = EVP_EncryptInit_ex(ctx.get(), EVP_aes_128_cbc(), NULL, key, iv);
     if (rc != 1)
         throw std::runtime_error("EVP_EncryptInit_ex failed");
 
@@ -50,7 +50,7 @@ Bytes aes_decrypt(const Byte key[KEY_SIZE], const Byte iv[BLOCK_SIZE], const Byt
     Bytes rtext;
 
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
-    int rc = EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_cbc(), NULL, key, iv);
+    int rc = EVP_DecryptInit_ex(ctx.get(), EVP_aes_128_cbc(), NULL, key, iv);
     if (rc != 1)
         throw std::runtime_error("EVP_DecryptInit_ex failed");
 
