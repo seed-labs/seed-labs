@@ -31,20 +31,20 @@
 
 % *******************************************
 % SECTION
-% ******************************************* 
+% *******************************************
 \section{Overview}
 
 The learning objective of this lab is for students to get familiar with
-the concepts in the secret-key encryption and some common attacks 
+the concepts in the secret-key encryption and some common attacks
 on encryption. From this lab, students will gain a first-hand experience
-on encryption algorithms, encryption modes, paddings, and initial vector (IV). 
-Moreover, students will be able to use tools and write programs to 
-encrypt/decrypt messages. 
+on encryption algorithms, encryption modes, paddings, and initial vector (IV).
+Moreover, students will be able to use tools and write programs to
+encrypt/decrypt messages.
 
-Many common mistakes have been made by developers in using 
+Many common mistakes have been made by developers in using
 the encryption algorithms and modes. These mistakes
 weaken the strength of the encryption, and eventually
-lead to vulnerabilities. This lab exposes students to 
+lead to vulnerabilities. This lab exposes students to
 some of these mistakes, and ask students to launch attacks
 to exploit those vulnerabilities. This lab covers the following topics:
 
@@ -72,31 +72,31 @@ Detailed coverage of the secret-key encryption can be found in the following:
 
 % *******************************************
 % SECTION
-% ******************************************* 
+% *******************************************
 \section{Task 1: Frequency Analysis}
 
-It is well-known that monoalphabetic substitution cipher (also known as monoalphabetic cipher) 
-is not secure, because it can be subjected to frequency analysis. In this lab, you are given 
+It is well-known that monoalphabetic substitution cipher (also known as monoalphabetic cipher)
+is not secure, because it can be subjected to frequency analysis. In this lab, you are given
 a cipher-text that is encrypted using a monoalphabetic cipher; namely,
-each letter in the original text is replaced by another letter, 
+each letter in the original text is replaced by another letter,
 where the replacement does not vary (i.e., a letter is always replaced by the same letter
-during the encryption). Your job is to find out the original text using 
-frequency analysis. It is known that the original text is an English article. 
+during the encryption). Your job is to find out the original text using
+frequency analysis. It is known that the original text is an English article.
 
 
-In the following, we describe how we encrypt the original article, and what 
+In the following, we describe how we encrypt the original article, and what
 simplification we have made. Instructors can use the same
-method to encrypt an article of their choices, instead of asking 
+method to encrypt an article of their choices, instead of asking
 students to use the ciphertext made by us.
 
 \begin{itemize}
 
-\item Step 1: let us do some simplification to the original article. 
+\item Step 1: let us do some simplification to the original article.
 We convert all upper cases to lower cases, and then
 removed all the punctuations and numbers.  We do keep the spaces between words, so
-you can still see the boundaries of the words in the ciphertext. 
+you can still see the boundaries of the words in the ciphertext.
 In real encryption using monoalphabetic cipher,
-spaces will be removed. We keep the spaces to simplify the task. We did this using the 
+spaces will be removed. We keep the spaces to simplify the task. We did this using the
 following command:
 
 \begin{lstlisting}
@@ -107,7 +107,7 @@ $ tr -cd '[a-z][\n][:space:]' < lowercase.txt > plaintext.txt
 
 \item Step 2: let us generate the encryption key, i.e., the substitution table.
 We will permute the alphabet from \texttt{a}
-to \texttt{z} using Python, and use the permuted alphabet as the key. See the following program.   
+to \texttt{z} using Python, and use the permuted alphabet as the key. See the following program.
 
 \begin{lstlisting}
 $ python
@@ -117,10 +117,10 @@ $ python
 >>> ''.join(list)
 'sxtrwinqbedpvgkfmalhyuojzc'
 \end{lstlisting}
- 
 
-\item Step 3: we use the \texttt{tr} command to do the encryption. 
-We only encrypt letters, while leaving the space and return characters alone. 
+
+\item Step 3: we use the \texttt{tr} command to do the encryption.
+We only encrypt letters, while leaving the space and return characters alone.
 
 
 \begin{lstlisting}
@@ -132,71 +132,71 @@ $ tr 'abcdefghijklmnopqrstuvwxyz' 'sxtrwinqbedpvgkfmalhyuojzc' \
 
 
 We have created a ciphertext using a different encryption key (not the one described above).
-It is included in \texttt{Labsetup.zip} file, which  
-can be downloaded from the lab's website. Your job is to use the frequency analysis 
-to figure out the encryption key and the original plaintext.  
+It is included in \texttt{Labsetup.zip} file, which
+can be downloaded from the lab's website. Your job is to use the frequency analysis
+to figure out the encryption key and the original plaintext.
 
 
 
-\paragraph{Guidelines.} Using the frequency analysis, you can find 
+\paragraph{Guidelines.} Using the frequency analysis, you can find
 out the plaintext for some of the characters quite easily. For those characters, you may want
-to change them back to its plaintext, as you may be able to get more clues. 
-It is better to use capital letters for plaintext, so for the same letter, we 
-know which is plaintext and which is ciphertext. 
+to change them back to its plaintext, as you may be able to get more clues.
+It is better to use capital letters for plaintext, so for the same letter, we
+know which is plaintext and which is ciphertext.
 You can use the \texttt{tr} command to do this. For example, in the following,
 we replace letters \texttt{a}, \texttt{e}, and \texttt{t} in
 \texttt{in.txt} with letters \texttt{X}, \texttt{G}, \texttt{E}, respectively;
-the results are saved in \texttt{out.txt}. 
+the results are saved in \texttt{out.txt}.
 
 
 \begin{lstlisting}
 $ tr 'aet' 'XGE' < in.txt > out.txt
 \end{lstlisting}
- 
+
 
 There are many online resources that you can use. We list four useful links in
-the following: 
+the following:
 
 
 \begin{itemize}
 \item \url{http://www.richkni.co.uk/php/crypta/freq.php} : This website can produce the
-statistics from a ciphertext, including the single-letter frequencies, bigram 
-frequencies (2-letter sequence), and trigram frequencies (3-letter sequence), etc. 
+statistics from a ciphertext, including the single-letter frequencies, bigram
+frequencies (2-letter sequence), and trigram frequencies (3-letter sequence), etc.
 
 \item \url{https://en.wikipedia.org/wiki/Frequency_analysis}: This Wikipedia page
-provides frequencies for a typical English plaintext. 
+provides frequencies for a typical English plaintext.
 
 \item \url{https://en.wikipedia.org/wiki/Bigram}: Bigram frequency.
 
 \item  \url{https://en.wikipedia.org/wiki/Trigram}: Trigram frequency.
 \end{itemize}
- 
- 
+
+
 
 
 % *******************************************
 % SECTION
-% ******************************************* 
+% *******************************************
 \section{Task 2: Encryption using Different Ciphers and Modes}
 
-In this task, we will play with various encryption algorithms 
-and modes. You can use the following {\tt openssl enc} 
-command to encrypt/decrypt a file. To see the manuals, you can 
+In this task, we will play with various encryption algorithms
+and modes. You can use the following {\tt openssl enc}
+command to encrypt/decrypt a file. To see the manuals, you can
 type {\tt man openssl} and {\tt man enc}.
 
 \begin{lstlisting}
 $ openssl enc -ciphertype -e  -in plain.txt -out cipher.bin \
               -K  00112233445566778889aabbccddeeff \
-              -iv 0102030405060708 
+              -iv 0102030405060708
 \end{lstlisting}
 
 Please replace the {\tt ciphertype} with a specific cipher type,
 such as {\tt -aes-128-cbc}, {\tt -bf-cbc}, {\tt -aes-128-cfb},
-etc. In this task, you should try at least 3 different ciphers. 
-You can find the meaning of the 
-command-line options and all the supported cipher types 
+etc. In this task, you should try at least 3 different ciphers.
+You can find the meaning of the
+command-line options and all the supported cipher types
 by typing {\tt "man enc"}.
-We include some common options for the {\tt openssl enc} 
+We include some common options for the {\tt openssl enc}
 command in the following:
 
 \begin{lstlisting}
@@ -213,28 +213,28 @@ command in the following:
 
 % *******************************************
 % SECTION
-% ******************************************* 
-\section{Task 3: Encryption Mode -- ECB vs. CBC} 
+% *******************************************
+\section{Task 3: Encryption Mode -- ECB vs. CBC}
 
-The file {\tt pic\_original.bmp} is included in the 
-\texttt{Labsetup.zip} file, and it is a simple picture. 
-We would like to encrypt this picture, so people without the 
-encryption keys cannot know what is in the picture. Please 
-encrypt the file using the ECB (Electronic Code Book)  
-and CBC (Cipher Block Chaining) modes, and then do the following: 
+The file {\tt pic\_original.bmp} is included in the
+\texttt{Labsetup.zip} file, and it is a simple picture.
+We would like to encrypt this picture, so people without the
+encryption keys cannot know what is in the picture. Please
+encrypt the file using the ECB (Electronic Code Book)
+and CBC (Cipher Block Chaining) modes, and then do the following:
 
 \begin{enumerate}
-\item Let us treat the encrypted picture as 
+\item Let us treat the encrypted picture as
 a picture, and use a picture viewing software to display it. However,
-For the {\tt .bmp} file, the first 54 bytes contain the header information 
-about the picture, we have to set it correctly, so 
+For the {\tt .bmp} file, the first 54 bytes contain the header information
+about the picture, we have to set it correctly, so
 the encrypted file can be treated as a legitimate {\tt .bmp} file.
-We will replace the header of the encrypted picture 
-with that of the original picture. We can use 
-the \texttt{bless} hex editor tool (already installed 
-on our VM) to directly modify binary files. We can also use the 
+We will replace the header of the encrypted picture
+with that of the original picture. We can use
+the \texttt{bless} hex editor tool (already installed
+on our VM) to directly modify binary files. We can also use the
 following commands to get the header from \texttt{p1.bmp},
-the data from \texttt{p2.bmp} (from offset 55 to the end of the file), 
+the data from \texttt{p2.bmp} (from offset 55 to the end of the file),
 and then combine the header and data
 together into a new file.
 
@@ -245,63 +245,63 @@ $ cat header body > new.bmp
 \end{lstlisting}
 
 
-\item Display the encrypted picture using a picture 
+\item Display the encrypted picture using a picture
 viewing program (we have installed an image viewer program called
-\texttt{eog} on our VM). 
+\texttt{eog} on our VM).
 Can you derive any useful information
 about the original picture from the encrypted picture?
 Please explain your observations.
 
 \end{enumerate}
 
-Select a  picture of your choice, repeat the experiment above, 
-and report your observations. 
+Select a  picture of your choice, repeat the experiment above,
+and report your observations.
 
 
 
 
 % *******************************************
 % SECTION
-% ******************************************* 
+% *******************************************
 \section{Task 4: Padding}
 
 For block ciphers, when the size of a plaintext is not a multiple
-of the block size, padding may be required. 
-The PKCS\#5 padding scheme is widely used by many block 
-ciphers (see Chapter 21.4 of the SEED book for details). 
-We will conduct the following experiments to 
+of the block size, padding may be required.
+The PKCS\#5 padding scheme is widely used by many block
+ciphers (see Chapter 21.4 of the SEED book for details).
+We will conduct the following experiments to
 understand how this type of padding works:
 
 \begin{enumerate}
 \item Use ECB, CBC, CFB, and OFB modes to encrypt a file (you can pick
-any cipher).  Please report which modes have paddings and which ones 
+any cipher).  Please report which modes have paddings and which ones
 do not. For those that do not need paddings, please explain why.
 
 
-\item Let us create three files, which contain 5 bytes, 10 bytes, and 16 bytes, respectively. 
+\item Let us create three files, which contain 5 bytes, 10 bytes, and 16 bytes, respectively.
 We can use the following \texttt{"echo -n"} command to create such files. The following example
 creates a file \texttt{f1.txt} with length 5 (without the \texttt{-n} option, the length will
-be 6, because a newline character will be added by \texttt{echo}):  
+be 6, because a newline character will be added by \texttt{echo}):
 
 \begin{lstlisting}[backgroundcolor=]
 $ echo -n "12345" > f1.txt
 \end{lstlisting}
 
-We then use \texttt{"openssl enc -aes-128-cbc -e"} to encrypt these three files using 
+We then use \texttt{"openssl enc -aes-128-cbc -e"} to encrypt these three files using
 128-bit AES with CBC mode.  Please describe
-the size of the encrypted files. 
+the size of the encrypted files.
 
 We would like to see what is added to the padding during the encryption. To achieve
 this goal, we will decrypt these files using \texttt{"openssl enc -aes-128-cbc -d"}.
-Unfortunately, decryption by default will automatically remove the padding, making it 
+Unfortunately, decryption by default will automatically remove the padding, making it
 impossible for us to see the padding. However, the command does have an option called
-\texttt{"-nopad"}, which disables the padding, i.e., during the decryption, the command will not 
-remove the padded data. Therefore, by looking at the decrypted 
-data, we can see what data are used in the padding. 
-Please use this technique to figure out what paddings are added to the three files. 
+\texttt{"-nopad"}, which disables the padding, i.e., during the decryption, the command will not
+remove the padded data. Therefore, by looking at the decrypted
+data, we can see what data are used in the padding.
+Please use this technique to figure out what paddings are added to the three files.
 
 It should be noted that padding data may not be printable, so you need to
-use a hex tool to display the content. The following example shows 
+use a hex tool to display the content. The following example shows
 how to display a file in the hex format:
 
 \begin{lstlisting}
@@ -310,34 +310,34 @@ $ hexdump -C p1.txt
 $ xxd p1.txt
 00000000: 3132 3334 3536 3738 3949 4a4b 4c0a            123456789IJKL.
 \end{lstlisting}
- 
+
 \end{enumerate}
 
 
 
 % *******************************************
 % SECTION
-% ******************************************* 
-\section{Task 5: Error Propagation -- Corrupted Cipher Text} 
+% *******************************************
+\section{Task 5: Error Propagation -- Corrupted Cipher Text}
 
 
 To understand the error propagation property of various encryption modes, we would like to
 do the following exercise:
 
 \begin{enumerate}
-\item Create a text file that is at least 1000 bytes long.  
+\item Create a text file that is at least 1000 bytes long.
 \item Encrypt the file using the AES-128 cipher.
-\item Unfortunately, a single bit of the 55th byte in the encrypted 
-      file got corrupted. You can achieve this corruption using 
+\item Unfortunately, a single bit of the 55th byte in the encrypted
+      file got corrupted. You can achieve this corruption using
       the \texttt{bless} hex editor.
 \item Decrypt the corrupted ciphertext file using the correct key and IV.
 \end{enumerate}
 
-Please answer the following question: 
-How much information can you recover by decrypting the corrupted file, if the 
-encryption mode is ECB, CBC, CFB, or OFB, respectively? Please answer this 
+Please answer the following question:
+How much information can you recover by decrypting the corrupted file, if the
+encryption mode is ECB, CBC, CFB, or OFB, respectively? Please answer this
 question before you conduct this task, and then find out whether your answer
-is correct or wrong after you finish this task. 
+is correct or wrong after you finish this task.
 Please provide justification.
 
 
@@ -346,44 +346,44 @@ Please provide justification.
 
 % *******************************************
 % SECTION
-% ******************************************* 
+% *******************************************
 \section{Task 6: Initial Vector (IV) and Common Mistakes}
 
-Most of the encryption modes require an initial vector (IV). Properties of an IV depend 
+Most of the encryption modes require an initial vector (IV). Properties of an IV depend
 on the cryptographic scheme used. If we are not careful in selecting IVs,
-the data encrypted by us may not be secure at all, even though we are using 
+the data encrypted by us may not be secure at all, even though we are using
 a secure encryption algorithm and mode. The objective of this task is to
-help students understand the problems if an IV is not selected properly. 
-The detailed guidelines for this task is provided in 
+help students understand the problems if an IV is not selected properly.
+The detailed guidelines for this task is provided in
 Chapter 21.5 of the SEED book.
 
 
 % -------------------------------------------
 % SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 6.1. IV Experiment} 
+% -------------------------------------------
+\subsection{Task 6.1. IV Experiment}
 
 A basic requirement for IV is \textit{uniqueness},
 which means that no IV may be reused under the same key. To understand why,
 please encrypt the same plaintext using (1) two different IVs, and (2)
 the same IV. Please describe your observation, based on which, explain why
-IV needs to be unique.   
+IV needs to be unique.
 
 
 
 % -------------------------------------------
 % SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 6.2. Common Mistake: Use the Same IV} 
+% -------------------------------------------
+\subsection{Task 6.2. Common Mistake: Use the Same IV}
 
-One may argue that if the plaintext does not repeat, using 
-the same IV is safe. Let us look at the Output Feedback (OFB) mode. 
-Assume that the attacker gets hold of a plaintext (\texttt{P1})  
-and a ciphertext (\texttt{C1}) , 
-can he/she decrypt other encrypted messages if the IV is always the same? 
+One may argue that if the plaintext does not repeat, using
+the same IV is safe. Let us look at the Output Feedback (OFB) mode.
+Assume that the attacker gets hold of a plaintext (\texttt{P1})
+and a ciphertext (\texttt{C1}) ,
+can he/she decrypt other encrypted messages if the IV is always the same?
 You are given the following information, please try to figure out
 the actual content of \texttt{P2} based on \texttt{C2}, \texttt{P1},
-and \texttt{C1}. 
+and \texttt{C1}.
 
 
 \begin{lstlisting}
@@ -393,8 +393,8 @@ Ciphertext (C1): a469b1c502c1cab966965e50425438e1bb1b5f9037a4c159
 Plaintext  (P2): (unknown to you)
 Ciphertext (C2): bf73bcd3509299d566c35b5d450337e1bb175f903fafc159
 \end{lstlisting}
- 
-If we replace OFB in this experiment with 
+
+If we replace OFB in this experiment with
 CFB (Cipher Feedback), how much of \texttt{P2} can be revealed? You
 only need to answer the question; there is no need to demonstrate that.
 
@@ -402,8 +402,8 @@ The attack used in this experiment is called the \textit{known-plaintext
 attack}, which is an attack model for cryptanalysis where the
 attacker has access to both the plaintext and its
 encrypted version (ciphertext). If this can lead to
-the revealing of further secret information, the encryption scheme is 
-not considered as secure. 
+the revealing of further secret information, the encryption scheme is
+not considered as secure.
 
 %For OFB, if plaintext and ciphertext is know, we can get the random sequence (one-time
 %pad is not one-time).
@@ -414,17 +414,17 @@ not considered as secure.
 
 % -------------------------------------------
 % SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 6.3. Common Mistake: Use a Predictable IV} 
+% -------------------------------------------
+\subsection{Task 6.3. Common Mistake: Use a Predictable IV}
 
-From the previous tasks, we now know that IVs cannot 
-repeat. Another important requirement on IV is that 
+From the previous tasks, we now know that IVs cannot
+repeat. Another important requirement on IV is that
 IVs need to be unpredictable for many schemes, i.e., IVs need to
 be randomly generated. In this task, we will see what is going to happen if
-IVs are predictable. 
+IVs are predictable.
 
-Assume that Bob just sent out an encrypted message, and Eve knows that its 
-content is either \texttt{Yes} or \texttt{No}; Eve can see the ciphertext and the IV used 
+Assume that Bob just sent out an encrypted message, and Eve knows that its
+content is either \texttt{Yes} or \texttt{No}; Eve can see the ciphertext and the IV used
 to encrypt the message, but since the encryption algorithm AES is quite
 strong, Eve has no idea what the actual content is. However, since Bob uses
 predictable IVs, Eve knows exactly what IV Bob is going to use next.
@@ -435,32 +435,32 @@ Encryption method: 128-bit AES with CBC mode.
 
 Key (in hex):    00112233445566778899aabbccddeeff (known only to Bob)
 Ciphertext (C1): bef65565572ccee2a9f9553154ed9498 (known to both)
-IV used on P1 (known to both) 
-     (in ascii): 1234567890123456 
-     (in hex)  : 31323334353637383930313233343536 
+IV used on P1 (known to both)
+     (in ascii): 1234567890123456
+     (in hex)  : 31323334353637383930313233343536
 Next IV (known to both)
-     (in ascii): 1234567890123457 
-     (in hex)  : 31323334353637383930313233343537 
+     (in ascii): 1234567890123457
+     (in hex)  : 31323334353637383930313233343537
 \end{lstlisting}
 
 
 A good cipher should not only tolerate the known-plaintext attack described
-previously, it should also tolerate the \textit{chosen-plaintext attack}, 
+previously, it should also tolerate the \textit{chosen-plaintext attack},
 which is an attack model for cryptanalysis where the attacker can obtain the
-ciphertext for an arbitrary plaintext. Since AES is a strong cipher that 
-can tolerate the chosen-plaintext attack, Bob does not mind encrypting any 
-plaintext given by Eve; he does use a different IV for each plaintext, 
+ciphertext for an arbitrary plaintext. Since AES is a strong cipher that
+can tolerate the chosen-plaintext attack, Bob does not mind encrypting any
+plaintext given by Eve; he does use a different IV for each plaintext,
 but unfortunately, the IVs he generates are not random, and they can
 always be predictable.
 
 
 Your job is to construct a message \texttt{P2} and ask Bob to encrypt it and give you the
-ciphertext. Your objective is to use this opportunity to 
-figure out whether the actual content of \texttt{P1}  is \texttt{Yes} or \texttt{No}.  
+ciphertext. Your objective is to use this opportunity to
+figure out whether the actual content of \texttt{P1}  is \texttt{Yes} or \texttt{No}.
 
 
 
-%\item \textbf{Task 6.4. Encrypting IV or not.} 
+%\item \textbf{Task 6.4. Encrypting IV or not.}
 %Should IV be encrypted? See CBC mode. In this case, the actual IV becomes a constant. Do
 %an experiment (two plaintext with different IVs will generate the same ciphertext)
 
@@ -468,71 +468,71 @@ figure out whether the actual content of \texttt{P1}  is \texttt{Yes} or \texttt
 
 % -------------------------------------------
 % SUBSECTION
-% ------------------------------------------- 
+% -------------------------------------------
 \subsection{Additional Readings}
 
-There are more advanced cryptanalysis on IV that is beyond the scope of this lab. Students 
-can read the article posted in this URL: \url{https://defuse.ca/cbcmodeiv.htm}. 
+There are more advanced cryptanalysis on IV that is beyond the scope of this lab. Students
+can read the article posted in this URL: \url{https://defuse.ca/cbcmodeiv.htm}.
 Because the requirements on IV really depend on cryptographic schemes, it is hard to
 remember what properties should be maintained when we select an IV.
-However, we will be safe if we always use a new IV for each encryption, and the 
-new IV needs to be generated using a good pseudo random number 
-generator, so it is unpredictable by adversaries. 
-See another SEED lab (Random Number Generation Lab) for 
-details on how to generate cryptographically strong pseudo random numbers. 
+However, we will be safe if we always use a new IV for each encryption, and the
+new IV needs to be generated using a good pseudo random number
+generator, so it is unpredictable by adversaries.
+See another SEED lab (Random Number Generation Lab) for
+details on how to generate cryptographically strong pseudo random numbers.
 
 
 
 % *******************************************
 % SECTION
-% ******************************************* 
+% *******************************************
 \section{Task 7: Programming using the Crypto Library}
 
 This task is mainly designed for students in Computer Science/Engineering
 or related fields, where programming is required. Students should
-check with their professors to see whether this task is required 
+check with their professors to see whether this task is required
 for their courses or not.
 
 
-In this task, you are given a plaintext and a ciphertext, and 
-your job is to find the key that is used for the encryption. 
+In this task, you are given a plaintext and a ciphertext, and
+your job is to find the key that is used for the encryption.
 You do know the following facts:
 
-\begin{itemize} 
-\item The {\tt aes-128-cbc} cipher is used for the encryption. 
+\begin{itemize}
+\item The {\tt aes-128-cbc} cipher is used for the encryption.
 \item The key used to encrypt this plaintext is an English
-word shorter than 16 characters; the word can be found from a typical 
+word shorter than 16 characters; the word can be found from a typical
 English dictionary.  Since the word has less than 16 characters (i.e. 128
-bits), pound signs (\texttt{\#}: hexadecimal value is \texttt{0x23}) 
+bits), pound signs (\texttt{\#}: hexadecimal value is \texttt{0x23})
 are appended to the end of the word to form a key of 128 bits.
-\end{itemize} 
-  
+\end{itemize}
 
-Your goal is to write a program to 
-find out the encryption key. You can download a English word list 
+
+Your goal is to write a program to
+find out the encryption key. You can download a English word list
 from the Internet.  We have also included one in
-the \texttt{Labsetup.zip} file.  
+the \texttt{Labsetup.zip} file.
 The plaintext, ciphertext, and IV are listed in the following:
 
 
 \begin{lstlisting}
 Plaintext (total 21 characters): This is a top secret.
-Ciphertext (in hex format): 764aa26b55a4da654df6b19e4bce00f4  
-                            ed05e09346fb0e762583cb7da2ac93a2 
+Ciphertext (in hex format): 764aa26b55a4da654df6b19e4bce00f4
+                            ed05e09346fb0e762583cb7da2ac93a2
 IV (in hex format):         aabbccddeeff00998877665544332211
 \end{lstlisting}
 
 
 
-You need to pay attention to the following issues: 
+You need to pay attention to the following issues:
 
-\begin{itemize} 
-\item If you choose to store the plaintext message in 
+\begin{itemize}
+\item If you choose to store the plaintext message in
 a file, and feed the file to your program, you need to check
 whether the file length is 21. If you type the message in a text editor,
 you need to be aware that some editors may add a special
 character to the end of the file. The easiest way to store the message
-in a file is to use the following 
+in a file is to use the following
 command (the \texttt{-n} flag
 tells \texttt{echo} not to  add a trailing newline):
 
@@ -540,10 +540,10 @@ tells \texttt{echo} not to  add a trailing newline):
 \begin{lstlisting}[backgroundcolor=]
 $ echo -n "This is a top secret." > file
 \end{lstlisting}
- 
-\item In this task, you are supposed to write your own program 
-to invoke the crypto library. No credit will be given 
-if you simply use the {\tt openssl} commands to do this task. 
+
+\item In this task, you are supposed to write your own program
+to invoke the crypto library. No credit will be given
+if you simply use the {\tt openssl} commands to do this task.
 Sample code can be found from the following URL:
 \begin{lstlisting}[backgroundcolor=]
  https://www.openssl.org/docs/man1.0.2/crypto/EVP_EncryptInit.html
@@ -551,17 +551,17 @@ Sample code can be found from the following URL:
 
 
 \item When you compile your code using  \texttt{gcc},
-do not forget to include the \texttt{-lcrypto} flag, because your code 
-needs the \texttt{crypto} library. See the following example: 
+do not forget to include the \texttt{-lcrypto} flag, because your code
+needs the \texttt{crypto} library. See the following example:
 
 \begin{lstlisting}[backgroundcolor=]
-$ gcc -o myenc myenc.c -lcrypto 
+$ gcc -o myenc myenc.c -lcrypto
 \end{lstlisting}
 
-\end{itemize} 
+\end{itemize}
 
-\paragraph{Note to instructors.} 
-We encourage instructors to generate their own plaintext and ciphertext using 
+\paragraph{Note to instructors.}
+We encourage instructors to generate their own plaintext and ciphertext using
 a different key; this way students will not be able to get the answer from
 another place or from previous courses. Instructors can use the
 following commands to achieve this goal (please replace the word \texttt{example}
@@ -579,7 +579,7 @@ $ openssl enc -aes-128-cbc -e -in plaintext.txt -out ciphertext.bin \
 $ xxd -p ciphertext.bin
 e5accdb667e8e569b1b34f423508c15422631198454e104ceb658f5918800c22
 \end{lstlisting}
- 
+
 
 
 % *******************************************
@@ -599,62 +599,60 @@ e5accdb667e8e569b1b34f423508c15422631198454e104ceb658f5918800c22
 
 
 
-% This part is no longer used 
+% This part is no longer used
 \subsection{Task 6: Encrypting UDP Communication}
 
 \mynote{
 {\bf For Instructor:} The goal of Task 6 and Task 7 is to get students to use encryption
 programmatically. It is not very necessary to do both tasks. Instructors
 can choose either one of them (or both). If the encryption topic is covered
-in the context of a Network Security class, Task 6 is a better choice, 
-because it uses encryption to secure a communication channel. 
+in the context of a Network Security class, Task 6 is a better choice,
+because it uses encryption to secure a communication channel.
 }
 
 \noindent
 So far, we have learned how to use the existing tools provided by
 \openssl to encrypt and decrypt messages. We would like to build our own
 tools. Therefore,  the objective of this task
-is to learn how to use \openssl's  crypto library to encrypt/decrypt 
-messages in programs. 
+is to learn how to use \openssl's  crypto library to encrypt/decrypt
+messages in programs.
 
 
-OpenSSL provides an API called EVP, which 
-is a high-level interface to cryptographic functions. 
+OpenSSL provides an API called EVP, which
+is a high-level interface to cryptographic functions.
 Although OpenSSL also has direct interfaces for each individual
-encryption algorithm, the EVP library provides 
-a common interface for various encryption algorithms. 
-To ask EVP to use a specific algorithm, we simply need to 
+encryption algorithm, the EVP library provides
+a common interface for various encryption algorithms.
+To ask EVP to use a specific algorithm, we simply need to
 pass our choice to the EVP interface.
-A sample code is given in 
+A sample code is given in
 \url{http://www.openssl.org/docs/crypto/EVP_EncryptInit.html}.
-Please get familiar with this program. 
+Please get familiar with this program.
 
 
 In this task, we will build a client/server program, which use the UDP protocol and
-the communication is encrypted. The client and server side of the program should 
+the communication is encrypted. The client and server side of the program should
 satisfy the following requirements:
 
 \begin{itemize}
-  \item The data sent between the client and server should be encrypted using 
+  \item The data sent between the client and server should be encrypted using
     an encryption algorithm and mode of your choice (e.g. \texttt{aes-128-cbc}).
 
-  \item The client program runs in a loop, and keeps asking the user to type a message. 
-    Once the user hits the return, the message will be sent to the server using UDP. 
-    Upon receiving the UDP packet, the server simply prints out the decrypted message. 
+  \item The client program runs in a loop, and keeps asking the user to type a message.
+    Once the user hits the return, the message will be sent to the server using UDP.
+    Upon receiving the UDP packet, the server simply prints out the decrypted message.
 
   \item The client and server need a common secret key to encrypt the communication.
-    Obviously, they cannot send the key to each other in plaintext. In practice, they 
+    Obviously, they cannot send the key to each other in plaintext. In practice, they
     need to run a key-exchange protocol to get the key. We will cover that protocol
     after we have learned the public key encryption. In this task, we assume that the client
-    and server has already obtained a secret key between them, so we will just    
-    type in the key as an argument when we run the client and server programs. 
+    and server has already obtained a secret key between them, so we will just
+    type in the key as an argument when we run the client and server programs.
     {\bf Note:} you cannot hardcode the key in your program, because it is a very bad habit.
 
-  \item The Initial Vector (IV) needs to be randomly generated by the client, 
+  \item The Initial Vector (IV) needs to be randomly generated by the client,
     and should be sent to the server in plaintext. You can put the IV at the beginning of the
     UDP data. In your report, please answer why the client cannot reuse the IV throughout its
     execution (hint: try to fix your IV in your client program, then type the same message, and
-    use Wireshark to see what you can infer about the encrypted data). 
+    use Wireshark to see what you can infer about the encrypted data).
 \end{itemize}
-
-
