@@ -74,11 +74,9 @@ Detailed coverage of the secret-key encryption can be found in the following:
 \section{Lab Environment}
 
 In this lab, we use a container to run an encryption oracle
-and a padding oracle.
-It's IP address is:
-\begin{lstlisting}
-  10.9.0.80
-\end{lstlisting}
+and a padding oracle. The container is only needed in Task 
+6.3 and Task 7, so you do not need to start the container 
+for other tasks. 
 
 
 \paragraph{Container Setup and Commands.}
@@ -542,17 +540,18 @@ attacks, including Ruby on Rails, ASP.NET, and OpenSSL.
 
 
 In this task, we provide a padding oracle hosted on port \texttt{5000}.
-The oracle first prints out a ciphertext of a secret message,
-and your ultimate job is to figure out the content of this message 
+The oracle has a secret message inside, and it 
+prints out the ciphertext of this secret message.
+Your ultimate goal is to figure out what this message is
 using the padding oracle attack. 
 You can provide any ciphertext to the oracle, and the
 oracle will check whether the ciphertext has a valid padding or not, and 
-let you know the result (the oracle will not reveal the 
-secret message). Here is the task:
+let you know the result (the oracle will never reveal the 
+secret message). You need to do the following:
 
 \begin{enumerate}
-  \item Find the length of the plaintext.
-  \item Find the actual content of the plaintext.
+  \item Find the length of the secret message
+  \item Find the actual content of the secret message
 \end{enumerate}
 
 You can interact with the oracle via \texttt{"nc 10.9.0.80 5000"}.
