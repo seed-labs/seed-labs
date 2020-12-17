@@ -24,7 +24,8 @@ int main(int argc, char *argv[])
   RAND_bytes(&key[0], KEY_SIZE);
   RAND_bytes(&iv[0], BLOCK_SIZE);
 
-  // plaintext, ciphertext
+  // Note: The actual secret message used in the lab hosted
+  //       on the SEED website is different from this one.
   string msg = "This is a top secret!";
   Bytes ptext(msg.begin(), msg.end());
   Bytes ctext;
