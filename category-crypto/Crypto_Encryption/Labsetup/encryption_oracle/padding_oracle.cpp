@@ -38,19 +38,17 @@ int main(int argc, char *argv[])
   {
     cin >> buf;
 
-    if (buf.size() % 2)
-    {
-      cout << "Invalid" << endl;
-      continue;
-    }
-
-    Bytes input = unhexlify(buf);
-    Bytes ctext2(input.begin() + BLOCK_SIZE, input.end());
-
     try
     {
+      Bytes input = unhexlify(buf);
+      Bytes ctext2(input.begin() + BLOCK_SIZE, input.end());
+
       aes_decrypt(key.data(), input.data(), ctext2);
       cout << "Valid" << endl;
+    }
+    catch (const std::bad_alloc &err)
+    {
+      cout << "Invalid hex string" << endl;
     }
     catch (const std::runtime_error &err)
     {
