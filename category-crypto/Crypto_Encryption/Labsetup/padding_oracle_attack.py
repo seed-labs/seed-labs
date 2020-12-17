@@ -2,7 +2,6 @@
 import socket
 from binascii import hexlify, unhexlify
 
-
 class PaddingOracle:
 
     def __init__(self, host, port) -> None:
@@ -18,7 +17,7 @@ class PaddingOracle:
 
     def _recv(self):
         resp = self.s.recv(4096).decode().strip()
-        return resp == 'Valid'
+        return resp 
 
     def _send(self, hexstr: bytes):
         self.s.send(hexstr + b'\n')
@@ -30,6 +29,7 @@ class PaddingOracle:
 if __name__ == "__main__":
     oracle = PaddingOracle('10.9.0.80', 5000)
 
+    # This ciphertext is returned from the oracle
     ctext = oracle.ctext
 
     ######## Write your code below ########
