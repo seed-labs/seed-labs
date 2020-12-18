@@ -27,9 +27,7 @@ int main(int argc, char *argv[])
   RAND_bytes(&iv[0], BLOCK_SIZE);
 
   Bytes ptext = aes_decrypt(SECRET_KEY.data(), SECRET_IV.data(), SECRET_CTEXT);
-  Bytes ctext;
-
-  ctext = aes_encrypt(key.data(), iv.data(), ptext);
+  Bytes ctext = aes_encrypt(key.data(), iv.data(), ptext);
 
   cout << hexlify(iv) << hexlify(ctext) << endl;
 
