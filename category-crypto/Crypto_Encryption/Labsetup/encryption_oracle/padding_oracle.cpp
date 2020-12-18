@@ -13,6 +13,8 @@
 #include "evp-encrypt.hpp"
 #include "utils.hpp"
 
+#include "secret.hpp"
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -24,13 +26,8 @@ int main(int argc, char *argv[])
   RAND_bytes(&key[0], KEY_SIZE);
   RAND_bytes(&iv[0], BLOCK_SIZE);
 
-  // Note: The actual secret message used in the lab hosted
-  //       on the SEED website is different from this one.
-  string msg = "This is a top secret!";
-  Bytes ptext(msg.begin(), msg.end());
-  Bytes ctext;
-
-  ctext = aes_encrypt(key.data(), iv.data(), ptext);
+  Bytes ptext = aes_decrypt(SECRET_KEY.data(), SECRET_IV.data(), SECRET_CTEXT);
+  Bytes ctext = aes_encrypt(key.data(), iv.data(), ptext);
 
   cout << hexlify(iv) << hexlify(ctext) << endl;
 
