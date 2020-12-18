@@ -18,7 +18,8 @@ using Bytes = std::vector<Byte>;
 
 using EVP_CIPHER_CTX_free_ptr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>;
 
-Bytes aes_encrypt(const Byte key[KEY_SIZE], const Byte iv[BLOCK_SIZE], const Bytes &ptext)
+template <class Container>
+Bytes aes_encrypt(const Byte key[KEY_SIZE], const Byte iv[BLOCK_SIZE], const Container &ptext)
 {
     Bytes ctext;
 
@@ -45,7 +46,8 @@ Bytes aes_encrypt(const Byte key[KEY_SIZE], const Byte iv[BLOCK_SIZE], const Byt
     return ctext;
 }
 
-Bytes aes_decrypt(const Byte key[KEY_SIZE], const Byte iv[BLOCK_SIZE], const Bytes &ctext)
+template <class Container>
+Bytes aes_decrypt(const Byte key[KEY_SIZE], const Byte iv[BLOCK_SIZE], const Container &ctext)
 {
     Bytes rtext;
 
