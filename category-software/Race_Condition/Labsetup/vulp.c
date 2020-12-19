@@ -1,6 +1,7 @@
 /*  vulp.c  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
@@ -15,6 +16,9 @@ int main()
 
      if(!access(fn, W_OK)){
          fp = fopen(fn, "a+");
+	 if (!fp){
+	    perror("Open failed"); exit(1);
+	 }
          fwrite("\n", sizeof(char), 1, fp);
          fwrite(buffer, sizeof(char), strlen(buffer), fp);
          fclose(fp);
