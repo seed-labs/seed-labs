@@ -293,7 +293,7 @@ the environment variables in the current process.
 
 extern char **environ;
 
-void main()
+int main()
 {
   int i = 0;
   while (environ[i] != NULL) {
