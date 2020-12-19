@@ -133,7 +133,7 @@ using {\tt a.out > child} (assuming that {\tt a.out} is your
 executable file name).
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -199,7 +199,7 @@ program, and describe your observation. This program simply executes
 a program called {\tt /usr/bin/env}, which prints out the environment
 variables of the current process.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -223,7 +223,7 @@ int main()
 in Line \ding{192} to the following; describe your observation.
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 execve("/usr/bin/env", argv, environ);
 \end{lstlisting}
 
@@ -253,7 +253,7 @@ is passed to the new program {\tt /bin/sh}. Please compile and run the following
 to verify this.
 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -288,7 +288,7 @@ process from the user's process.
 \paragraph{Step 1.} Write the following program that can print out all
 the environment variables in the current process.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -298,8 +298,8 @@ void main()
 {
   int i = 0;
   while (environ[i] != NULL) {
-     printf("%s\n", environ[i]);
-     i++;
+    printf("%s\n", environ[i]);
+    i++;
   }
 }
 \end{lstlisting}
@@ -363,11 +363,11 @@ The \setuid program below is supposed to execute the {\tt /bin/ls} command;
 however, the programmer only uses the relative path for the {\tt ls}
 command, rather than the absolute path:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 int main()
 {
-     system("ls");
-     return 0;
+  system("ls");
+  return 0;
 }
 \end{lstlisting}
 
@@ -438,11 +438,11 @@ behavior of dynamic loader/linker when running a normal program.
 Please follow these steps:
 
 
-  \begin{enumerate}
+\begin{enumerate}
   \item Let us build a dynamic link library. Create the following program,
   and name it {\tt mylib.c}. It basically overrides the {\tt sleep()} function
   in {\tt libc}:
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 #include <stdio.h>
 void sleep (int s)
 {
@@ -469,7 +469,7 @@ $ export LD_PRELOAD=./libmylib.so.1.0.1
   \item Finally, compile the following program {\tt myprog}, and
   in the same directory as the above dynamic link library {\tt
   libmylib.so.1.0.1}:
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 /* myprog.c */
 int main()
 {
@@ -533,7 +533,7 @@ as a root, it can display any file Bob specifies. However, since the program
 has no write operations, Vince is very sure that Bob cannot use this special program
 to modify any file.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -608,7 +608,7 @@ and describe what you have observed.
 Will the file {\tt /etc/zzz} be modified? Please explain
 your observation.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
