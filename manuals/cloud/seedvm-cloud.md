@@ -16,8 +16,8 @@ so others can benefit.
 
 - [Amazon AWS](./create_vm_aws.md)
 - [Google Cloud](./create_vm_gcp.md)
-- [Microsoft Azure](./create_vm_azure.md) (not finished yet)
-- [Alibaba Cloud](./create_vm_ali.md) (in Chinese; not finished yet)
+- [Microsoft Azure](./create_vm_azure.md) 
+- [Alibaba Cloud](./create_vm_ali.md) (in Chinese)
 
 
 If you used the `SEEDUbuntu20.04LTS` community AMI image in AWS in this step, 
