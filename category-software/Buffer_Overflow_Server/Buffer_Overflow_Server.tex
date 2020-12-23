@@ -535,7 +535,12 @@ Although the actual buffer size can be found in
 information in the attack, because in the real world, it is 
 unlikely that you will have this file. 
 To simplify the task, we do assume that the
-the range of the buffer size is known:
+the range of the buffer size is known.
+Another fact that
+may be useful to you is that, due to the memory alignment,
+the value stored in the
+frame pointer is always multiple of four (for 32-bit programs).
+
 
 \begin{lstlisting}
 Range of the buffer size (in bytes): [100, 300]

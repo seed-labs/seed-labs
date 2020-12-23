@@ -75,7 +75,7 @@ Detailed coverage of the buffer-overflow attack can be found in the following:
 
 
 \paragraph{Note for instructors.} 
-Instructors can customize this lab by choosing a value
+Instructors can customize this lab by choosing values
 for \texttt{L1}, ..., \texttt{L4}. See    
 Section~\ref{sec:vulnerable_program} for details.
 Depending on the background of students and the time allocated 
@@ -600,7 +600,11 @@ to use that information in your attack.
 
 Your task is to get the vulnerable program to run your shellcode 
 under this constraint. We assume that you do know the range of the 
-buffer size, which is from 100 to 400 bytes. 
+buffer size, which is from 100 to 400 bytes. Another fact that 
+may be useful to you is that, due to the memory alignment,
+the value stored in the 
+frame pointer is always multiple of four (for 32-bit programs). 
+
 Please be noted, you are only allowed
 to construct one payload that works for any buffer size
 within this range.  You will not get all the credits if you
@@ -609,7 +613,7 @@ each time. The more you try, the easier it will be detected
 and defeated by the victim. That's why minimizing the number
 of trials is important for attacks.
 In your lab report, you need to describe your method,
-and provide evidences.
+and provide evidences. 
 
 
 
