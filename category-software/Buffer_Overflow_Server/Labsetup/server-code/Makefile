@@ -5,7 +5,7 @@ TARGET   = server stack-L1 stack-L2 stack-L3 stack-L4
  
 # These numbers are not the same as those used in the lab setup
 L1 = 100
-L2 = 100 
+L2 = 100
 L3 = 200
 L4 = 80
 
