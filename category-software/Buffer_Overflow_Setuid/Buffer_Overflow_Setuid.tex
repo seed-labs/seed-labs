@@ -76,16 +76,16 @@ Detailed coverage of the buffer-overflow attack can be found in the following:
 
 \paragraph{Note for instructors.} 
 Instructors should customize this lab by choosing a value
-for \texttt{L1}, \texttt{L2}, and \texttt{L3}. See    
+for \texttt{L1}, ..., \texttt{L4}. See    
 Section~\ref{sec:vulnerable_program} for details.
 Depending on the background of students and the time allocated 
 for this lab, instructors can also make the 
-Level-2 and Level-3 tasks optional. 
+Level-2, Level-3, and Level-4 tasks optional. 
 The Level-1 task is sufficient to cover the basics of 
-the buffer-overflow vulnerability. Levels 2 and 3
+the buffer-overflow vulnerability. Levels 2 to 4
 increase the difficulties of the attack. 
 All the countermeasure tasks are based on the Level-1 task, 
-so skipping Levels 2 and 3 will not affect those tasks. 
+so skipping the other levels does not affect those tasks. 
 
 
 % *******************************************
@@ -309,8 +309,7 @@ int main(int argc, char **argv)
 
    strcpy(code, shellcode); // Copy the shellcode to the stack
    int (*func)() = (int(*)())code;
-
-   func();    // Invoke the shellcode from the stack
+   func();                 // Invoke the shellcode from the stack
    return 1;
 } 
 \end{lstlisting}
@@ -418,7 +417,7 @@ $ sudo chmod 4755 stack          (*@\ding{193}@*)
 
 The compilation and setup commands are already included in \texttt{Makefile}, 
 so we just need to type \texttt{make} to execute those commands. 
-The variables \texttt{L1}, \texttt{L2}, and \texttt{L3} are 
+The variables \texttt{L1}, ..., \texttt{L4} are 
 set in \texttt{Makefile}; they will be used during the compilation. 
 If the instructor has chosen a different set of values 
 for these variables, you need to change them in \texttt{Makefile}.
@@ -429,14 +428,15 @@ To make the lab slightly different from the one offered in the past,
 instructors can change the value for \texttt{BUF\_SIZE} by requiring 
 students to compile the server code using different \texttt{BUF\_SIZE} values. 
 In \texttt{Makefile}, the \texttt{BUF\_SIZE} value is set by
-three variables \texttt{L1}, \texttt{L2}, and \texttt{L3}. 
+four variables \texttt{L1}, ..., \texttt{L4}. 
 Instructors should pick the values for these variables based 
 on the following suggestions:
 
 \begin{itemize}[noitemsep]
 \item \texttt{L1}: pick a number between 100 and 400 
 \item \texttt{L2}: pick a number between 100 and 400 
-\item \texttt{L3}: we need to keep this number smaller, so the Level-3 task
+\item \texttt{L3}: pick a number between 100 and 400 
+\item \texttt{L4}: we need to keep this number smaller, so the Level-3 task
 is different from the Level-2 task. Since there are not many choices,
 we will fix this number at 10.
 \end{itemize}
@@ -586,10 +586,40 @@ receive many points.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 4: Launching Attack on 64-bit Program (Level 2)}
+\section{Task 4: Launching Attack without Knowing Buffer Size (Level 2)}
+
+In the Level-1 attack, using \texttt{gdb}, we get to know 
+the size of the buffer. In the real world, this piece of information
+may be hard to get. For example, if the target is a server program
+running on a remote machine, we will not be able to get a copy
+of the binary or source code. In this task, we are going to add a 
+constraint: you can still use \texttt{gdb}, but you are not allowed
+to derive the buffer size from your investigation. Actually, the 
+buffer size is provided in \texttt{Makefile}, but you are not allowed
+to use that information in your attack.
+
+Your task is to get the vulnerable program to run your shellcode 
+under this constraint. We assume that you do know the range of the 
+buffer size, which is from 100 to 400 bytes. 
+Please be noted, you are only allowed
+to construct one payload that works for any buffer size
+within this range.  You will not get all the credits if you
+use the brute-force method, i.e., trying one buffer size
+each time. The more you try, the easier it will be detected
+and defeated by the victim. That's why minimizing the number
+of trials is important for attacks.
+In your lab report, you need to describe your method,
+and provide evidences.
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 5: Launching Attack on 64-bit Program (Level 3)}
 
 In this task, we will compile the vulnerable program 
-into a 64-bit binary called \texttt{stack-L2}.  
+into a 64-bit binary called \texttt{stack-L3}.  
 We will launch attacks on this program. The compilation and setup
 commands are already included in \texttt{Makefile}. Similar to
 the previous task, detailed explanation of your attack needs to be provided 
@@ -626,10 +656,10 @@ problem is the most difficult challenge in this attack.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 5: Launching Attack on 64-bit Program (Level 3)}
+\section{Task 6: Launching Attack on 64-bit Program (Level 4)}
 
 
-The target program (\texttt{stack-L3}) in this task is similar to the one in the Level 2,
+The target program (\texttt{stack-L4}) in this task is similar to the one in the Level 2,
 except that the buffer size is extremely small. We set the 
 buffer size to 10, while in Level 2, the buffer size is much larger. 
 Your goal is the same: get the root shell by attacking this \setuid program. 
@@ -643,7 +673,7 @@ those challenges in your attack.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tasks 6: Defeating \texttt{dash}'s Countermeasure}
+\section{Tasks 7: Defeating \texttt{dash}'s Countermeasure}
 
 The \texttt{dash} shell in the Ubuntu OS 
 drops privileges when it detects that the effective UID does not 
@@ -715,7 +745,7 @@ are not required, feel free to do that and see whether they work or not.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 7: Defeating Address Randomization}
+\section{Task 8: Defeating Address Randomization}
 
 On 32-bit Linux machines, stacks only have 19 bits of entropy, which means the stack base
 address can have $2^{19} = 524,288$ possibilities.  This number is not that high and can be
@@ -767,13 +797,13 @@ Let it run overnight. Who knows, you may be very lucky.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tasks 8: Experimenting with Other Countermeasures}
+\section{Tasks 9: Experimenting with Other Countermeasures}
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 8.a: Turn on the StackGuard Protection}
+\subsection{Task 9.a: Turn on the StackGuard Protection}
 
 Many compiler, such as \texttt{gcc}, implements a security mechanism called
 \textit{StackGuard} to prevent buffer overflows. In the presence of this
@@ -796,7 +826,7 @@ default. Launch the attack; report and explain your observations.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 8.b: Turn on the Non-executable Stack Protection}
+\subsection{Task 9.b: Turn on the Non-executable Stack Protection}
 
 \input{part_nonexecutable_stack}
 
