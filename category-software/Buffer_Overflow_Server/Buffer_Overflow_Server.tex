@@ -73,6 +73,21 @@ Detailed coverage of the buffer-overflow attack can be found in the following:
 \paragraph{Lab environment.} \seedenvironmentC
 
 
+\paragraph{Note for instructors.}
+Instructors can customize this lab by choosing values
+for \texttt{L1}, ..., \texttt{L4}. See
+Section~\ref{sec:vulnerable_program} for details.
+Depending on the background of students and the time allocated
+for this lab, instructors can also make the
+Level-2, Level-3, and Level-4 tasks (or some of them) optional.
+The Level-1 task is sufficient to cover the basics of
+the buffer-overflow attacks. Levels 2 to 4
+increase the attack difficulties.
+All the countermeasure tasks are based on the Level-1 task,
+so skipping the other levels does not affect those tasks.
+
+
+
 
 % *******************************************
 % SECTION
@@ -99,6 +114,7 @@ $ sudo /sbin/sysctl -w kernel.randomize_va_space=0
 % SUBSECTION
 % -------------------------------------------
 \subsection{The Vulnerable Program} 
+\label{sec:vulnerable_program}
 
 The vulnerable program used in this lab is called
 \texttt{stack.c}, which is in the \texttt{server-code} folder.
@@ -157,11 +173,6 @@ they can get a root shell on the server.
 
 
 \paragraph{Compilation.}
-For the lab activities, there is no need for students to compile the code, 
-because the binaries of the code are already provided in the container folder. 
-However, we would like to
-show students how the binaries are created. 
-
 To compile the above vulnerable program, we need to 
 turn off the StackGuard and the non-executable stack protections 
 using the \texttt{-fno-stack-protector} and \texttt{"-z execstack"} options.
@@ -186,23 +197,34 @@ The compilation commands are already provided in \texttt{Makefile}. To compile
 the code, you need to type \texttt{make} to execute those commands.
 The variables \texttt{L1}, \texttt{L2}, \texttt{L3}, and \texttt{L4} are
 set in \texttt{Makefile}; they will be used during the compilation.
+After the compilation, we need to copy the binary into
+the \texttt{bof-containers} folder, so they can be used by the 
+containers. The following commands conduct compilation and 
+installation.
 
+\begin{lstlisting}
+$ make
+$ make install
+\end{lstlisting}
  
-You can compile the code for your own experiment. However, in 
-the \texttt{bof-containers} folder, the binaries are already provided. 
-They are compiled with different \texttt{BUF\_SIZE} values, and these 
-values are secrets unknown to students. Students should not change these 
-binaries. 
 
+\paragraph{For instructors (customization).}
+To make the lab slightly different from the one offered in the past,
+instructors can change the value for \texttt{BUF\_SIZE} by requiring
+students to compile the server code using different \texttt{BUF\_SIZE} values.
+In \texttt{Makefile}, the \texttt{BUF\_SIZE} value is set by
+four variables \texttt{L1}, ..., \texttt{L4}.
+Instructors should pick the values for these variables based
+on the following suggestions:
 
-\paragraph{Note for instructors.}
-Instructors who want to customize this lab can
-generate their own binaries from the source code, and then
-ask students to replace the binaries \texttt{stack-L1}, ...,
-\texttt{stack-L4} inside the 
-\texttt{bof-containers} folder. By changing these parameters 
-each semester/quarter, we can make the labs different from the 
-previous offerings. 
+\begin{itemize}[noitemsep]
+\item \texttt{L1}: pick a number between 100 and 400
+\item \texttt{L2}: pick a number between 100 and 400
+\item \texttt{L3}: pick a number between 100 and 400
+\item \texttt{L4}: pick a number between 20 and 80;
+we need to keep this number smaller, to make this level more challenging 
+than the previous level. 
+\end{itemize}
 
 
 
@@ -508,8 +530,12 @@ address of the buffer; it does not reveal the value of the
 frame pointer. This means, the size of the buffer is unknown
 to you. That makes exploiting the vulnerability more 
 difficult than the Level-1 attack. 
-Although the actual buffer size is a secret, its range
-is given in the following:
+Although the actual buffer size can be found in 
+\texttt{Makefile}, you are not allowed to use that 
+information in the attack, because in the real world, it is 
+unlikely that you will have this file. 
+To simplify the task, we do assume that the
+the range of the buffer size is known:
 
 \begin{lstlisting}
 Range of the buffer size (in bytes): [100, 300]
