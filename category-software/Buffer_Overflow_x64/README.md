@@ -1,12 +1,22 @@
 # Buffer Overflow Lab (64-bit)
 
+
+
+## Update on 12/22/2020
+
+This lab will no longer be used. It is replaced by the
+`Buffer_Overflow_Server` and `Buffer_Overflow_Setuid` labs.
+
+
+## Changes for the 64-bit Version 
+
+
 When moving the Buffer Overflow Lab to Ubuntu 20.04,
 we have decided to keep the 32-bit version lab as the basic 
 lab, and then add this new lab as an advanced version,
 because attacking 64-bit programs is indeed more 
 challenging than attacking 32-bit programs.
 
-## Changes for the 64-bit Version 
 
 The task description for the 64-bit lab is pretty much the same 
 as the 32-bit version, so we will not duplicate that.

