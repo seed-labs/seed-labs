@@ -5,7 +5,7 @@ import sys
 N = 1500
 content = bytearray(0x0 for i in range(N))
 
-# This line shows how to store an integer at offset 0
+# This line shows how to store a 4-byte integer at offset 0
 number  = 0xbfffeeee
 content[0:4]  =  (number).to_bytes(4,byteorder='little')
 
@@ -21,7 +21,5 @@ fmt  = (s).encode('latin-1')
 content[8:8+len(fmt)] = fmt
 
 # Write the content to badfile
-file = open("badfile", "wb")
-file.write(content)
-file.close()
-
+with open('badfile', 'wb') as f:
+  f.write(content)

@@ -2,7 +2,7 @@
 LAB    = Format_String
 LABPDF = $(LAB).pdf
 CF     = ../../common-files
-DEPEND = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex
+DEPEND = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex $(CF)/guidelines/shellcode.tex
 
 all: $(LABPDF)
 

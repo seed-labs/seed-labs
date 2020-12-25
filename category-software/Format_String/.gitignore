@@ -1,0 +1,7 @@
+Labsetup/**/badfile
+Labsetup/**/*.out
+Labsetup/**/*.o
+Labsetup/**/format-*
+Labsetup/**/server
+Labsetup/**/codefile_*
+
