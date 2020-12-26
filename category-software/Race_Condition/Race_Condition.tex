@@ -81,36 +81,40 @@ different levels of a computer system, from application, kernel,
 to hardware. 
 
 
-\paragraph{Lab environment.} \seedenvironmentB
+\paragraph{Lab environment.} \seedenvironmentC
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Tasks}
-
+\section{Environment Setup}
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Initial Setup}
+\subsection{Turning Off Countermeasures}
 
 Ubuntu has a built-in protection against race condition 
 attacks. This scheme works by restricting who can follow a symlink. 
 According to the documentation, ``symlinks in world-writable sticky 
 directories (e.g. {\tt /tmp}) cannot be followed if the follower and directory 
 owner do not match the symlink owner.''
-In this lab, we need to disable this protection. You can achieve
+Ubuntu 20.04 introduces another security mechanism that prevents the root 
+from writing to the files in \texttt{/tmp} that are owned by others.  
+In this lab, we need to disable these protections. You can achieve
 that using the following commands:
 
 \begin{lstlisting}
-// On Ubuntu 16.04 and 20.04, use the following:
+// On Ubuntu 20.04, use the following:
+$ sudo sysctl -w fs.protected_symlinks=0
+$ sudo sysctl fs.protected_regular=0
+
+// On Ubuntu 16.04, use the following:
 $ sudo sysctl -w fs.protected_symlinks=0
 
 // On Ubuntu 12.04, use the following:
 $ sudo sysctl -w kernel.yama.protected_sticky_symlinks=0
 \end{lstlisting}
-
 
 
 % -------------------------------------------
@@ -122,9 +126,7 @@ $ sudo sysctl -w kernel.yama.protected_sticky_symlinks=0
 The following program is a seemingly harmless program. It contains a race-condition
 vulnerability. 
 
-\begin{lstlisting}
-/*  vulp.c  */
-
+\begin{lstlisting}[caption={The vulnerable program (\texttt{vulp.c})}]
 #include <stdio.h>
 #include<unistd.h>
 
@@ -161,15 +163,15 @@ input to the file.
 
 At first glance the program does not seem to have any problem.
 However, there is a race condition vulnerability in this program: due to the 
-time window between the check ({\tt access()}) and 
-the use ({\tt fopen()}), there is a possibility that the file used by
+time window between the check ({\tt access}) and 
+the use ({\tt fopen}), there is a possibility that the file used by
 {\tt access()} is different from the file used by {\tt fopen()}, even
 though they have the same file name {\tt /tmp/XYZ}.  If a malicious 
-attacker can somehow make {\tt /tmp/XYZ} a symbolic link pointing to
+attacker can somehow makes {\tt /tmp/XYZ} a symbolic link pointing to
 a protected file, such as \texttt{/etc/passwd}, inside the time window, 
 the attacker can cause the user input
-to be appended to \texttt{/etc/passwd} and as a result gain the root
-privilege. The vulnerable runs with the root privilege, so
+to be appended to \texttt{/etc/passwd}, and can thus gain the root
+privilege. The vulnerable program runs with the root privilege, so
 it can overwrite any file.
 
 
@@ -185,28 +187,30 @@ $ sudo chmod 4755 vulp
 
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 1: Choosing Our Target}
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 1: Choosing Our Target}
 
 We would like to exploit the race condition vulnerability in
-the vulnerable program.
+the program.
 We choose to target the password file \texttt{/etc/passwd}, which is not writable by
 normal users. By exploiting the vulnerability, we would like to
 add a record to the password file, with a goal of
 creating a new user account that has the root privilege.
 Inside the password file, each user has an entry, which consists of seven fields
 separated by colons~(:). The entry for the root user is listed below.
+
+\begin{lstlisting}
+root:x:0:0:root:/root:/bin/bash
+\end{lstlisting}
+
 For the root user, the third field~(the user ID field) has a value zero. Namely, when the root
 user logs in, its process's user ID is set to zero, giving the process the root privilege.
 Basically, the power of the root account does not come from its name, but instead from
 the user ID field. If we want to create an account with the root privilege,
 we just need to put a zero in this field.
 
-\begin{lstlisting}
-root:x:0:0:root:/root:/bin/bash
-\end{lstlisting}
 
 Each entry also contains a password field, which is the second field. In the example above, the
 field is set to \texttt{"x"}, indicating that the password is stored in another file called
@@ -252,118 +256,59 @@ snapshot of the VM. This way, you can easily recover from the mishap.
 
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 2: Launching the Race Condition Attack}
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 2: Launching the Race Condition Attack}
 
 The goal of this task is to exploit the race condition vulnerability in 
 the vulnerable \setuid program listed earlier. The ultimate goal is to gain
-the root privilege. 
+the root privilege.  The most critical step of the attack,  making
+\texttt{/tmp/XYZ} point to the password file, must occur within
+the window between check and use; namely between the \texttt{access} 
+and \texttt{fopen} calls in the vulnerable program. 
 
-The most critical step (i.e., making
-\texttt{/tmp/XYZ} point to the password file) of our race condition attack must occur within
-the window between check and use; namely between the \texttt{access()} 
-and the \texttt{fopen()} calls in the vulnerable program.
-Since we cannot modify the vulnerable program,
-the only thing that we can do is to run our attacking program in parallel
-to ``race'' against the target program, 
-hoping to win the race condition, i.e., changing the link 
-within that critical window.
-Unfortunately, we cannot achieve the perfect timing. Therefore, 
-the success of attack is probabilistic.
-The probability of successful attack might be quite low if the window
-are small. You need to think about how to increase the 
-probability. For example,  you can run the vulnerable program for many
-times; you only need to achieve success once among all these trials.
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.A: Simulating a Slow Machine} 
 
-
-
-\paragraph{Creating symbolic links.}
-You can call C function {\tt symlink()} to create symbolic links in your program.
-Since \linux does not allow one to create a link if the link already exists,
-we need to delete the old link first.
-The following C code snippet shows how to remove a link and then make
-{\tt /tmp/XYZ} point to {\tt /etc/passwd}:
+Let us pretend that the machine is very slow, and there is a 10-second time window between
+the \texttt{access()} and \texttt{fopen()} calls. To simulate that, we 
+add a \texttt{sleep(10)} between them. The program will look like the following:
 
 \begin{lstlisting}
-unlink("/tmp/XYZ");
-symlink("/etc/passwd","/tmp/XYZ");
+if (!access(fn, W_OK)) {
+     sleep(10);
+     fp = fopen(fn, "a+");
+     ...
 \end{lstlisting}
+ 
+With this addition, the \texttt{vulp} program (when re-compiled)
+will pause and yield control to the operating system for 10 seconds.
+Your job is to manually do something, so when the program resumes
+after 10 seconds, the program can help you
+add a root account to the system. Please 
+demonstrate how you would achieve this. 
 
-You can also use \linux command {\tt "ln -sf"} to create symbolic links.
-Here the {\tt "f"} option means that if the link exists, remove the
-old one first. The implementation of the
-{\tt "ln"} command actually uses {\tt unlink()} and {\tt symlink()}.
+You won't be able to modify the file name \texttt{/tmp/XYZ}, because 
+it is hardcoded in the program, but you can use symbolic links to 
+change the meaning of this name. For example, you can make 
+\texttt{/tmp/XYZ} a symbolic link to the \texttt{/dev/null} file. 
+When you write to \texttt{/tmp/XYZ}, the actual content will be written
+to \texttt{/dev/null}. See the following example (the \texttt{"f"} option 
+means that if the link exists, remove the old one first): 
 
-
-
+\begin{lstlisting}
+$ ln -sf /dev/null /tmp/XYZ
+$ ls -ld /tmp/XYZ
+lrwxrwxrwx 1 seed seed 9 Dec 25 22:20 /tmp/XYZ -> /dev/null
+\end{lstlisting}
+ 
 % -------------------------------------------
-% SUBSUBSECTION
+% SUBSECTION
 % ------------------------------------------- 
-\subsubsection{Task 2.A: Slow deterministic version of the attack}  
-To test our attack workflow, it can be helpful to run the attack in a
-deterministic environment without the need to win a race condition to
-succeed.  Although the attacker would not be able to control the source
-code of the vulnerable program in a real-life scenario, we can modify
-the vulnerable program in our environment for testing purposes.
-
-
-Specifically, if we add the statement \texttt{sleep(10);} into the
-\texttt{vulp.c} code in between the \texttt{access()} and
-\texttt{fopen()} calls, the \texttt{vulp} program (when re-compiled)
-will pause and yield control to the operating system for 10 seconds when
-the statement is executed.  This should give us more than enough time to
-manually switch the target of the symlink \texttt{/tmp/XYZ} from the
-user-owned file that passes the \texttt{access()} check to the
-\texttt{/etc/passwd} file that we want \texttt{fopen()} to use.
-
-
-Conduct the manual test using the following procedure:
-\begin{enumerate}
-  \item Open two Terminal windows, say Window 1 and Window 2.
-  \item In Window 1, add the \texttt{sleep} statement to \texttt{vulp.c}
-        and recompile the \texttt{vulp} program.  
-  \item In Window 2, create the \texttt{/tmp/XYZ} symlink pointing to a
-	benign user-owned file.  Then type in a command to switch the
-	target of \texttt{/tmp/XYZ} to \texttt{/etc/passwd}, but do not
-        execute the command.  
-  \item In Window 1, run the script that repeatedly executes the
-	\texttt{vulp} program in a loop and wait a few seconds to ensure
-        that the program is executing the \texttt{sleep} statement.
-  \item In Window 2, execute the symlink-switching command.  
-  \item In Window 1, wait for the remainder of the \texttt{sleep}
-	command's 10-second interval, after which you should see the
-	script print out a success message and terminate.  If the script
-	prints anything but a success message, the attack was
-	unsuccessful and you should end the programs in both Terminals
-        and debug your attack setup.  
-  \item In either window, check whether the attack was successful by
-	logging in as the test user you attempted to add to the password
-	file.  If the login is successful and the \texttt{id}
-	command shows that you have the root privilege (i.e. a uid of
-	zero), you have now reproduced what the full race condition
-        attack should do if it succeeds.  
-  \item Reset the system to its default state for launching the race
-	condition attack:   delete the \texttt{test} user entry from the
-	end of the password file, take out the \texttt{sleep} statement
-	from the \texttt{vulp} program, and recompile the program. Note:
-	to edit the password file, you will need root privileges.  The
-	\texttt{sudo} command can be used to execute another command
-	with root privileges (provided the root user has previously
-	granted the current user this ``\texttt{sudo} privilege'').  So,
-	for example, to open the password file in the text editor
-	\texttt{nano} with root privileges, you can enter 
-	``\texttt{sudo nano /etc/passwd}'' on the command line and
-        provide the \texttt{seed} user's password when prompted.
-\end{enumerate}  
-
-
-
-% -------------------------------------------
-% SUBSUBSECTION
-% ------------------------------------------- 
-\subsubsection{Task 2.B: Full version of attack}
+\subsection{Task 2.B: The Real Attack}
 
 In the previous task, we have kind of ``cheated'' by asking the vulnerable program
 to slow down, so we can launch the attack. This is definitely not a real attack.
@@ -371,21 +316,41 @@ In this task, we will launch the real attack.
 Before doing this task, make sure that the \texttt{sleep()} statement is removed 
 from the \texttt{vulp} program. 
 
-The typical strategy in race condition attacks is to launch the attack many many 
-times, hoping to hit the race condition window once.  
-Therefore, we run the attack program and the vulnerable program in
-parallel. For example, you can run the attack program in one Terminal
-window and the vulnerable program in another Terminal window. 
-If the attack fails, the vulnerable program will crash, so you need to run the
-vulnerable program repeatedly until the attack is successful. 
+
+The typical strategy in race condition attacks is to run the attack
+program in parallel to the target program, 
+hoping to be able to do the critical step within that time window.
+Unfortunately, perfect timing is very hard to achieve, so 
+the success of attack is only probabilistic.
+The probability of a successful attack might be quite low if the window
+is small, but we can run the attack many many times. 
+We just need to hit the race condition window once.  
+
+
+\paragraph{Writing the attack program.} In the simulated attack,
+we use the \texttt{"ln -s"} command to make/change symbolic links.
+Now we need to do it in a program.
+We can use {\tt symlink()} in C to create symbolic links.
+Since \linux does not allow one to create a link if the link already exists,
+we need to delete the old link first.
+The following C code snippet shows how to remove a link and then make
+{\tt /tmp/XYZ} point to {\tt /etc/passwd}. Please write your attack 
+program.
+
+\begin{lstlisting}
+unlink("/tmp/XYZ");
+symlink("/etc/passwd","/tmp/XYZ");
+\end{lstlisting}
+
+
 
 \paragraph{Running the vulnerable program and monitoring results.}
-Since you need to run the vulnerable program for many
-times, you need to write a program to automate the attack process. 
-To avoid manually typing an input to the vulnerable program \texttt{vulp}, you can use 
-input redirection. Namely, you save your input in a file, and ask
+Since we need to run the vulnerable program for many
+times, we will write a program to automate this process. 
+To avoid manually typing an input to the vulnerable program \texttt{vulp}, 
+we can use input redirection. Namely, we save our input in a file, and ask
 \texttt{vulp} to get the input from this file using \texttt{"vulp <
-inputFile"}.
+inputFile"}. We can also use pipe (an example will be given later). 
 
 It may take a while before our attack can successfully modify the
 password file, so we need a way to automatically detect whether the attack is
@@ -397,14 +362,13 @@ file, including the last modified time. By comparing the outputs of the
 command with the ones produced previously, we can tell
 whether the file has been modified or not. 
 
-
 The following shell script runs the vulnerable program (\texttt{vulp}) in a loop,
-using \texttt{passwd\_input} as the input. If the attack is successful, i.e.,
+with the input given by the \texttt{echo} command (via a pipe).  
+You need to decide what should be the actual input. 
+If the attack is successful, i.e.,
 the \texttt{passwd} is modified, the shell script will stop. 
 You do need to be a little bit patient. 
 Normally, you should be able to succeed within 5 minutes. 
-
-
 
 \begin{lstlisting}
 #!/bin/bash
@@ -414,7 +378,7 @@ old=$($CHECK_FILE)
 new=$($CHECK_FILE)
 while [ "$old" == "$new" ]    (*@\reflectbox{\ding{217}} \textbf{Check if /etc/passwd is modified}@*)
 do
-   ./vulp < passwd_input      (*@\reflectbox{\ding{217}} \textbf{Run the vulnerable program}@*)
+   echo "your input" | ./vulp (*@\reflectbox{\ding{217}} \textbf{Run the vulnerable program}@*)
    new=$($CHECK_FILE)
 done
 echo "STOP... The passwd file has been changed"
@@ -423,7 +387,8 @@ echo "STOP... The passwd file has been changed"
 \paragraph{Verifying success}
 When your script terminates,
 test the success of your exploit by logging in as the test user and
-verifying root privileges.  Then terminate the attack program by pressing \texttt{Ctrl-C} in the Terminal window in which you started the program.
+verifying root privileges.  Then terminate the attack program by 
+pressing \texttt{Ctrl-C} in the Terminal window in which you started the program.
 
 
 \paragraph{A Note.}
@@ -439,9 +404,9 @@ an improved attack method.
 
 
 % -------------------------------------------
-% SUBSUBSECTION
+% SUBSECTION
 % ------------------------------------------- 
-\subsubsection{Task 2.C: An Improved Attack Method}
+\subsection{Task 2.C: An Improved Attack Method}
 
 In Task 2.B, if you have done everything correctly, but still could not succeed
 in the attack, check the ownership of \texttt{/tmp/XYZ}. You will find out    
@@ -504,7 +469,6 @@ without introducing any race condition.
   
 #include <stdio.h>
 #include <unistd.h>
-
 int main()
 {
    unsigned int flags = RENAME_EXCHANGE;
@@ -524,7 +488,17 @@ is done correctly, your attack should be able to succeed.
 
 
 
-\subsection{Task 3: Countermeasure: Applying the Principle of Least Privilege}
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 3: Countermeasures}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 3.A: Applying the Principle of Least Privilege}
 
 The fundamental problem of the vulnerable program in this lab is 
 the violation of the {\em Principle of Least Privilege}. 
@@ -546,7 +520,7 @@ observations and provide explanation.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Countermeasure: Using \ubuntu's Built-in Scheme}
+\subsection{Task 3.B: Using \ubuntu's Built-in Scheme}
 
 Ubuntu 10.10 and later come with a built-in protection scheme against race condition
 attacks. In this task, you need to turn the protection back on using the
