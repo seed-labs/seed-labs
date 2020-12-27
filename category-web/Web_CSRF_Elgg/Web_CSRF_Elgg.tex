@@ -79,7 +79,7 @@ site accessible at \url{www.csrflabelgg.com}. The second
 website is the attacker's malicious web site that is used for
 attacking Elgg. This web site is accessible via
 \url{www.csrflab-attacker.com}. We use containers to
-set up the lab environment.
+set up the lab environment. 
 
 
 % -------------------------------------------
@@ -151,15 +151,18 @@ this folder.
 
 
 \paragraph{DNS configuration.}
-We access the Elgg website and attacker 
-websites on the VM using their respective URLs. 
-The URLs are only accessible from inside of the virtual machine, because we
-have modified the \texttt{/etc/hosts} file to map the hostname
-of the URLs to the IP address of their containers:
+We access the Elgg website, the attacker 
+website, and the defense site using their respective URLs. 
+We need to add the following entries to the
+\texttt{/etc/hosts} file, so these hostnames are mapped to
+their corresponding IP addresses.
+You need to use the root privilege to
+change this file (using \texttt{sudo}).
 
 \begin{lstlisting}
-10.9.0.5    www.csrflabelgg.com
-10.9.0.105  www.csrflab-attacker.com
+10.9.0.5        www.csrflabelgg.com
+10.9.0.5        www.csrflab-defense.com
+10.9.0.105      www.csrflab-attacker.com
 \end{lstlisting}
 
 
