@@ -89,17 +89,21 @@ are two containers in the lab setup, one for hosting
 the web application, and the other for hosting the database 
 for the web application. 
 The IP address for the web application container is \texttt{10.9.0.5}, and 
-the mapping between the URL and the IP address is 
-already added to the \texttt{/etch/hosts} file in the 
-SEED VM. If you are not using the SEED VM, you
-need to add this mapping to your system. The URL
-for the web application is the following:
+The URL for the web application is the following:
 
 \begin{lstlisting}
 http://www.SEEDLabSQLInjection.com
 \end{lstlisting}
  
+We need to map this hostname to the container's IP address. Please 
+add the following entry to the \texttt{/etc/hosts} file. 
+You need to use the root privilege to
+change this file (using \texttt{sudo}).
 
+\begin{lstlisting}
+10.9.0.5        www.SEEDLabSQLInjection.com
+\end{lstlisting}
+ 
 
 % -------------------------------------------
 % SUBSECTION
@@ -537,6 +541,30 @@ The SQL query inside this PHP program
 is vulnerable to SQL injection attacks. Your job is modify the SQL 
 query in \texttt{unsafe.php} using the prepared statement, so
 the program can defeat SQL injection attacks.
+Inside the lab setup folder, the \texttt{unsafe.php} program is 
+in the \path{image_www/Code/defense} folder. You can directly 
+modify the program there. After you are done, you need
+to rebuild and restart the container, or the changes will not
+take effect. 
+
+You can also modify the file while the container is running.
+On the running container, the \texttt{unsafe.php} program is 
+inside \path{/var/www/SQL_Injection/defense}. 
+The downside of this
+approach is that in order to keep the docker image small,
+we have only installed a very simple text editor called \texttt{nano}
+inside the container. It should be sufficient for simple editing.
+If you do not like this editor, you can always use \texttt{"apt install"} to install
+your favoriate command-line editor inside the container. For example,
+for people who like \texttt{vim}, you can do the following:
+
+\begin{lstlisting}
+# apt install -y vim 
+\end{lstlisting}
+
+This installation will be discarded after the container is shutdown and destroyed.
+If you want to make it permanent, add the installation command to the \texttt{Dockerfile} 
+inside the \path{image_www} folder. 
  
 
 
@@ -556,8 +584,8 @@ WHERE name='$name' and password='$pwd';
 
 You can replace the value of {\tt \$name} with the
 injection string and test it using the MySQL console. 
-This approach can help you to construct a syntax-error 
-free injection string before launching the real injection attack. 
+This approach can help you construct a syntax-error 
+free injection string before launching the real attack. 
 
 
 
