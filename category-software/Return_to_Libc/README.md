@@ -1,5 +1,15 @@
 # Return-to-Libc Lab
 
+
+## Lab revision update on 12/28/2020
+
+The lab was partitially re-designed. We use a different way to defeat the 
+countermeasures in `bash` or `dash` (Task 4). This method is much simpler than
+the ROP method. We also added an optional task (Task 5) to give students
+a taste of ROP (a special case of ROP). Generic ROP is quite complicated, 
+and we plan to develop a separate lab on ROP in the future.
+
+
 ## Design Decision 
 
 Doing the return-to-libc attack on x64 machines is much more difficult
