@@ -92,7 +92,7 @@ Detailed coverage of the return-to-libc attack can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironmentB
+\paragraph{Lab environment.} \seedenvironmentC
 
 
 
@@ -223,6 +223,9 @@ do that in a later task.
 
 
 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
 \subsection{The Vulnerable Program}
 
 \begin{lstlisting}[caption={The vulnerable program \texttt{retlib.c}}]
@@ -230,59 +233,60 @@ do that in a later task.
 #include <stdio.h>
 #include <string.h>
 
-/* Changing this size will change the layout of the stack.
- * Instructors can change this value each year, so students
- * won't be able to use the solutions from the past.
- * Suggested value: between 0 and 200 (cannot exceed 300, or 
- * the program won't have a buffer-overflow problem). */
 #ifndef BUF_SIZE
-#define BUF_SIZE 12 
+#define BUF_SIZE 12
 #endif
 
-int bof(FILE *badfile)
+int bof(char *str)
 {
     char buffer[BUF_SIZE];
+    unsigned int *framep;
 
-    /* The following statement has a buffer overflow problem */
-    fread(buffer, sizeof(char), 300, badfile);
+    // Copy ebp into framep
+    asm("movl %%ebp, %0" : "=r" (framep));      
+
+    /* print out information for experiment purpose */
+    printf("Address of buffer[] inside bof():  0x%.8x\n", (unsigned)buffer);
+    printf("Frame Pointer value inside bof():  0x%.8x\n", (unsigned)framep);
+
+    strcpy(buffer, str);   (*@\reflectbox{\ding{222}} buffer overflow! @*)
 
     return 1;
 }
 
 int main(int argc, char **argv)
 {
-    FILE *badfile;
+   char input[1000];
+   FILE *badfile;
 
-    /* Change the size of the dummy array to randomize the parameters
-       for this lab. Need to use the array at least once */
-    char dummy[BUF_SIZE*5];  memset(dummy, 0, BUF_SIZE*5);
+   badfile = fopen("badfile", "r");
+   int length = fread(input, sizeof(char), 1000, badfile);
+   printf("Address of input[] inside main():  0x%x\n", (unsigned int) input);
+   printf("Input size: %d\n", length);
 
-    badfile = fopen("badfile", "r");
-    bof(badfile);
+   bof(input);
 
-    printf("Returned Properly\n");
-    fclose(badfile);
-    return 1;
+   printf("(^_^)(^_^) Returned Properly (^_^)(^_^)\n");
+   return 1;
 }
 \end{lstlisting}
 
-
 The above program has a buffer overflow vulnerability. It first reads
-an input of size \texttt{300} bytes from a file called \texttt{badfile} into a buffer
-of size \texttt{BUF\_SIZE}, which is less than \texttt{300}.
-Since the function \texttt{fread()} does not check
-the buffer boundary, a buffer overflow will occur.
+an input up to \texttt{1000} bytes from a file called \texttt{badfile}. 
+It then passes the input data to the \texttt{bof()} function, which
+copies the input to its internal buffer using \texttt{strcpy()}. 
+However, the internal buffer's size is less than \texttt{1000},
+so here is potential buffer-overflow vulnerability.
+
 This program is a root-owned \setuid program, so if a normal user can exploit this buffer
 overflow vulnerability, the user might be able to get a root
 shell.  It should be noted that the program gets its input from a file
 called \texttt{badfile}, which is provided by users. Therefore, we can
 construct the file in a way such that when
 the vulnerable program copies the file contents into its buffer, a root
-shell can be spawned. 
+shell can be spawned.
 
 
-
-\vspace{0.1in}
 \paragraph{Compilation.}
 Let us first compile the code and turn it into a root-owned \setuid
 program. Do not forget to include the 
@@ -292,6 +296,7 @@ the non-executable stack protection).
 It should also be noted that changing ownership must be done before
 turning on the \setuid bit, 
 because ownership changes cause the \setuid bit to be turned off.
+All these commands are included in the provided \texttt{Makefile}. 
 
 
 \begin{lstlisting}
@@ -313,7 +318,8 @@ in the program).
 When this value changes, the layout of the stack
 will change, and the solution will be different.
 Students should ask their instructors for
-the value of \texttt{N}.
+the value of \texttt{N}. The value of \texttt{N} can be set 
+in the provided \texttt{Makefile}. 
 
 
 
@@ -323,7 +329,11 @@ the value of \texttt{N}.
 \section{Lab Tasks}
 
 
-\subsection{Task 1: Finding out the addresses of \texttt{libc} functions} 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1: Finding out the Addresses of \texttt{libc} Functions} 
 
 In \linux, when a program runs, the \texttt{libc} library will be loaded
 into memory. When the memory address randomization is turned off,
@@ -343,13 +353,17 @@ the \texttt{system()} and \texttt{exit()} functions~(we will need \texttt{exit()
 \begin{lstlisting}
 $ touch badfile
 $ gdb -q retlib     (*@\reflectbox{\ding{217}} Use "Quiet" mode@*)
-Reading symbols from stack...(no debugging symbols found)...done.
+Reading symbols from ./retlib...
+(No debugging symbols found in ./retlib)
+gdb-peda$ break main
+Breakpoint 1 at 0x1327
 gdb-peda$ run
 ......
+Breakpoint 1, 0x56556327 in main ()
 gdb-peda$ p system
-$1 = {<text variable, no debug info>} (*@\textbf{0xb7e42da0}@*) <__libc_system>
+$1 = {<text variable, no debug info>} (*@\textbf{0xf7e12420}@*) <system>
 gdb-peda$ p exit
-$2 = {<text variable, no debug info>} (*@\textbf{0xb7e369d0}@*) <__GI_exit>
+$2 = {<text variable, no debug info>} (*@\textbf{0xf7e04f80}@*) <exit>
 gdb-peda$ quit
 \end{lstlisting}
 
@@ -359,6 +373,24 @@ into the same location. Therefore, when we debug the program, we need
 to debug the target \setuid program; otherwise, the address we
 get may be incorrect.
 
+\paragraph{Running \texttt{gdb} in batch mode.} If you prefer to run \texttt{gdb} 
+in a batch mode, you can put the \texttt{gdb} commands in a file, and then 
+ask \texttt{gdb} to execute the commands from this file:
+
+\begin{lstlisting}
+$ cat gdb_command.txt
+break main
+run
+p system
+p exit
+quit
+$ gdb -q -batch -x gdb_command.txt ./retlib
+...
+Breakpoint 1, 0x56556327 in main ()
+$1 = {<text variable, no debug info>} 0xf7e12420 <system>
+$2 = {<text variable, no debug info>} 0xf7e04f80 <exit>
+\end{lstlisting}
+ 
 
 
 
@@ -376,7 +408,6 @@ we have to know its address (this address needs to be passed to
 the \texttt{system()} function). There are many ways to
 achieve these goals; we choose a method that uses environment variables.
 Students are encouraged to use other approaches. 
-
 
 When we execute a program from a shell prompt, the shell actually 
 spawns a child process to execute the program, and all 
@@ -406,27 +437,26 @@ void main(){
 }
 \end{lstlisting}
 
-
+Compile the code above into a binary called \texttt{prtenv}.  
 If the address randomization is turned off, you will find out that the same 
-address is printed out. However, when you run the 
-vulnerable program \texttt{retlib}, the address of the environment
-variable might not be exactly the same as the one that you get by running 
-the above program; such an address can even change when you change
-the name of your program (the number of characters in the file
-name makes a difference). The good news is, the address of the shell will
-be quite close to what you print out using the above program. Therefore,
-you might need to try a few times to succeed.
+address is printed out. When you run the vulnerable program \texttt{retlib}
+inside the same terminal, the address of the environment
+variable will be the same. You can verify that by putting 
+the code above inside \texttt{retlib.c}. However, the  
+the length the program name do make a difference. That's why
+we choose 6 characters for \texttt{prtenv}, because of 
+the length of \texttt{retlib}.  
 
 
 
-\subsection{Task 3: Exploiting the buffer-overflow vulnerability} 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 3: Launching the Attack}
 
 We are ready to create the content of \texttt{badfile}. Since 
 the content involves some binary data (e.g., the address of the 
-\texttt{libc} functions), we can use C or Python to do the construction.  
-
-
-\paragraph{Using Python.}
+\texttt{libc} functions), we can use Python to do the construction.  
 We provide a skeleton of the code in the following, with the essential 
 parts left for you to fill out.
 
@@ -464,62 +494,6 @@ Z}. Either show us your reasoning or, if you use a trial-and-error approach,
 show your trials.
 
 
-\paragraph{Using C.}
-We also provide you with a skeleton of C code, with the essential 
-parts left for you to fill out.
-
-
-\begin{lstlisting}
-/* exploit.c */
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-int main(int argc, char **argv)
-{
-  char buf[40];
-  FILE *badfile;
-
-  badfile = fopen("./badfile", "w");
-
-  /* You need to decide the addresses and 
-     the values for X, Y, Z. The order of the following 
-     three statements does not imply the order of X, Y, Z.
-     Actually, we intentionally scrambled the order. */
-  *(long *) &buf[X] = some address ;   //  "/bin/sh"    (*@\ding{80}@*)
-  *(long *) &buf[Y] = some address ;   //  system()     (*@\ding{80}@*)
-  *(long *) &buf[Z] = some address ;   //  exit()       (*@\ding{80}@*)
-
-  fwrite(buf, sizeof(buf), 1, badfile);
-  fclose(badfile);
-}
-\end{lstlisting}
-
-You need to figure out the addresses in lines marked by \ding{80}, as well as to
-find out where to store those addresses (i.e., the values 
-for \texttt{X}, \texttt{Y}, and \texttt{Z}). If your values are incorrect, 
-your attack might not work. In your report, you need to 
-describe how you decide the values for {\tt X}, {\tt Y} and {\tt
-Z}. Either show us your reasoning or, if you use a trial-and-error approach,
-show your trials.
-
-
-After you finish the above program, compile and run it; this will
-generate the contents for \texttt{badfile}. Run the vulnerable program 
-\texttt{retlib}. If your exploit is implemented correctly, when the function
-\texttt{bof()} returns, it will return to the \texttt{system()} function,
-and execute \texttt{system("/bin/sh")}. If the vulnerable program is
-running with the root privilege, you can get the root shell at this
-point.
-
-\begin{lstlisting}
-$ gcc -o exploit exploit.c
-$./exploit         // create the badfile
-$./retlib          // launch the attack by running the vulnerable program
-# <---- You've got a root shell! 
-\end{lstlisting}
-
-
-
 
 \paragraph{Attack variation 1:}
 Is the \texttt{exit()} function really necessary? Please try 
@@ -537,46 +511,10 @@ Repeat the attack (without changing the content of {\tt badfile}).
 Will your attack succeed or not?  If it does not succeed, explain why.
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Turning on address randomization}
-
-In this task, let us turn on the Ubuntu's address randomization protection  
-and see whether this protection is effective against 
-the Return-to-libc attack. First, let us 
-turn on the address randomization:  
-
-\begin{lstlisting}
-$ sudo sysctl -w kernel.randomize_va_space=2
-\end{lstlisting}
-
-
-Please run the same attack used in the previous task. Can you succeed? 
-Please describe your observation and come up with your hypothesis. 
-In the exploit program used in constructing \texttt{badfile}, we
-need to provide three addresses and the values for \texttt{X}, \texttt{Y},
-and \texttt{Z}. Which of these six values are incorrect if 
-the address randomization is turned on. Please provide evidence in your
-report. 
-
-
-If you plan to use \texttt{gdb} to conduct your investigation, you should
-be aware that \texttt{gdb} by default disables the address space randomization for the
-debugged process, regardless of whether the address randomization is 
-turned on in the underlying operating system or not. Inside the
-\texttt{gdb} debugger, you can run \texttt{"show disable-randomization"} 
-to see whether the randomization is turned off or not.
-You can use \texttt{"set disable-randomization on"} and
-\texttt{"set disable-randomization off"} to change the setting. 
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 5: Defeat Shell's countermeasure}
+\subsection{Task 4: Defeat Shell's countermeasure}
 
 The purpose of this task is to launch the return-to-libc attack after 
 the shell's countermeasure is enabled. 
@@ -592,72 +530,65 @@ Let us first change the symbolic link back:
 $ sudo ln -sf /bin/dash /bin/sh
 \end{lstlisting}
 
+Although \texttt{dash} and \texttt{bash} both drop the \setuid privilege,
+they will not do that if they are invoked with the \texttt{-p} option. When
+we return to the \texttt{system} function, this function invokes \texttt{/bin/sh}, 
+but it does not use the \texttt{-p} option. Therefore, the \setuid
+privilege of the target program will be dropped. If there is a function
+that allows us to directly execute \texttt{"/bin/bash -p"}, without going
+through the \texttt{system} function, we can get the root privilege. 
 
-When \texttt{/bin/sh} points to \texttt{/bin/dash}, we cannot directly return 
-to the \texttt{system()} function, because \texttt{system()} actually uses 
-\texttt{/bin/sh} to execute commands, and \texttt{/bin/dash} will 
-drop the privilege. There are many ways to solve this problem. One way 
-is to return to a different function that does not depend on \texttt{/bin/sh}. 
-Another way is to invoke \texttt{setuid(0)} before 
-invoking \texttt{system()}. The \texttt{setuid(0)} call sets both real user ID and  
-effective user ID to 0, turning the process into a non-\setuid one (it still has 
-the root privilege). It turns out that this is quite challenging to do 
-using the return-to-libc technique. 
+There are actually many libc functions that can do that, such as 
+the \texttt{exec()} family  of functions, including \texttt{execl()},
+\texttt{execle()}, \texttt{execv()}, etc. Let's take a look at the
+\texttt{execv()} function.
 
+\begin{lstlisting}
+int execv(const char *pathname, char *const argv[]);
+\end{lstlisting}
+ 
+This function takes two arguments, one is the address to the command, the 
+second is the address to the argument array for the command. For example, if we 
+want to invoke \texttt{"/bin/bash -p"} using \texttt{execv}, we need to 
+set up the following:
 
-There are two primary challenges: (1) how to 
-chain multiple functions (with arguments) together, and (2) how to
-pass zeros as arguments without including any zero in the malicious 
-input? In this task, we focus on addressing the fist challenge; 
-we are allowed to ignore the second challenge and 
-put zeros in the input.
-In the vulnerable program, we 
-intentionally used \texttt{fread()}, which, unlike \texttt{strcpy()},
-is not affected by zeros. 
+\begin{lstlisting}
+pathname = address of "/bin/bash" 
+argv[0]  = address of "/bin/bash"
+argv[1]  = address of "-p"
+argv[2]  = NULL (i.e., 4 bytes of zero).
+\end{lstlisting}
+ 
+From the perious tasks, we can easily get the address of the two involved 
+strings. Therefore, if we can construct the \texttt{argv[]} array on the stack, 
+get its address, we will have everything that we need to conduct the 
+return-to-libc attack. This time, we will return to the \texttt{execv()} function. 
 
+There is one catch here. The value of \texttt{argv[2]} must be zero (an integer zero, 
+four bytes). If we put four zeros in our input, \texttt{strcpy()} will terminate
+at the first zero; whatever is after that will not be copied into 
+the \texttt{bof()} function's buffer. This seems to be a problem, but keep
+in mind, everything in your input is already on the stack; they are in
+the \texttt{main()} function's buffer. It is not hard to get the 
+address of this buffer. To simplify the task, we let the 
+vulnerable program print out the address of that buffer.
 
 
 % -------------------------------------------
 % SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 6: Defeat Shell's countermeasure without putting zeros in input}
+% -------------------------------------------
+\subsection{A Note}
 
+There are many ways to solve the problem in Task 5. 
+Another way is to invoke \texttt{setuid(0)} before 
+invoking \texttt{system()}. The \texttt{setuid(0)} call sets both real user ID and  
+effective user ID to 0, turning the process into a non-\setuid one (it still has 
+the root privilege). This approach requires us to chain multiple functions
+together, and it eventually led to a generic solution, the Return-Orented Programming (ROP). 
+The technical details of this approach are quite sophoisticated, so we will not 
+do it in this lab. The SEED book (2nd edition) provides detailed 
+description on how to do it. 
 
-In this task, we will address the second challenge in Task 5, i.e., we are 
-not allowed to put any zero (binary zero) 
-in the input (the \texttt{badfile}). In real-world attacks,
-copying data into buffer often uses functions like \texttt{strcpy()}, which
-terminates the copying when zero is encountered. To simulate the real-world
-situation, we added this constraint. 
-
-The main idea to circumvent this restriction 
-is to first put a non-zero value in the place where
-the \texttt{setuid()} function gets its argument, but before 
-\texttt{setuid()} is invoked, we invoke a sequence of 
-functions, such as \texttt{sprintf()} to change the non-zero
-value to zero. After that, we invoke \texttt{setuid()}, but now 
-its argument is already zero. Basically, we first put our payload 
-on the stack (without zeros), and then use the return-to-libc technique to self-modify
-the data placed on the stack. 
-
-To achieve this goal, we need to
-be able to chain a sequence of functions together, some of which
-have multiple arguments. The basic return-to-libc technique used in Tasks 3 
-and 5 has a limit on the number of functions and their arguments. 
-We need a more generic technique called 
-\textit{Return Oriented Programming (ROP)}, which allows us to 
-chain arbitrary number of functions (with or without arguments)
-together. The return-to-libc attack conducted in Task 3 and 5 
-is just a special case of ROP. 
-
-
-\paragraph{Note to students and instructors.}
-This task is very challenging, and we suggest making it optional. Do check with
-your instructor and confirm whether this is optional or required. 
-ROP has been a quite active research area, so for students who are into
-research in this area, we strongly suggest them to do this task.  
-Before doing the task, please read Chapter 5.5 of the SEED book (2nd edition),
-because it spends 16 pages on how to do this task. 
 
 
 
