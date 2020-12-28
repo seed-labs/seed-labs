@@ -67,22 +67,6 @@ This lab covers the following topics:
 \end{itemize}
 
 
-\noindent
-\fbox{\parbox{\textwidth}{
-\noindent
-\textbf{Customization by instructor.} Instructors should customize 
-this lab by choosing a value for the \texttt{BUF\_SIZE} constant, 
-which is used during the compilation of the vulnerable program. 
-Different values can make the solutions
-different. Please pick a value 
-between \texttt{0} and \texttt{200} for this lab. 
-
-\vspace{0.05in}
-\begin{center}
-\textbf{\large The \texttt{BUF\_SIZE} value for this lab is: \underline{\ \ \ \ \ \ \ \ \ \ \ }}
-\end{center}
-}}
- 
 \paragraph{Readings and videos.}
 Detailed coverage of the return-to-libc attack can be found in the following:
 
@@ -93,6 +77,12 @@ Detailed coverage of the return-to-libc attack can be found in the following:
 
 
 \paragraph{Lab environment.} \seedenvironmentC
+
+
+\paragraph{Note for instructors.}
+Instructors can customize this lab by choosing a value
+for the buffer size in the vulnerable program. 
+See Section~\ref{sec:vulnerable_program} for details.
 
 
 
@@ -147,7 +137,7 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 
 
 \paragraph{The StackGuard Protection Scheme.}
-The GCC compiler implements a security mechanism called
+The \texttt{gcc} compiler implements a security mechanism called
 \textit{StackGuard} to prevent buffer overflows. In the presence of this
 protection, buffer overflow attacks do not work. We can disable this
 protection during the compilation using the
@@ -227,8 +217,9 @@ do that in a later task.
 % SUBSECTION
 % -------------------------------------------
 \subsection{The Vulnerable Program}
+\label{sec:vulnerable_program}
 
-\begin{lstlisting}[caption={The vulnerable program \texttt{retlib.c}}]
+\begin{lstlisting}[caption={The vulnerable program (\texttt{retlib.c})}]
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -249,7 +240,7 @@ int bof(char *str)
     printf("Address of buffer[] inside bof():  0x%.8x\n", (unsigned)buffer);
     printf("Frame Pointer value inside bof():  0x%.8x\n", (unsigned)framep);
 
-    strcpy(buffer, str);   (*@\reflectbox{\ding{222}} buffer overflow! @*)
+    strcpy(buffer, str);   (*@\reflectbox{\ding{222}} \textbf{buffer overflow!} @*)
 
     return 1;
 }
@@ -269,6 +260,13 @@ int main(int argc, char **argv)
    printf("(^_^)(^_^) Returned Properly (^_^)(^_^)\n");
    return 1;
 }
+
+// This function will be used in the optional task
+void foo(){
+    static int i = 1;
+    printf("Function foo() is invoked %d times\n", i++);
+    return;
+}
 \end{lstlisting}
 
 The above program has a buffer overflow vulnerability. It first reads
@@ -286,8 +284,8 @@ construct the file in a way such that when
 the vulnerable program copies the file contents into its buffer, a root
 shell can be spawned.
 
-
-\paragraph{Compilation.}
+\vspace{0.1in}
+\paragraph{Compilation.} 
 Let us first compile the code and turn it into a root-owned \setuid
 program. Do not forget to include the 
 \texttt{-fno-stack-protector} option (for turning off the StackGuard
@@ -319,7 +317,8 @@ When this value changes, the layout of the stack
 will change, and the solution will be different.
 Students should ask their instructors for
 the value of \texttt{N}. The value of \texttt{N} can be set 
-in the provided \texttt{Makefile}. 
+in the provided \texttt{Makefile} and \texttt{N} can be 
+from 10 to 800.
 
 
 
@@ -442,9 +441,9 @@ If the address randomization is turned off, you will find out that the same
 address is printed out. When you run the vulnerable program \texttt{retlib}
 inside the same terminal, the address of the environment
 variable will be the same. You can verify that by putting 
-the code above inside \texttt{retlib.c}. However, the  
-the length the program name do make a difference. That's why
-we choose 6 characters for \texttt{prtenv}, because of 
+the code above inside \texttt{retlib.c}. However, 
+the length of the program name does make a difference. That's why
+we choose 6 characters for the program name \texttt{prtenv} to match
 the length of \texttt{retlib}.  
 
 
@@ -518,7 +517,7 @@ Will your attack succeed or not?  If it does not succeed, explain why.
 
 The purpose of this task is to launch the return-to-libc attack after 
 the shell's countermeasure is enabled. 
-Before doing the attack in Tasks 1 to 4, we relinked \texttt{/bin/sh} to \texttt{/bin/zsh},
+Before doing Tasks 1 to 3, we relinked \texttt{/bin/sh} to \texttt{/bin/zsh},
 instead of to \texttt{/bin/dash} (the original setting). This is because some shell programs, such 
 as \texttt{dash} and \texttt{bash}, have a countermeasure that automatically 
 drops privileges when they are executed in a \setuid process. In this task, we 
@@ -536,7 +535,7 @@ we return to the \texttt{system} function, this function invokes \texttt{/bin/sh
 but it does not use the \texttt{-p} option. Therefore, the \setuid
 privilege of the target program will be dropped. If there is a function
 that allows us to directly execute \texttt{"/bin/bash -p"}, without going
-through the \texttt{system} function, we can get the root privilege. 
+through the \texttt{system} function, we can still get the root privilege. 
 
 There are actually many libc functions that can do that, such as 
 the \texttt{exec()} family  of functions, including \texttt{execl()},
@@ -570,25 +569,83 @@ at the first zero; whatever is after that will not be copied into
 the \texttt{bof()} function's buffer. This seems to be a problem, but keep
 in mind, everything in your input is already on the stack; they are in
 the \texttt{main()} function's buffer. It is not hard to get the 
-address of this buffer. To simplify the task, we let the 
-vulnerable program print out the address of that buffer.
+address of this buffer. To simplify the task, we already let the 
+vulnerable program print out that address for you. 
+
+Just like in Task 3, you need to construct your input, so when the \texttt{bof()}
+function returns, it returns to \texttt{execv()}, which fetches from the stack
+the address of the \texttt{"/bin/bash"} string and the address of the \texttt{argv[]} 
+array. You need to prepare everything on the stack, so when \texttt{execv()}
+gets executed, it can execute \texttt{"/bin/bash -p"} and give you the root shell. 
+In your report, please describe how you construct your input. 
+
 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{A Note}
+\subsection{Task 5 (Optional): Return-Oriented Programming}
 
-There are many ways to solve the problem in Task 5. 
+There are many ways to solve the problem in Task 4. 
 Another way is to invoke \texttt{setuid(0)} before 
 invoking \texttt{system()}. The \texttt{setuid(0)} call sets both real user ID and  
 effective user ID to 0, turning the process into a non-\setuid one (it still has 
-the root privilege). This approach requires us to chain multiple functions
-together, and it eventually led to a generic solution, the Return-Orented Programming (ROP). 
-The technical details of this approach are quite sophoisticated, so we will not 
-do it in this lab. The SEED book (2nd edition) provides detailed 
-description on how to do it. 
+the root privilege). This approach requires us to chain two functions
+together. The approach was generlized to chaining multiple functions together, and 
+was further generalized to chain multiple pieces of code together. 
+This led to the Return-Orented Programming (ROP). 
 
+Using ROP to solve the problem in Task 4 is quite sophoisticated, 
+and it is beyond the scope of this lab. However, we do want to
+give students a taste of ROP, asking them 
+to work on a special case of ROP.
+In the \texttt{retlib.c} program, there is a function called \texttt{foo()}, which 
+is never called in the program. That function is intended for this task. Your job is 
+to exploit the buffer-overflow problem in the program, so when the program
+returns from the \texttt{bof()} function, it invokes \texttt{foo()} 10 times, before
+giving you the root shell. In your lab report, you need to describe how your 
+input is constructed.  Here is what the results will look like. 
+
+\begin{lstlisting}
+$ ./retlib
+...
+Function foo() is invoked 1 times
+Function foo() is invoked 2 times
+Function foo() is invoked 3 times
+Function foo() is invoked 4 times
+Function foo() is invoked 5 times
+Function foo() is invoked 6 times
+Function foo() is invoked 7 times
+Function foo() is invoked 8 times
+Function foo() is invoked 9 times
+Function foo() is invoked 10 times
+bash-5.0#   (*@\reflectbox{\ding{222}} Got root shell! @*)
+\end{lstlisting}
+ 
+\paragraph{Guidelines.} Let's review what we did in Task 3. We constructed the 
+data on the stack, such that when the program returns 
+from \texttt{bof()}, it jumps to the \texttt{system()} function, and 
+when \texttt{system()} returns, the program jumps to the \texttt{exit()} function.  
+We will use a similar strategy here. Instead of jumping to \texttt{system()} 
+and \texttt{exit()}, we will construct the data on the stack, such that
+when the program returns from \texttt{bof}, it returns  
+to \texttt{foo}; when \texttt{foo} returns, it returns to another \texttt{foo}.
+This is repeated for 10 times. When the 10th \texttt{foo} returns, it returns 
+to the \texttt{execv()} function to give us the root shell.  
+
+
+
+\paragraph{Further readings.} What we did in this task is just a special case of ROP.
+You may have noticed that the \texttt{foo()} function does not take any
+argument. If it does, invoking it 10 times will become signficantly more 
+complicated. A generic ROP technique allows you to invoke any number of functions
+in a sequence, allowing each function to have multiple arguments. 
+The SEED book (2nd edition) provides detailed instructions on how to 
+use the generic ROP technique to solve the problem in Task 4. It involves 
+calling \texttt{sprintf()} four times, followed by an invocation of 
+\texttt{setuid(0)}, before invoking \texttt{system("/bin/sh")} to give 
+us the root shell. The method is quite complicated and takes 15 pages 
+to explain in the SEED book.
 
 
 
@@ -596,10 +653,6 @@ description on how to do it.
 % SECTION
 % ******************************************* 
 \section{Guidelines: Understanding the Function Call Mechanism}
-
-The guidelines in this section only address Tasks 1 to 5. 
-Guidelines for Task 6 are too complicated to be included here, 
-please refer to the SEED book for guidelines. 
 
 
 % -------------------------------------------
