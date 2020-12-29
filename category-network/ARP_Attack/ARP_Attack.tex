@@ -73,7 +73,7 @@ Detailed coverage of the ARP protocol and attacks can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironmentB
+\paragraph{Lab environment.} \seedenvironmentC
 
 
 
@@ -199,24 +199,40 @@ pdst       : IPField                             = ('0.0.0.0')
 
 In this task, we have three machines (containers), A, B, and M. 
 We would like to attack A's ARP cache, such that
-the following results is achieved in A's ARP cache. 
+B's IP address is mapped to M's MAC address. We can check
+a computer's ARP cache using the following command. If you 
+want to look at the ARP cache associated with a specific
+interface, you can use the \texttt{-i} option. 
 
 \begin{lstlisting}
-B's IP address --> M's MAC address
+$ arp -n
+Address     HWtype  HWaddress           Flags Mask  Iface
+10.0.2.1    ether   52:54:00:12:35:00   C           enp0s3
+10.0.2.3    ether   08:00:27:48:f4:0b   C           enp0s3
 \end{lstlisting}
 
 There are many ways to conduct ARP cache poisoning attack. Students need to try the following
-three methods, and report whether each method works or not.
+three methods, and report whether each method works or not. 
 
 \begin{itemize}
-\item \textbf{Task 1A (using ARP request).} On host M, construct an ARP request packet and send
-to host A. Check whether M's MAC address is mapped to B's IP address in A's ARP cache.
+\item \textbf{Task 1.A (using ARP request).} On host M, construct an ARP request packet and send
+to host A. Check A's ARP cache, and see whether M's MAC address is mapped to B's IP address.
     
-\item \textbf{Task 1B (using ARP reply).} On host M, construct an ARP reply packet and send to
-host A. Check whether M's MAC address is mapped to B's IP address in A's ARP cache.
+\item \textbf{Task 1.B (using ARP reply).} On host M, construct an ARP reply packet and send to
+host A. Check A's ARP cache, and see whether M's MAC address is mapped to B's IP address.
+Try the attack for two different scenarios: 
+  
+    \begin{itemize}
+      \item Scenario 1: B's IP is already in A's cache.
+      \item Scenario 2: B's IP is not in A's cache.
+    \end{itemize}
+     
     
 \item \textbf{Task 1C (using ARP gratuitous message).} On host M, construct an ARP gratuitous
-packets. ARP gratuitous packet is a special ARP request packet. It is used when a host machine
+packets, and use it to map M's MAC address to B's IP address. Please launch the attack
+under the same two scenarios as those described in Task 1.B. 
+
+ARP gratuitous packet is a special ARP request packet. It is used when a host machine
 needs to update outdated information on all the other machine's ARP cache. The gratuitous ARP
 packet has the following characteristics:
 
@@ -240,7 +256,9 @@ MAC address ({\tt ff:ff:ff:ff:ff:ff}).
 
 Hosts A and B are communicating using Telnet, and Host M wants to intercept their
 communication, so it can make changes to the data sent between A and B. The setup is depicted
-in Figure~\ref{arp:fig:telnet_mitm}. 
+in Figure~\ref{arp:fig:telnet_mitm}. We have already created an account called
+\texttt{"seed"} inside the container, the password is \texttt{"dees"}. You can 
+telnet into this account. 
 
 \begin{figure}
     \centering
@@ -254,12 +272,20 @@ in Figure~\ref{arp:fig:telnet_mitm}.
 poisoning attack on both A and B, such that in A's ARP cache, B's IP address maps to M's MAC
 address, and in B's ARP cache, A's IP address also maps to M's MAC address. After this step,
 packets sent between A and B will all be sent to M. We will use the ARP cache poisoning attack
-from Task 1 to achieve this goal. 
+from Task 1 to achieve this goal. It is better that you send out the spoofed packets
+constantly (e.g. every 5 seconds); otherwise, the fake entries may be replaced by 
+the real ones. 
+
 
 
 \paragraph{Step 2 (Testing).} After the attack is successful, please try to ping each other
 between Hosts A and B, and report your observation. Please show Wireshark results in your
-report.
+report. Before doing this step, please make sure that the IP forwarding on Host M is turned
+off. You can do that with the following command:
+
+\begin{lstlisting}
+# sysctl net.ipv4.ip_forward=0
+\end{lstlisting}
 
 \paragraph{Step 3 (Turn on IP forwarding).} Now we turn on the IP forwarding on Host M, so it
 will forward the packets between A and B. Please run the following command and repeat Step 2.
