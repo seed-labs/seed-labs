@@ -76,7 +76,7 @@ Detailed coverage of the DNS protocol and attacks can be found in the following:
 
 
 
-\paragraph{Lab environment.} \seedenvironmentB
+\paragraph{Lab environment.} \seedenvironmentC
 
 
 
@@ -235,7 +235,6 @@ It should be noted that in the code above, the value (highlighted) for the
 \texttt{iface} argument should be replaced with the actual interface 
 name for the \texttt{10.9.0.0/24} network.  
  
-
 While the attack program is running, on the user machine, you can
 run \texttt{dig} command on behalf of the user.
 This command triggers the user
@@ -246,17 +245,26 @@ If your attack is successful, you should be able to see
 your spoofed information in the reply. Compare your results obtained before
 and after the attack. 
 
+Before launching the attack, make sure that the cache in the local DNS
+server is cleaned. If the cache has the answer, the reply from the 
+local DNS server will be faster than the one you spoofed, and your 
+attack will not be able to succeed. 
+
+
+
+
 
 \paragraph{A potential issue.} When we do this lab using containers, 
-we saw a very strange situation. The sniffing and spoofing 
+sometimes (not always) we saw a very strange situation. The sniffing and spoofing 
 inside containers is very slow, and our spoofed packets even arrive 
 later than the legitimate one from the Internet, even though 
 we are local. In the past, when we use VMs for this lab, we never 
 had this issue. We have not figured out the cause of this 
 performance issue yet (if you have any insight on this issue, please 
-let us know).
+let us know). 
 
-To get around this problem, we intentionally slow down the 
+If you do encouter this strange situation, we can get 
+around it. We intentionally slow down the 
 traffic going to the outside, so the authentic replies will not 
 come that fast. This can be done using the 
 following \texttt{tc} command on the router to add some 
@@ -384,7 +392,7 @@ server, so \texttt{ns.attacker32.com} becomes the nameserver for the
 \texttt{example.com} domain. Inspired by this success, we would like to 
 extend its impact to other domain. Namely, 
 in the spoofed response triggered by a query for
-\url{www.example.come}, we would like to add additional entry
+\url{www.example.com}, we would like to add additional entry
 in the Authority section (see the following), so
 \url{ns.attacker32.com} is also used as the nameserver for 
 \texttt{google.com}.  
