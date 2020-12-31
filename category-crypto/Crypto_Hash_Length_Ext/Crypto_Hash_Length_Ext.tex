@@ -58,8 +58,8 @@ found in the following:
 
 
 \paragraph{Lab environment.}
-\seedenvironmentB
-\nodependency
+\seedenvironmentC
+%\nodependency
 
 
 
@@ -266,73 +266,6 @@ be obtained from the \texttt{LabHome/key.txt} file.
 \end{lstlisting}
 
 
-
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{Task 3: Compute MAC using Secret Key}
-
-In this task, we will add an extra message \texttt{N = "Extra message"}
-to the padded original message \texttt{M = "This is a test message"},
-and compute its hash value. The program is listed below.
-
-\begin{lstlisting}
-/* calculate_mac.c */
-#include <stdio.h>
-#include <openssl/sha.h>
-
-int main(int argc, const char *argv[])
-{
-   SHA256_CTX c;
-   unsigned char buffer[SHA256_DIGEST_LENGTH];
-   int i;
-
-   SHA256_Init(&c);
-   SHA256_Update(&c,
-      "This is a test message"
-      "\x80"
-      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-      "\x00\x00\x00"
-      "\x00\x00\x00\x00\x00\x00\x00\xB0"
-      "Extra message",
-      64+13);
-   SHA256_Final(buffer, &c);
-
-   for(i = 0; i < 32; i++) {
-     printf("%02x", buffer[i]);
-   }
-   printf("\n");
-   return 0;
-}
-\end{lstlisting}
-
-Students can compile and run the above program as follows:
-
-\begin{lstlisting}
-$ gcc calculate_mac.c -o calculate_mac -lcrypto
-$ ./calculate_mac
-\end{lstlisting}
-
-
-\paragraph{Task.}
-Students should change the code in the listing above and compute
-the MAC for the following request (assume that we know
-the secret MAC key):
-
-\begin{lstlisting}
-http://www.seedlab-hashlen.com/?myname=<name>&uid=<uid>
-&lstcmd=1<padding>&download=secret.txt
-&mac=<hash-value>
-\end{lstlisting}
-
-Just like the previous task, the value of \texttt{<name>} should be your actual name.
-The value of the \texttt{<uid>} and the MAC key should be
-obtained from the \texttt{LabHome/key.txt} file.
-Please send this request to the server, and see whether you can
-successfully download the \texttt{secret.txt} file.
-
 It should be noted that in the URL,
 all the hexadecimal numbers in the padding
 need to be encoded by changing
@@ -340,19 +273,22 @@ need to be encoded by changing
 \texttt{\textbackslash x80} in the padding should be
 replaced with \texttt{\%80} in the URL above.
 On the server side, encoded data in the URL
-will be changed back to the hexadecimal numbers.
+will be changed back to the binary numbers.
+See the following example: 
 
+\begin{lstlisting}
+"\x80\x00\x00\x99" should be encoded as "%80%00%00%99"
+\end{lstlisting}
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 4: The Length Extension Attack}
+\subsection{Task 3: The Length Extension Attack}
 
-
-In the previous task, we show how a legitimate user calculates the MAC (with
-the knowledge of the MAC key). In this task, we will do it as an attacker,
-i.e., we do not know the MAC key. However, we do know the MAC of a valid
-request \texttt{R}. Our job is to forge a new request based on \texttt{R},
+In this task, we will generate a valid MAC for a URL without
+knowing the MAC key.  Assume that we know the MAC of a valid
+request \texttt{R}, and we also know the size of the MAC key.
+Our job is to forge a new request based on \texttt{R},
 while still being able to compute the valid MAC.
 
 Given the original message \texttt{M="This is a test message"} and its
@@ -438,7 +374,7 @@ successfully get the content of the \texttt{secret.txt} file.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 5: Attack Mitigation using HMAC}
+\subsection{Task 4: Attack Mitigation using HMAC}
 
 In the tasks so far, we have observed the damage caused when a developer
 computes a MAC in an insecure way by concatenating the key and the message.
@@ -447,29 +383,38 @@ way to calculate MACs is to use HMAC. Students
 should modify the server program's \texttt{verify\textunderscore mac()}
 function and use Python's \texttt{hmac} module to calculate the MAC. The
 function resides in \texttt{lab.py}. Given a key and message (both of type
-string), the HMAC can be computed as shown below:
+string), the HMAC can be computed as shown below (if you copy and paste 
+the code from this PDF file, 
+the \texttt{'} characters might not be copied correctly on some platforms).
 
 \begin{lstlisting}
-mac = hmac.new(bytearray(key.encode('utf-8')), msg=message.encode('utf-8',
-      'surrogateescape'), digestmod=hashlib.sha256).hexdigest()
+real_mac = hmac.new(bytearray(key.encode('utf-8')), 
+             msg=message.encode('utf-8', 'surrogateescape'), 
+             digestmod=hashlib.sha256).hexdigest()
 \end{lstlisting}
 
+After making the changes, stop all the containers, rebuild them,
+and start all the containers again. The change will then take effect. 
 Students should repeat Task 1 to send a request to list files while using HMAC for
 the MAC calculation. Assuming that the chosen key is 123456, the HMAC can be computed
-in the following:
+in the following program. 
 
 \begin{lstlisting}
-$ python3
-Python 3.5.2
-[GCC 5.4.0 20160609] on linux
-Type "help", "copyright", "credits" or "license" for more information
->>> import hmac
->>> import hashlib
->>> key='123456'
->>> message='lstcmd=1'
->>> hmac.new(bytearray(key.encode('utf-8')), msg=message.encode('utf-8',
-	'surrogateescape'), digestmod=hashlib.sha256).hexdigest()
+#!/bin/env python3
+
+import hmac
+import hashlib
+
+key='123456'
+message='lstcmd=1'
+mac = hmac.new(bytearray(key.encode('utf-8')),
+               msg=message.encode('utf-8', 'surrogateescape'),
+               digestmod=hashlib.sha256).hexdigest()
+print(mac)
 \end{lstlisting}
+ 
+
+
 
 Students should describe why a malicious request using length extension and
 extra commands will fail MAC verification when the client and server use
@@ -487,3 +432,81 @@ HMAC.
 
 
 \end{document}
+
+
+The following task is removed. It does not fit the flow.
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 3: Compute MAC using Secret Key}
+
+In this task, we will add an extra message \texttt{N = "Extra message"}
+to the padded original message \texttt{M = "This is a test message"},
+and compute its hash value. The program is listed below.
+
+\begin{lstlisting}
+/* calculate_mac.c */
+#include <stdio.h>
+#include <openssl/sha.h>
+
+int main(int argc, const char *argv[])
+{
+   SHA256_CTX c;
+   unsigned char buffer[SHA256_DIGEST_LENGTH];
+   int i;
+
+   SHA256_Init(&c);
+   SHA256_Update(&c,
+      "This is a test message"
+      "\x80"
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+      "\x00\x00\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\xB0"
+      "Extra message",
+      64+13);
+   SHA256_Final(buffer, &c);
+
+   for(i = 0; i < 32; i++) {
+     printf("%02x", buffer[i]);
+   }
+   printf("\n");
+   return 0;
+}
+\end{lstlisting}
+
+Students can compile and run the above program as follows:
+
+\begin{lstlisting}
+$ gcc calculate_mac.c -o calculate_mac -lcrypto
+$ ./calculate_mac
+\end{lstlisting}
+
+
+\paragraph{Task.}
+Students should change the code in the listing above and compute
+the MAC for the following request (assume that we know
+the secret MAC key):
+
+\begin{lstlisting}
+http://www.seedlab-hashlen.com/?myname=<name>&uid=<uid>
+&lstcmd=1<padding>&download=secret.txt
+&mac=<hash-value>
+\end{lstlisting}
+
+Just like the previous task, the value of \texttt{<name>} should be your actual name.
+The value of the \texttt{<uid>} and the MAC key should be
+obtained from the \texttt{LabHome/key.txt} file.
+Please send this request to the server, and see whether you can
+successfully download the \texttt{secret.txt} file.
+
+It should be noted that in the URL,
+all the hexadecimal numbers in the padding
+need to be encoded by changing
+\texttt{\textbackslash x} to \texttt{\%}. For example,
+\texttt{\textbackslash x80} in the padding should be
+replaced with \texttt{\%80} in the URL above.
+On the server side, encoded data in the URL
+will be changed back to the hexadecimal numbers.
