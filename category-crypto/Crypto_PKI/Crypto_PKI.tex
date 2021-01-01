@@ -81,7 +81,7 @@ In addition, we have a lab called \textit{RSA Public-Key Encryption and Signatur
 which focuses on the algorithm part of the public-key cryptography.
 
 
-\paragraph{Lab environment.} \seedenvironmentB 
+\paragraph{Lab environment.} \seedenvironmentC 
 
 
 % *******************************************
@@ -438,10 +438,11 @@ which are already executed when the container is built.
 
 
 \paragraph{Starting the Apache server.} The Apache server 
-is not automatically started in the container. Let's go to the container and 
+is not automatically started in the container, because of the 
+need to type the password to unlock the private key. 
+Let's go to the container and 
 run the following command to start the server (we also list
 some related commands): 
-
 
 \begin{lstlisting}
 // Start the server 
@@ -469,6 +470,15 @@ you have taken, the contents that you add to Apache's configuration file, and
 the screenshots of the final outcome showing that you can successfully browse
 the HTTPS site. 
 
+
+\paragraph{Shared folder between the VM and container.} 
+In this task, we need to copy files from the VM to the container. 
+To avoid repeatedly recreating containers, we have created a shared
+folder between the VM and container. When you use the Compose file
+inside the \texttt{Labsetup} folder to create containers, 
+the \texttt{volumes} sub-folder
+will be mounted to the container. Anything you put inside 
+this folder will be accessible from inside of the running container.  
 
 
 \paragraph{Browsing the website.} 
