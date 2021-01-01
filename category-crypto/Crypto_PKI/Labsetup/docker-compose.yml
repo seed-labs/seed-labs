@@ -6,6 +6,9 @@ services:
         image: seed-image-www-pki
         container_name: www-10.9.0.80
         tty: true
+        volumes:
+            - ./volumes:/volumes
+
         networks:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.80
