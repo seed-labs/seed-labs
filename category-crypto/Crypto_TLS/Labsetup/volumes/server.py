@@ -9,8 +9,8 @@ HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n
 <!DOCTYPE html><html><body><h1>This is Bank32.com!</h1></body></html>
 """
 
-SERVER_CERT = './certs/mycert.crt'
-SERVER_PRIVATE = './certs/mycert.key'
+SERVER_CERT = './server-certs/mycert.crt'
+SERVER_PRIVATE = './server-certs/mycert.key'
 
 
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)  # For Ubuntu 20.04 VM

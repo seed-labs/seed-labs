@@ -8,6 +8,7 @@ import pprint
 hostname = sys.argv[1]
 port = 443
 cadir = '/etc/ssl/certs'
+#cadir = './client-certs'
 
 # Set up the TLS context
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)  # For Ubuntu 20.04 VM
