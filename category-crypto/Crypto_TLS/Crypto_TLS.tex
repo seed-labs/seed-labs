@@ -76,7 +76,7 @@ Detailed coverage of PKI and TLS can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab Environment.} \seedenvironmentB
+\paragraph{Lab Environment.} \seedenvironmentC
 
 
 %Note: there are two SSL wrapper modules in Python, one is 
@@ -217,17 +217,17 @@ we will create our own certificate folder, and place the corresponding
 certificates in the folder to do the verification.
 
 
-Please create a folder called \texttt{certs}, and change the 
+Please create a folder called \texttt{client-certs}, and change the 
 \texttt{cadir} line in the client program to the following. Run the client program
 and report your observation.
 
 \begin{lstlisting}
-cadir = './certs'   
+cadir = './client-certs'   
 \end{lstlisting}
 
 
 To solve this problem, you need to place the corresponding CA's certificate 
-into your \texttt{certs} folder.  Please use your client program
+into your \texttt{client-certs} folder.  Please use your client program
 to find out what CA certificate is needed to verify
 the \texttt{www.example.com} server's certificate, and then copy
 the certificate from the \texttt{/etc/ssl/certs} to your 
@@ -235,11 +235,11 @@ own folder. Run your client program again. If you have done everything correctly
 your client program should be able to talk to the server.
 
 
-It should be noted that copying CA's certificate to the \texttt{"./certs"} folder is
+It should be noted that copying CA's certificate to the \texttt{"./client-certs"} folder is
 not enough.  When
 TLS tries to verify a server certificate, it will generate a hash value from the
 issuer's identify information, use this hash value as part of the file name, and
-then use this name to find the issuer's certificate in the \texttt{"./certs"} folder.
+then use this name to find the issuer's certificate in the \texttt{"./client-certs"} folder.
 Therefore, we need to rename each CA's certificate using the hash value generated from its
 subject field, or we can make a symbolic link out of the hash value. In the following command,
 we use \openssl to generate a hash value, which is then used to create a symbolic link.
@@ -393,8 +393,8 @@ HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n
 <!DOCTYPE html><html><body><h1>Hello, world!</h1></body></html>
 """
 
-SERVER_CERT    = './certs/server.crt'
-SERVER_PRIVATE = './certs/server.key'
+SERVER_CERT    = './server-certs/server.crt'
+SERVER_PRIVATE = './server-certs/server.key'
 
 
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER) 
@@ -426,10 +426,10 @@ In this task, the CA is created by us, and its
 certificate is not stored in that folder. We do not recommend students 
 to add this CA to that folder, because that will affect the entire 
 system. Students should store the CA's certificate in 
-the \texttt{"./certs"} folder, and then follow the instruction
+the \texttt{"./client-certs"} folder, and then follow the instruction
 in Task 1 to set up the folder. 
 Please test your program using the \path{/etc/ssl/certs} folder
-and the \texttt{./certs} folder, respectively. 
+and the \texttt{./client-certs} folder, respectively. 
 Please describe your observation and explain why.
 
 
@@ -529,7 +529,7 @@ a pair of public/private keys and a certificate signing request:
 
 \begin{lstlisting}
 openssl req -newkey rsa:2048 -config ./server_openssl.cnf -batch \
-            -sha256  -days 3650 -keyout server.key -out server.csr 
+            -sha256 -keyout server.key -out server.csr 
 \end{lstlisting}
 
 
