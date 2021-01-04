@@ -75,8 +75,7 @@ Detailed coverage of the secret-key encryption can be found in the following:
 
 In this lab, we use a container to run an encryption oracle
 and a padding oracle. The container is only needed in Task 
-6.3 and Task 7, so you do not need to start the container 
-for other tasks. 
+6.3, so you do not need to start the container for other tasks. 
 
 
 \paragraph{Container Setup and Commands.}
@@ -107,7 +106,21 @@ students to use the ciphertext made by us.
 
 \begin{itemize}
 
-\item Step 1: let us do some simplification to the original article.
+\item Step 1: let us generate the encryption key, i.e., the substitution table.
+We will permute the alphabet from \texttt{a}
+to \texttt{z} using Python, and use the permuted alphabet as the key. See the following program.
+
+\begin{lstlisting}
+#!/bin/env python3
+  
+import random
+s = "abcdefghijklmnopqrstuvwxyz"
+list = random.sample(s, len(s))
+key = ''.join(list)
+print(key)
+\end{lstlisting}
+
+\item Step 2: let us do some simplification to the original article.
 We convert all upper cases to lower cases, and then
 removed all the punctuations and numbers.  We do keep the spaces between words, so
 you can still see the boundaries of the words in the ciphertext.
@@ -121,27 +134,13 @@ $ tr -cd '[a-z][\n][:space:]' < lowercase.txt > plaintext.txt
 \end{lstlisting}
 
 
-\item Step 2: let us generate the encryption key, i.e., the substitution table.
-We will permute the alphabet from \texttt{a}
-to \texttt{z} using Python, and use the permuted alphabet as the key. See the following program.
-
-\begin{lstlisting}
-$ python
->>> import random
->>> s = "abcdefghijklmnopqrstuvwxyz"
->>> list = random.sample(s, len(s))
->>> ''.join(list)
-'sxtrwinqbedpvgkfmalhyuojzc'
-\end{lstlisting}
-
-
 \item Step 3: we use the \texttt{tr} command to do the encryption.
 We only encrypt letters, while leaving the space and return characters alone.
 
 
 \begin{lstlisting}
 $ tr 'abcdefghijklmnopqrstuvwxyz' 'sxtrwinqbedpvgkfmalhyuojzc' \
-        < plaintext.txt > ciphertext.txt
+      < plaintext.txt > ciphertext.txt
 \end{lstlisting}
 
 \end{itemize}
@@ -299,7 +298,7 @@ We can use the following \texttt{"echo -n"} command to create such files. The fo
 creates a file \texttt{f1.txt} with length 5 (without the \texttt{-n} option, the length will
 be 6, because a newline character will be added by \texttt{echo}):
 
-\begin{lstlisting}[backgroundcolor=]
+\begin{lstlisting}
 $ echo -n "12345" > f1.txt
 \end{lstlisting}
 
@@ -421,12 +420,37 @@ encrypted version (ciphertext). If this can lead to
 the revealing of further secret information, the encryption scheme is
 not considered as secure.
 
-%For OFB, if plaintext and ciphertext is know, we can get the random sequence (one-time
-%pad is not one-time).
 
-%For CFB, known-plaintext, the 1st block will be compromised
+\paragraph{Sample Code.} We provide a sample program called \texttt{sample\_code.py},
+which can be found inside the \path{Labsetup/Files} folder. It shows you 
+how to XOR strings (ascii strings and hex strings). The code
+is shown in the following:
 
+\begin{lstlisting}
+#!/usr/bin/python3
 
+# XOR two bytearrays
+def xor(first, second):
+   return bytearray(x^y for x,y in zip(first, second))
+
+MSG   = "A message"
+HEX_1 = "aabbccddeeff1122334455"
+HEX_2 = "1122334455778800aabbdd"
+
+# Convert ascii/hex string to bytearray
+D1 = bytes(MSG, 'utf-8')
+D2 = bytearray.fromhex(HEX_1)
+D3 = bytearray.fromhex(HEX_2)
+
+r1 = xor(D1, D2)
+r2 = xor(D2, D3)
+r3 = xor(D2, D2)
+print(r1.hex())
+print(r2.hex())
+print(r3.hex())
+\end{lstlisting}
+
+ 
 
 % -------------------------------------------
 % SUBSECTION
@@ -481,14 +505,15 @@ You can get access to the oracle by running the following command:
 \begin{lstlisting}
 $ nc 10.9.0.80 3000
 Bob's secret message is either "Yes" or "No", without quotations.
-Bob's ciphertex: 1baf79c133609584792d34120807cf1a
-The IV used    : 5b6ac1907f992f11c81310ae00000000
+Bob's ciphertex: 54601f27c6605da997865f62765117ce
+The IV used    : d27d724f59a84d9b61c0f2883efa7bbc
 
-Next IV        : 5b6ac1907f992f11c81310ae00000001
-You plaintext  : <provided by you>
+Next IV        : d34c739f59a84d9b61c0f2883efa7bbc
+Your plaintext : 11223344aabbccdd
+Your ciphertext: 05291d3169b2921f08fe34449ddc3611
 
-Next IV        : 5b6ac1907f992f11c81310ae00000002
-You plaintext  : <provided by you>
+Next IV        : cd9f1ee659a84d9b61c0f2883efa7bbc
+Your plaintext : <your input>
 \end{lstlisting}
 
 After showing you the next IV, 
@@ -498,12 +523,6 @@ and outputs the new ciphertext.
 You can try different plaintexts, but keep in mind that every time, the 
 IV will change, but it is predictable. To simply your job, we let the 
 oracle print out the next IV. To exit from the interaction, press \text{Ctrl+C}.
-
-
-%\item \textbf{Task 6.4. Encrypting IV or not.}
-%Should IV be encrypted? See CBC mode. In this case, the actual IV becomes a constant. Do
-%an experiment (two plaintext with different IVs will generate the same ciphertext)
-
 
 
 % -------------------------------------------
@@ -524,53 +543,7 @@ details on how to generate cryptographically strong pseudo random numbers.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 7: Padding Oracle Attack}
-
-Encrypting messages using AES with CBC mode needs to
-pad the message, and the PKCS\#5 padding scheme is typically used.
-Some systems, when decrypting a given ciphertext,
-verify whether the padding is valid or not,  
-and throw an error if the padding is invalid. This 
-seemly-harmless behavior enables a type of attack 
-called \textit{padding oracle attack}.
-The attack was originally published in 2002 by Serge Vaudenay, and 
-many well-known systems were found vulnerable to this type of 
-attacks, including Ruby on Rails, ASP.NET, and OpenSSL. 
-
-
-In this task, we provide a padding oracle hosted on port \texttt{5000}.
-The oracle has a secret message inside, and it 
-prints out the ciphertext of this secret message.
-Your ultimate goal is to figure out what this message is
-using the padding oracle attack. 
-You can provide any ciphertext to the oracle, and the
-oracle will check whether the ciphertext has a valid padding or not, and 
-let you know the result (the oracle will never reveal the 
-secret message). You need to do the following:
-
-\begin{enumerate}
-  \item Find the length of the secret message
-  \item Find the actual content of the secret message
-\end{enumerate}
-
-You can interact with the oracle via \texttt{"nc 10.9.0.80 5000"}.
-To simplify your job, we provide a python code named \texttt{padding\_oracle\_attack.py},
-which is included in \texttt{Labsetup.zip}. 
-This code will interact with the oracle server, and display the results
-returned from the oracle.  
-
-It should be noted that every time you make a new connection with the 
-oracle, the oracle will generate a new key and IV to encrypt the 
-secret message (the message is still the same). That is why
-you will see a different ciphertext. 
-However, if you stay inside an existing connection, 
-the key and IV will not change. 
-
-
-% *******************************************
-% SECTION
-% *******************************************
-\section{Task 8: Programming using the Crypto Library}
+\section{Task 7: Programming using the Crypto Library}
 
 This task is mainly designed for students in Computer Science/Engineering
 or related fields, where programming is required. Students should
@@ -621,7 +594,7 @@ command (the \texttt{-n} flag
 tells \texttt{echo} not to  add a trailing newline):
 
 
-\begin{lstlisting}[backgroundcolor=]
+\begin{lstlisting}
 $ echo -n "This is a top secret." > file
 \end{lstlisting}
 
@@ -629,8 +602,8 @@ $ echo -n "This is a top secret." > file
 to invoke the crypto library. No credit will be given
 if you simply use the {\tt openssl} commands to do this task.
 Sample code can be found from the following URL:
-\begin{lstlisting}[backgroundcolor=]
- https://www.openssl.org/docs/man1.0.2/crypto/EVP_EncryptInit.html
+\begin{lstlisting}
+ https://www.openssl.org/docs/man1.1.1/man3/EVP_CipherInit.html
 \end{lstlisting}
 
 
@@ -638,7 +611,7 @@ Sample code can be found from the following URL:
 do not forget to include the \texttt{-lcrypto} flag, because your code
 needs the \texttt{crypto} library. See the following example:
 
-\begin{lstlisting}[backgroundcolor=]
+\begin{lstlisting}
 $ gcc -o myenc myenc.c -lcrypto
 \end{lstlisting}
 
@@ -734,7 +707,7 @@ a common interface for various encryption algorithms.
 To ask EVP to use a specific algorithm, we simply need to
 pass our choice to the EVP interface.
 A sample code is given in
-\url{http://www.openssl.org/docs/crypto/EVP_EncryptInit.html}.
+\url{https://www.openssl.org/docs/man1.1.1/man3/EVP_CipherInit.html}
 Please get familiar with this program.
 
 
