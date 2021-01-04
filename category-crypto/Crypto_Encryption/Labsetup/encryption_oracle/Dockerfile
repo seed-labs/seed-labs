@@ -4,11 +4,7 @@ FROM handsonsecurity/seed-ubuntu:dev AS builder
 COPY .  /oracle
 WORKDIR /oracle
 
-ARG secret
-ENV SECRET=${secret}
-
 RUN make
-
 
 
 FROM handsonsecurity/seed-ubuntu:small

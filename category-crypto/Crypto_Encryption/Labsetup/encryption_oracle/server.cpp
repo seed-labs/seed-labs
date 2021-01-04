@@ -7,6 +7,9 @@
 #include <sys/wait.h>
 // #include <sys/types.h>
 
+// Total number of servers
+#define N 1
+
 int socket_bind(int port)
 {
     int server_fd;
@@ -86,13 +89,16 @@ int main(int argc, char const *argv[])
     {
         int port;
         const char *binary;
-    } programs[2] = {
-        {.port = 3000, .binary = "known_iv"},
-        {.port = 5000, .binary = "padding_oracle"}};
+    } programs[N] = {
+        // Initially, port 5000 is for the padding oracle.
+	// That task is moved to another lab, so the port is no longer used.
+        {.port = 3000, .binary = "known_iv"}
+        //{.port = 5000, .binary = "known_iv"}
+      };
 
-    int server_fds[2] = {
-        socket_bind(programs[0].port), // for predictable_iv
-        socket_bind(programs[1].port)  // for padding_oracle
+    int server_fds[N] = {
+        socket_bind(programs[0].port)   // for predictable_iv
+        //socket_bind(programs[1].port)  // for predictable_iv
     };
 
     struct sockaddr_in address;
@@ -109,7 +115,8 @@ int main(int argc, char const *argv[])
             ;
 
         unsigned server_idx;
-        int socket_fd = select_accept(server_fds, 2, (struct sockaddr *)&address, (socklen_t *)&addrlen, server_idx);
+        int socket_fd = select_accept(server_fds, N, (struct sockaddr *)&address, 
+	                              (socklen_t *)&addrlen, server_idx);
         if (socket_fd < 0)
         {
             perror("accept failed");
