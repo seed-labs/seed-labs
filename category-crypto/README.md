@@ -13,7 +13,8 @@ The meaning of the Changes column can be found from
 | PKI        | Major | Done   | Yes | [README](Crypto_PKI/README.md)
 | TLS        | Minor | Done   | Yes | [README](Crypto_TLS/README.md)
 | RSA        | None  |  --    | --  | --
-| Encryption | None  |  --    | --  | --
+| Encryption | Major |  --    | Yes | --
+| Padding    | New   | Done   | Yes | --
 | MD5        | None  |  --    | --  | --
 | Length Ext | Major | Done   | Yes | [README](Crypto_Hash_Length_Ext/README.md)
 | Random #   | None  |  --    | --  | --
