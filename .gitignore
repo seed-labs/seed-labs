@@ -9,6 +9,7 @@
 *.synctex.gz
 *.toc
 *.xtr
+*.swp
 !**/Figs/*.pdf
 
 
