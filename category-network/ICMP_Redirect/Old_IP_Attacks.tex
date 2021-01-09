@@ -1,0 +1,557 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../common-files}
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
+
+\lhead{\bfseries SEED Labs -- IP/ICMP Attacks Lab}
+\newcommand{\ipFigs}{./Figs}
+
+
+\begin{document}
+
+
+
+\begin{center}
+{\LARGE IP/ICMP Attacks Lab}
+\end{center}
+
+\seedlabcopyright{2020}
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Overview}
+
+The objective of this lab is for students to gain the first-hand experience 
+on various attacks at the IP layer. Some of the attacks may not work anymore,
+but their underlying techniques are quite generic, and it
+is important for students to learn these attacking techniques, so when they design
+or analyze network protocols, they are aware of what attackers can do to protocols.
+Moreover, due to the complexity of IP fragmentation, spoofing fragmented IP packets
+is non-trivial.  Constructing spoofed 
+IP fragments is a good practice for students to hone their
+packet spoofing skills, which are essential in network security.  
+We will use Scapy to conduct packet spoofing.  
+This lab covers the following topics:
+
+\begin{itemize}[noitemsep]
+\item The IP and ICMP protocols
+\item IP Fragmentation and the related attacks
+\item ICMP redirect attack
+\item Routing 
+\end{itemize}
+
+
+
+\paragraph{Videos.}
+Detailed coverage of the IP protocol and the attacks at the IP layer can be found 
+in the following:
+
+\begin{itemize}
+\item Section 4 of the SEED Lecture, \seedisvideo
+\end{itemize}
+
+
+\paragraph{Lab environment.} \seedenvironmentC
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Environment Setup using Container}
+
+In this lab, we need several machines. The lab
+environment setup is depicted in Figure~\ref{ip:fig:labsetup}.
+We use containers to set up this environment.
+
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/TwoLANs.pdf}
+\end{center}
+\caption{Lab environment setup}
+\label{ip:fig:labsetup}
+\end{figure}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{About the Attacker Container}
+
+In this lab, we can either use the VM or the attacker container
+as the attacker machine. If you look at the Docker Compose file, you will
+see that the attacker container is configured differently from the other
+containers. Here are the differences:
+
+\begin{itemize}
+\item \textit{Shared folder.} When we use the attacker container
+to launch attacks, we need to put the attacking code inside
+the attacker container.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/volumes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\item \textit{Privileged mode.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/privileged_mode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{itemize}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 1: IP Fragmentation}
+
+We will only use two containers for this task, the attacker 
+container (\texttt{10.9.0.105}) and the victim container (\texttt{10.9.0.5}).
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.a: Conducting IP Fragmentation}
+
+In this task, students need to construct a UDP packet and send it to a UDP 
+server. They can use \texttt{"nc -lu -p 9090"} to start a UDP server inside
+the victim container. 
+Instead of building one single IP packet, students need to 
+divide the packet into 3 fragments, each containing 32 bytes of data (the
+first fragment contains 8 bytes of the UDP header plus 32 bytes of data).
+If everything is done correctly, the server will display
+96 bytes of data in total.  
+The following is a sample code for constructing the first fragment.
+
+\begin{lstlisting}[language=python]
+#!/usr/bin/env python3
+from scapy.all import *
+
+# Construct IP header
+ip = IP(src="1.2.3.4", dst="10.9.0.5")
+ip.id    = 1000  # Identification
+ip.frag  = 0     # Offset of this IP fragment
+ip.flags = 1     # Flags
+ip.proto = 17    # For UDP
+
+# Construct UDP header
+udp = UDP(sport=7070, dport=9090)
+udp.len  = 200   # This should be the combined length of all fragments
+
+# Construct payload
+payload = 'A' * 80    # Put 80 bytes in the first fragment
+
+# Construct the entire packet and send it out
+pkt = ip/udp/payload  # For other fragments, we should use ip/payload
+pkt[UDP].chksum = 0 # Set the checksum field to zero
+send(pkt, verbose=0)
+\end{lstlisting}
+
+
+It should be noted that the UDP checksum field needs to be set 
+correctly. If we do not set this field, Scapy will calculate 
+the checksum for us, but this checksum will only be based on the 
+data in the first fragment, which is incorrect.
+If we set the checksum field to  zero, Scapy will leave it alone.
+Moreover, the recipient will not validate the UDP checksum 
+if it sees a zero in the checksum field, 
+because in UDP, checksum validation is optional.
+
+
+If you use Wireshark to observe traffic, it should also be noted that by default, 
+Wireshark will reassemble fragments in the last fragment packet and
+show it as a complete IP/UDP packet. To change that behavior,
+we should disable IP fragment reassembly in Wireshark preferences.
+Click the following menu sequence: \texttt{Edit} $\rightarrow$ \texttt{Preferences}; 
+click the \texttt{Protocols} dropdown menu, find and click \texttt{IPv4}.
+Uncheck the \texttt{"Reassemble fragmented IPv4 datagrams"} option. 
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.b: IP Fragments with Overlapping Contents}
+
+Similar to Task 1.a, students also need to construct 3 fragments to send data to a UDP server.
+The size of each fragment is up to students.  The objective of this task is to create
+overlapping fragments.  In particular, the first two fragments should overlap.  Please use
+experiments to show what will happen when the overlapping occurs. Please
+try the following overlapping scenarios separately:
+ 
+ \begin{itemize} 
+ \item The end of the first fragment and the beginning of the second
+ fragment should have \texttt{K} bytes of overlapping, i.e., the last  
+ \texttt{K} bytes of data in the first fragment should have the same
+ offsets as the first \texttt{K} bytes of data in the second fragment. 
+ The value of \texttt{K} is decided by students (\texttt{K} should be 
+ greater than zero and smaller than the size of either fragment). In the reports, students
+ should indicate what their \texttt{K} values are. 
+
+
+ \item The second fragment is completely enclosed in the first fragment.
+ The size of the second fragment must be smaller than the 
+ first fragment (they cannot be equal).
+
+ \end{itemize} 
+
+
+Please try two different orders: (1) sending the first fragment first, and 
+(2) sending the second fragment first. Please report whether the results will
+be the same. 
+
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.c: Sending a Super-Large Packet}
+
+As we know, the maximal size for an IP packet is $2^{16}$ octets, because
+the length field in the IP header has only 16 bits. 
+However,
+using the IP fragmentation, we can create an IP packet that 
+exceeds this limit. Please construct such a packet, send
+it to the UDP server, and see how the server responds to this 
+situation. Please report your observation. 
+  
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.d: Sending Incomplete IP Packet}
+
+
+In this task, we are going to launch a Denial-of-Service attack 
+on the victim container. In the attack, the attacker sends  a lot of 
+incomplete IP packets to the victim, i.e., these packets consist of 
+IP fragments, but some fragments are missing. All these incomplete IP packets 
+will stay in the kernel, until they time out. Potentially, this can
+cause the kernel to commit a lot of kernel memory. In the past, this 
+had resulted in denial-of-service attacks on the server. Please try 
+this attack and describe your observation. 
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 2: ICMP Redirect Attack}
+
+An ICMP redirect is an error message sent by a router to the sender of an
+IP packet. Redirects are used when a router believes a packet is being
+routed incorrectly, and it would like to inform the sender that it should
+use a different router for the subsequent packets sent to that same
+destination. ICMP redirect can be used by attackers to change 
+a victim's routing. 
+
+
+The objective of this task is to launch an ICMP redirect attack on the victim,
+such that when the victim sends packets to \texttt{192.168.60.5},
+it will use the malicious router container (\texttt{10.9.0.111})
+as its router. 
+Since the malicious router is controlled by the attacker, the attacker can 
+intercept the packets, make changes, and then send 
+the modified packets out. This is a form of the Man-In-The-Middle (MITM) attack. 
+The task is divided into two subtasks, the ICMP redirect attack task and 
+the MITM attack task.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.a: Launching ICMP Redirect Attack} 
+
+In the Ubuntu operating system, 
+there is a countermeasure against the ICMP redirect attack. In the 
+Compose file, we have already 
+turned off the countermeasure by configuring the victim container
+to accept ICMP redirect messages. 
+
+\begin{lstlisting}
+// In docker-compose.yml
+sysctls:
+      - net.ipv4.conf.all.accept_redirects=1
+
+// To turn the protection on, set its value to 0
+# sysctl net.ipv4.conf.all.accept_redirects=0
+\end{lstlisting}
+
+
+For this task, we will attack the victim container from 
+the attacker container. In the current setup, 
+the victim will use the router container (\texttt{192.168.60.11}) as
+the router to get to the \texttt{192.168.60.0/24} network. If
+we run \texttt{ip route} on the victim container, we will
+see the following
+
+\begin{lstlisting}
+# ip route
+default via 10.9.0.1 dev eth0 
+10.9.0.0/24 dev eth0 proto kernel scope link src 10.9.0.5 
+192.168.60.0/24 via (*@\textbf{10.9.0.11}@*) dev eth0
+\end{lstlisting}
+ 
+
+\paragraph{Code skeleton.} A code skeleton is provided in the following, with
+some of the essential parameters left out. Students should fill in the proper 
+values in the places marked by \texttt{@@@@}.  
+
+
+\begin{lstlisting}[language=python]
+#!/usr/bin/python3
+
+from scapy.all import *
+
+ip = IP(src = @@@@,  dst = @@@@)
+icmp = ICMP(type=@@@@, code=@@@@)
+icmp.gw = @@@@
+
+# The enclosed IP packet should be the one that 
+# triggers the redirect message. 
+ip2 = IP(src = @@@@, dst = @@@@)
+send(ip/icmp/ip2/ICMP());
+\end{lstlisting}
+ 
+
+\paragraph{Verification.}
+ICMP redirect messages will not affect the routing table; instead, it 
+affects the routing cache. Entries in the routing cache overwrite 
+those in the routing table, until the entries expire. To display 
+and clean the cache contents, we can use the following commands: 
+
+\begin{lstlisting}
+// Display the routing cache 
+# ip route show cache
+192.168.60.5 via 10.9.0.111 dev eth0
+    cache <redirected> expires 296sec
+
+// Clean the routing cache
+# ip route flush cache
+\end{lstlisting}
+
+
+Please do a traceroute on the victim machine, and see whether the packet
+is rerouted or not. 
+
+\begin{lstlisting}
+# mtr -n 192.168.60.5
+\end{lstlisting}
+ 
+
+
+
+\paragraph{A strange issue.} While developing this lab, we have observed
+a strange issue in the container environment. The issue does not exist
+if the victim is a VM, instead of a container. 
+If we spoof the redirect packets, but the victim machine is not 
+sending out ICMP packets during the attack, the attack will never be successful. 
+This is not the case for the VM setting. 
+Moreover, the \texttt{ip2} inside the redirect packet must match with the
+type and the destination IP address of the packets 
+that the victim is currently sending (ICMP for ICMP,
+UDP for UDP, etc.). 
+
+
+It seems that the OS kernel conducts some kind of 
+sanity check before accepting an ICMP redirect packets. 
+We have not figured out what exactly caused this, 
+and why the VM does not have these restrictions. 
+This is an open issue for the SEED labs, and we encourage 
+students to help us resolve this issue. We recommend instructors
+to give students bonus points if they have indeed resolved this issue. 
+
+
+Before we find a way to disable this checking mechanism, 
+when we launch the attack,
+we should should \texttt{ping} the \texttt{192.168.60.5} host on the 
+victim machine. 
+
+
+\paragraph{Questions.} After you have succeeded in the attack, please 
+conduct the following experiments, and see whether your attack can 
+still succeed. Please explain your observations:
+
+\begin{itemize}
+\item Question 1: Can you use ICMP redirect attacks to redirect to a remote machine? Namely,
+the IP address assigned to \texttt{icmp.gw} is a computer not on the local LAN. 
+Please show your experiment result, and explain your observation.  
+
+\item Question 2: Can you use ICMP redirect attacks to redirect to a non-existing machine on
+the same network? Namely, the IP address assigned to \texttt{icmp.gw} is a local computer that
+is either offline or non-existing. 
+Please show your experiment result, and explain your observation.  
+
+\item Question 3: If you look at the \texttt{docker-compose.yml} file, you will find the 
+following entries for the malicious router container. What are the purposes
+of these entries? Please change their value to \texttt{1}, and launch the attack again. 
+Please describe and explain your observation. 
+
+\begin{lstlisting}
+sysctls:
+     - net.ipv4.conf.all.send_redirects=0
+     - net.ipv4.conf.default.send_redirects=0
+     - net.ipv4.conf.eth0.send_redirects=0
+\end{lstlisting}
+ 
+\end{itemize}
+
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.b: Launching the MITM Attack} 
+
+Using the ICMP redirect attack, we can get the victim to use 
+our malicious router (\texttt{10.9.0.111}) as the router for the destination
+\texttt{192.168.60.5}. Therefore, all packets from the victim machine 
+to this destination will be routed through the malicious router.
+We would like to modify the victim's packets. 
+
+
+Before launching the MITM attack, we start a TCP client and server program
+using \texttt{netcat}. See the following commands.  
+
+\begin{lstlisting}
+On the destination container 192.168.60.5, start the netcat server:
+# nc -lp 9090
+
+On the victim container, connect to the server:
+# nc 192.168.60.5 9090
+\end{lstlisting}
+
+
+Once the connection is made, you can type messages on the victim machine.
+Each line of messages will be put into a TCP packet sent
+to the destination, which simply displays the message.
+Your task is to replace every occurrence of your first name in the
+message with a sequence of A's. The length of the sequence should be the
+same as that of your first name, or you will mess up the TCP sequence
+number, and hence the entire TCP connection. You need to use your real
+first name, so we know the work is done by you.
+
+
+
+\paragraph{Disabling IP Forwarding.}
+In the setup, the malicious router's IP forwarding is enabled, so it does 
+function like a router and forward packets for others. When we launch 
+the MITM attack, we have to stop forwarding IP packets; instead,
+we will intercept the packet, make a change, and send out a new packet. 
+To do that, we just need to disable the IP forwarding on the malicious 
+router. 
+
+\begin{lstlisting}
+# sysctl net.ipv4.ip_forward=0
+\end{lstlisting}
+
+
+\paragraph{MITM code.}
+Once the IP forwarding is disabled, our program needs to take over
+the role of packet forwarding from the victim to the target, of course
+after making changes to the packets. Since the packet's destination 
+is not for us, the kernel will not give the packet to us; it will simply
+drops the packet. However, if our program is a sniffer program,
+we will get the packet from the kernel. Therefore, we will use 
+the sniff-and-spoof technique to implement this MITM attack.
+In the following, we provide a skeleton sniff-and-spoof
+program. The program captures all the TCP packets, and
+then makes some changes. You need to modify this program.
+
+\begin{lstlisting}[language=python]
+#!/usr/bin/env python3
+from scapy.all import *
+
+def spoof_pkt(pkt):
+   newpkt = IP(bytes(pkt[IP]))
+   del(newpkt.chksum)
+   del(newpkt[TCP].payload)
+   del(newpkt[TCP].chksum)
+
+   if pkt[TCP].payload:
+       data = pkt[TCP].payload.load
+       print("*** %s, length: %d" % (data, len(data)))
+
+       # Replace a pattern
+       newdata = data.replace(b'seedlabs', b'AAAAAAAA')
+
+       send(newpkt/newdata)
+   else:
+       send(newpkt)
+
+f = 'tcp'
+pkt = sniff(iface='eth0', filter=f, prn=spoof_pkt)
+\end{lstlisting}
+
+It should be noted that the code above captures all the TCP
+packets, including the one generated by the program itself. That is
+undesirable, as it will affect
+the performance. Students needs to change the filter, so it does not capture
+its own packets.
+
+\paragraph{Questions.} After you have succeeded in the attack, please 
+answer the following questions: 
+
+\begin{itemize}
+  \item Question 4: In your MITM program, you only need to capture 
+    the traffics in one direction. Please indicate which direction, 
+    and explain why.
+
+  \item Question 5: In the MITM program, when you capture the 
+    \texttt{nc} traffics from A (\texttt{10.9.0.5}), 
+    you can use A's IP address or MAC address in the filter. 
+    One of the choices is not good and is going to create issues, 
+    even though both choices may work. 
+    Please try both, and use your experiment results to 
+    show which choice is the correct one, and please
+    explain your conclusion.
+\end{itemize}
+ 
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Submission}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
+
+
+
