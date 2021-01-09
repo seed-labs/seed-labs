@@ -75,7 +75,7 @@ on this attack from online resources, such as Wikipedia.
 \end{itemize}
 
 
-\paragraph{Lab Environment.} \seedenvironmentC
+\paragraph{Lab environment.} \seedenvironmentC
 
 
 % *******************************************
@@ -166,7 +166,9 @@ attacks, including Ruby on Rails, ASP.NET, and OpenSSL.
 In this task, we provide a padding oracle hosted on port \texttt{5000}.
 The oracle has a secret message inside, and it 
 prints out the ciphertext of this secret message. The encryption algorithm
-and mode used is AES-CBC.  You can interact with the oracle using \texttt{"nc 10.9.0.80 5000"}.
+and mode used is AES-CBC, and the encryption key is \texttt{K}, which
+is unknown to others.
+You can interact with the oracle using \texttt{"nc 10.9.0.80 5000"}.
 You will see the following hexadecimal data provided by the oracle. 
 The first 16 bytes is the IV, and the rest is the ciphertext. 
 From the length, you can see that the ciphertext has 32 bytes, i.e.,
@@ -181,7 +183,7 @@ $ nc 10.9.0.80 5000
 The oracle accepts input from you. The format of the input 
 is the same as the message above: 16-bytes of the IV, concatenated
 by the ciphertext. The oracle will decrypt the ciphertext using 
-its own secret key and the IV provided by you.
+its own secret key \texttt{K}  and the IV provided by you.
 It will not tell you the plaintext, but
 it does tell you whether the padding is valid or not. 
 Your task is to use the information provided by the oracle
@@ -200,8 +202,7 @@ static std::array<unsigned char, 29> PLAIN_TEXT = {
 };
 \end{lstlisting}
  
-The secret message is provided (and also visible from the source
-code) only for debugging purposes, and you cannot assume that 
+The secret message is provided only for debugging purposes, and you cannot assume that 
 you know this message.  You need to use the 
 padding oracle attack to derive this message; you need to 
 show your steps. 
@@ -233,6 +234,7 @@ iv_and_ctext = bytearray(oracle.ctext)
 IV    = iv_and_ctext[00:16]
 C1    = iv_and_ctext[16:32]  # 1st block of ciphertext
 C2    = iv_and_ctext[32:48]  # 2nd block of ciphertext
+
 print("C1:  " + C1.hex())
 print("C2:  " + C2.hex())
 \end{lstlisting}
@@ -250,10 +252,10 @@ print("C2:  " + C2.hex())
 As depicted in Figure~\ref{fig:cbc-dec}, D1 and D2 are the 
 output of the AES block cipher. If we can 
 get their values, we can easily get the plaintext
-by xoring them with the ciphertext. In this task,
-we focus on the second block P2. Therefore, if we can
+by xoring them with the ciphertext (or IV for the first block). 
+In this task, we focus on the second block P2. Therefore, if we can
 figure out the values of D2, 
-we can calculate the P2 using P2 = C1 xor D2.
+we can calculate P2 using P2 = C1 $\oplus$ D2.
 
 
 We will not explain the details of the padding oracle attack
@@ -262,7 +264,7 @@ online resources, such as Wikipedia (the current SEED book does not
 cover this attack).  The general idea of the attack
 is to send to the oracle a ciphertext with modified 
 C1 (let's call it CC1). Although the oracle will not tell us the result 
-of D2 xor CC1, it does tell us whether the result
+of D2 $\oplus$ CC1, it does tell us whether the result
 has a valid padding or not. That opens the door 
 for us to figure out the value of D2. 
 
@@ -270,7 +272,7 @@ There are 16 bytes in D2, we can figure out its value one
 byte at a time. In the skeleton code, we have initialized
 two arrays D2 and CC1. Their initial values do not really matter.
 Your task is to use an iterative process to figure 
-out the value for the D2 array. For each D2 array, you need 
+out the value for the D2 array. For each iteration, you need 
 to construct the CC1 array properly. 
 
 \begin{lstlisting}[language=python]
@@ -313,9 +315,10 @@ for i in range(256):
 \end{lstlisting}
  
 You can use the skeleton code as your basis, manually
-change the value of K, use the running result to 
-set the D2 and CC1 accordingly, and then
-re-run the program to get the next byte of D2, i.e., D2[14]. 
+change the value of K, use the execution result in
+each round to set the D2 accordingly, and then
+re-run the program with a updated CC1
+to get the next byte of D2, i.e., D2[14]. 
 Repeating the step, you can get D2[13], D2[12], ..., D2[0].
 Once you get the entire D2, you get the value of the plaintext P2. 
 
@@ -348,8 +351,8 @@ need to get all the blocks of the plaintext. When the
 container starts, two padding oracle servers will be started, one for the 
 Level-1 task, and the other is for the Level-2 task, i.e.,
 this task. The Level-2 server listens to port \texttt{6000}. 
-Although the key and the secret message are still in the 
-binary (not in the source code), we have tried to 
+Although the key and the secret message are in the 
+binary code of the oracle program, we have tried to 
 obfuscate them, so it will not be very easy to 
 find them from the binary. Moreover, learning the secret
 message does not help the padding oracle attack at all. Students'
@@ -358,7 +361,7 @@ the padding oracle attack, not on whether they know the secret message
 or not.
 
 
-It should be noted that every time you make a new connection with the 
+It should be noted that every time you make a new connection to the 
 oracle, the oracle will generate a new key and IV to encrypt the 
 secret message (the message is still the same). That is why
 you will see a different ciphertext. 
