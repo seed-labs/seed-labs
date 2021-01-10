@@ -322,11 +322,12 @@ is not for us, the kernel will not give the packet to us; it will simply
 drops the packet. However, if our program is a sniffer program,
 we will get the packet from the kernel. Therefore, we will use 
 the sniff-and-spoof technique to implement this MITM attack.
-In the following, we provide a skeleton sniff-and-spoof
-program. The program captures all the TCP packets, and
-then makes some changes. You need to modify this program.
+In the following, we provide a sample sniff-and-spoof
+program, which captures TCP packets,
+makes some changes, before sending them out.  
+You can find the code from the lab setup files.
 
-\begin{lstlisting}[language=python]
+\begin{lstlisting}[language=python, caption={Sample code: \texttt{mitm\_sample.py}}]
 #!/usr/bin/env python3
 from scapy.all import *
 
