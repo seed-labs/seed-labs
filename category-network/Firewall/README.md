@@ -16,4 +16,6 @@ into the Firewall Evasion lab, so we can focus on using and implementing
 firewalls in this lab. Therefore, this lab is sgifnicantly revised. 
 
 
-- Docker will add firewall rules to the system, so we can no longer use ```iptables -F``` to clean the firewall rules. We need to be careful.
+- Docker will add firewall rules to the `nat` table, 
+so we can no longer use ```iptables -F``` to clean the firewall rules in that table. 
+For other tables, it is fine. We need to be careful.

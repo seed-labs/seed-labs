@@ -203,19 +203,16 @@ Also, you can use {\tt modinfo mymod.ko} to show information about a
 Linux Kernel module.
 
 \begin{lstlisting}
-$ sudo insmod mymod.ko        (inserting a module)
-$ lsmod                       (list all modules)
-$ sudo rmmod mymod.ko         (remove the module)
-$ dmesg | tail -10            (check the messages)
+# insmod mymod.ko        (inserting a module)
+# lsmod                  (list all modules)
+# rmmod mymod.ko         (remove the module)
+# dmesg | tail -10       (check the messages)
 \end{lstlisting}
 
 
-\paragraph{Task.} Please compile and run this simple kernel module on 
-your VM and show your running results in the lab report. 
-It should be noted that all the tasks in Task 1 should be 
-performed on the VM, but students who are familiar with Docker
-are encouraged to deploy the firewall developed in this task
-to the router container. 
+\paragraph{Task.} Please compile this simple kernel module on 
+your VM, and run it on the router container. 
+Please show your running results in the lab report. 
 
 
 % -------------------------------------------
@@ -359,6 +356,8 @@ NF_INET_POST_ROUTING     (*@\ding{81}@*)
 \end{itemize}
  
 
+\paragraph{Account:} 
+seed and root account on container. 
 
 
 % *******************************************
