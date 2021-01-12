@@ -19,6 +19,8 @@
 \newcommand{\firewallFigs}{./Figs}
 \lhead{\bfseries SEED Labs -- Firewall Lab}
 
+\newcommand{\pointleft}[1]{\reflectbox{\ding{217}} \textbf{\texttt{#1}}}
+
 \begin{document}
 
 
@@ -363,7 +365,7 @@ seed and root account on container.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 2: Setting Up a Stateless Firewall}
+\section{Task 2: Experimenting with Stateless Firewall Rules}
 
 In the previous task, we had a chance to build a simple firewall using \netfilter. Actually,
 \linux already has a built-in firewall, also based on \netfilter. This firewall is called
@@ -460,8 +462,8 @@ performed on this packet.
 The general structure of the command is depicted in the following:
 
 \begin{lstlisting}
-# iptables -t <table> -<operation> <chain>  <rule>   -j <target>
-           ---------- --------------------  -------  -----------
+iptables -t <table> -<operation> <chain>  <rule>   -j <target>
+         ---------- --------------------  -------  -----------
               Table          Chain           Rule      Action
 \end{lstlisting}
 
@@ -474,71 +476,164 @@ used commands:
 
 \begin{lstlisting}
 // List all the rules in a table (without line number)
-$ sudo iptables -t nat -L
+iptables -t nat -L -n
 
 // List all the rules in a table (with line number)
-$ sudo iptables -t filter -L --line-numbers
+iptables -t filter -L -n --line-numbers
 
 // Delete rule No. 2 in the INPUT chain of the filter table 
-$ sudo iptables -t filter -D INPUT 2
+iptables -t filter -D INPUT 2
 
 // Drop all the incoming packets that satisfy the <rule>
-$ sudo iptables -t filter -A INPUT <rule>  -j DROP
+iptables -t filter -A INPUT <rule>  -j DROP
 \end{lstlisting}
 
 
 \paragraph{Note.} Docker relies on \iptables to manage 
-the networks it creates, so it adds many rules to \iptables.
+the networks it creates, so it adds many rules to 
+the \texttt{nat} table. 
 When we manipulate \iptables rules, we should be careful 
 not to remove Docker rules. For example, it will be quite
-dangerous to run the \texttt{"iptables -F"} command, because 
-it removes all the rules in the \texttt{filter} table,
+dangerous to run the \texttt{"iptables -t nat -F"} command, because 
+it removes all the rules in the \texttt{nat} table,
 including many of the Docker rules. That will cause 
-trouble to Docker containers. 
+trouble to Docker containers. Doing this for 
+the \texttt{filter} table is fine, because Docker by default 
+does not add any rule in this table. 
 
 
 % -------------------------------------------
 % SUBSECTION
-% ------------------------------------------- 
-\subsection{Set Up a Stateless Firewall}
+% -------------------------------------------
+\subsection{Task 2.A: Protecting the Router} 
 
-In this task, we will set up firewall rules on the router container
-to protect the \texttt{192.168.60.0/24} network. We will only use 
-the \texttt{filter} table in this task.  
-Your firewall should satisfy the following requirements. 
-In your report, you should provide screenshots to demonstrate 
-that your firewall does satisfy the requirements.
-
-
-\begin{itemize}
-\item Ingress: Prevent outsiders from accessing any internal ports (including
-both TCP and UDP), other than TCP port 8080. 
- 
-\item Ingress: Your firewall should allow DNS replies to come back. 
-
-\item Ingress: Block all the ICMP echo request from outside, but 
-do allow the ICMP reply packets to come in; otherwise, internal 
-computers will not be able to run \texttt{ping}.  
-
-\item Egress: Prevent internal machines from connecting to the outside 
-      via \telnet.
-
-\item Egress: Internal machines should be able to visit outside websites, 
-except one particular website that you would like to block. Keep in mind, 
-some websites have multiple IP addresses. 
-
-\end{itemize}
-
-
-To see what options that we can use for rules specific to the tcp, udp, and 
-icmp protocols, we can use the following commands. 
+In this task, we will set up rules to prevent outside machines from 
+accessing the router machine, expect ping.   
+Please execute the following \iptables
+command on the router container, and then trying to 
+access it from \texttt{10.9.0.5}. (1) Can you ping 
+the router? (2) Can you telnet into the router (a 
+telnet server is running on the router container). 
+Please report your observation and explain the purpose for 
+each rule. 
 
 \begin{lstlisting}
-$ iptables -p tcp  -h
-$ iptables -p udp  -h
-$ iptables -p icmp -h
+iptables -A INPUT  -p icmp --icmp-type echo-reply   -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -P OUTPUT DROP     (*@\pointleft{Set default rule for OUTPUT}@*)
+iptables -P INPUT  DROP     (*@\pointleft{Set default rule for INPUT}@*)
 \end{lstlisting}
  
+
+\paragraph{Cleanup.} 
+Before moving on to the next task, please restore the \texttt{filter} 
+talbe to its original state by running the following commands:
+
+\begin{lstlisting}
+iptables -F
+iptables -P OUTPUT ACCEPT
+iptables -P INPUT  ACCEPT
+\end{lstlisting}
+ 
+Another way to restore the states of all the tables is to restart the 
+containter. You can do it using the following command (you need 
+to find the container's ID first):
+
+\begin{lstlisting}
+$ docker restart <Container ID>
+\end{lstlisting}
+ 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.B: Protecting the Internal Network} 
+
+In this task, we will set up firewall ruls on the router to protect the 
+internal network \texttt{192.168.60.0/24}. We need to use the 
+FORWARD table for this purpose. 
+
+The directions of packets in the INPUT and OUTPUT tables are clear,
+they are either coming into (for INPUT) or going out (for OUTPUT). 
+This is not true for the FORWARD table, because it is 
+bi-directional: packets going into
+the internal network or going out to the external network
+all go through the chains in this table. To specify the direction,
+we can add the interface options using \texttt{"-i xyz"} (coming in from 
+the \texttt{xyz} interface) and/or \texttt{"-o xyz"} (going out 
+from the \texttt{xyz} interface).  
+
+
+In this task, we want to implement a firewall to protect the 
+internal network. More specifically, we need to enforce the 
+the following restrictions on the ICMP traffic: 
+
+\begin{enumerate}[noitemsep]
+  \item Outside hosts cannot ping internal hosts. 
+  \item Outside hosts can ping the router.
+  \item Internal hosts can ping outside hosts. 
+  \item All other packets from between the internal and external networks should be blocked.
+\end{enumerate}
+
+You will need to use the \texttt{"-p icmp"} options to specify the match
+options related to the ICMP protocol. You can run 
+\texttt{"iptables -p icmp -h"} to find out all the ICMP match
+options. The following example drops the ICMP echo request.
+
+
+\begin{lstlisting}
+iptables -A FORWARD -p icmp --icmp-type echo-request -j DROP
+\end{lstlisting}
+
+When you are done with this task,
+please remember to clean the table or restart the container 
+before moving on to the next task.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.C: Protecting Internal Servers}
+
+In this task, we want to protect the TCP servers 
+inside the internal network (\texttt{192.168.60.0/24}). 
+More specifically, we would like to achieve the following objectives.
+
+\begin{enumerate}[noitemsep]
+  \item Outside hosts can reach the web servers in the internal network.
+    We assume that these servers are listening to port \texttt{8080}.
+    There is no need to run an actual web server. You can use 
+    \texttt{"nc -lk 8080"} to start a TCP server at port \texttt{8080}.  
+
+  \item Outside hosts cannot reach the internal servers 
+    that are listening to other ports.
+
+  \item Internal hosts can reach all the internal servers.
+
+  \item Internal hosts can also reach all the outside servers, except 
+    the telnet server that listens to port \texttt{23}. In our setup,
+    all the containers run a telnet server, so you can use them 
+    to test your firewall.
+
+  \item In this task, the connection tracking mechanism is not allowd. 
+    It will bed use in a later task. 
+\end{enumerate}
+
+You will need to use the \texttt{"-p tcp"} options to specify the match
+options related to the TCP protocol. You can run 
+\texttt{"iptables -p tcp -h"} to find out all the TCP match
+options. The following example allows the TCP packets coming from
+the interface \texttt{eth0} if their source port is \texttt{5000}.  
+
+\begin{lstlisting}
+iptables -A FORWARD -i eth0 -p tcp --sport 5000  -j ACCEPT
+\end{lstlisting}
+
+
+When you are done with this task,
+please remember to clean the table or restart the container 
+before moving on to the next task.
 
 
 
@@ -566,7 +661,7 @@ If it does that, it becomes a stateful firewall.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3.a: Experiment with the Connection Tracking} 
+\subsection{Task 3.A: Experiment with the Connection Tracking} 
 
 
 To support stateful firewalls, we need to be able to track connections. 
@@ -585,16 +680,7 @@ help students understand the
 connection concept in this tracking mechanism, especially
 for the ICMP and UDP protocols, because unlike TCP,  they 
 do not have connections. 
-Before doing the experiments, we need to restart the server container to
-remove all the firewall rules added in the previous task. We can either 
-manually remove those rules, or simply restart the router container 
-using the following commands:
 
-\begin{lstlisting}
-$ docker container  ls
-7e234511e597  firewall-router
-$ docker restart 7e
-\end{lstlisting}
 
 Please conduct the following experiments. For each experiment, please 
 describe your observation, along with your explanation. 
@@ -605,8 +691,8 @@ check the connection tracking information on the router. Describe
 your observation. How long is the ICMP connection state be kept? 
 
 \begin{lstlisting}
-// On 192.168.60.5, send out ICMP packets
-# ping 10.9.0.5
+// On 10.9.0.5, send out ICMP packets
+# ping 192.168.60.5
 \end{lstlisting}
 
 \item UDP experiment: Run the following command and 
@@ -615,11 +701,11 @@ your observation. How long is the UDP connection state be kept?
 
 
 \begin{lstlisting}
-// On 10.9.0.5, start a netcat UDP server
-# nc -lnuv 9090
+// On 192.168.60.5, start a netcat UDP server
+# nc -lu 9090
 
-// On 192.168.60.5, send out UDP packets 
-# nc -u 10.9.0.5 9090
+// On 10.9.0.5, send out UDP packets 
+# nc -u 192.168.60.5 9090
 \end{lstlisting}
 
 
@@ -628,10 +714,10 @@ check the connection tracking information on the router. Describe
 your observation. How long is the TCP connection state be kept? 
 
 \begin{lstlisting}
-// On 10.9.0.5, start a netcat UDP server
-# nc -lnv 9090
+// On 192.168.60.5, start a netcat TCP server
+# nc -l 9090
 
-// On 192.168.60.5, send out TCP packets 
+// On 10.9.0.5, send out TCP packets 
 # nc 10.9.0.5 9090
 \end{lstlisting}
 
@@ -642,7 +728,7 @@ your observation. How long is the TCP connection state be kept?
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3.b: Setting Up a Stateful Firewall} 
+\subsection{Task 3.B: Setting Up a Stateful Firewall} 
 
 
 Now we are ready to set up firewall rules based on connections. 
@@ -652,16 +738,18 @@ which is a very important module for \iptables; it tracks connections, and
 \iptables replies on the tracking information to build stateful firewalls. 
 The \texttt{--ctsate ESTABLISHED,RELATED} indicates that whether a packet
 belongs to an \texttt{ESTABLISHED} or \texttt{RELATED} connection.
+The rule allows TCP packets belonging to an existing connection to 
+pass through. 
 
 \begin{lstlisting}
-# sudo iptables -A OUTPUT -p tcp -m conntrack
-                --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -p tcp -m conntrack          \
+         --ctstate ESTABLISHED,RELATED -j ACCEPT
 \end{lstlisting}
 
 
-Please improve the firewall from Task 2 using the \texttt{conntrack} module, 
-so the firewall will allow TCP, UDP, and ICMP packets to go through (both direction)
-if they belong to an existing connection. 
+Please improve the firewall rules from Task 2.C using the \texttt{conntrack} module. 
+Please explain its advantage or the stateless firewall rules. Are there 
+any disadvantages? Please explain.
 
 
 
@@ -694,13 +782,108 @@ Please conduct the experiment with and without the second command,
 and then explain whether the second rule is needed or not, and why.
 
 \begin{lstlisting}
-# iptables -A FORWARD -s 10.9.0.5 -m limit \
-           --limit 10/minute --limit-burst 5 -j ACCEPT
+iptables -A FORWARD -m limit   \
+         --limit 10/minute --limit-burst 5 -j ACCEPT
 
-# iptables -A FORWARD -s 10.9.0.5 -j DROP
+iptables -A FORWARD -j DROP
 \end{lstlisting}
 
 
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 5: Load Balancing}
+
+The \iptables is very powerful. In addition to firewalls,
+it has many other applications. We will not be able to 
+cover all its applications in this lab, but we will experimenting
+with one of the applications, load balancing. In this task,
+we will use it to load balance three UDP servers running in the 
+internal network. Let's first start the server
+on each of the hosts: \texttt{192.168.60.5}, \texttt{192.168.60.6}, and 
+\texttt{192.168.60.7}: 
+
+\begin{lstlisting}
+nc -lu 8080
+\end{lstlisting}
+
+We can use the \texttt{statistic} module to achieve load balancing. 
+You can type the following command to get its manual. You can 
+see there are two modes: \texttt{random} and \texttt{nth}. 
+We will conduct experiments using both of them.
+
+\begin{lstlisting}
+$ iptables -m statistic -h 
+statistic match options:
+ --mode mode         Match mode (random, nth)
+ random mode:
+[!] --probability p  Probability
+ nth mode:
+[!] --every n        Match every nth packet
+ --packet p          Initial counter value (0 <= p <= n-1, default 0)
+\end{lstlisting}
+ 
+
+\paragraph{Using the \texttt{nth} mode (round-rubin).}
+On the router container, we set the following rule, which applies 
+to all the UDP packets going to port \texttt{8080}. 
+The \texttt{nth} mode of the \texttt{statistic} module is used; 
+it implements a round-rubin load balancing policy: for every
+three packets, pick the packet 0 (i.e., the first one), 
+change its destination IP address and port number to 
+\texttt{192.168.60.5}  and \texttt{8080}, respectively.  
+The modified packets will continue on its journey.
+
+\begin{lstlisting}
+iptables -t nat -A PREROUTING -p udp --dport 8080      \
+         -m statistic --mode nth --every 3 --packet 0  \
+         -j DNAT --to-destination 192.168.60.5:8080
+\end{lstlisting}
+
+It should be noted that those packets that do not match
+the rule will continue on their journeys; they will
+not be modified or blocked. With this rule in place, 
+if you send a UDP packet to the router's \texttt{8080} port,  
+you will see that one out of three packets gets to 
+\texttt{192.168.60.5}. 
+
+\begin{lstlisting}
+// On 10.9.0.5
+echo hello | nc -u 10.9.0.11 8080
+\end{lstlisting}
+ 
+
+Please add more rules to the router container, 
+so all the three internal hosts get the equal 
+number of packets. 
+Please provide some explanation for the rules. 
+
+
+\paragraph{Using the \texttt{random} mode.}
+Let's use a different mode to achieve the load balancing. The following 
+rule will select a matching packet with the probability \texttt{P}.  
+You need to replace \texttt{P} with a probability number.
+
+\begin{lstlisting}
+iptables -t nat -A PREROUTING -p udp --dport 8080   \
+         -m statistic --mode random --probability P \
+         -j DNAT --to-destination 192.168.60.5:8080
+\end{lstlisting}
+
+Please use this mode to implement your load balancing 
+rules, so each internal server get roughly the 
+same amount of traffic (it may not be exactly the same, 
+but should be close when the total number of packets is large). 
+Please provide some explanation for the rules. 
+
+
+\paragraph{Further thoughts.}
+Loading balancing on TCP is much more complicated, 
+because we need to ensure that the packets in a TCP connections 
+will go to the same server. This requires the help from 
+the connection tracking. Students who are interested can
+pursue this on their own. 
 
 
 % *******************************************
