@@ -14,7 +14,6 @@ We need to detach the VM from the other network. We cannot simply power down
 the interface, because that will affects all the containers on that network.
 Our solution is to remove the IP address
 of the interface, and then set the routing accordingly. 
-script does exactly that.
 
 
 \begin{lstlisting}
