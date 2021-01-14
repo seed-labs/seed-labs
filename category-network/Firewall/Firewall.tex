@@ -176,7 +176,7 @@ The following is a simple loadable kernel module. It prints out
 is removed from the kernel, it prints out \texttt{"Bye-bye World!"}.
 The messages are not printed out on the screen; they are 
 actually printed into the \texttt{/var/log/syslog} file. You can
-use \texttt{"dmesg"} to view the the messages. 
+use \texttt{"dmesg"} to view the messages. 
 
 
 \begin{lstlisting}[language=C, caption=\texttt{hello.c} (included in the lab setup files)]
@@ -331,7 +331,7 @@ module_exit(removeFilter);
 \paragraph{Note for Ubuntu 20.04 VM:}
 The code in the SEED book was developed in Ubuntu 16.04. It needs to be changed slightly 
 to work in Ubuntu 20.04. The change is in the hook registration and 
-unregistration APIs. See the difference in the following:
+un-registration APIs. See the difference in the following:
 
 \begin{lstlisting}[language=C]
 // Hook registration:
@@ -449,7 +449,7 @@ separately):
 
 \begin{enumerate}
 \item Compile the sample code using the provided \texttt{Makefile}. 
-  Load it into the kernel, and demonstate that the firewall is working as expected. You can use
+  Load it into the kernel, and demonstrate that the firewall is working as expected. You can use
     the following command to generate UDP packets to \texttt{8.8.8.8}, which is Google's DNS
     server. If your firewall works, your request will be blocked; otherwise, you will get a
     response.
@@ -671,7 +671,7 @@ iptables -P INPUT  DROP     (*@\pointleft{Set default rule for INPUT}@*)
 
 \paragraph{Cleanup.} 
 Before moving on to the next task, please restore the \texttt{filter} 
-talbe to its original state by running the following commands:
+table to its original state by running the following commands:
 
 \begin{lstlisting}
 iptables -F
@@ -680,7 +680,7 @@ iptables -P INPUT  ACCEPT
 \end{lstlisting}
  
 Another way to restore the states of all the tables is to restart the 
-containter. You can do it using the following command (you need 
+container. You can do it using the following command (you need 
 to find the container's ID first):
 
 \begin{lstlisting}
@@ -714,7 +714,7 @@ You can find out the interface names via the
 
 In this task, we want to implement a firewall to protect the 
 internal network. More specifically, we need to enforce the 
-the following restrictions on the ICMP traffic: 
+following restrictions on the ICMP traffic: 
 
 \begin{enumerate}[noitemsep]
   \item Outside hosts cannot ping internal hosts. 
@@ -766,7 +766,7 @@ More specifically, we would like to achieve the following objectives.
     all the containers run a telnet server, so you can use them 
     to test your firewall.
 
-  \item In this task, the connection tracking mechanism is not allowd. 
+  \item In this task, the connection tracking mechanism is not allowed. 
     It will be used in a later task. 
 \end{enumerate}
 
