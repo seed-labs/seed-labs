@@ -14,6 +14,7 @@ services:
                 ipv4_address: 10.9.0.5
         command: bash -c "
                       ip route add 192.168.60.0/24 via 10.9.0.11 &&
+                      /etc/init.d/openbsd-inetd start  &&
                       tail -f /dev/null
                  "
 
@@ -29,6 +30,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 192.168.60.11  &&
+                      /etc/init.d/openbsd-inetd start  &&
                       tail -f /dev/null
                  "
                   
@@ -44,32 +46,41 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 192.168.60.11  &&
+                      /etc/init.d/openbsd-inetd start  &&
                       tail -f /dev/null
                  "
 
     Host3:
-        image: handsonsecurity/seed-ubuntu:large
+      # image: handsonsecurity/seed-ubuntu:large
+        image: seed-router-image
         container_name: host3-192.168.60.7
         tty: true
         cap_add:
                 - ALL
+        volumes:
+                - ./volumes:/volumes
         networks:
             net-192.168.60.0:
                 ipv4_address: 192.168.60.7
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 192.168.60.11  &&
+                      /etc/init.d/openbsd-inetd start  &&
                       tail -f /dev/null
                  "
 
     Router:
-        image: handsonsecurity/seed-ubuntu:large
-        container_name: server-router
+        build: router
+        image: seed-router-image 
+        container_name: seed-router
         tty: true
         cap_add:
                 - ALL
         sysctls:
                 - net.ipv4.ip_forward=1
+        volumes:
+                - ./volumes:/volumes
+
         networks:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.11
@@ -78,6 +89,7 @@ services:
         command: bash -c "
                       ip route del default  &&
                       ip route add default via 10.9.0.1 &&
+                      /etc/init.d/openbsd-inetd start  &&
                       tail -f /dev/null
                  "
 
