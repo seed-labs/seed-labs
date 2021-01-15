@@ -101,12 +101,12 @@ of the lab setup.
 
  - **DNS-in-a-box Lab:** This is a new lab.
 
- - **Firewall Lab:** There is no sigifncant change, but the lab is currently being revised. 
+ - **Firewall Lab:** This lab is redesigned, so it is a new lab. 
 
  - **VPN Tunneling Lab:** There is no significant change, except Task 8, which is completely
    different.
 
- - **VPN Lab:** There is no change.
+ - **VPN Lab:** There is no change. 
 
  - **BGP Lab:** This is a new lab.
 
