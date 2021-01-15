@@ -1,5 +1,11 @@
 # Firewall Exploration Lab
 
+
+## Update on 1/15/2021
+
+This lab is redesigned. 
+
+
 ## For Ubuntu 20.04 VM
 
 - In the netfilter code, we need to make the following change.  This is caused by the changes in the kernel.
