@@ -750,21 +750,15 @@ inside the internal network (\texttt{192.168.60.0/24}).
 More specifically, we would like to achieve the following objectives.
 
 \begin{enumerate}[noitemsep]
-  \item All the internal hosts run a web server that listens to port \texttt{8080}. 
-    Outside hosts can only access the web server on \texttt{192.168.60.5},
-    not the ones on other internal hosts.
-    There is no need to run an actual web server. You can use 
-    \texttt{"nc -lk 8080"} to start a TCP server at port \texttt{8080}.  
+  \item All the internal hosts run a telnet server (listening to port \texttt{23}). 
+    Outside hosts can only access the telnet server on \texttt{192.168.60.5},
+    not the other internal hosts.
 
-  \item Outside hosts cannot reach the internal servers 
-    that are listening to other ports.
+  \item Outside hosts cannot access other internal servers. 
 
-  \item Internal hosts can reach all the internal servers.
+  \item Internal hosts can access all the internal servers.
 
-  \item Internal hosts can also reach all the outside servers, except 
-    the telnet server that listens to port \texttt{23}. In our setup,
-    all the containers run a telnet server, so you can use them 
-    to test your firewall.
+  \item Internal hosts cannot access external servers.
 
   \item In this task, the connection tracking mechanism is not allowed. 
     It will be used in a later task. 
@@ -917,8 +911,13 @@ iptables -P FORWARD DROP
 
 
 Please rewrite the firewall rules in Task 2.C, but this time,
-we will use the connection tracking mechanism. 
-Compare these two different approaches, and 
+\textbf{we will add a rule allowing internal hosts to visit any 
+external server} (this was not allowed in Task 2.C). 
+After you write the rules using the connection tracking mechanism, 
+think about how to do it without using the connection tracking
+mechanism (you do not need to actually implement them). 
+Based on these two sets of rules, 
+compare these two different approaches, and 
 explain the advantage and disadvantage of each approach. 
 When you are done with this task, remember to clear all the rules. 
 
@@ -973,10 +972,11 @@ with one of the applications, load balancing. In this task,
 we will use it to load balance three UDP servers running in the 
 internal network. Let's first start the server
 on each of the hosts: \texttt{192.168.60.5}, \texttt{192.168.60.6}, and 
-\texttt{192.168.60.7}: 
+\texttt{192.168.60.7} (the \texttt{-k} option indicates that 
+the server can receive UDP datagrams from multiple hosts):
 
 \begin{lstlisting}
-nc -lu 8080
+nc -luk 8080
 \end{lstlisting}
 
 We can use the \texttt{statistic} module to achieve load balancing. 
@@ -1049,13 +1049,6 @@ same amount of traffic (it may not be exactly the same,
 but should be close when the total number of packets is large). 
 Please provide some explanation for the rules. 
 
-
-\paragraph{Further thoughts.}
-Loading balancing on TCP is much more complicated, 
-because we need to ensure that the packets in a TCP connections 
-will go to the same server. This requires the help from 
-the connection tracking. Students who are interested can
-pursue this on their own. 
 
 
 
