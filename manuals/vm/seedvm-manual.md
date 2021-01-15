@@ -110,12 +110,17 @@ To make it bigger, adjust the `Scale Factor` in this setting.
 
 Go to the `Network` category, and select the `Adapter 1` tab. We will
 choose the `NAT Network` adaptor. Click the `Advanced` drop-down menu to
-further configure the network adaptor.
+further configure the network adaptor. If you don't see such an adaptor,
+see the note below. 
 
 ![display](./Figs/vm-setting-network.png)
 
 
-## Start the VM and Take Snapshot 
+**Note**: If you don't see the `NAT Network` adaptor, you need to create one.
+Go to the `File` menu, click `Preferences...`. You will see a popup window.
+Go to the `Network` tab, and you can add a new `Nat Network` adaptor there.
+
+## Appendix A: Start the VM and Take Snapshot 
 
 We can now start the VM. You can also use the `Take` button to take a snapshot 
 of your VM. This way, if something goes wrong, you can roll back the state of
@@ -123,7 +128,7 @@ your VM using the saved snapshots.
 
 ![display](./Figs/vm-start.png)
 
-## Stop the VM
+## Appendix B: Stop the VM
 
 There are many ways to stop the VM. The best way is to use the `Save State`. This
 is different from shutting down the VM. It saves the current VM state, so next time
@@ -132,4 +137,36 @@ faster than booting up a VM.
 
 ![display](./Figs/vm-stop.png)
 
+## Appendix C: Creating a Shared Folder
 
+Sometimes, we need to copy files between the host machine and the VM. 
+If you are using the VM from the cloud, you can see our cloud VM manual
+for instructions. Or, you can just use a cloud storage service, such as 
+Dropbox and Google Drive to share files between your VM and host machine. 
+
+If you run the VM on your local computer, you can create a shared folder 
+between your computer and the VM. 
+
+**Step A.** First you need to create a folder on your local computer (or using
+an existing folder). We will let the VirtualBox know that this folder 
+should be shared with the VM. Go to the following menus:
+
+![Shared Folder](./Figs/vm-shared-folder.png)
+
+Once you see a `Add Share` popup window, select the folder that 
+you want to share, click OK, and you will see that the folder is now
+made available for sharing. 
+
+![Shared Folder](./Figs/vm-shared-folder-2.png)
+
+**Step B.** Inside the VM, we need to mount the shared folder somewhere.
+Let's mount it to the home directory as a folder `Share`.
+We will create a folder called `Share` in the home directory, and then
+mount the shared folder `VM_Shared` to this `Share` folder using 
+the following command. After that, you can access the shared folder 
+from `~/Share`. 
+
+```
+$ mkdir -p ~/Share
+$ sudo mount -t vboxsf VM_Shared ~/Share
+```
