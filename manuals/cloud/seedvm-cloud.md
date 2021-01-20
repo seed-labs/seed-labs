@@ -113,7 +113,9 @@ desktop.
   on your computer, such as [TigerVNC](https://tigervnc.org/), and
   [RealVNC](https://www.realvnc.com/en/connect/download/viewer/).
   If you prefer other VNC viewers,
-  it is fine. Most of them are compatible with one another.
+  it is fine. Most of them are compatible with one another. 
+  Some users have reported that TigerVNC have issues on macOS, 
+  but RealVNC has no problem.
 
   Start your VNC viewer program, and type the IP address of the VM, along with
   the port number, such as `35.236.203.131:5901`. Most cloud VMs have two
