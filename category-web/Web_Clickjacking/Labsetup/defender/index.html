@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Alice's Cupcakes</title>
+        <meta charset="utf-8"/>
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:800|Raleway:300" rel="stylesheet">
+        <link href="defender.css" type="text/css" rel="stylesheet"/>
+    </head>
+
+    <body>
+        <header class="header-wrapper">
+            <div class="header-contents">
+            <div class="col">About Us</div>
+            <div class="col">Menu</div>
+            <div class="col">Locations</div>
+            </div>
+        </header>
+    
+
+        <div class="Intro">
+            <div class="Intro-container">
+                <div class="name">Alice's Cupcakes</div>
+                <div class="slogan">Your Favorite Local Bakery</div>
+
+            <!-- Here is the benign attacker-targeted button -->
+            <button onclick="window.location.href = 'index.html';">Explore Menu</button>
+
+            </div> 
+        </div> 
+
+
+        <footer> 
+            <div class="footer-contents">
+            <div class="col">Twitter</div>
+            <div class="col">Facebook</div>
+            <div class="col">Instagram</div>
+            <div class="col">Snapchat</div>
+            </div>
+        </footer > 
+
+
+    </body>
+
+    <!-- Frame Busting script to prevent clickjacking -->
+    <script>
+        window.onload = function() {
+            makeThisFrameOnTop();
+        };
+
+        function makeThisFrameOnTop() {
+            // TODO: write a frame-busting function according to
+            // instructions (Task 3)
+
+	}
+
+    </script>
+
+</html>
