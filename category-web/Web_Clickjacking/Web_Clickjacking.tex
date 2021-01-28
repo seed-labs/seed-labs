@@ -2,12 +2,15 @@
 %%  Copyright by Collin Howland, Faith Letzkus, and Julio Trujillo  %%
 %%  at Washington University in St. Louis. 			    %%
 %%  This work is licensed under the Creative Commons                %%
-%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  Attribution-NonCommercial-ShareAlike 5.0 International License. %%
 %%  To view a copy of this license, visit                           %%
 %%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{../../common-files/header}
+\newcommand{\commonfolder}{../../common-files}
+\newcommand{\webcommon}{../Web_Common}
+
+\input{\commonfolder/header}
 
 \lhead{\bfseries SEED Labs -- Clickjacking Lab}
 
@@ -34,17 +37,17 @@
 % ******************************************* 
 \section{Overview}
 
-\paragraph{} Clickjacking, also known as a ``UI redress attack,'' is an
-attack that tricks a user into clicking on something they do not intend
-to when visiting a webpage, thus ``hijacking'' the click. In this lab,
-we will explore a common attack vector for clickjacking: the attacker
-creates a malicious webpage that loads the content of a legitimate page
-but overlays one or more of its buttons with invisible button(s) that
-trigger malicious actions.  When a user attempts to click on the
-legitimate page's buttons, the browser registers a click on the
-invisible button instead, triggering the malicious action.
+Clickjacking, also known as a ``UI redress attack,'' is an attack that
+tricks a user into clicking on something they do not intend to when
+visiting a webpage, thus ``hijacking'' the click. In this lab, we will
+explore a common attack vector for clickjacking: the attacker creates a
+webpage that loads the content of a legitimate page but overlays one or
+more of its buttons with invisible button(s) that trigger malicious
+actions.  When a user attempts to click on the legitimate page's
+buttons, the browser registers a click on the invisible button instead,
+triggering the malicious action.
 
-\paragraph{Example scenario} Suppose an attacker acquires the domain
+\paragraph{Example scenario.} Suppose an attacker acquires the domain
 ``starbux.com'' and creates a website with that URL. The site first
 loads the legitimate target website ``starbucks.com'' in an iframe
 element spanning the entire webpage, so that the
@@ -56,111 +59,141 @@ Amazon.  If the user is logged on to Amazon when they try to click the
 legitimate button, the inadvertent click on the invisible button will
 make the unintended purchase without the user's knowledge or consent.
 
-\paragraph{Lab environment} The activities in this document have been
-tested on our pre-built Ubuntu 20.04 VM, which can be downloaded from
-the SEED website.  
+\paragraph{Topic coverage.} This lab covers the following topics:
+\begin{itemize}[noitemsep]
+ \item Clickjacking attack
+ \item Countermeasures: Frame busting and HTTP headers
+ \item iframes and sandboxes
+ \item JavaScript
+\end{itemize}
 
-%\paragraph{Acknowledgment} 
-%\begin{quote}
-%This lab was developed while the authors were students at Washington
-%University in St.\ Louis.
-%\end{quote}
+\paragraph{Lab environment.}
+\seedenvironmentB
+\nodependency
+
 
 
 % *******************************************
-% Environment Setup
+% Lab Environment Setup
 % *******************************************j
-\section{Environment Setup}
+\section{Lab Environment Setup}
 
-%%%%% Installations %%%%%%
+In this lab, we will use two websites.  The first is the vulnerable
+homepage of the fictional business ``Alice's Cupcakes'', accessible at
+\url{www.cjlab.com}.  The second is the attacker's malicious web site
+that is used for hijacking clicks intended for the Alice's Cupcakes
+page, accessible at \url{www.cjlab-attacker.com}. We
+use containers to set up the web servers.
+ 
+% ------------------------------------------- SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
 
-\subsection{Installations}
-The following software is required for this lab:
-
-\begin{enumerate}
-    \item Python 3 (already installed in SEED Ubuntu 20.04 VM)
-    \begin{itemize}
-        \item You can use the command \texttt{python3 --version} to check
-        whether it is installed: if so, the version number will be 
-        printed, and if nothing is printed, it is not installed.  
-        \item If it is not installed, install it using your preferred 
-        method of installation. Here is the downloads page on the 
-        official Python website:
-        \href{https://www.python.org/downloads/release/python-391/}{https://www.python.org/downloads/release/python-391/}
-    \end{itemize}
-
-    \item Pip3
-    \begin{itemize}
-      \item You can check whether pip3 (a package manager for Python) is
-      installed  with the command `pip3 --version' .
-      \item If not, install it with the command `sudo apt install pip3'.
-    \end{itemize}
-
-    \item Flask 
-    \begin{itemize}
-      \item Flask is a Python package that we will use to run a simple
-      web server.  Run the following command to install Flask: 
-      \texttt{pip install -U Flask}
-      \item To call Flask's scripts easily, we must add Flask to the
-      \texttt{PATH} environment variable.  Add the following lines at 
-      the bottom of the file {\tt /home/seed/.bashrc}:
-
-      \begin{verbatim}
-      PATH = PATH:/home/seed/.local/bin
-      export PATH
-      \end{verbatim}
-      Then run the command {\tt source /home/seed/.bashrc } to update 
-      the \texttt{PATH} variable in the current session.
-
-      \item For more information on Flask, see 
-      \href{https://pypi.org/project/Flask/}{https://pypi.org/project/Flask/}
-    \end{itemize}
-    
-    \item Download and unzip Web\_Clickjacking.zip from the seed lab website.
-\end{enumerate}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%%%%% How to Run a Flask Server %%%%%
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Websites}
 
-\subsection{Run the Flask Server} To run our simple server, navigate to
-the directory called \textit{benign\_server} in the provided materials.
-The file \texttt{server.py} in that directory contains code to run a
-simple server using Flask. To start the server, execute the following
-commands from inside the \textit{benign\_server} directory:
-\begin{itemize} 
-  \item[\$] \texttt{export FLASK\_APP=server.py} 
-  \item[\$] \texttt{flask run} 
-\end{itemize}
+We use two containers, one running the website for Alice's Cupcakes (the
+``defender'', with IP address \texttt{10.9.0.5}) , and the other running
+the website for the attacker (with IP address \texttt{10.9.0.105}).  The
+IP addresses for these two containers must be consistent in the
+\texttt{docker-compose.yml} file and the \texttt{/etc/hosts} file (see
+below), and we recommend not changing them from their default values.
 
-\paragraph{Important note} Any time you make an update to the server,
-you will need to restart it for the update to take effect. To restart,
-first stop the server using the key combination \texttt{Ctrl+C}, then
-type \texttt{flask run} start it again. If you exit out of your VM, you
-may need to run the export command again (\texttt{\$ export
-FLASKAPP=server.py}) before running the server.
+\paragraph{The Defender container.}
+The website for Alice's Cupcakes is hosted on an Apache web server.  The
+website setup is included in \texttt{apache\_defender.conf} inside the
+defender image folder.  The configuration specifies the URL for the
+website and the folder where the web application code is stored.  The
+configuration also contains placeholders for HTTP response headers
+returned by the server (commented out), which will be filled in during
+the course of the lab as a defense countermeasure.
 
-\paragraph{Test} Navigate to the page:
-\href{http://localhost:5000/benign}{http://localhost:5000/benign}.
-You should see a page for Alice's Cupcakes, a fictional local bakery. If
-the whole site does not fit in your window, use \texttt{Ctrl + (minus
-key)} and \texttt{Ctrl + (plus key)} to zoom out and in respectively
-until the site fits.  Note that the header and footer buttons on the
-site are just placeholders and do not contain live links.
+\begin{lstlisting}
+<VirtualHost *:80>
+     DocumentRoot /var/www/defender
+     ServerName www.cjlab.com
+#    Header set <Header-name> "<value>";
+#    Header set Content-Security-Policy " \
+#             <directive> '<value>'; \
+#           "
+</VirtualHost>
+\end{lstlisting}
 
-\subsection{Open Malicious HTML File}
+Because we need to modify the defender's web page inside this container,
+for convenience as well as to allow the modified files to persist beyond
+the containers, we have mounted a folder (\texttt{Labsetup/defender} on
+the hosting VM) to the container's \texttt{/var/www/defender} folder,
+which is the \texttt{DocumentRoot} folder in our Apache configuration.
+Therefore any files we modify inside the \texttt{defender} folder on the
+VM will be seen as modified by the defender's web server on the
+container. 
 
-To prepare to explore the clickjacking attack, open the file
-\texttt{malicioius/malicious.html} in a separate tab. For example, in
-Firefox, use this format in the address bar:
-\\\texttt{file:///path/to/dir/malicious/malicious.html}  .  The site
-currently displays a single button which, when clicked, takes the user
-to a simulated malicious webpage, but in reality could perform a variety
-of malicious actions.  
+\paragraph{The Attacker container.}
+The attacker's website is also hosted on an Apache web server.  The
+website setup is included in \texttt{apache\_attacker.conf} inside the
+attacker image folder.  The Apache configuration for this website is
+as follows:
+
+\begin{lstlisting}
+<VirtualHost *:80>
+    ServerName www.cjlab-attacker.com
+    DocumentRoot "/var/www/attacker"
+    DirectoryIndex attacker.html
+</VirtualHost>
+\end{lstlisting}
+ 
+Because we need to modify the attacker's web page inside this container,
+for convenience as well as to allow the modified files to persist beyond
+the containers, we have mounted a folder (\texttt{Labsetup/attacker} on
+the hosting VM) to the container's \texttt{/var/www/attacker} folder,
+which is the \texttt{DocumentRoot} folder in our Apache configuration.
+Therefore any files we modify inside the \texttt{attacker} folder on the
+VM will be seen as modified by the attacker's web server on the
+container. 
+
+\paragraph{Important note.} Any time you make updates to the websites,
+you may need to clear the browser's cache and/or rebuild and restart the
+containers for the change to be visible, depending on the scope of the
+change.
+
+\paragraph{DNS configuration.}
+We access the defender website and the attacker website using their
+respective URLs.  To enable these hostnames to be mapped to their
+corresponding IP addresses, we need to add the following entries to the
+\texttt{/etc/hosts} file on the VM.  You need to use the root privilege
+to change this file (using \texttt{sudo}).
+
+\begin{lstlisting}
+10.9.0.5        www.cjlab.com
+10.9.0.105      www.cjlab-attacker.com
+\end{lstlisting}
+
+
+\paragraph{Test: defender.} Build and start the containers, then
+navigate to the page \url{http://www.cjlab.com} on the VM.  You should
+see a page for Alice's Cupcakes, a fictional local bakery. If the whole
+site does not fit in your window, use \texttt{Ctrl + (minus key)} and
+\texttt{Ctrl + (plus key)} to zoom out and in respectively until the
+site fits.  Note that the header and footer buttons on the site are just
+placeholders and do not contain live links.
+
+\paragraph{Test: attacker.}
+Next, navigate to the page \url{http://www.cjlab-attacker.com}.  You
+should see a single button which, when clicked, takes you to a page that
+tells you you've been hacked, but in reality could perform a variety of
+malicious actions.  
 
 The goal of the attacker is to overlay this button onto a view of the
-benign webpage on the malicious site, so that a victim user will
-inadvertently click the malicious button when they think they are
-clicking a button on the benign webpage.
+defender's webpage displayed on the attacker's site, so that a victim
+user will inadvertently click the malicious button when they think they
+are clicking a button on the defender's webpage.
 
 
 % *******************************************
@@ -172,33 +205,26 @@ clicking a button on the benign webpage.
 
 \subsection{Task 1: Copy that site!}
 
-In the \textit{server} folder, you will find the files comprising the
-(benign) website for Alice's Cupcakes: \texttt{benign.html} and
-\texttt{server.py}. This site will be served locally on your VM using
-Flask. In the \textit{malicious} folder, you will find the materials
-needed for the attack, which uses a malicious website defined by the
-files \texttt{malicious.html} and \texttt{malicious.css}. This site will
-also be served locally. You will be making changes to all of these files
-throughout the lab. 
+In the \texttt{defender} folder, you will find the files comprising the
+website for Alice's Cupcakes: \texttt{index.html} and
+\texttt{defender.css}.  In the \texttt{attacker} folder, you will find
+the files comprising the attacker's website: \texttt{attacker.html} and
+\texttt{attacker.css}.  You will be making changes to all of these files
+except \texttt{defender.css} throughout the lab. 
 
-Our first step as the attacker is to add code to \texttt{malicious.html}
-so that it mimics the benign website defined in \texttt{benign.html} as
-closely as possible.
-
-\noindent A popular way to do this is with an HTML Inline Frame element
+Our first step as the attacker is to add code to \texttt{attacker.html}
+so that it mimics the Alice's Cupcakes website as closely as possible.
+A common way to do this is with an HTML Inline Frame element
 (``iframe''). An iframe enables embedding one HTML page within another.
 The \texttt{src} attribute of the iframe specifies the site to be
 embedded, and when the iframe code is executed on a page, the embedded
 site is loaded into the iframe. 
 
-\paragraph{Embed the benign site into the malicious site}
+\paragraph{Embed the defender's site into the attacker's site.}
 \begin{itemize}
-    \item Start the benign server \texttt{benign.html} running
-    locally using the Flask server (see Environment Setup section 
-    above).
-    \item Add an iframe HTML element in \texttt{malicious.html} that 
-    pulls from \texttt{http://localhost:5000/benign}. 
-    \item Modify the CSS in \texttt{malicious.css} using the height,
+    \item Add an iframe HTML element in \texttt{attacker.html} that 
+    pulls from \texttt{http://www.cjlab.com}. 
+    \item Modify the CSS in \texttt{attacker.css} using the height,
     width, and position attributes to make the iframe cover the whole 
     page and make the button overlay the iframe.
     
@@ -209,109 +235,43 @@ site is loaded into the iframe.
        position attribute to determine which should be used.
     \end{itemize} 
 
-    \item Test your changes by opening malicious.html (see Environment
-    Setup section above).  
+    \item Test your changes by navigating to the attacker's website.
+          (Remember that you may need to clear the browser's cache and
+          reload the page to see changes made after the initial load.)
 
 \end{itemize} 
 
-% \textbf{Solution for Instructors:}
-% <!-- iframe in malicious.html -->
-% <iframe src="http://localhost:5000/benign" frameborder="0" ></iframe>
-
-% /* iframe css in malicious.css */
-% iframe {
-%     height:100%;
-%     width:100%;
-%     position:absolute;
-% }
-
-\paragraph{Questions:}
+\paragraph{Question:}
 \begin{enumerate}
-    \item With the server running, what does \texttt{malicious.html} 
+    \item With the iframe inserted, what does the attacker's website
     look like?
-        % Solution for Instructors:
-        % It looks exactly like benign.html, except that the
-        % button from malicious.html has been overlaid on the page. 
-        % Clicking on the ``Explore Menu" button takes you to the 
-        % benign.html page as it normally functions.
 \end{enumerate}
 
 %%%%%%%%%% Task 2 %%%%%%%%%% 
 
 \subsection{Task 2: Let’s Get Clickjacking!}
 
-\paragraph{basic clickjacking attack}
+\paragraph{Basic clickjacking attack.}
 Add to the given CSS code for a ``button'' object in
-\texttt{malicious.css} to make the malicious button in
-\texttt{malicious.html} invisible. Position the button such that it
+\texttt{attacker.css} to make the malicious button in
+\texttt{attacker.html} invisible. Position the button such that it
 covers the ``Explore Menu'' button within the iframe added in the
 previous Task. There are a variety of strategies for doing this; we
-recommend looking into these CSS attributes \texttt{margin-left},
+recommend investigating these CSS attributes: \texttt{margin-left},
 \texttt{margin-top}, \texttt{color}, and \texttt{background-color}. When
 this task is complete, you will have a functioning clickjacking attack. 
 
-% \textbf{Solution for Instructors:}
-% /* malicious button css in malicious.css */
-% button{
-%     /* Given button code for size and shape. You do not need to edit this. */
-%     position: absolute;
-%     border: none;
-%     color: white;
-%     padding: 35px 35px;
-%     text-align: center;
-%     font-size: 40px;
-%     border-radius: 15px;
-%     /* end of given button code */
-
-
-%     /* TODO: edit/add attributes below for the malicious button */
-%     /* You will want to change the button's position on the page and make the button transparent */
-
-%     /* solution */
-%     margin-left: 50px;
-%     margin-top: 350px;
-%     color: hsla(0, 0%, 0%, 0);
-%     background-color: hsla(0, 0%, 0%, 0);
-%   }
-
-%   /* alternate solution */
-%     margin-left: 50px;
-%     margin-top: 350px;
-%     color: white; opacity: 0%;
-%     background-color: blue; opacity: 0%;
-%   }
-
-
 \paragraph{Questions:}
 \begin{enumerate}
-    \item How does the malicious site’s appearance compare to that of
-the benign site?
-        % Solution for Instructors:
-        % The malicious site looks identical to the benign site. This is
-        % because the malicious site is displaying the benign site in a
-        % frame covering its whole page.
+\setcounter{enumi}{1}
+    \item How does the attacker's site’s appearance compare to that of
+	  the defender's site?
+
     \item What happens when you try to click on the ``Explore Menu'' button?
-        % Solution for Instructors:
-        % It takes the victim user to you\_have\_been\_hacked.html. The
-        % user should be misled to believe they are clicking on an 
-        % innocent ``Explore Menu" button, when in reality they are 
-        % actually clicking on the invisible malicious button.
+
     \item Describe a scenario where clickjacking of the type just
     demonstrated could occur and lead to undesirable consequences for 
     the user.
-        % Solution for Instructors:
-        % There are many plausible scenarios. A clickjacking could occur
-        % on any website, such as that of a restaurant (as in the 
-        % example used in this lab), online store, or local business. 
-        % Instead of the malicious link taking the user to a harmless 
-        % page with some placeholder text, it could instead download a 
-        % real virus to the user's computer. Alternatively, if it were 
-        % done against an online store where purchases can be made, the
-        % attacker could insert and overlay multiple invisible page 
-        % elements such as text fields and a button. Then, when a user
-        % enters credit card information to pay, they inadvertently 
-        % hand over all of this information to the attacker via the 
-        % overlaid fields. These are just a few example cases.
 \end{enumerate}
 
 
@@ -327,66 +287,39 @@ protected is the topmost site on any page where it is being displayed,
 thus preventing buttons on an attacker's page from being overlaid on top
 of it. 
 
-\paragraph{Write the frame busting script} 
+\paragraph{Write the frame busting script.} 
 
-Open the file \texttt{benign\_server/templates/benign.html}, which
-contains code for the Alice's Cupcakes homepage, which we would like to
-protect from clickjacking. Here, you will fill in the Javascript method
-called $makeThisFrameOnTop()$. Your code should compare
-\texttt{window.top} and \texttt{window.self} to find out if the top
-window and the current site's window are the same object (as they should
-be). If not, use the
+Open the file \texttt{defender/index.html}, which contains code for the
+Alice's Cupcakes homepage, which we would like to protect from
+clickjacking. Here, you will fill in the Javascript method called
+$makeThisFrameOnTop()$. Your code should compare \texttt{window.top} and
+\texttt{window.self} to find out if the top window and the current
+site's window are the same object (as they should be). If not, use the
 \href{https://developer.mozilla.org/en-US/docs/Web/API/Location}{Location
 Object} to set the location of the top window to be the same as the
 location of the current site's window. This should be a simple method
 and take no more than a few lines of code. Test it out and confirm that
 your script successfully stops the clickjacker. 
 
-\paragraph{Reminder} Remember that any time you make changes to a file
-on the server, you must restart the server (see ``Important note'' in
-the Setup section). 
-
-
-% \textbf{Solution for Instructors:} 
-
-% // One possible solution: 
-% function makeThisFrameOnTop() {
-%   if(window.top != window.self) {
-%       window.top.location = window.self.location
-%   }
-% }
-
-% // Another possible solution: 
-% function makeThisFrameOnTop() {
-%   if(top != self) {
-%       top.location = self.location
-%   }
-% }
+\paragraph{Reminder.} Remember that any time you make changes to one of
+the websites, you may need to clear the browser's cache and reload the
+page for the changes to take effect.
 
 \paragraph{Questions:}
 \begin{enumerate}
-    \item What happens when you try navigating to the malicious site?
-        % Solution for Instructors:
-        % If the frame-busting script is working, when you navigate to 
-	% the malicious site, it should now automatically redirect you to
-	% benign.html. This is because in benign.html, you checked to see
-	% if benign.html was embedded in some site (not the topmost
-	% frame), and if so, you broke out of that embedded frame. 
-    \item What happens when you try clicking the button?
-        % Solution for Instructors:
-        % The browser navigates to benign.html (i.e.\ stays on the same
-        % page) since we are only interacting with
-        % benign.html.  The malicious button overlay does not
-        % exist anymore.
-\end{enumerate}
+\setcounter{enumi}{4}
+    \item What happens when you try navigating to the attacker's site
+          now?
 
+    \item What happens when you try clicking the button?
+\end{enumerate}
 
 
 %%%%%%%%%% Task 4 %%%%%%%%%% 
 
 \subsection{Task 4: Attacker Countermeasure (Bust the Buster)}
 
-\paragraph{Disable the frame-busting script}
+\paragraph{Disable the frame-busting script.}
 Now let's explore how simple it is for the attacker to create a
 workaround for front-end clickjacking defenses like frame busting. There
 are multiple ways of accomplishing this, such as with a double frame
@@ -395,37 +328,19 @@ attack, but one of the simplest in the current scenario is to add the
 sandbox attribute on
 \underline{\href{https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe}{this
 page}} about iframes, then add the ``sandbox'' attribute to the iframe
-in \texttt{malicious.html} and answer the following questions.  
-
-% \textbf{Solution for Instructors:} 
-% <!-- Updated iframe with sandbox attribute in malicious.html -->
-% \begin{algorithmic}
-%     \State <iframe sandbox src="http://localhost:5000/benign" frameborder="0"></iframe>
-% \end{algorithmic}
+in \texttt{attacker.html} and answer the following questions.  
 
 
 \paragraph{Questions:}
 \begin{enumerate}
-    \item What does the sandbox attribute do? Why does this prevent the frame buster from working?
-        % Solution for Instructors:
-        % The sandbox attribute, by default, applies a number of
-        % restrictions to the frame, including preventing the embedded
-        % site from running scripts such as the one employed by the
-        % frame buster we tested in the previous Task. Setting different
-        % properties of the sandbox attribute allow finer-grained
-        % control of iframe capabilities.
-    \item What happens when you navigate to the malicious site after
-updating the iframe to use the `sandbox' attribute?
-	% Solution for Instructors:
-	% When the students try to navigate to the malicious site now,
-	% it will stay on the malicious page instead of immediately
-	% navigating away (to the Alice's Cupcakes page) as the
-	% frame-busting script previously made it do. 
+\setcounter{enumi}{6}
+    \item What does the sandbox attribute do? 
+          Why does this prevent the frame buster from working?
+
+    \item What happens when you navigate to the attacker's site after
+          updating the iframe to use the `sandbox' attribute?
+
     \item What happens when you try clicking the button?
-        % Solution for Instructors:
-        % Clicking the button should again take you to
-	% you\_have\_been\_hacked.html ; i.e., the original clickjacking
-	% attack is fully functional again.
 \end{enumerate}
 
 
@@ -433,13 +348,13 @@ updating the iframe to use the `sandbox' attribute?
 
 \subsection{Task 5: The Ultimate Bust}
 As we saw in Task 4, front-end defenses are not sufficient to prevent
-clickjacking, because front-end defenses such as frame-busting can be
+clickjacking, because front-end defenses such as frame busting can be
 directly circumvented by other front-end settings on the attacker's
 webpage. To prevent clickjacking attacks more comprehensively, we need
 to set up back-end (i.e.\ server-side) defenses.
 
 Server-side defenses can prevent front-end attacks such as the ones
-presented in this lab so far, which rely on a malicious website being
+presented in this lab so far, which rely on an attacker's website being
 able to fetch the benign website's content before the benign site has a
 chance to execute any front-end defenses. 
 
@@ -465,74 +380,34 @@ You can read more about the XFO attribute
 and more about CSPs
 \underline{\href{https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP}{here}}.
 
-\paragraph{Modify the response header} Navigate to \texttt{server.py}.
-Add code to $benign()$ to modify the HTTP response header served with
-the page in order to prevent the clickjacking attack.  Specifically, set
-the X-Frame-Options (XFO) attribute to the value \texttt{"DENY"} and the
-Content-Security-Policy (CSP) attribute to the value
-\texttt{"frame-ancestors `none' "}.
+\paragraph{Modify the defender's response headers.} Open the Apache
+configuration file for the defender's website
+(\texttt{apache\_defender.conf} in the defender's image folder).
+Uncommont the lines that specify the HTTP response headers served with
+the page and substitute appropriate text in order to prevent the
+clickjacking attack.  Specifically, set the X-Frame-Options (XFO) header
+to the value \texttt{"DENY"} and the Content-Security-Policy (CSP)
+header to contain the directive \texttt{"frame-ancestors `none' "}.
 
-\paragraph{Hint} Flask (along with many other common web-development
-frameworks) provides a simple interface to modify a response's headers.
-If \texttt{resp} is a response object to be returned by a function, you
-can modify its header with the following command:
-\\\texttt{resp.headers['attribute'] = value} , where \texttt{attribute}
-is the header attribute you would like to modify and \texttt{value} is
-the value to which it should be set. 
-
-\paragraph{Reminder} Remember that any time you make an update to the
-server, you will need to restart it (see ``Important note" in Setup).
-
-
-% \textbf{Solution for Instructors:} 
-% resp.headers['X-Frame-Options'] = ``DENY''
-% resp.headers['Content-Security-Policy'] = ``frame-ancestors 'none' ''
+\paragraph{Hint.} Because you are making a change to the server's
+configuration, you will need to rebuild and restart the containers for
+the change to take effect.
 
 
 \paragraph{Questions:}
 \begin{enumerate}
+\setcounter{enumi}{9}
     \item What is the X-Frame-Options HTTP header attribute, and why is
     it set to ``DENY'' to prevent the attack?
-        % Solution for Instructors:
-        % The X-Frame-Options HTTP response header can be used to
-        % indicate whether or not a browser should be allowed to render
-        % a page in a <frame> , <iframe> , <embed> or <object>. Setting
-        % its value to "DENY" prevents the page from being rendered by
-        % any other page when fetched in a frame.  See more here: 
-        % https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+
     \item What is the Content-Security-Policy header attribute, and why
     is it set to ``frame-ancestors `none' '' to prevent the attack?
-	% A Content Security Policy (CSP) is an added layer of security
-	% for a page that helps to defend against certain types of
-	% attacks, including Cross-Site Scripting (XSS) and
-	% data-injection attacks. These attacks are used for everything
-	% from data theft to site defacement to distribution of malware.
-	% Setting ``frame-ancestors `none' '' specifies that no valid
-	% parents of a page (including the origin of a <frame> trying to
-	% fetch the page) may embed the page. See more on
-        % CSPs here: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
-        % Note that this setting is redundant with the XFO
-        % setting, but is the preferred option as CSPs are more widely
-        % supportd than the XFO option.
-    \item What happens when you navigate to the malicious site
-    after modifying the response headers? What do you see?
-        % Solution for Instructors:
-        % The malicious site should not even display the benign
-	% site's content. This is because the response header from the
-	% server directs the browser that it cannot be displayed within
-	% a frame. The attacker's page thus does not have the
-	% opportunity to work around the content file's code (including
-	% any attempts at frame busting) because the code is blocked by
-	% the browser after parsing the HTTP header and thus before
-	% displaying the page's content. 
-	%
-	% **NOTE: the browser may allow the user to view the embedded
-	% frame in another tab or window, with a warning that explains
-	% the XFO/CSP options and the risk of clickjacking attack.
 
+    \item What happens when you navigate to the attacker's site
+    after modifying the response headers? What do you see?
 \end{enumerate}
 
-\paragraph{Learn more}
+\paragraph{Learn more.}
 There are a number of other ways to perform clickjacking besides the one
 explored in this lab, and many possible malicious consequences beyond
 the ones suggested here. To learn more about clickjacking, visit

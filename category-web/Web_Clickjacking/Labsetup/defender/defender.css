@@ -1,0 +1,96 @@
+/* Note: you do not need to modify any code in this file. */
+header {
+	position: fixed;
+	background-color: white;
+	border-bottom: 10px solid hsla(168, 35%, 40%, 1);
+	height: 80px;
+	width: 100%;
+	top: 0px;
+	left: 0px;
+	z-index: 1;
+}
+.header-contents {
+	height: 100px;
+	font-size: 18px;
+	display: flex;
+	justify-content: space-between;
+	padding-top: 20px;
+	padding-left: 10%;
+	padding-right: 10%;
+
+}
+.col {
+	cursor: pointer;
+}
+
+
+body {
+	background-color: #FAFAFA;
+	box-sizing: border-box;
+	text-transform: uppercase;
+	font-family: Arial;
+	width: 100%;
+	height: 100%;
+	margin-left: 0px;
+	overflow-x: hidden;
+	font-family: 'Raleway', sans-serif;
+}
+.Intro {
+	background-color: rgb(204, 160, 171);
+	height: 100vh;
+}
+.Intro-container {
+	margin-left: 50px;
+	margin-right: 30%;
+	padding-top: 150px; 
+	padding-bottom: 12%;
+}
+
+.name {
+	background-color: hsla(0, 0%, 100%, 1);
+	width: 750px;
+	padding: 10px 13px;
+	font-size: 4em;
+	margin-bottom: 15px;
+}
+.slogan {
+	background-color: rgb(240, 229, 239);
+	width: 870px;
+	padding: 4px 13px;
+	font-size: 3em;
+	margin-bottom: 25px;
+	font-family: 'Montserrat', sans-serif;
+}
+
+/* benign button code */ 
+button{
+	display: inline-block;
+	border: none;
+	color: white;
+	padding: 35px 50px;
+	text-align: center;
+	font-size: 40px;
+	margin-right: 25px;
+	font-family: 'Raleway', sans-serif;
+	border-radius: 15px;
+	background-color: hsla(168, 44%, 35%, 1);
+	cursor: pointer;
+}
+
+footer {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	background-color: white;
+	color: rgb(187, 187, 187);
+}
+.footer-contents {
+	height: 70px;
+	width: 100%;
+	font-size: 18px;
+	display: flex;
+	justify-content: space-between;
+	padding-top: 50px;
+	padding-left: 15%;
+}
