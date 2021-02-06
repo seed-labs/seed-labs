@@ -280,8 +280,9 @@ $ sudo sysctl net.ipv4.ip_forward=1
 
 
 \paragraph{Step 2: Run VPN Client.} We now run the VPN client program on the Client
-VM.  We run the following command on this machine (the first command
-will connect to the VPN server program running on {\tt 10.0.2.8}.
+VM.  We run the following commands on this machine. The first command
+will connect to the VPN server program (the server's IP address is hardcoded
+inside the program, and you need to change it accordingly).
 This command will block as well, so we need to find another window to 
 configure the \texttt{tun0} interface created by the VPN client program.  
 We assign IP address \texttt{192.168.53.5} to the \texttt{tun0} interface.   
@@ -289,7 +290,7 @@ We assign IP address \texttt{192.168.53.5} to the \texttt{tun0} interface.
 
 \begin{lstlisting}
 On VPN Client VM:
-$ sudo ./vpnclient 10.0.2.8
+$ sudo ./vpnclient 
 
 Run the following command in a different window
 $ sudo ifconfig tun0 192.168.53.5/24 up
