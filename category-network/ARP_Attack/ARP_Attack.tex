@@ -358,7 +358,7 @@ def spoof_pkt(pkt):
 
          if pkt[TCP].payload:
              data = pkt[TCP].payload.load  # The original payload data
-             newdata = data   # No change is nade in this sample code
+             newdata = data   # No change is made in this sample code
 
              send(newpkt/newdata)
          else:
