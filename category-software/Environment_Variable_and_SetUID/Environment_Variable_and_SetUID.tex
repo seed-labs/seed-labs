@@ -531,10 +531,6 @@ has no write operations, Vince is very sure that Bob cannot use this special pro
 to modify any file.
 
 \begin{lstlisting}[language=C, caption=\texttt{catall.c}]
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 int main(int argc, char *argv[])
 {
   char *v[3];
@@ -546,7 +542,6 @@ int main(int argc, char *argv[])
   }
 
   v[0] = "/bin/cat"; v[1] = argv[1]; v[2] = NULL;
-
   command = malloc(strlen(v[0]) + strlen(v[1]) + 2);
   sprintf(command, "%s %s", v[0], v[1]);
 
@@ -598,24 +593,20 @@ non-privileged process. In other words, although the effective user ID of
 the process becomes non-privileged, the process is still privileged because
 it possesses privileged capabilities.
 
-
 Compile the following program, change its owner to root, and
-make it a \setuid program. Run the program as a normal user,
-and describe what you have observed.
-Will the file {\tt /etc/zzz} be modified? Please explain
-your observation.
+make it a \setuid program. Run the program as a normal user.
+Can you exploit the capability leaking vulnerability in this program?
+The goal is to write to the {\tt /etc/zzz} file as a normal user.
 
 \begin{lstlisting}[language=C, caption=\texttt{cap\_leak.c}]
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-
 void main()
-{ int fd;
+{
+  int fd;
+  char *v[2];
 
   /* Assume that /etc/zzz is an important system file,
    * and it is owned by root with permission 0644.
-   * Before running this program, you should creat
+   * Before running this program, you should create
    * the file /etc/zzz first. */
   fd = open("/etc/zzz", O_RDWR | O_APPEND);
   if (fd == -1) {
@@ -623,27 +614,18 @@ void main()
      exit(0);
   }
 
-  /* Simulate the tasks conducted by the program */
-  sleep(1);
+  // Print out the file descriptor value
+  printf("fd is %d\n", fd);
 
-  /* After the task, the root privileges are no longer needed,
-     it's time to relinquish the root privileges permanently. */
-  setuid(getuid());  /* getuid() returns the real uid */
+  // Permanently disable the privilege by making the
+  // effective uid the same as the real uid
+  setuid(getuid());
 
-  if (fork()) { /* In the parent process */
-    close (fd);
-    exit(0);
-  } else { /* in the child process */
-    /* Now, assume that the child process is compromised, malicious
-       attackers have injected the following statements
-       into this process */
-
-    write (fd, "Malicious Data\n", 15);
-    close (fd);
-  }
+  // Execute /bin/sh
+  v[0] = "/bin/sh"; v[1] = 0;
+  execve(v[0], v, 0);
 }
 \end{lstlisting}
-
 
 
 
