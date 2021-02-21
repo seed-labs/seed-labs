@@ -524,10 +524,10 @@ point out what packets are triggered by this
 prove that your attack is successful. Note that DNS results
 may be cached on the local DNS server after the first
 \texttt{dig} command is run. This could influence the
-results if you ran the \texttt{dig} command before using
-Wireshark. To clear the cache, power off and on the local 
-DNS server. This may require you to redo the attack.
-
+results if you run the first \texttt{dig} command before using
+Wireshark. You can clear the cache using \texttt{"sudo rndc flush"} 
+on the local DNS server, but that will 
+require you to redo the attack.
 
 
 
