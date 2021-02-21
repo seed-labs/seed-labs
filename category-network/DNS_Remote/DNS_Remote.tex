@@ -521,7 +521,12 @@ In particular, when you run the first \texttt{dig} commands,
 use Wireshark to capture the network traffic, and 
 point out what packets are triggered by this
 \texttt{dig} command. Use the packet trace to 
-prove that your attack is successful. 
+prove that your attack is successful. Note that DNS results
+may be cached on the local DNS server after the first
+\texttt{dig} command is run. This could influence the
+results if you ran the \texttt{dig} command before using
+Wireshark. To clear the cache, power off and on the local 
+DNS server. This may require you to redo the attack.
 
 
 
