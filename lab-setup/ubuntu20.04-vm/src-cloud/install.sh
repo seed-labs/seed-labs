@@ -50,6 +50,7 @@ sudo apt -y install firefox
 
 sudo apt -y install bless
 sudo apt -y install ent
+sudo apt -y install eog
 sudo apt -y install execstack
 sudo apt -y install gcc-multilib
 sudo apt -y install gdb
