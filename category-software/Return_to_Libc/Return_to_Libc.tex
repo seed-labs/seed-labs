@@ -558,7 +558,7 @@ argv[1]  = address of "-p"
 argv[2]  = NULL (i.e., 4 bytes of zero).
 \end{lstlisting}
  
-From the perious tasks, we can easily get the address of the two involved 
+From the previous tasks, we can easily get the address of the two involved 
 strings. Therefore, if we can construct the \texttt{argv[]} array on the stack, 
 get its address, we will have everything that we need to conduct the 
 return-to-libc attack. This time, we will return to the \texttt{execv()} function. 
@@ -591,11 +591,11 @@ Another way is to invoke \texttt{setuid(0)} before
 invoking \texttt{system()}. The \texttt{setuid(0)} call sets both real user ID and  
 effective user ID to 0, turning the process into a non-\setuid one (it still has 
 the root privilege). This approach requires us to chain two functions
-together. The approach was generlized to chaining multiple functions together, and 
+together. The approach was generalized to chaining multiple functions together, and 
 was further generalized to chain multiple pieces of code together. 
-This led to the Return-Orented Programming (ROP). 
+This led to the Return-Oriented Programming (ROP). 
 
-Using ROP to solve the problem in Task 4 is quite sophoisticated, 
+Using ROP to solve the problem in Task 4 is quite sophisticated, 
 and it is beyond the scope of this lab. However, we do want to
 give students a taste of ROP, asking them 
 to work on a special case of ROP.
