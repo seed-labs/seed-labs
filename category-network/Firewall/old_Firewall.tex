@@ -225,7 +225,8 @@ behind a firewall (i.e., inside the company or school's network), and Machine B
 is outside of the firewall.
 Typically, there is a dedicated machine that runs the firewall, but
 in this task, for the sake of convenience, you can run the firewall 
-on Machine A.
+on Machine A. Note: If you are using 3 VMs, run the firewall on both Machine A
+(apollo) and Machine C (work) to simulate that both are behind the firewall.
 You can use {\tt iptables} to set up the following
 two firewall rules:
 
@@ -276,20 +277,24 @@ you can try block these IPs, instead of Facebook.
 \label{firewall:fig:sshtunnel}
 \end{figure}
  
-
+The scenario depicts the need to telnet to a machine called \texttt{"work"} from a machine called
+\texttt{"home"}. However the firewall blocks all incoming traffic except ssh to a machine called
+Apollo.
+If you are using 3 VMs, you will be attempting telnet from Machine B (home) to Machine C (work)
+through the firewall.
 To bypass the firewall, we can establish an SSH tunnel between
 Machine A and B, so all the telnet traffic will go through this tunnel
 (encrypted), evading the inspection. Figure~\ref{firewall:fig:sshtunnel}
 illustrates how the tunnel works. 
 The following command 
-establishes an SSH tunnel between the localhost (port 8000) and 
-machine B (using the default port 22); when packets come out of B's end, it will
+establishes an SSH tunnel between the localhost, machine B outside the firewall (port 8000) and 
+machine A (using the default port 22); when packets come out of B's end, it will
 be forwarded to Machine C's port 23 (\telnet port). If you only have two VMs,
 you can use one VM for both Machine B and Machine C.
 
 
 \begin{lstlisting}
-$ ssh -L 8000:Machine_C_IP:23  seed@Machine_B_IP
+$ ssh -L 8000:Machine_C_IP:23  seed@Machine_A_IP
 
 // We can now telnet to Machine C via the tunnel:
 $ telnet localhost 8000
@@ -298,7 +303,7 @@ $ telnet localhost 8000
 When we \telnet to \texttt{localhost}'s port \texttt{8000},  
 SSH will transfer all our TCP packets from
 one end of the tunnel on \texttt{localhost:8000} to the other end of the tunnel
-on Machine B; from there,
+on Machine A; from there,
 the packets will be forwarded to \texttt{Machine\_C:23}. Replies from Machine C will
 take a reverse path, and eventually reach our telnet client.
 Essentially, we are able to telnet to Machine C.
