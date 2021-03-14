@@ -277,6 +277,10 @@ you can try block these IPs, instead of Facebook.
 \end{figure}
  
 
+If you are using 3 VMs, this task will require you to Telnet to Machine C
+from Machine A through the firewall. If you are using 2VMs, this task is as stated
+in the section header, which is to Telnet to Machine B through the firewall, since
+one VM will be used for Machine B and Machine C.
 To bypass the firewall, we can establish an SSH tunnel between
 Machine A and B, so all the telnet traffic will go through this tunnel
 (encrypted), evading the inspection. Figure~\ref{firewall:fig:sshtunnel}
