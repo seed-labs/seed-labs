@@ -493,6 +493,22 @@ Z}. Either show us your reasoning or, if you use a trial-and-error approach,
 show your trials.
 
 
+\paragraph{A note regarding \texttt{gdb}.}  If you use \texttt{gdb} to figure out the 
+values for \texttt{X}, \texttt{Y}, and \texttt{Z}, it should be noted
+that the \texttt{gdb} behavior in Ubuntu 20.04 is slightly different 
+from that in Ubuntu 16.04. In particular, after we set
+a break point at function \texttt{bof},  
+when \texttt{gdb} stops inside the \texttt{bof()} function, it
+stops before the \texttt{ebp} register is set
+to point to the current stack frame, so if we print out the value of
+\texttt{ebp} here, we will get the caller's \texttt{ebp} value, not
+\texttt{bof}'s \texttt{ebp}. We need to type \texttt{next} 
+to execute a few instructions and stop
+after the \texttt{ebp} register is modified to point to the stack
+frame of the \texttt{bof()} function.
+The SEED book (2nd edition) is based on Ubuntu 16.04, 
+so it does not have this \texttt{next} step. 
+
 
 \paragraph{Attack variation 1:}
 Is the \texttt{exit()} function really necessary? Please try 
