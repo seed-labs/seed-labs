@@ -279,10 +279,10 @@ and describe your observation.
 
 
 \paragraph{An interesting observation.} On Ubuntu 20.04, if machine X
-has never made a telnet to the victim machine, when the SYN flooding 
+has never made a TCP connection to the victim machine, when the SYN flooding 
 attack is launched, machine X will not be able to telnet into the 
 victim machine. However, if before the attack, machine X
-has already made a telnet to the victim machine, then X 
+has already made a telnet (or TCP connection) to the victim machine, then X 
 seems to be ``immune'' to the SYN flooding attack, and can
 successfully telnet to the victim machine during the attack. 
 It seems that the victim machine remembers past successful 
@@ -295,19 +295,25 @@ if you keep doing the attack for 3 hours, the attack
 will eventually be successful.
 
 
-We have not figured out whether this is a countermeasure specifically designed
-for the SYN flooding attack or this is just a side effect caused by
-the optimization in the TCP implementation. During the attack, 
-to clean the victim machine's memory, 
-we can simply reboot the target machine.
-For containers, rebooting is very simple, we 
-just restart it using the following docker command:
+This is due to a mitigation of the kernel: 
+TCP reserves 1/4 of the backlog for ``proven destinations'' 
+if SYN Cookies are disabled. After making a TCP connection
+from \texttt{10.9.0.6} to the server \texttt{10.9.0.5}, we can 
+see that the IP address \texttt{10.9.0.6} is remembered
+by the server, so they will be using the reserved slots
+when connections come from them, and will thus not be 
+affected by the SYN flooding attack.
+To remove the effect of this mitigation method, we can 
+run the \texttt{"ip tcp\_metrics flush"} command on
+the server. 
 
 \begin{lstlisting}
-$ docker restart <container id>
+# ip tcp_metrics show
+10.9.0.6 age 140.552sec cwnd 10 rtt 79us rttvar 40us source 10.9.0.5
+
+# ip tcp_metrics flush
 \end{lstlisting}
  
-
 
 
 \paragraph{Enable the SYN Cookie Countermeasure.}
