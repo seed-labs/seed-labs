@@ -326,7 +326,7 @@ following \texttt{while} loop to replace the one in \texttt{tun.py}:
 while True:
    # Get a packet from the tun interface
    packet = os.read(tun, 2048)
-   if True:
+   if packet:
       ip = IP(packet)
       print(ip.summary())
 \end{lstlisting}
@@ -451,7 +451,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 while True:
    # Get a packet from the tun interface
    packet = os.read(tun, 2048)
-   if True:
+   if packet:
       # Send the packet via the tunnel
       sock.sendto(packet, (SERVER_IP, SERVER_PORT))
 \end{lstlisting}
@@ -759,7 +759,7 @@ ifname = ifname_bytes.decode('UTF-8')[:16].strip("\x00")
 
 while True:
    packet = os.read(tap, 2048)
-   if True:
+   if packet:
       ether = Ether(packet)
       print(ether.summary())
 \end{lstlisting}
@@ -777,7 +777,7 @@ following:
 \begin{lstlisting}
 while True:
    packet = os.read(tun, 2048)
-   if True:
+   if packet:
       print("--------------------------------")
       ether = Ether(packet)
       print(ether.summary())
