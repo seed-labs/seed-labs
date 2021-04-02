@@ -368,7 +368,7 @@ code that aids in completing the task.
 window.onload = function(){
   //JavaScript code to access user name, user guid, Time Stamp __elgg_ts 
   //and Security Token __elgg_token
-  var userName=elgg.session.user.name;
+  var userName="&name="+elgg.session.user.name;
   var guid="&guid="+elgg.session.user.guid;
   var ts="&__elgg_ts="+elgg.security.token.__elgg_ts;
   var token="&__elgg_token="+elgg.security.token.__elgg_token;
