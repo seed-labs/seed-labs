@@ -45,5 +45,6 @@ Students can use this section as a reference to understand the setup.
 
 ## Common Problems
 
-- [In my country, it is too slow to download docker images](./docker_hub_issues.md)
-- [Miscellaneous Problems](./problems.md)
+- [In my country, it is too slow to download docker images](./Problems/docker_hub_issues.md)
+- [Many problems are caused by the shared folder](./Problems/shared_folder.md)
+- [Miscellaneous Problems](./Problems/misc_problems.md)
