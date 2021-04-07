@@ -170,3 +170,14 @@ from `~/Share`.
 $ mkdir -p ~/Share
 $ sudo mount -t vboxsf VM_Shared ~/Share
 ```
+
+**Important Note.** Please only use the shared folder to copy files
+between the VM and the host machine, and **never use it
+as your working folder**. Working from the shared folder has
+caused many problems, especially on the permissions of the files
+created inside the shared folder. For example, if we unzip
+the `Labsetup.zip` file inside the shared folder, the permissions
+of the unzipped files will be different from those on
+the original files. Some labs and containers are very 
+sensitive to those permissions. 
+
