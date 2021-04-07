@@ -5,8 +5,10 @@
 - User ID: `seed`
 - Password: `dees`
 
-### [SEED Ubuntu VM Installation](./vm-installation.md)
+### [Install SEED VM on VirtualBox](./seedvm-manual.md)
 
-### [Sharing Files Between VM and Host](./vm-filesharing.md)
+### [Build SEED Ubuntu 20.04 VM from Scratch](./seedvm-from-scratch.md)
+
+### [Common Problems](./vm-problems.md)
 
 
