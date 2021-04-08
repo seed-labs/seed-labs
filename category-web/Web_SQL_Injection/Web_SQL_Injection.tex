@@ -485,7 +485,7 @@ vulnerable to SQL injection attacks.
 $sql = "SELECT name, local, gender  
         FROM USER_TABLE 
         WHERE id = $id AND password ='$pwd' ";
-$result = $conn->query($sql)) 
+$result = $conn->query($sql)
 \end{lstlisting}
 
 The above code is vulnerable to SQL injection attacks. 
