@@ -492,31 +492,33 @@ is required, because it is more challenging and it does not rely on external Jav
 
 
 This sub-section is only for information, and there is no specific task to do. 
-It shows how {\tt Elgg} defends against the XSS attack. 
-{\tt Elgg} does have built-in countermeasures, and
-we have deactivated and commented out them to make the
-attack work. Actually, {\tt Elgg} uses two countermeasures. 
-One is a custom built security plugin {\tt HTMLawed}, 
-which, on activation, validates the user input and removes the tags from the input.
-This specific plugin is registered to the {\tt "function filter\_tags"} in the
-\url{elgg/engine/lib/input.php} file. 
+It shows how Elgg defends against the XSS attack. 
+Elgg does have built-in countermeasures, and
+we have disabled them to make the
+attack work. Actually, Elgg uses two countermeasures. 
+One is a custom built security plugin \texttt{HTMLawed}, 
+which validates the user input and removes the tags from the input.
+We have commented out the invocation of the plugin
+inside the \texttt{filter\_tags()} function 
+in \texttt{input.php}, which is located inside 
+\path{vendor/elgg/elgg/engine/lib/}. See the following:
 
+\begin{lstlisting}
+function filter_tags($var) {
+   // return elgg_trigger_plugin_hook('validate', 'input', null, $var);
+   return $var;
+}
+\end{lstlisting}
+ 
 
-To turn on the countermeasure, login to the application as admin, goto {\tt
-Account->administration} (top right of screen) $\rightarrow$ {\tt plugins} (on the right
-panel), and click on {\tt security and spam} under the filter options at the top of the page.
-You should find the {\tt HTMLawed} plugin below.  Click on {\tt Activate} to enable the
-countermeasure.
-
-
-In addition to the {\tt HTMLawed 1.9} security plugin in {\tt Elgg}, there is another built-in
-PHP method called {\tt “htmlspecialchars()”}, which is used to encode the special characters in
-user input, such as {\tt "<"} to {\tt "\&lt"}, {\tt ">"} to {\tt “\&gt”}, etc.
-Please go to \url{/var/www/XSS/Elgg/vendor/elgg/elgg/views/default/output/} and
-find the function call {\tt “htmlspecialchars”} in {\tt text.php}, {\tt url.php}, {\tt
-dropdown.php} and {\tt email.php} files. Uncomment the corresponding {\tt "htmlspecialchars"}
-function calls in each file. 
-
+In addition to {\tt HTMLawed}, Elgg also uses PHP's built-in
+method \texttt{htmlspecialchars()} to
+encode the special characters in
+user input, such as encoding {\tt "<"} to {\tt "\&lt"}, {\tt ">"} to {\tt "\&gt"}, etc.
+This method is invoked in \texttt{dropdown.php}, \texttt{text.php}, 
+and \texttt{url.php} inside 
+the \path{vendor/elgg/elgg/views/default/output/} folder. 
+We have commented them out to turn off the countermeasure. 
 
 
 % *******************************************
