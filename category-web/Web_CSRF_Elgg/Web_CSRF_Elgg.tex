@@ -469,6 +469,7 @@ timestamp, user session ID and random generated session string.
 The code below shows the secret token generation in Elgg 
 (in \path{vendor/elgg/elgg/engine/classes/Elgg/Security/Csrf.php}).
 
+
 \begin{lstlisting}
 /**
  * Generate a token from a session token (specifying the user), 
@@ -510,18 +511,27 @@ public function validate(Request $request) {
 
 
 
-\paragraph{Task: Turn on countermeasure.}
-To turn on the countermeasure, just remove the \texttt{return}
-from the \texttt{Csrf.php} file inside the \texttt{image\_elgg/elgg} 
-folder (on your host VM), rebuild the container images, and restart all 
-the containers. Then repeat the attack again, and see whether your attack will
+\paragraph{Task: Turn on the countermeasure.}
+To turn on the countermeasure, get into the Elgg container, 
+go to the \path{/var/www/elgg/vendor/elgg/elgg/engine/classes/Elgg/Security} 
+folder, remove the \texttt{return} statement from \texttt{Csrf.php}.
+A simple editor called \texttt{nano} is available from inside the 
+container.  After making the change, 
+repeat the attack again, and see whether your attack will
 be successful or not. 
 Please point out the secret tokens in the captured HTTP requests.
 Please explain why
 the attacker cannot send these secret tokens in the CSRF attack; what
 prevents them from finding out the secret tokens from the web page?   
 
-
+\textbf{It should be noted (important)} that when we launch the edit-profile attack
+while the countermeasure is enabled, the failed attempt will
+cause the attacker's page to be reloaded, which will
+trigger the forged POST request again. This will lead to another 
+failed attempt, so the page will be reloaded again and 
+another forged POST request will be sent out. This endless loop
+will slow down your computer. Therefore, after verifying that 
+the attack failed, kill the tab to stop the endless loop. 
 
 
 
