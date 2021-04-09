@@ -98,7 +98,7 @@ Please add the following entries to \texttt{/etc/hosts}.
 You need to use the root privilege to modify this file:
 
 \begin{lstlisting}
-10.9.0.5        www.xsslabelgg.com
+10.9.0.5        www.seed-server.com
 10.9.0.5        www.example32a.com
 10.9.0.5        www.example32b.com
 10.9.0.5        www.example32c.com
@@ -125,8 +125,8 @@ You need to use the root privilege to modify this file:
 
 We use an open-source web application called {\tt Elgg} in this lab.
 {\tt Elgg} is a web-based social-networking application.
-It is already set up in the provided container images, 
-and its URL is \url{http://www.xsslabelgg.com}.
+It is already set up in the provided container images; 
+its URL is \url{http://www.seed-server.com}.
 We use two containers, one running the web server (\texttt{10.9.0.5}) ,
 and the other running the MySQL database (\texttt{10.9.0.6}). 
 The IP addresses for these two containers are hardcoded in various 
@@ -311,7 +311,7 @@ window.onload = function () {
   //Create and send Ajax request to add friend
   Ajax=new XMLHttpRequest();
   Ajax.open("GET",sendurl,true);
-  Ajax.setRequestHeader("Host","www.xsslabelgg.com");
+  Ajax.setRequestHeader("Host","www.seed-server.com");
   Ajax.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
   Ajax.send();
 } 
@@ -386,7 +386,7 @@ window.onload = function(){
      var Ajax=null;
      Ajax=new XMLHttpRequest();
      Ajax.open("POST",sendurl,true);
-     Ajax.setRequestHeader("Host","www.xsslabelgg.com");
+     Ajax.setRequestHeader("Host","www.seed-server.com");
      Ajax.setRequestHeader("Content-Type",
                            "application/x-www-form-urlencoded");
      Ajax.send(content);
