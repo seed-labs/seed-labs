@@ -232,7 +232,7 @@ automatically triggers an HTTP GET request).
 
 Elgg has implemented a countermeasure to defend against 
 CSRF attacks. In Add-Friend HTTP requests, you may notice that each 
-request includes two wired-looking parameters, \texttt{\_\_elgg\_ts} and 
+request includes two weird-looking parameters, \texttt{\_\_elgg\_ts} and 
 \texttt{\_\_elgg\_token}. These parameters are used by the countermeasure, so if they do not
 contain correct values, the request will not be accepted by Elgg.   
 We have disabled the countermeasure for this lab, so there is no need to include these two 
@@ -310,7 +310,7 @@ After understanding the structure of the request, you need to
 be able to generate the request from your attacking web page
 using JavaScript code. 
 To help you write such a JavaScript program,  we provide a 
-sample code in the following You can use this sample code to construct your malicious web site
+sample code in the following code fence. You can use this sample code to construct your malicious web site
 for the CSRF attacks. This is only a sample code, and you need to modify it to 
 make it work for your attack.
 
@@ -362,7 +362,7 @@ This is needed, otherwise, the access level will be set by default to private, s
 see this field. It should be noted that when copy-and-pasting the above code
 from a PDF file, the  single quote character in the program may become 
 something else (but still looks like a single quote). That will cause 
-syntax errors. Replace all the single quote symbols with the one typed from 
+syntax errors. Replacing all the single quote symbols with the one typed from 
 your keyboard will fix those errors. 
 
 
