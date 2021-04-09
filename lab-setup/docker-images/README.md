@@ -21,6 +21,14 @@ we have `seed-server` image with many different tags, each representing
 a different server image, such as `bind`, `apache`, `bgp`, etc.
 
 
+## Building Images
+
+We use the following commands to publish the image to DockerHub.
+```
+docker build -t handsonsecurity/image:tag .
+docker push handsonsecurity/image:tag
+```
+
 ## Lab Setup for Labs
 
 Each SEED lab will have a folder called `Labsetup`, which contains
