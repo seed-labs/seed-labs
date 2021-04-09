@@ -24,5 +24,6 @@ generic machines, no longer depending on our VM.
 
 ## Labsetup
 
-- `old-Labsetup`: build the image from scratch (the initial approach)
-- `Labsetup`: use the pre-built SEED image stored in Docker Hub
+- `Labsetup`: use the pre-built SEED image stored in Docker Hub. The image 
+  is the original Elgg image, which needs to be customized for this lab.
+  All the customization files are included in the `Labsetup/elgg` folder.
