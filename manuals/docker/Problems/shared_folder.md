@@ -12,7 +12,7 @@ are unzipped inside the shared folder. Some labs
 and container setup are sensitive to 
 the file permissions. 
 
-When a student reported a wired problem, the first 
+When a student reported a strange problem, the first 
 thing we should check is whether the student
 is doing work inside the shared folder. Moreover, 
 we should try to avoid using the shared folder.
