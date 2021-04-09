@@ -73,12 +73,15 @@ Detailed coverage of the CSRF attack can be found in the following:
 % *******************************************
 \section{Lab Environment Setup}
 
-In this lab, we will use two websites. 
+In this lab, we will use three websites. 
 The first website is the vulnerable Elgg
-site accessible at \url{www.csrflabelgg.com}. The second
+site accessible at \url{www.seed-server.com}. The second
 website is the attacker's malicious web site that is used for
-attacking Elgg. This web site is accessible via
-\url{www.csrflab-attacker.com}. We use containers to
+attacking Elgg.  This web site is accessible via
+\url{www.attacker32.com}.  The third website is used 
+for the defense tasks, and its hostname
+is \url{www.example32.com}. 
+We use containers to
 set up the lab environment. 
 
 
@@ -109,14 +112,14 @@ the \texttt{docker-compose.yml} file.
 \paragraph{The Elgg container.}
 We host the Elgg web application using the Apache web server.
 The website setup is included in
-\texttt{apache\_elgg\_csrf.conf} inside the Elgg image folder.
+\texttt{apache\_elgg.conf} inside the Elgg image folder.
 The configuration specifies the URL for the website and
 the folder where the web application code is stored.
 
 \begin{lstlisting}
 <VirtualHost *:80>
      DocumentRoot /var/www/elgg
-     ServerName www.csrflabelgg.com
+     ServerName   www.seed-server.com
      <Directory /var/www/elgg>
           Options FollowSymlinks
           AllowOverride All
@@ -133,8 +136,8 @@ in the following:
 
 \begin{lstlisting}
 <VirtualHost *:80>
-    ServerName www.csrflab-attacker.com
-    DocumentRoot /var/www/attacker
+     DocumentRoot /var/www/attacker
+     ServerName   www.attacker32.com
 </VirtualHost>
 \end{lstlisting}
  
@@ -157,12 +160,15 @@ We need to add the following entries to the
 \texttt{/etc/hosts} file, so these hostnames are mapped to
 their corresponding IP addresses.
 You need to use the root privilege to
-change this file (using \texttt{sudo}).
+change this file (using \texttt{sudo}). It should be noted 
+that these names might have already been added to the file due to
+other labs. If they are mapped to different IP addresses,
+the old entries must be removed. 
 
 \begin{lstlisting}
-10.9.0.5        www.csrflabelgg.com
-10.9.0.5        www.csrflab-defense.com
-10.9.0.105      www.csrflab-attacker.com
+10.9.0.5        www.seed-server.com
+10.9.0.5        www.example32.com
+10.9.0.105      www.attacker32.com
 \end{lstlisting}
 
 
@@ -214,7 +220,7 @@ and Samy. Samy wants to become a friend to Alice, but Alice refuses to add
 him to her Elgg friend list. Samy decides to use the CSRF attack to
 achieve his goal. He sends Alice an URL (via an email or a posting in 
 Elgg); Alice, curious about it, clicks on the URL, which leads her to Samy's web site:    
-{\tt www.csrflab-attacker.com}. Pretend that you are Samy, describe how you
+\texttt{www.attacker32.com}. Pretend that you are Samy, describe how you
 can construct the content of the web page, so as soon as Alice visits the
 web page, Samy is added to the friend list of Alice (assuming Alice has an
 active session with Elgg).
@@ -253,7 +259,7 @@ That is the purpose of this task.
 
 One way to do the attack is to post a message to Alice's Elgg account, hoping that 
 Alice will click the URL inside the message. This URL will lead Alice to your (i.e., Samy's)
-malicious web site \url{www.csrflab-attacker.com}, where you can launch the
+malicious web site \url{www.attacker32.com}, where you can launch the
 CSRF attack. 
 
 The objective of your attack is to modify the victim's profile. 
@@ -285,15 +291,15 @@ included in the HTTP message body (see the contents between the two
 
 
 \begin{lstlisting}
-http://www.csrflabelgg.com/action/profile/edit
+http://www.seed-server.com/action/profile/edit
 
 POST /action/profile/edit HTTP/1.1
-Host: www.csrflabelgg.com
+Host: www.seed-server.com
 User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:23.0) ...
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate
-Referer: http://www.csrflabelgg.com/profile/elgguser1/edit
+Referer: http://www.seed-server.com/profile/elgguser1/edit
 Cookie: Elgg=p0dci8baqrl4i2ipv2mio3po05
 Connection: keep-alive
 Content-Type: application/x-www-form-urlencoded
@@ -553,13 +559,13 @@ launch CSRF attacks.
 
 To help students get an idea on how the SameSite cookies can
 help defend against CSTF attacks, we have created a website
-called \url{www.csrflab-defense.com} on one of the containers. Please 
+called \url{www.example32.com} on one of the containers. Please 
 visit the following URL (the hostname is already mapped 
 to \texttt{10.9.0.5} in the \texttt{/etc/hosts} file; if you are 
 not using the SEED VM, you should add this mapping to your machine): 
 
 \begin{lstlisting}
-URL: http://www.csrflab-defense.com/
+URL: http://www.example32.com/
 \end{lstlisting}
 
 Once you have visited this website once, three cookies will be 
@@ -574,10 +580,10 @@ will be attached, but this is not the case if a cookie is a samesite type.
 
 
 Please follow the links for the two experiments. Link A points to a page 
-on \url{csrflab-defense.com}, while Link B points to a page 
-on \url{csrflab-attacker.com}. Both pages are identical (except for the background
+on \url{example32.com}, while Link B points to a page 
+on \url{attacker32.com}. Both pages are identical (except for the background
 color), and they both send three different types of requests to
-\url{www.csrflab-defense.com/showcookies.php}, which
+\url{www.example32.com/showcookies.php}, which
 simply displays the cookies sent by the browser. By looking 
 at the display results, you can tell which cookies were sent 
 by the browser. Please do the following: 
