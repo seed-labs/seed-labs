@@ -43,7 +43,7 @@ $CONFIG->dataroot = "/var/elgg-data/";
  *
  * @global string $CONFIG->wwwroot
  */
-$CONFIG->wwwroot = "http://www.xsslabelgg.com/";
+$CONFIG->wwwroot = "http://www.seed-server.com/";
 
 /**
  * The database username
@@ -64,7 +64,7 @@ $CONFIG->dbpass = 'dees';
  *
  * @global string $CONFIG->dbname
  */
-$CONFIG->dbname = 'elgg_xss';
+$CONFIG->dbname = 'elgg_seed';
 
 /**
  * The database host.

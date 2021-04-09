@@ -1,9 +1,20 @@
-FROM handsonsecurity/seed-elgg:xss
+FROM handsonsecurity/seed-elgg:original
 
-# If the MySQL server's IP address is not 10.9.0.6, 
-# you need to change the IP address in the setting file,
-# and then uncomment the following COPY command
-# COPY elgg-settings.php /var/www/elgg/elgg-config/settings.php
+# The original Elgg is installed inside /var/www/elgg
+ARG WWWDir=/var/www/elgg
+
+# We customize the original Elgg program for the XSS lab.
+# (1) disable the countermeasure and (2) set up the MySQL database.
+# The following files are modified:
+COPY elgg/settings.php $WWWDir/elgg-config/
+COPY elgg/dropdown.php elgg/text.php elgg/url.php  $WWWDir/vendor/elgg/elgg/views/default/output/
+COPY elgg/input.php    $WWWDir/vendor/elgg/elgg/engine/lib/
+COPY elgg/ajax.js      $WWWDir/vendor/elgg/elgg/views/default/core/js/
+
+# Enable the XSS site
+COPY apache_elgg.conf /etc/apache2/sites-available/
+RUN  a2ensite apache_elgg.conf
+
 
 # Set up the CSP site (for one of the lab tasks) 
 COPY csp /var/www/csp
