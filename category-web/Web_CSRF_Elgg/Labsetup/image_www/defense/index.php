@@ -28,8 +28,8 @@ set on your browser.
 </ul>
 </p>
 
-<h2>Experiment A: click <a href="http://www.csrflab-defense.com/testing.html">Link A</a></h2>
-<h2>Experiment B: click <a href="http://www.csrflab-attacker.com/testing.html">Link B</a></h2>
+<h2>Experiment A: click <a href="http://www.example32.com/testing.html">Link A</a></h2>
+<h2>Experiment B: click <a href="http://www.attacker32.com/testing.html">Link B</a></h2>
 
 </body>
 </html>
