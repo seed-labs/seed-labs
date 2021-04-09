@@ -92,16 +92,20 @@ The IP address for the web application container is \texttt{10.9.0.5}, and
 The URL for the web application is the following:
 
 \begin{lstlisting}
-http://www.SEEDLabSQLInjection.com
+http://www.seed-server.com
 \end{lstlisting}
  
 We need to map this hostname to the container's IP address. Please 
 add the following entry to the \texttt{/etc/hosts} file. 
 You need to use the root privilege to
 change this file (using \texttt{sudo}).
+It should be noted
+that this name might have already been added to the file due to
+some other labs. If it is mapped to a different IP address,
+the old entry must be removed.
 
 \begin{lstlisting}
-10.9.0.5        www.SEEDLabSQLInjection.com
+10.9.0.5        www.seed-server.com
 \end{lstlisting}
  
 
@@ -236,7 +240,7 @@ they may be able to make changes to the database. Our employee
 management web application has SQL injection vulnerabilities, which mimic 
 the mistakes frequently made by developers. 
 
-We will use the login page from \url{www.SEEDLabSQLInjection.com}
+We will use the login page from \url{www.seed-server.com}
 for this task. The login page is shown in Figure~\ref{sql:fig:login}. 
 It asks users to provide a user name and a password.
 The web application authenticate users based on these two pieces 
@@ -322,8 +326,7 @@ web application, with two parameters (\texttt{username} and
 \texttt{Password}) attached:
 
 \begin{lstlisting}
-$ curl 
- 'www.SeedLabSQLInjection.com/unsafe_home.php?username=alice&Password=11'
+$ curl 'www.seed-server.com/unsafe_home.php?username=alice&Password=11'
 \end{lstlisting}
 
 If you need to include special characters in the 
@@ -531,7 +534,7 @@ user name and password.
 
 
 \begin{lstlisting}
-URL: http://www.seedlabsqlinjection.com/defense/
+URL: http://www.seed-server.com/defense/
 \end{lstlisting}
 
 The data typed in this page will be sent to the 
