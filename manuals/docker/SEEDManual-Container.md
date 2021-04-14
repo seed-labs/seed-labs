@@ -47,4 +47,5 @@ Students can use this section as a reference to understand the setup.
 
 - [In my country, it is too slow to download docker images](./Problems/docker_hub_issues.md)
 - [Many problems are caused by the shared folder](./Problems/shared_folder.md)
+- [My "docker-compose up" failed because I forgot to shut down the containers from another SEED lab](./forget_turn_off.md)
 - [Miscellaneous Problems](./Problems/misc_problems.md)
