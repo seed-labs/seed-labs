@@ -26,11 +26,11 @@ removing network: .... active endpoints".
 
 ![machine configuration](./Figs/NetworkActive.png)
 
-The reason behind is that the accidentally ```dcup``` messed up the
-relationship between each containers. It makes several containers become orphan
-containers which cannot be removed properly by ```dcdown``` command. And they
-are still connected to the `net-10.9.0.0`, so the network `net-10.9.0.0` is still
-active and cannot be removed. The solution is described in the following:
+The reason behind is that the ```docker-compose up``` command messed up the
+relationship between the containers and the network. It makes several containers orphan
+containers, which cannot be removed properly by the ```dcdown``` command. Since they
+are still connected to the `net-10.9.0.0` network, the network `net-10.9.0.0` 
+cannot be removed. The solution is described in the following:
 
 ## Step 1: disconnect the network with containers
 
