@@ -1,19 +1,19 @@
 # My "docker-compose up" failed because I forgot to shut down the containers from another SEED lab
 
-## What error you may meet
+## Potential errors
 
-Usually when you forget to turn off the previous containers before running
-```dcup```, i.e ```docker-compose up``` to start another SEED lab containers,
-you might see some errors.
-
+Since most SEED labs use containers, if we forget to shut down 
+the containers used in the previous lab, and try to 
+use `dcup` (i.e `docker-compose up`) to start the containers in
+the new lab, we will see errors. 
 
 For example, in my case, in the previous XSS lab, I have two containers 
 `elgg-10.9.0.5`, `mysql-10.9.0.6` and a network `net-10.9.0.0`. 
 
 ![machine configuration](../Figs/XSSContainerNetwork.png)
 
-I forget use ```dcdown``` to shut down these containers before starting the SQL
-injection Lab. When I type ```dcup``` to start up the new containers
+I forget to use ```dcdown``` to shut down these containers before starting the SQL
+injection lab. When I type ```dcup``` to start up the new containers
 for SQL injection lab, an error message pops up, saying 
 "Cannot start service www: Address already in use". 
 That is because the address "10.9.0.5" is occupied by the XSS lab's containers.
@@ -28,8 +28,8 @@ removing network: .... active endpoints".
 
 The reason behind is that the ```docker-compose up``` command messed up the
 relationship between the containers and the network. It makes several containers orphan
-containers, which cannot be removed properly by the ```dcdown``` command. Since they
-are still connected to the `net-10.9.0.0` network, the network `net-10.9.0.0` 
+containers, which cannot be removed properly by the ```dcdown``` command. Since 
+the network `net-10.9.0.0` is still connected by those orphan containers, it 
 cannot be removed. The solution is described in the following:
 
 ## Step 1: disconnect the network with containers
