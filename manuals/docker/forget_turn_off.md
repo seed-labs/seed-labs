@@ -26,7 +26,7 @@ So the solution is as following:
 
 First you need to check the network information using ```docker network ls ```
 
-![machine configuration](./Figs/NetworkLS.png)
+![machine configuration](./Figs/NetworkLs.png)
 
 
 Because we have already know the target network we want to disconnect is "net-10.9.0.0", so we need to inspect which containers are connecting with this network using ```docker network inspect ${NetworkName}```. In my case, ```${NetworkName}``` is "net-10.9.0.0".
