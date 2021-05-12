@@ -77,14 +77,14 @@ Detailed coverage of the Shellshock attack can be found in the following:
 \subsection{DNS Setting}
 
 In our setup, the web server container's IP address is
-\texttt{10.9.0.80}. The hostname of the server is called
-\texttt{www.seedlab-shellshock.com}. We need to map
+\texttt{10.9.0.5}. The hostname of the server is called
+\texttt{www.seed-server.com}. We need to map
 this name to the IP address. Please add the following
 to \texttt{/etc/hosts}. You need to use the root privilege
 to modify this file: 
 
 \begin{lstlisting}
-10.9.0.80       www.seedlab-shellshock.com
+10.9.0.5       www.seed-server.com
 \end{lstlisting}
  
 
@@ -136,12 +136,12 @@ the vulnerable bash in this lab.
 
 
 To access the CGI program from the Web, we can either use a browser by
-typing the following URL: \url{http://www.seedlab-shellshock.com/cgi-bin/vul.cgi}, 
+typing the following URL: \url{http://www.seed-server.com/cgi-bin/vul.cgi}, 
 or use the following command line program {\tt curl} to do the same thing. Please 
 make sure that the web server container is running.
 
 \begin{lstlisting}
-$ curl http://www.seedlab-shellshock.com/cgi-bin/vul.cgi
+$ curl http://www.seed-server.com/cgi-bin/vul.cgi
 \end{lstlisting}
 
 
@@ -210,7 +210,7 @@ investigation results in the lab report.
 
 \begin{lstlisting}
 ****** Environment Variables ******
-HTTP_HOST=www.seedlab-shellshock.com
+HTTP_HOST=www.seed-server.com
 HTTP_USER_AGENT=Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:83.0) ...
 HTTP_ACCEPT=text/html,application/xhtml+xml,application/xml;q=0.9, ...
 HTTP_ACCEPT_LANGUAGE=en-US,en;q=0.5
@@ -233,10 +233,10 @@ Here are the examples on how to use these fields:
  
 
 \begin{lstlisting}
-$ curl -v www.seedlab-shellshock.com/cgi-bin/getenv.cgi
-$ curl -A "my data" -v www.seedlab-shellshock.com/cgi-bin/getenv.cgi
-$ curl -e "my data" -v www.seedlab-shellshock.com/cgi-bin/getenv.cgi
-$ curl -H "AAAAAA: BBBBBB" -v www.seedlab-shellshock.com/cgi-bin/getenv.cgi
+$ curl -v www.seed-server.com/cgi-bin/getenv.cgi
+$ curl -A "my data" -v www.seed-server.com/cgi-bin/getenv.cgi
+$ curl -e "my data" -v www.seed-server.com/cgi-bin/getenv.cgi
+$ curl -H "AAAAAA: BBBBBB" -v www.seed-server.com/cgi-bin/getenv.cgi
 \end{lstlisting}
  
 Based on this experiment, please describe what options of \texttt{curl} 
@@ -253,7 +253,7 @@ We can now launch the Shellshock attack.
 The attack does not depend on what is in the CGI program, as it targets
 the bash program, which is invoked before the actual CGI script is
 executed. Your job is to launch the attack through the URL
-\url{http://www.seedlab-shellshock.com/cgi-bin/vul.cgi}, so you can
+\url{http://www.seed-server.com/cgi-bin/vul.cgi}, so you can
 get the server to run an arbitrary command. 
 
 
@@ -302,7 +302,7 @@ we attach some data in the URL, and we found that the data are used to set
 the following environment variable: 
 
 \begin{lstlisting}
-$ curl "http://www.seedlab-shellshock.com/cgi-bin/getenv.cgi?AAAAA"
+$ curl "http://www.seed-server.com/cgi-bin/getenv.cgi?AAAAA"
 ...
 QUERY_STRING=AAAAA
 ...

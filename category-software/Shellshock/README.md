@@ -1,5 +1,10 @@
 # Shellshock Lab
 
+## URL change
+
+We have changed the URL to `www.seed-server.com`. 
+
+
 ## For Ubuntu 20.04
 
 Here is the summary of the changes made to the lab description
