@@ -4,11 +4,11 @@ services:
     victim:
         build: ./image_www
         image: seed-image-www-shellshock
-        container_name: victim-10.9.0.80
+        container_name: victim-10.9.0.5
         tty: true
         networks:
             net-10.9.0.0:
-                ipv4_address: 10.9.0.80
+                ipv4_address: 10.9.0.5
                   
 
 networks:
