@@ -222,20 +222,17 @@ is the same as that in the previous tasks, so they will not be repeated.
 
 
 \begin{lstlisting}[caption=\texttt{SpectreExperiment.c}, label=spectre:list:outoforder]
-#include <emmintrin.h>
-#include <x86intrin.h>
+#define CACHE_HIT_THRESHOLD (80)
+#define DELTA 1024
 
 int size = 10;
 uint8_t array[256*4096];
 uint8_t temp = 0;
 
-#define CACHE_HIT_THRESHOLD (80)
-#define DELTA 1024
-
 void victim(size_t x) 
 {
-  if (x < size) {                         (*@\ding{192}@*)
-     temp = array[x * 4096 + DELTA];      (*@\ding{193}@*)
+  if (x < size) {                          (*@\ding{192}@*)
+     temp = array[x * 4096 + DELTA];       (*@\ding{193}@*)
   }
 }
 
@@ -247,16 +244,15 @@ int main()
   flushSideChannel();
 
   // Train the CPU to take the true branch inside victim()
-  for (i = 0; i < 10; i++) {              (*@\ding{194}@*)
-     _mm_clflush(&size);                  (*@\ding{80}@*)
-     victim(i);                           (*@\ding{195}@*)
+  for (i = 0; i < 10; i++) {               (*@\ding{194}@*)
+      victim(i);                           (*@\ding{195}@*)
   }
 
   // Exploit the out-of-order execution 
-  _mm_clflush(&size);                     (*@\ding{80}@*)
+  _mm_clflush(&size);                      (*@\ding{80}@*)
   for (i = 0; i < 256; i++)  
-    _mm_clflush(&array[i*4096 + DELTA]);
-  victim(97);                             (*@\ding{196}@*)
+      _mm_clflush(&array[i*4096 + DELTA]);
+  victim(97);                              (*@\ding{196}@*)
 
   // RELOAD the probing array
   reloadSideChannel();
@@ -287,6 +283,10 @@ from the memory, so getting its value from the memory may take a while. This is 
 will make a prediction, and start speculative execution. 
 
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
 \subsection{Task 3} 
 
 
@@ -301,9 +301,9 @@ or not when \texttt{97} is fed into \texttt{victim()}.
 Please also do the followings:
 
 \begin{itemize}
-\item Comment out the lines marked with \ding{80} and execute again. Explain your
+\item Comment out the line marked with \ding{80} and execute again. Explain your
 observation. After you are done with this experiment, 
-uncomment them, so the subsequent tasks are not affected.
+uncomment it, so the subsequent tasks are not affected.
 
 \item Replace Line \ding{195} with \texttt{victim(i + 20)}; run the code again and
 explain your observation. 
@@ -355,19 +355,20 @@ the access check.
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width= 0.8\textwidth]{\spectreFigs/buffer.pdf}
+\includegraphics[width= 0.7\textwidth]{\spectreFigs/buffer_new.pdf}
 \caption{Experiment setup: the buffer and the protected secret}
 \label{spectre:fig:buffer}
 \end{figure}
 
-Figure~\ref{spectre:fig:buffer} illustrates the setup for the experiment. 
-In this setup, there are two regions: a restricted region and a non-restricted region. 
+Figure~\ref{spectre:fig:buffer} illustrates the setup for the experiment.
+In this setup, there are two types of regions: restricted region and non-restricted region.
 The restriction is achieved via an if-condition implemented in a sandbox function
-described below. The sandbox function returns the value of \texttt{buffer[x]} for a \texttt{x} 
-value provided by users, only if \texttt{x} is between the buffer's 
-lower and upper bounds. 
-Therefore, this sandbox function 
+described below. The sandbox function returns the value of \texttt{buffer[x]} for an \texttt{x}
+value provided by users, only if \texttt{x} is between the buffer's
+lower and upper bounds.
+Therefore, this sandbox function
 will never return anything in the restricted area to users.
+
 
 \begin{lstlisting}
 unsigned int bound_lower = 0;
@@ -385,14 +386,14 @@ uint8_t restrictedAccess(size_t x)
 }
 \end{lstlisting}
 
-
-There is a secret value in the restricted area, the address of which 
-is known to the attacker. However, the attacker cannot directly 
-access the memory holding the secret value; the only way to access the 
-secret is through the above sandbox function. From the previous task, we have learned that
-although the true-branch will never be executed if \texttt{x} is out of bound, 
+There is a secret value in the restricted area (either above the buffer
+or below it), and the secret's address is known to the attacker, but
+the attacker cannot directly access the memory holding the secret value.
+The only way to access the
+secret is through the above sandbox function. From the previous section, we have learned that
+although the true-branch will never be executed if \texttt{x} is larger than the buffer size,
 at microarchitectural level, it can be executed and some traces can be left behind
-when the execution is reverted. 
+when the execution is reverted.
 
 
 % -------------------------------------------
@@ -412,14 +413,14 @@ extend it to print out more bytes.
 
 
 \begin{lstlisting}[caption=\texttt{SpectreAttack.c}, label=spectre:list:spectreattack]
+#define CACHE_HIT_THRESHOLD (80)
+#define DELTA 1024
+
 unsigned int bound_lower = 0;
 unsigned int bound_upper = 9;
 uint8_t buffer[10] = {0,1,2,3,4,5,6,7,8,9};
 char    *secret    = "Some Secret Value";     (*@\ding{192}@*)
 uint8_t array[256*4096];
-
-#define CACHE_HIT_THRESHOLD (80)
-#define DELTA 1024
 
 // Sandbox Function
 uint8_t restrictedAccess(size_t x)
