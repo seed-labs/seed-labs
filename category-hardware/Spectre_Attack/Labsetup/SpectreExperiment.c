@@ -55,7 +55,6 @@ int main() {
 
   // Train the CPU to take the true branch inside victim()
   for (i = 0; i < 10; i++) {   
-      _mm_clflush(&size); 
       victim(i);
   }
 
