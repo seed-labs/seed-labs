@@ -91,8 +91,8 @@ int main() {
     reloadSideChannelImproved();
   }
 
-  int max = 1;
-  for (i = 1; i < 256; i++){
+  int max = 0;
+  for (i = 0; i < 256; i++){
     if(scores[max] < scores[i]) max = i;
   }
 
