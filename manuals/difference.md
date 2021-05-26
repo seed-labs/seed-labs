@@ -53,6 +53,8 @@ we summarize the significant changes made in SEED Labs 2.0.
 ## Web Security 
 
 In all the web security labs, the web servers are now hosted inside containers. 
+Because of this, these labs do not depend on the SEED VM anymore, and they can 
+be conducted on generic Ubuntu 20.04 OS.
 
  - **XSS Attack Lab:** There is no change in the attack tasks. 
    Significant changes were made to the CSP task (countermeasure).
@@ -138,10 +140,12 @@ of the lab setup.
 
 ## Hardware Security 
 
-We didn't make any change to the Meltdown and Spectre Attack labs. 
-They are still based on the Ubuntu 16.04 VM. We have not figured 
-out how to migrate them to Ubuntu 20.04 (they do not work 
-out of box).
+ - **Spectre Attack Lab:** This lab is ported to Ubuntu 20.04. We made
+   some change to the code. 
+
+ - **Meltdown Attack Lab:** Due to the countermeasure implemented inside
+   the Ubuntu 20.04 OS, the Meltdown attack no longer works, so this 
+   lab stays with the Ubuntu 16.04 VM. 
 
 ## Mobile Security 
 
