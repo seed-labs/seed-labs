@@ -19,6 +19,7 @@ services:
         tty: true
         cap_add:
                 - ALL
+        privileged: true
         sysctls:
                 - net.ipv4.tcp_syncookies=0
 

