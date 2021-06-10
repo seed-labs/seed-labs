@@ -170,7 +170,7 @@ will be using VM, and the others are all containers.
 In the setup, we have two networks, a home network and 
 an outside network. The home network 
 simulates a typical network at home. 
-The User machine and the IoT 
+The user machine and the IoT 
 services are connected to this network, which
 is protected by the firewall on the router container. 
 The firewall blocks
@@ -209,7 +209,7 @@ attack.
 % ------------------------------------------- 
 \subsection{Configure the User VM}
 
-We need to provide further configuration on the User VM.
+We need to provide further configuration on the user VM.
 
 
 \paragraph{Step 1. Reduce Firefox's DNS caching time.}
@@ -232,14 +232,20 @@ change will not take effect.
 We need to add the following entry to the \texttt{/etc/hosts} file. 
 We will use \texttt{www.seedIoT32.com} as the name for the 
 IoT server. Its IP address is \texttt{192.168.60.80}. 
+We need to use the superuser privilege to modify this file (using \texttt{sudo}): 
 
 \begin{lstlisting}
 192.168.60.80  www.seedIoT32.com
 \end{lstlisting}
 
+While we are in this file, check whether there is any entry 
+that contains \texttt{attacker32.com}. Remove them if there 
+is any. These entries may have been added when we worked on
+other SEED labs, and their existence will cause problems for this lab. 
+
 
 We can now test the IoT server. Point the browser to the following URL on the 
-User VM. If everything is set up correctly, we should be able to see 
+user VM. If everything is set up correctly, we should be able to see 
 a thermostat. We can also change the temperature setting by dragging the 
 sliding bar. Please provide a screenshot in your lab report. 
 
@@ -250,7 +256,7 @@ http://www.seedIoT32.com
 
 
 \paragraph{Step 3. Local DNS Server.}
-We need to get the User VM to use a particular local DNS server. This is achieved by
+We need to get the user VM to use a particular local DNS server. This is achieved by
 setting the local DNS server as the first \texttt{nameserver} entry in the resolver
 configuration file (\texttt{/etc/resolv.conf}). 
 One challenge is that the provided VM uses the
@@ -283,7 +289,7 @@ $ sudo resolvconf -u
 % ------------------------------------------- 
 \subsection{Testing the Lab Setup.}
 
-After configuring the User VM, use the \texttt{dig} command
+After configuring the user VM, use the \texttt{dig} command
 to get the IP address of \texttt{www.attacker32.com}
 and \texttt{ns.attacker32.com}. You should get 
 \texttt{10.9.0.180} and \texttt{10.9.0.153}, respectively. 
@@ -292,13 +298,20 @@ set up correctly.
 
 
 We can now test the attacker's website. 
-Point the browser to the following URL on the User VM, and you should 
+Point the browser to the following URL on the user VM, and you should 
 be able to see the attacker's website. 
 Please provide a screenshot in your lab report. 
 
 \begin{lstlisting}
 http://www.attacker32.com
 \end{lstlisting}
+
+\paragraph{Note.} We may have used the same hostname  
+\texttt{www.attacker32.com} in other SEED labs, so it is likely 
+that this name is already mapped to a different IP address. Therefore,
+if you do not see the expected attacker's website, you should 
+check the \texttt{/etc/hosts} file, and remove
+any entry that contains \texttt{attacker32.com}. 
 
 
 
@@ -319,7 +332,7 @@ the attack into several incremental steps.
 \subsection{Task 1. Understanding the Same-Origin Policy Protection}
 
 In this task, we will do some experiment to understand the 
-same-origin policy protection implemented on browsers. On the User VM,
+same-origin policy protection implemented on browsers. On the user VM,
 we will browse the following three URLs. It is better to show these three pages on three
 different Firefox windows (instead of on three different tabs), so they are all visible. 
 
@@ -340,7 +353,7 @@ are identical (see Figure~\ref{rebinding:fig:webpages}.b),
 except that one comes from the IoT server, and the other comes from
 the attacker's server. When we click the button on both pages, 
 a request will be sent out to the IoT server to set its temperature. 
-we are supposed to raise the thermostat's temperature 
+We are supposed to raise the thermostat's temperature 
 to \texttt{99} Celsius.  
 
 
@@ -360,7 +373,7 @@ which displays error messages if any. Hint: the reason is related to the same-or
 enforced by browsers. Please explain why this policy causes one of the pages to fail.
  
 \begin{lstlisting}
-Tools -> Web Developer -> Web Console
+Web Developer -> Web Console
 \end{lstlisting}
   
 
@@ -389,7 +402,7 @@ to communicate with the \texttt{www.attacker32.com} web server.
 
 Before the user's browser sends out requests to \texttt{www.attacker32.com},
 it first needs to know the IP address of \texttt{www.attacker32.com}. 
-A DNS request will be sent out from the User's machine. If the 
+A DNS request will be sent out from the user's machine. If the 
 IP address is not cached at the local DNS server, a DNS request will
 eventually be sent to \texttt{attacker32.com}'s  nameserver, which 
 is controlled by the attacker. 
@@ -414,7 +427,7 @@ let url_prefix = 'http://www.attacker32.com'
  
 
 After making the change, restart the attacker's web server container (see the 
-command below). Then go to the User VM, refresh the page, and click the button again. 
+command below). Then go to the user VM, refresh the page, and click the button again. 
 Do you still see the error
 message in the web console? Please explain your observation. 
 
@@ -517,7 +530,7 @@ http://www.attacker32.com
 \end{lstlisting}
  
 
-Once you have loaded this page into the User VM, you should be able to see a page with a 
+Once you have loaded this page into the user VM, you should be able to see a page with a 
 timer, which goes down from 10 to 0. Once it reaches 0, the JavaScript code 
 on this page will send the set-temperature request to 
 \url{http://www.attacker32.com}, and then reset the timer value to 10. 
