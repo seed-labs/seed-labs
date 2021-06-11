@@ -310,9 +310,7 @@ window.onload = function () {
 
   //Create and send Ajax request to add friend
   Ajax=new XMLHttpRequest();
-  Ajax.open("GET",sendurl,true);
-  Ajax.setRequestHeader("Host","www.seed-server.com");
-  Ajax.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+  Ajax.open("GET", sendurl, true);
   Ajax.send();
 } 
 </script>
@@ -385,8 +383,7 @@ window.onload = function(){
      //Create and send Ajax request to modify profile
      var Ajax=null;
      Ajax=new XMLHttpRequest();
-     Ajax.open("POST",sendurl,true);
-     Ajax.setRequestHeader("Host","www.seed-server.com");
+     Ajax.open("POST", sendurl, true);
      Ajax.setRequestHeader("Content-Type",
                            "application/x-www-form-urlencoded");
      Ajax.send(content);
