@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <time.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -74,6 +75,10 @@ void send_raw_ip_packet(struct ipheader* ip)
 
     // Step 1: Create a raw network socket.
     int sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+    if (sock < 0) {
+      fprintf(stderr, "socket() failed: %s\n", strerror(errno));
+      exit(1);
+    }
 
     // Step 2: Set socket option.
     setsockopt(sock, IPPROTO_IP, IP_HDRINCL,
