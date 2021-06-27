@@ -674,12 +674,12 @@ def process_request(ssock_for_browser):
 \end{lstlisting}
 
 
-\paragraph{The client Setup.} 
+\paragraph{The client setup.} 
 For this task, since we will use a browser, we will 
 use the hosting VM as the client/victim, instead of using 
 the client container. 
 In the real-world attack, when the victim tries to visit
-a web server (say \url{www.example.com}), we will launch attacks to redirect
+a web server (say \texttt{www.example.com}), we will launch attacks to redirect
 the victim to our proxy. This is usually done by DNS attacks, BGP attacks, or other 
 redirection attacks. We will not actually do such attacks. We simply 
 add the following entry to the \texttt{/etc/hosts} file on the host VM (\texttt{10.9.0.143} 
@@ -689,10 +689,59 @@ is the IP address of the mitm-proxy container in our setup).
 10.9.0.143   www.example.com
 \end{lstlisting}
 
+
 By doing the above, we simulate the result of redirection attacks:
-the victim's traffic to \url{www.example.com} 
+the victim's traffic to the web server \texttt{www.example.com} 
 will be redirected to the attacker's machine, where your \texttt{mHTTPSproxy} 
 is waiting for HTTP requests. 
+
+\paragraph{The proxy setup.} 
+It should be noted that changes on the VM's \texttt{/etc/hosts} file
+will affect all the containers, because containers
+uses Docker’s embedded DNS server, which forwards
+external DNS lookups to the DNS servers configured on the host (i.e., the VM),
+and the host's DNS server do use the \texttt{/etc/hosts} file. Therefore,
+due to the change above, on the proxy container, the IP address
+to \texttt{www.example.com} is also mapped to \texttt{10.9.0.143}. This is
+a problem, because the proxy needs to communicate with the 
+actual web server.
+
+To do so, we can ask the container to use an external DNS server, instead of
+using its built-in one. This can be done by 
+manually changing the \texttt{/etc/resolv.conf} file on the 
+proxy container (not the one on the VM). 
+The file has one or multiple \texttt{nameserver} entry.
+Change the first one to \texttt{8.8.8.8}, which is the public 
+DNS server provided by Google. You can also use other 
+public DNS servers. 
+
+\begin{lstlisting}
+nameserver 8.8.8.8
+\end{lstlisting}
+
+A more permanent way to solve this problem is to add the following DNS 
+entry to the \texttt{MITM-Proxy}'s configuration in 
+the \texttt{docker-compose.yml} file. This entry tells the container's 
+built-in DNS server to forward DNS requests to \texttt{8.8.8.8}. 
+
+\begin{lstlisting}
+dns:
+    - 8.8.8.8
+\end{lstlisting}
+ 
+ 
+After making the change, please go to the proxy container,
+ping \texttt{www.example.com}. Make sure
+the responses come from the real web server, not from
+\texttt{10.9.0.143}.  
+
+\begin{lstlisting}
+# ping www.example.com
+PING www.example.com (93.184.216.34) 56(84) bytes of data.
+64 bytes from 93.184.216.34 (93.184.216.34): icmp_seq=1 ...
+64 bytes from 93.184.216.34 (93.184.216.34): icmp_seq=2 ...
+\end{lstlisting}
+ 
  
 
 \paragraph{Task.} Students should implement the simple \texttt{mHTTPSproxy},
