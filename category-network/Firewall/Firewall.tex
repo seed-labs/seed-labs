@@ -662,8 +662,8 @@ Please report your observation and explain the purpose for
 each rule. 
 
 \begin{lstlisting}
-iptables -A INPUT  -p icmp --icmp-type echo-reply   -j ACCEPT
-iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A INPUT  -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-reply   -j ACCEPT
 iptables -P OUTPUT DROP     (*@\pointleft{Set default rule for OUTPUT}@*)
 iptables -P INPUT  DROP     (*@\pointleft{Set default rule for INPUT}@*)
 \end{lstlisting}
