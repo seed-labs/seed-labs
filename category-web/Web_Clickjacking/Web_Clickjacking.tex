@@ -80,9 +80,9 @@ make the unintended purchase without the user's knowledge or consent.
 
 In this lab, we will use two websites.  The first is the vulnerable
 homepage of the fictional business ``Alice's Cupcakes'', accessible at
-\url{www.cjlab.com}.  The second is the attacker's malicious web site
+\url{http://www.cjlab.com}.  The second is the attacker's malicious web site
 that is used for hijacking clicks intended for the Alice's Cupcakes
-page, accessible at \url{www.cjlab-attacker.com}. We
+page, accessible at \url{http://www.cjlab-attacker.com}. We
 use containers to set up the web servers.
  
 % ------------------------------------------- SUBSECTION
@@ -187,8 +187,8 @@ placeholders and do not contain live links.
 \paragraph{Test: attacker.}
 Next, navigate to the page \url{http://www.cjlab-attacker.com}.  You
 should see a single button which, when clicked, takes you to a page that
-tells you you've been hacked, but in reality could perform a variety of
-malicious actions.  
+tells you you've been hacked. In a real attack, this button could 
+perform a variety of malicious actions.  
 
 The goal of the attacker is to overlay this button onto a view of the
 defender's webpage displayed on the attacker's site, so that a victim
@@ -224,15 +224,16 @@ site is loaded into the iframe.
 \begin{itemize}
     \item Add an iframe HTML element in \texttt{attacker.html} that 
     pulls from \texttt{http://www.cjlab.com}. 
-    \item Modify the CSS in \texttt{attacker.css} using the height,
-    width, and position attributes to make the iframe cover the whole 
-    page and make the button overlay the iframe.
+    \item Modify the CSS in \texttt{attacker.css} using the 
+    \texttt{height}, \texttt{width}, and \texttt{position} attributes 
+    to make the iframe cover the whole page and the button overlay the
+    iframe.
     
     \item Hints:
     \begin{itemize}
        \item Explicitly set the iframe to have no border.
        \item Investigate the `absolute' and `relative' settings of the 
-       position attribute to determine which should be used.
+       \texttt{position} attribute to determine which should be used.
     \end{itemize} 
 
     \item Test your changes by navigating to the attacker's website.
@@ -249,49 +250,51 @@ site is loaded into the iframe.
 
 %%%%%%%%%% Task 2 %%%%%%%%%% 
 
-\subsection{Task 2: Let’s Get Clickjacking!}
+\subsection{Task 2: Let's Get Clickjacking!}
 
 \paragraph{Basic clickjacking attack.}
-Add to the given CSS code for a ``button'' object in
+Add code to the CSS specification of a ``button'' object given in
 \texttt{attacker.css} to make the malicious button in
-\texttt{attacker.html} invisible. Position the button such that it
+\texttt{attacker.html} invisible. Position the button so that it
 covers the ``Explore Menu'' button within the iframe added in the
-previous Task. There are a variety of strategies for doing this; we
-recommend investigating these CSS attributes: \texttt{margin-left},
+previous Task. There are a variety of ways to accomplish this Task; we
+recommend using the CSS attributes \texttt{margin-left}, 
 \texttt{margin-top}, \texttt{color}, and \texttt{background-color}. When
-this task is complete, you will have a functioning clickjacking attack. 
+this Task is complete, you will have a functioning clickjacking attack. 
 
 \paragraph{Questions:}
 \begin{enumerate}
 \setcounter{enumi}{1}
-    \item How does the attacker's site’s appearance compare to that of
+    \item How does the appearance of the attacker's site compare to that of
 	  the defender's site?
 
-    \item What happens when you try to click on the ``Explore Menu'' button?
+    \item What happens when you click on the ``Explore Menu'' button on
+    the attacker's site?
 
-    \item Describe a scenario where clickjacking of the type just
-    demonstrated could occur and lead to undesirable consequences for 
-    the user.
+    \item Describe an attack scenario in which the style of 
+    clickjacking implemented for this Task leads to undesirable 
+    consequences for a victim user.
 \end{enumerate}
 
 
 %%%%%%%%%% Task 3 %%%%%%%%%% 
 
 \subsection{Task 3: Bust That Frame!}
-``Frame busting'' is the practice of writing scripts to prevent a web
-page from being displayed within a frame.  One way to do this is by
-including script code in a website that prevents the site from being
-framed -- that is, prevents another site from opening it in an iframe.
-The technique we will implement today checks that the site to be
-protected is the topmost site on any page where it is being displayed,
-thus preventing buttons on an attacker's page from being overlaid on top
-of it. 
+``Frame busting'' is the practice of preventing a web page from being
+displayed within a frame, thus defending against the type of attack
+implemented in the previous Task.  One way to bust frames is to include
+script code in the webpage source that prevents the site from being
+framed -- that is, it prevents other sites from opening the webpage in
+an iframe.  In this Task we will add script code to the defender's
+webpage that ensures it is the topmost window on any page where it is
+being displayed, thus preventing buttons on an attacker's page from
+being overlaid on top of it. 
 
-\paragraph{Write the frame busting script.} 
+\paragraph{Write the frame-busting script.} 
 
 Open the file \texttt{defender/index.html}, which contains code for the
-Alice's Cupcakes homepage, which we would like to protect from
-clickjacking. Here, you will fill in the Javascript method called
+Alice's Cupcakes homepage. We would like to protect the homepage from
+clickjacking. Your task is to fill in the Javascript method called
 $makeThisFrameOnTop()$. Your code should compare \texttt{window.top} and
 \texttt{window.self} to find out if the top window and the current
 site's window are the same object (as they should be). If not, use the
@@ -308,10 +311,10 @@ page for the changes to take effect.
 \paragraph{Questions:}
 \begin{enumerate}
 \setcounter{enumi}{4}
-    \item What happens when you try navigating to the attacker's site
+    \item What happens when you navigate to the attacker's site
           now?
 
-    \item What happens when you try clicking the button?
+    \item What happens when you click the button?
 \end{enumerate}
 
 
@@ -320,60 +323,72 @@ page for the changes to take effect.
 \subsection{Task 4: Attacker Countermeasure (Bust the Buster)}
 
 \paragraph{Disable the frame-busting script.}
-Now let's explore how simple it is for the attacker to create a
+Now let's explore how an attacker can create a
 workaround for front-end clickjacking defenses like frame busting. There
-are multiple ways of accomplishing this, such as with a double frame
-attack, but one of the simplest in the current scenario is to add the
-``sandbox'' attribute to the malicious iframe. Read more about the
-sandbox attribute on
+are multiple workarounds, 
+%such as with a double frame attack, 
+but one of the simplest in the current scenario is to add the
+\texttt{sandbox} attribute to the malicious iframe. Read more about the
+\texttt{sandbox} attribute on
 \underline{\href{https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe}{this
-page}} about iframes, then add the ``sandbox'' attribute to the iframe
+page}} about iframes, then add the \texttt{sandbox} attribute to the iframe
 in \texttt{attacker.html} and answer the following questions.  
 
 
 \paragraph{Questions:}
 \begin{enumerate}
 \setcounter{enumi}{6}
-    \item What does the sandbox attribute do? 
+    \item What does the \texttt{sandbox} attribute do? 
           Why does this prevent the frame buster from working?
 
     \item What happens when you navigate to the attacker's site after
-          updating the iframe to use the `sandbox' attribute?
+          updating the iframe to use the \texttt{sandbox} attribute?
 
-    \item What happens when you try clicking the button?
+    \item What happens when you click the button on the attacker's site?
 \end{enumerate}
 
 
 %%%%%%%%%% Task 5 %%%%%%%%%% 
 
 \subsection{Task 5: The Ultimate Bust}
-As we saw in Task 4, front-end defenses are not sufficient to prevent
-clickjacking, because front-end defenses such as frame busting can be
-directly circumvented by other front-end settings on the attacker's
-webpage. To prevent clickjacking attacks more comprehensively, we need
-to set up back-end (i.e.\ server-side) defenses.
+As we saw in the previous Task, front-end defenses such as frame busting
+can be directly circumvented by other front-end settings on the
+attacker's webpage and are therefore not sufficient to prevent
+clickjacking. To prevent clickjacking attacks more comprehensively, we
+need to set up back-end (i.e.\ server-side) defenses.  Modern websites
+can cooperate with common browsers to provide such defenses.
 
-Server-side defenses can prevent front-end attacks such as the ones
-presented in this lab so far, which rely on an attacker's website being
-able to fetch the benign website's content before the benign site has a
-chance to execute any front-end defenses. 
+The front-end attacks presented in previous Tasks all rely on the
+ability of an attacker's webpage code (running in a victim user's
+browser) to fetch a benign website's content before the benign webpage
+code has a chance to execute any front-end defenses. 
 
-Specifically, by providing a special HTTP header in response to a
-request for the content of a legitimate website, the site can instruct
+To block this capability, special HTTP headers have
+been created that specify to browsers the 
+circumstances under which a website's content should or should not be loaded.
+By providing one of these HTTP headers with its response to a
+request for content, the website can instruct
 browsers to only display the content according to specific matching
 rules designed to exclude clickjacking attack scenarios.
+These headers are not part of the official HTTP specification,
+but are processed by many common browsers.
 
-One header used for this purpose is called ``X-Frame-Options,'' and its
-value specifies the conditions under which the requested content will be
-displayed.  This header is not part of the official HTTP specification
-but is processed by many common browsers.
+One such header is called ``X-Frame-Options'',
+%and its
 
-Another more standardized header that can provide protection against
-clickjacking is the ``Content-Security-Policy'' header, which can
-specify a diverse set of directives as part of a site's Content Security
-Policy (CSP) intended to stop many types of attacks.  The CSP header
-directive relevant for stopping clickjacking is ``frame-ancestors'' ,
-which specifies valid parents that may embed a page in a frame.
+%value specifies the conditions under which the requested content will be
+
+%displayed.  This header is not part of the official HTTP specification
+
+%but is processed by many common browsers.
+
+and a newer, more popular one is called ``Content-Security-Policy''. 
+This header can
+include a diverse set of key-value directives to implement a site's Content Security
+Policy (CSP) with the intention of stopping many common attacks while
+perserving the desired content-sharing behavior of the site.  The CSP header
+directive relevant for preventing clickjacking is ``frame-ancestors'' ,
+which specifies the valid parents that may embed a page in a frame.
 
 You can read more about the XFO attribute
 \underline{\href{https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options}{here}},
@@ -383,8 +398,8 @@ and more about CSPs
 \paragraph{Modify the defender's response headers.} Open the Apache
 configuration file for the defender's website
 (\texttt{apache\_defender.conf} in the defender's image folder).
-Uncommont the lines that specify the HTTP response headers served with
-the page and substitute appropriate text in order to prevent the
+Uncomment the lines that specify the HTTP response headers served with
+the page, and substitute appropriate text in order to prevent the
 clickjacking attack.  Specifically, set the X-Frame-Options (XFO) header
 to the value \texttt{"DENY"} and the Content-Security-Policy (CSP)
 header to contain the directive \texttt{"frame-ancestors `none' "}.
@@ -404,14 +419,16 @@ the change to take effect.
     is it set to ``frame-ancestors `none' '' to prevent the attack?
 
     \item What happens when you navigate to the attacker's site
-    after modifying the response headers? What do you see?
+    after modifying each response header (one at a time)? What do you
+    see when you click the button?
 \end{enumerate}
 
 \paragraph{Learn more.}
-There are a number of other ways to perform clickjacking besides the one
+There are other ways to perform clickjacking besides the one
 explored in this lab, and many possible malicious consequences beyond
-the ones suggested here. To learn more about clickjacking, visit
-\href{https://owasp.org/www-community/attacks/Clickjacking}{https://owasp.org/www-community/attacks/Clickjacking}.
+the ones suggested here. To learn more about clickjacking, visit the
+Open Web Application Security Project (OWASP) page on Clickjacking 
+\href{https://owasp.org/www-community/attacks/Clickjacking}{here}.
 
 % *******************************************
 % Submission
