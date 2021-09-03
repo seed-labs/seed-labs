@@ -48,12 +48,12 @@ buttons, the browser registers a click on the invisible button instead,
 triggering the malicious action.
 
 \paragraph{Example scenario.} Suppose an attacker acquires the domain
-``starbux.com'' and creates a website with that URL. The site first
-loads the legitimate target website ``starbucks.com'' in an iframe
+\texttt{starbux.com} and creates a website with that URL. The site first
+loads the legitimate target website \texttt{starbucks.com} in an iframe
 element spanning the entire webpage, so that the
-malicious``starbux.com'' website looks identical to the legitimate
-``starbucks.com'' website.  The attacker's site then places an invisible
-button on top of the `Menu' button on the displayed ``starbucks'' page;
+malicious \texttt{starbux.com} website looks identical to the legitimate
+\texttt{starbucks.com} website.  The attacker's site then places an invisible
+button on top of the `Menu' button on the displayed \texttt{starbucks} page;
 the button triggers a 1-click purchase of the attacker's product on
 Amazon.  If the user is logged on to Amazon when they try to click the
 legitimate button, the inadvertent click on the invisible button will
@@ -62,8 +62,8 @@ make the unintended purchase without the user's knowledge or consent.
 \paragraph{Topic coverage.} This lab covers the following topics:
 \begin{itemize}[noitemsep]
  \item Clickjacking attack
- \item Countermeasures: Frame busting and HTTP headers
- \item iframes and sandboxes
+ \item Countermeasures: frame busting and HTTP headers
+ \item Iframes and sandboxes
  \item JavaScript
 \end{itemize}
 
