@@ -1,5 +1,5 @@
 
-LAB    = Web_Clickjacking
+LAB    = Web_Clickjacking_Cupcakes
 LABPDF = $(LAB).pdf
 
 
