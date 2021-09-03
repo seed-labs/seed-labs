@@ -1,4 +1,4 @@
-# Clickjacking lab 
+# Clickjacking lab (using Alice's Cupcakes Website)
 
 ## Setup
 In this lab there are two servers: the "defender," which serves a
