@@ -81,7 +81,7 @@ soon as they are finished, the container will exit.
 we do not want that. To keep the container alive, we
 need to run a blocking command at the end. For some containers,
 this is achieved via running a server program, but for most
-hosts, we simply fun `"tail -f /dev/null"` (included in
+hosts, we simply run `"tail -f /dev/null"` (included in
 `start.sh`). Since there is no content `/dev/null`,
 the `tail` command will block,
 preventing the container from exiting.
