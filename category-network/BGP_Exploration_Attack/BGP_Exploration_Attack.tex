@@ -1,0 +1,222 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
+
+\lhead{\bfseries SEED Labs -- BGP Exploration and Attack}
+\newcommand{\bgpFigs}{./Figs}
+
+\begin{document}
+
+
+\begin{center}
+{\LARGE BGP Exploration and Attack Lab}
+
+  \vspace{0.1in}
+  {\LARGE (Work in Progress)}
+\end{center}
+
+\seedlabcopyright{2021}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Overview}
+
+Border Gateway Protocol (BGP) is the standard exterior gateway protocol
+designed to exchange routing and reachability information among autonomous
+systems (AS) on the Internet. It is the ``glue'' of the Internet,
+and is an essential piece of the Internet infrastructure. It is 
+also a primary attack target, because if attackers can 
+compromise BGP, they can disconnect the Internet and redirect traffics. 
+
+Because of the complexity of BGP, it is hard to do everything in a single lab. 
+Therefore, we have developed a series of labs related to BGP. This lab
+is the first in the series, and it is the basis for all the other BGP labs.  
+The goal of this lab is to help students understand how
+BGP ``glues'' the Internet together, and how the Internet is actually
+connected. In this lab, we guide students to build a small-scale Internet.
+We call this Internet the Internet Simulator (or simply
+Simulator in short). This simulator will be the basis for 
+all other BGP labs, as well as for some non-BGP labs that 
+depends on the Internet. 
+This lab covers the following topics:
+\begin{itemize}[noitemsep]
+\item How the BGP protocol works
+\item BGP configuration
+\item Routing 
+\item Internet Exchange Point (IXP)
+\item BGP attack
+\end{itemize}
+
+
+\paragraph{Videos.}
+Detailed coverage of the BGP protocol can be found in 
+Section 10 of the SEED Lecture at Udemy, \seedisvideo 
+The lecture was recorded before this lab was developed; 
+it focuses mostly on the theory part, i.e., explaining how the BGP protocol works. 
+This lab provides the practical part.  
+
+
+\paragraph{Lab environment.} 
+\seedenvironmentB
+\nodependency
+
+
+\paragraph{Acknowledgment.} 
+This lab was developed with the help of Honghao Zeng, a graduate student
+in the Department of Electrical Engineering and Computer Science at Syracuse University.
+The SEED project is funded by the US National Science Foundation. 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{The Internet Emulator} 
+
+This lab will be performed inside the SEED Internet Emulator. We will
+provide a pre-built emulator in two different forms: (1) Python code,
+and (2) container files. The container files are generated from
+the Python code. However, students need to install the SEED Emulator source 
+code from the GitHub to run the Python code. The container files
+can be directly used without the Emulator source code. 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{EBGP} 
+
+Pick a BGP router from the emulator. 
+Design the following activities.
+
+\begin{itemize}
+  \item Start with a stub AS (with two upstream ASes)
+  \item Study the BGP configuration file, and understand its entries
+  \item Explain the relationships among all the tables, pipe, etc.
+  \item Inspect the BGP route table 
+  \item Disable/Enable BGP sessions
+  \item Simple filter  
+  \item Path selection (use the filter to change the other attributes,
+    see how it affects the path selection).
+\end{itemize}
+
+
+\paragraph{Advanced features.} 
+These are advanced features. Not sure whether they should be included or not.
+We temporarily list them here.
+
+\begin{itemize}
+  \item Community: label for the route
+\end{itemize}
+ 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Interior BGP (IBGP)} 
+
+
+\begin{itemize}
+  \item Explain the IBGP setup in the configuration 
+  \item Inspect the route created by IBGP
+  \item Disable OSPF and see the result
+\end{itemize}
+ 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{IP Anycast} 
+
+Provide the AS (IP address T is an IP anycast address). 
+Ask students to conduct the following experiment:
+
+\begin{itemize}
+  \item Inspect the BGP route table to identify the route.
+  \item From A and B, ping T. They get to two different T.
+  \item Break a BGP session, so they get to the same T.
+  \item Use UDP instead of ping.
+\end{itemize}
+ 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{BGP Attacks} 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{BGP Session Reset Attack} 
+
+
+
+Countermeasure: TTL security switch (RFC 5082).
+Design an experiment to demonstrate its effect.
+
+\begin{lstlisting}
+protocol bgp c_as12 {
+    ipv4 {
+        table t_bgp;
+        import filter {
+	   ...
+        };
+        export all;
+        next hop self;
+    };
+    local 10.104.0.3 as 3;
+    neighbor 10.104.0.12 as 12;
+    ttl security;
+}
+\end{lstlisting}
+ 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{IP Prefix Hijacking} 
+
+
+
+\begin{lstlisting}
+protocol static hijacks {
+    ipv4 {
+        table t_bgp;
+    };
+    route 10.153.0.0/25 blackhole   { bgp_large_community.add(LOCAL_COMM); };
+    route 10.153.0.128/25 blackhole { bgp_large_community.add(LOCAL_COMM); };
+}
+\end{lstlisting}
+ 
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Submission}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
+
+
+
