@@ -92,11 +92,286 @@ the Python code. However, students need to install the SEED Emulator source
 code from the GitHub to run the Python code. The container files
 can be directly used without the Emulator source code. 
 
+Instructors who would like to customize the emulator can modify the Python
+code, generate their own container files, and then provide these
+container files to students, replacing the ones included in the 
+setup file. 
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Understanding the Configuration in BIRD} 
+
+The routing software used in this lab is called BIRD, which is 
+an acronym standing for ``BIRD Internet Routing Daemon''~\cite{bird}.
+It is open source under the GNU General Public License. It 
+supports a number of standard routing protocols, including 
+the Border Gateway Protocol (BGP),
+the Routing Information Protocol (RIP),
+and the Open Shortest Path First protocol (OSPF). We will
+mainly use BGP and OSPF in this lab. 
+
+
+BIRD takes the configuration
+file \texttt{bird.conf} from the \texttt{/etc/bird/} folder.
+In this lab, students need to understand the entries in the 
+configuration file. Students also need to make changes
+to the file for some tasks. In this section, we provide 
+a tutorial to help students understand the 
+configuration file. It should be noted that the actual configuration
+for BIRD is quite complicated, and most configuration entries 
+are protocol specific. Full details of the configuration 
+can be found in the BIRD manual~\cite{birdmanual}.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Routing Tables} 
+
+
+BIRD has has several routing tables in memory. It uses
+the term ``protocol'' to specify how 
+to connect a routing table with another entity. Exactly
+what entity is connected to depends on the type of the protocol.
+
+If the protocol is a routing protocol, 
+such as BGP, OSPF, or RIP, the entity will be an external router.
+Namely, the routes received from the external router
+are imported to the routing table, while 
+the routes stored in the routing table are exported 
+to the external router.
+
+Some protocols used in BIRD are not not real protocols; 
+BIRD simply uses the keyword \texttt{protocol} to specify where
+a BIRD routing table gets its routes from, and where the routes
+in the table need to be sent to.
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Several Special Protocols} 
+
+BIRD has a few special types of ``protocol'', which are not
+real protocols, however, they do generate route information,
+except that the generation is not through a protocol. 
+The followings
+are the three important ``fake'' protocols:
+
+\begin{lstlisting}[caption={The \texttt{bird.conf} file for \texttt{AS150}}]
+protocol device {
+}
+
+protocol direct {
+    interface "eth0";
+}
+
+protocol kernel {
+    import none;
+    export all;
+}
+\end{lstlisting}
+
+To define a routing protocol in BIRD, we use the \texttt{protocol} keyword.
+BIRD supports many different routing protocols, like BGP and OSPF. A
+\texttt{protocol} can import or export routes to the BIRD's routing table.
+For this lab, we will use either \texttt{all} or \texttt{none}. In future
+BGP labs, we will introduce filters here, so you can set up
+rules to decide what routes can be imported or exported.
+
+\begin{itemize}
+
+\item The \texttt{device protocol} is not a real routing protocol. It doesn't
+generate any route, nor does it accept any route. It is only used to get
+information about the network interfaces from the kernel. Without the
+\texttt{device protocol}, BIRD will know nothing about the network
+interfaces; it will not even be able to run BGP, as it does not know how
+to reach BGP peer's IP address. Therefore, this block is mandatory.
+
+\item The \texttt{direct protocol} is for generating routes for the directly
+connected networks from a list of interfaces. In the \texttt{direct protocol}
+block, the \textit{interface} keyword is used to generate routes from an
+interface. In this case, \texttt{AS150}'s bgp router uses \texttt{eth0} to
+connect to \texttt{AS150}'s internal network (\texttt{10.150.0.0/24}).
+Therefore, this \texttt{direct protocol} block will generate a routing
+entry for \texttt{10.150.0.0/24}. BGP will announce this network
+prefix to the peers.
+
+\item The \texttt{kernel} protocol is not a real routing protocol like BGP or
+OSPF. Instead of communicating with other routers in the network, it connects
+BIRD's routing table to kernel's routing table. It is the kernel's routing table
+that is used in the actual routing, not BIRD's routing table.
+This protocol is used to set the kernel routing table using the routes
+received from BGP peers. Here
+\texttt{import none} means BIRD's routing table will not import anything from
+the kernel's routing table; \texttt{export all} means BIRD's routing table
+will export all the routes to the kernel's routing table. This is how BGP
+routers set the routing table using the data collected from the BGP
+protocol.
+\end{itemize}
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The Static Protocol} 
+
+A special type of protocol is called \texttt{static}, which is 
+useful in our BGP attack task. Just like the other special
+types of protocols, this protocol is not a real protocol either.
+It does not import routes from a peer, instead, it provides 
+predefined routes that need to be imported into 
+the routing table. Each route can have a route-specific
+filter. This is especially useful for configuring route attributes. 
+
+When specifying a route, we can either specify a router, or 
+specifying a special target name, indicating the actions 
+that need to be performed on the matching packets. 
+A target name is \texttt{blackhole},
+indicating that packet to the specified destination should be 
+dropped. See the following example.
+
+\begin{lstlisting}
+protocol static {
+    ipv4 {
+        table t_bgp;  # Connect to a non-default routing table
+    };
+    route 10.152.0.0/24 via 10.3.0.100 { ... filter ... };
+    route 10.153.0.0/24 blackhole { ... filter ... };
+}
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The BGP Protocol} 
+
+The most important protocol relevant to this lab is the BGP protocol.
+This is a real protocol. For each BGP peering, an instance of 
+such a protocol needs to be specified in the BIRD configuration 
+file. The protocol connects a routing table with another 
+BGP router, i.e., it imports/exports rules from/to 
+the peer specified in the protocol.
+See the following example. 
+
+\begin{lstlisting}
+protocol bgp xyz {
+    local    10.104.0.3   as 3;
+    neighbor 10.104.0.104 as 104;     (*@\pointleft{BGP peer}@*)
+    ipv4 {
+        table t_bgp;
+        import all;        (*@\pointleft{all the routes from peer will be imported}@*)
+        export filter {    (*@\pointleft{export selected routes to peer}@*)
+           if proto = "static" then reject;
+           accept;
+        };
+    };
+}
+\end{lstlisting}
+
+The \texttt{local} option in the BGP protocol sets the local IP address and ASN of the BGP session.
+The syntax is \texttt{"local [ip\_address] as <asn>"}. The \texttt{[ip\_address]} part is optional,
+but it makes the configuration looks clearer and can prevent selecting the wrong IP address for the
+BGP session when there are multiple IP addresses on the router. This
+IP address should be the one on the IX's network.
+
+The \texttt{neighbor} option in the BGP protocol sets the neighbor IP address and ASN of the BGP
+session. This is the actual peering part. In this example, we set up a BGP session
+between \texttt{AS3} and \texttt{AS104}, so they can exchange route information using the BGP protocol.
+Similarly, the IP address here should be the one on the IX's network.
+
+
+\paragraph{Channel and table.}
+Each protocol is connected to a routing table through a channel. 
+BGP supports both IPv4 and IPv6 channels. 
+Each channel has two filters, export and import filters, 
+which can accept, reject and modify the routes. 
+The export filter applies to the routes going from the routing table to the protocol, 
+while the import filter applies to the routes coming into the routing table. 
+
+In the example above, the routing table in the IPv4 channel is 
+specified (\texttt{t\_bgp}). If no table is specified, the 
+default table used is \texttt{master4} (for IPv6, it is \texttt{master6}). The 
+\texttt{master4} table is BIRD's master routing table for IPv4 routes. It should 
+be noted that this table is not the operating system's routing table, i.e.,
+it is not the one used for the actual routing. The one used for the actual
+routing is called the kernel routing table. The \texttt{kernel} protocol
+described earlier specifies how the routes in  BIRD's master routing
+table are exported to the kernel routing table. 
+
+\paragraph{Filter.}
+When importing/exporting routes to/from the routing table, 
+filter rules can be applied. BIRD contains a simple programming language,
+so filter rules are programs.
+When a route is being passed between protocols and routing tables, 
+the corresponding filter will be are interpreted by BIRD.
+The filter will get the route, so it can inspect the route,
+the attributes, and make changes to the route if needed. 
+At the end, the filter decides
+whether to pass the route through (using \texttt{accept}) 
+or reject it (using \texttt{reject}). 
+Here are some filter examples:
+
+
+\begin{lstlisting}
+
+\end{lstlisting}
+ 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The Pipe Protocol} 
+
+For IPv4, only the route stored in BIRD's master table \texttt{master4} will be eventually
+exported to the kernel's routing table (via the \texttt{kernel} protocol). 
+If we specify a customized table
+inside a protocol, the routes will not be stored in \texttt{master4},
+and will therefore not affect the routing. We need to tell BIRD
+to export the routes in those tables to the master table. This is done 
+through another special type of protocol called \texttt{pipe}. 
+
+The Pipe protocol links two routing tables, a primary table (specified using
+the \texttt{table} keyword) and a secondary table (specified using 
+the \texttt{peer} keyword). Filters can be specified for the import
+and export directions. In the following example, all the entries
+in the \texttt{t\_bgp} table are exported to the \texttt{master4} table,
+while none of the routes in the \texttt{master4} are imported. 
+
+\begin{lstlisting}
+protocol pipe {
+    table t_bgp;
+    peer table master4;
+    import none;
+    export all;
+}
+\end{lstlisting}
+
+In the following example, all the route entries from the \texttt{t\_direct}
+table are ported to the \texttt{t\_bgp} table, and the local preference
+attribute of the routes are set to \texttt{40}.
+
+\begin{lstlisting}
+protocol pipe {
+    table t_direct;
+    peer table t_bgp;
+    import none;
+    export filter { bgp_local_pref = 40; accept; };
+}
+\end{lstlisting}
+ 
 
 % *******************************************
 % SECTION
 % *******************************************
 \section{EBGP} 
+
 
 Pick a BGP router from the emulator. 
 Design the following activities.
@@ -112,7 +387,6 @@ Design the following activities.
     see how it affects the path selection).
 \end{itemize}
 
-
 \paragraph{Advanced features.} 
 These are advanced features. Not sure whether they should be included or not.
 We temporarily list them here.
@@ -120,7 +394,8 @@ We temporarily list them here.
 \begin{itemize}
   \item Community: label for the route
 \end{itemize}
- 
+
+
 
 
 % *******************************************
