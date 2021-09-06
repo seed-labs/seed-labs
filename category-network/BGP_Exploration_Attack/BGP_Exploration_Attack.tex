@@ -27,6 +27,9 @@
 
 \seedlabcopyright{2021}
 
+\tableofcontents
+
+
 
 
 % *******************************************
@@ -370,8 +373,13 @@ protocol pipe {
 % *******************************************
 % SECTION
 % *******************************************
-\section{EBGP} 
+\section{Task 1: Stub Autonomous System} 
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1.a: Exploration} 
 
 Pick a BGP router from the emulator. 
 Design the following activities.
@@ -379,13 +387,15 @@ Design the following activities.
 \begin{itemize}
   \item Start with a stub AS (with two upstream ASes)
   \item Study the BGP configuration file, and understand its entries
-  \item Explain the relationships among all the tables, pipe, etc.
   \item Inspect the BGP route table 
   \item Disable/Enable BGP sessions
   \item Simple filter  
   \item Path selection (use the filter to change the other attributes,
-    see how it affects the path selection).
+    see how it affects the path selection). Find two different routes for 
+    a destination, changing the path attributes to affect how a route 
+    is selected. 
 \end{itemize}
+
 
 \paragraph{Advanced features.} 
 These are advanced features. Not sure whether they should be included or not.
@@ -396,26 +406,387 @@ We temporarily list them here.
 \end{itemize}
 
 
+\begin{lstlisting}
+# birdc configure 
+\end{lstlisting}
+ 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1.b: Configuring AS-180} 
+
+This AS is already included in the emulator. It connects to the
+IX105 Internet exchange (Houston), but it does not peer with anybody. 
+In this task, students need to do the following:
+
+
+\begin{itemize}[noitemsep]
+  \item Peer AS-180 with AS-171, so they can directly reach each other
+  \item Peer with AS-2 and AS-3 transit autonomous systems, so they can
+    reach other destination via these transits
+\end{itemize}
+
+
+\paragraph{Submission.}
+In your lab report, please include the content you add to the 
+BIRD configuration file, and provide proper explanation.
+Please also include screenshots (such as traceroute) to demonstrate 
+that your task is successful. 
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{Interior BGP (IBGP)} 
+\section{Task 2: Transit Autonomous System} 
+
+If two ASes want to connect, they can peer with each other
+at an Internet exchange point. The question is how two ASes in two different locations
+get connected to each other. It is hard for them
+to find a common location to peer. To solve this problem,
+a special type of AS is needed.
+
+This type of AS have BGP routers in many Internet
+Exchange Points, where they peer with many other ASes. Once packets get into
+its networks, they will be pulled from one IX to another IX (typically via
+some internal routers), and eventually
+hand it over to another AS. This type of AS provides the transit
+service for other ASes. That is how the hosts in one AS can reach the hosts in
+another AS, even though these ASes are not peers with each other.
+This special of AS is called \textit{Transit AS}.
+In this task, we will first understand how a transit AS works and
+then we will configure a transit AS in our Internet emulator.  
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Reading: Understanding IBGP} 
+
+Just like the peering of BGP routers from different
+autonomous systems, for the BGP routers in the same
+autonomous systems to exchange information, they
+also need to peer with each other and run the BGP
+protocol to exchange information.
+The BGP protocol conducted by the BGP routers
+inside the same AS is called IBGP (Internal BGP).
+
+When we establish a BGP session between two routers with the same ASN, it will be considered
+as an IBGP session, and when the session is between two routers with different ASNs, the session
+is considered as an EBGP session (External BGP).
+Therefore, the way to define
+an IBGP session is the same as defining an EBGP session.
+However IBGP sessions have several different behaviors 
+than the EBGP sessions.
 
 
 \begin{itemize}
-  \item Explain the IBGP setup in the configuration 
-  \item Inspect the route created by IBGP
-  \item Disable OSPF and see the result
+\item In IBGP sessions, when sending routes to peers,
+routers will not prepend their own ASN in the \texttt{AS\_PATH},
+and the \texttt{nexthop} attribute will not be altered either.
+
+\item RFC 4271 prohibits the advertisement of the routes received from 
+an IBGP peer to another IBGP peer; otherwise, there will be a loop.
+This is because IBGP does not add their own information
+to the AS path, BGP routers will not be able to know whether
+their peers already know the AS path or not. If forwarding
+is enabled, a BGP router will keep forwarding information
+to their peers, creating loops. 
+Because there is no forwarding, 
+RFC 4271 states that all the BGP routers within a single AS must be 
+fully meshed, i.e., all BGP routers peer with one another internally.
 \end{itemize}
+
+
+Let's use AS-3 to understand how the IBGP peering works inside 
+this transit AS. 
+This AS has four BGP routers, and we pick the one 
+connected to the IX-103 (Miami) Internet exchange.
+The following is the IBGP configuration on this router:
+
+\begin{lstlisting}
+protocol bgp ibgp1 {
+    ipv4 {
+        table t_bgp;
+        import all;
+        export all;
+        igp table t_ospf;
+    };
+    local    10.0.0.7 as 3;
+    neighbor 10.0.0.6 as 3;
+}
+protocol bgp ibgp2 {
+    ipv4 {
+        ... same is ibgp1 ...
+    };
+    local    10.0.0.7 as 3;
+    neighbor 10.0.0.5 as 3;
+}
+protocol bgp ibgp3 {
+    ipv4 {
+        ... same is ibgp1 ...
+    };
+    local    10.0.0.7 as 3;
+    neighbor 10.0.0.8 as 3;
+}
+\end{lstlisting}
+
+
+\paragraph{Loopback interface.}
+A BGP router has multiple IP address (one for each network interface), so which IP address
+should be used in the IBGP peering? Any of the IP addresses will work, but 
+if we use the IP address of a particular network interface, if that interface 
+goes down or get disabled, the IP address become unreachable, and the 
+peering using the IP address will fail. 
+
+To solve this problem, it is suggested that a loopback interface is used 
+in the IBGP peering. The loopback interface is virtual and always stays up. 
+Therefore, the IGBP session can still remain intact even if some other 
+interfaces fail. In the event of link failure, the interior routing 
+protocol will automatically find an alternate path to the peer's loopback
+IP address. 
+
+In the configuration, each of the \texttt{10.0.0.x/32} addresses is 
+the IP address of the loopback interface (called \texttt{dummy} in our setup). 
+These addresses are announced via the OSPF routing protocol, so all the 
+routers inside the same AS know how to reach these addresses. 
+
+
+
+\paragraph{The \texttt{NEXT\_HOP} attribute.}
+When a BGP router sends a route to an internal BGP peer that is multiple hops
+away, the \texttt{NEXT\_HOP} route attribute makes no sense to the peer, 
+because this next hop (assuming it is \texttt{X}) is the addresses of a 
+boundary routers directly connected to the sender, not the receiver. 
+The peer must figure out what the immediate next hop is in order to reach \texttt{X}, 
+and the distance to \texttt{X} (for path selection purpose). 
+
+To achieve that, after receiving a route from an internal BGP peer,
+the BGP router will do a route lookup using a routing table.
+This routing table is an IGP routing table containing the AS-internal routes. 
+The \texttt{igp table} entry specifies this IGP routing table. 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.a: IBGP Exploration} 
+
+
+For the task, we first need to find some traffics that 
+go through AS-3. We will ping \texttt{10.164.0.71} from a host in AS-162. Using the 
+map client program, we can see that the packets go through
+the AS-3 transit AS. If this is not consistent with your observation,
+do find some other traffics that go through AS-3. 
+
+We will now disable the IBGP sessions either the map client or 
+from the command line. See the following example.
+
+\begin{lstlisting}
+bird> show protocols
+Name       Proto      Table      State  Since         Info
+...
+ibgp1      BGP        ---        up     20:19:03.800  Established
+ibgp2      BGP        ---        up     20:19:11.921  Established
+ibgp3      BGP        ---        up     20:20:50.238  Established
+
+bird> disable ibgp3 
+bird> show protocols ibgp3
+Name       Proto      Table      State  Since         Info
+ibgp3      BGP        ---        down   20:26:44.526
+\end{lstlisting}
+ 
+Before disabling IBGP, show the routing table 
+on the BGP router (using \texttt{"ip route"}). Compare the 
+results before and after disabling IBGP, and explain
+your observations. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Reading: Understanding IGP} 
+
+Routers inside an autonomous system need to
+communicate with each other, so they can tell each other
+what networks they are connected to, so others can figure out
+the best path to get to those networks. That is what
+was missing in the previous task.
+
+
+This type of routing protocol is called IGP (Interior Gateway Protocol).
+There are several IGP protocols, including OSPF (a link state routing protocol) and RIP (a
+distance-vector routing protocol). BIRD supports both of them. In this
+task, we will only use the OSPF protocol.
+
+Let us add the OSPF protocol to our BIRD configuration file. In the following,
+we create a \texttt{"protocol ospf"} block and specify a table called \texttt{t\_ospf}.
+That means all the OSPF routing information will be stored in
+this table. Inside the \texttt{"protocol bgp ibgp"} block, we tell BIRD to
+use the \texttt{t\_ospf} table to resolve the nexthop for
+the route obtained from the internal BGP peers.
+
+\begin{lstlisting}
+table t_ospf;  # Define a new table 
+ipv4 table t_ospf;
+protocol ospf ospf1 {
+    ipv4 {
+        table t_ospf;
+        import all;
+        export all;
+    };
+    area 0 {
+        interface "ix104" { stub; };
+        interface "net_103_104" { hello 1; dead count 2; };
+    };
+}
+
+# Create a pipe between the OSPF and master tables. 
+protocol pipe {
+    table t_ospf;
+    peer table master4;
+    import none;
+    export all;
+}
+\end{lstlisting}
+
+Detailed configuration of OSPF can be quite complicated, and it is beyond the
+scope of this lab.
+An area with ID 0 is called a backbone area. All other areas need
+to be connected to the backbone area. In our configuration, we put all routes
+in the backbone area to make things simple. This
+particular BGP router (\texttt{AS2}'s router in \texttt{IX100})
+is connected to two networks, one through \texttt{eth0} and the other
+through \texttt{eth1}.
+
+Information from both networks will be included in the OSPF protocol,
+so others know how to reach these two networks. However,
+while \texttt{eth0} is connected to the internal network,
+\texttt{eth1} is the interface used by the router
+to connect to an outside network, the IXP's network. This network is provided
+by IXP for peering purposes. We do need to include this network in the OSPF
+protocol, so the internal router knows how to reach this network. However, we
+will not run OSPF protocol with anybody on this network, because they
+do not belong to \texttt{AS2}; they are outsiders.
+You do not want to leak the internal network information to the outside;
+nor do you want the outsider to manipulate your internal routes using OSPF.
+Therefore, you should not run the OSPF protocol with
+the routers on this external network.
+You only run OSPF with the internal routers.
+That is why we use \texttt{stub}, meaning the information from this network
+will be used in the OSPF protocol, but we will not run OSPF on
+this network.
+
+Explain the \texttt{hello 1; dead count 2;} part. 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.b: IGP Exploration} 
+
+In this task, we will disable the OSPF routing protocol, and see 
+how it affects the routing. There are several ways to disable
+OSPF. One way is to do it inside \texttt{birdc}: 
+
+\begin{lstlisting}
+# bridc
+birdc> show protocols
+...
+ospf1      OSPF       t_ospf     up     19:49:43.343  Running
+...
+
+birdc> disable ospf1
+birdc> show protocols ospf1
+ospf1      OSPF       t_ospf     down   19:57:37.187
+\end{lstlisting}
+ 
+Another way is to modify the \texttt{bird.conf} configuration file,
+changing the \texttt{"import/export all"} to 
+\texttt{"import/export none"}. This will keep OSPF running, but  
+no routes obtained from the protocol will be used. 
+
+\begin{lstlisting}
+protocol ospf ospf1 {
+    ipv4 {
+        table t_ospf;
+        import none;  (*@\pointleft{import no route from peer}@*) 
+        export none;  (*@\pointleft{export no route to peer}@*) 
+    };
+    ...
+}
+\end{lstlisting}
+ 
+
+\paragraph{Task.} We pick AS-3 transit autonomous system in this 
+task. This AS has four BGP routers, and we pick the one 
+connected to the IX-103 (Miami) Internet exchange.
+For the task, we also need to find some traffics that 
+go through AS-3. 
+We will ping \texttt{10.164.0.71} from a host in AS-162. Using the 
+map client program, we can see that the packets go through
+the AS-3 transit AS. If this is not consistent with your observation,
+do find some other traffics that go through AS-3. 
+
+
+We will now disable the OSPF using one of the methods mentioned above.
+Before disabling OSPF, show the routing table 
+on the BGP router (using \texttt{"ip route"}). Compare the 
+results before and after disabling OSPF. Based on the 
+observation, explain why the IGP is essential for the transit 
+autonomous systems. 
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 3: Path Selection} 
+
+Use filter to conduct path-selection experiments, helping students
+understand how the path selection works.
+These are the top 2 rules used by BIRD: 
+(1) prefer route with the highest Local Preference attribute,
+the path with the highest local preference is preferred;
+(2) prefer route with the shortest AS path.
+
+Try the followings:
+\begin{itemize}
+  \item Change \texttt{bgp\_local\_pref} 
+  \item Prepend AS: change the AS path: \texttt{bgp\_path.prepend(1000)} 
+\end{itemize}
+ 
+
+We pick AS-150, which peers with both AS-2 and AS-3. 
+We will use AS2 as the backup upstream link.
+
+\begin{lstlisting}
+protocol bgp u_as2 {
+    ipv4 {
+        table t_bgp;
+        import filter {
+            bgp_large_community.add(PROVIDER_COMM);
+            bgp_local_pref = 10;
+	    bgp_path.prepend(2);
+	    bgp_path.prepend(2);
+            accept;
+        };
+        export where bgp_large_community ~ [LOCAL_COMM, CUSTOMER_COMM];
+        next hop self;
+    };
+    local    10.100.0.150 as 150;
+    neighbor 10.100.0.2   as 2;
+\end{lstlisting}
  
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{IP Anycast} 
+\section{Task N: IP Anycast} 
 
 Provide the AS (IP address T is an IP anycast address). 
 Ask students to conduct the following experiment:
@@ -432,7 +803,7 @@ Ask students to conduct the following experiment:
 % *******************************************
 % SECTION
 % *******************************************
-\section{BGP Attacks} 
+\section{Task N: BGP Attacks} 
 
 
 % -------------------------------------------
