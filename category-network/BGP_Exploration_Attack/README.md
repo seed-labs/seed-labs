@@ -7,3 +7,12 @@ launch the BGP attack (network prefix hijacking).
 ## Status
 
 This is still a work in progress. 
+
+
+## TO-DO List
+
+- Due to the complexity of the BIRD configuration, it will
+  be very helpful if we can record a YouTube video to 
+  explain the configuration. I already have a BGP lecture
+  on YouTube that focuses on the theory part. We need one
+  on the practical side. 
