@@ -381,28 +381,23 @@ protocol pipe {
 % -------------------------------------------
 \subsection{Task 1.a: Exploration} 
 
-Pick a BGP router from the emulator. 
+Pick a BGP router from the emulator. Let us use AS-150, which
+peers other autonomous systems at IX-100 (NYC).
 Design the following activities.
 
 \begin{itemize}
-  \item Start with a stub AS (with two upstream ASes)
-  \item Study the BGP configuration file, and understand its entries
-  \item Inspect the BGP route table 
-  \item Disable/Enable BGP sessions
-  \item Simple filter  
-  \item Path selection (use the filter to change the other attributes,
-    see how it affects the path selection). Find two different routes for 
-    a destination, changing the path attributes to affect how a route 
-    is selected. 
-\end{itemize}
+  \item Start with a stub AS (with two upstream ASes). AS-150
 
+  \item Study the BGP configuration file, and understand how it
+    peer with others. Do not worry about the filtering part.
+    What ASes does AS-150 peer with? 
 
-\paragraph{Advanced features.} 
-These are advanced features. Not sure whether they should be included or not.
-We temporarily list them here.
+  \item Inspect the BGP route table. Disable the peering with 
+    both peers. Check the routing table. Enable the peer one by
+    one, and see the routing table changes. See the traffic pattern
+    changes. Also check the routing table from another BGP router
+    and see the difference. 
 
-\begin{itemize}
-  \item Community: label for the route
 \end{itemize}
 
 
@@ -410,6 +405,25 @@ We temporarily list them here.
 # birdc configure 
 \end{lstlisting}
  
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1.b: BGP Update} 
+
+Run \texttt{tcpdump} on another BGP router, use it to monitor the BGP traffic.
+Identify the update and withdraw message. When would a withdraw message be 
+triggered and when would an update message be triggered? 
+
+
+\begin{lstlisting}
+# ip address
+
+# tcpdump -n -i ix105 -vvvvv port 179
+
+\end{lstlisting}
+ 
+
 
 
 % -------------------------------------------
@@ -753,6 +767,7 @@ These are the top 2 rules used by BIRD:
 the path with the highest local preference is preferred;
 (2) prefer route with the shortest AS path.
 
+
 Try the followings:
 \begin{itemize}
   \item Change \texttt{bgp\_local\_pref} 
@@ -786,7 +801,7 @@ protocol bgp u_as2 {
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task N: IP Anycast} 
+\section{Task 4: IP Anycast} 
 
 Provide the AS (IP address T is an IP anycast address). 
 Ask students to conduct the following experiment:
@@ -803,7 +818,7 @@ Ask students to conduct the following experiment:
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task N: BGP Attacks} 
+\section{Task 5: BGP Attacks} 
 
 
 % -------------------------------------------
