@@ -59,6 +59,11 @@ Makers.makeTransitAs(base, 4, [100, 102, 104],
        [(100, 104), (102, 104)]
 )
 
+# This transit is for lab exercise. Its setup is incomplete
+Makers.makeTransitAs(base, 5, [101, 103, 105], 
+       [(101, 103), (103, 105)]
+)
+
 ## Tier 2 ASes
 Makers.makeTransitAs(base, 11, [102, 105], [(102, 105)])
 Makers.makeTransitAs(base, 12, [101, 104], [(101, 104)])
@@ -85,6 +90,8 @@ Makers.makeStubAs(emu, base, 164, 104, [None, None])
 Makers.makeStubAs(emu, base, 170, 105, [web, None])
 Makers.makeStubAs(emu, base, 171, 105, [None])
 
+# This stub AS is for lab exercise. Its setup is incomplete
+Makers.makeStubAs(emu, base, 180, 105, [web, None])
 
 
 ###############################################################################
@@ -133,7 +140,6 @@ emu.addLayer(web)
 # Save it to a component file, so it can be used by other emulators
 #emu.dump('base-component.bin')
 
-# Uncomment the following if you want to generate the final emulation files
 emu.render()
-emu.compile(Docker(), './output')
+emu.compile(Docker(clientEnabled = True), './output')
 
