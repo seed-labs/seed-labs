@@ -86,7 +86,7 @@ The SEED project is funded by the US National Science Foundation.
 % *******************************************
 % SECTION
 % *******************************************
-\section{The Internet Emulator} 
+\section{The Lab Setup and the SEED Internet Emulator} 
 
 This lab will be performed inside the SEED Internet Emulator. We will
 provide a pre-built emulator in two different forms: (1) Python code,
@@ -129,12 +129,10 @@ are protocol specific. Full details of the configuration
 can be found in the BIRD manual~\cite{birdmanual}.
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Routing Tables} 
-
+\subsection{The Architecture and Routing Tables} 
 
 BIRD has has several routing tables in memory. It uses
 the term ``protocol'' to specify how 
@@ -151,32 +149,8 @@ to the external router.
 Some protocols used in BIRD are not not real protocols; 
 BIRD simply uses the keyword \texttt{protocol} to specify where
 a BIRD routing table gets its routes from, and where the routes
-in the table need to be sent to.
-
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{Several Special Protocols} 
-
-BIRD has a few special types of ``protocol'', which are not
-real protocols, however, they do generate route information,
-except that the generation is not through a protocol. 
-The followings
-are the three important ``fake'' protocols:
-
-\begin{lstlisting}[caption={The \texttt{bird.conf} file for \texttt{AS150}}]
-protocol device {
-}
-
-protocol direct {
-    interface "eth0";
-}
-
-protocol kernel {
-    import none;
-    export all;
-}
-\end{lstlisting}
+in the table need to be sent to. It also uses \texttt{protocol} 
+to connect two routing tables. 
 
 To define a routing protocol in BIRD, we use the \texttt{protocol} keyword.
 BIRD supports many different routing protocols, like BGP and OSPF. A
@@ -185,26 +159,66 @@ For this lab, we will use either \texttt{all} or \texttt{none}. In future
 BGP labs, we will introduce filters here, so you can set up
 rules to decide what routes can be imported or exported.
 
-\begin{itemize}
 
-\item The \texttt{device protocol} is not a real routing protocol. It doesn't
+Figure~\ref{bgp:fig:bird-architecture} depicts the architecture
+of these routing tables inside our configuration. We save
+the routes from the BGP protocol inside the table \texttt{t\_bgp}, and save
+the routes from the OSPF protocol inside the table \texttt{t\_ospf}. 
+The diagram depicts the relationships of these tables and 
+the BIRD's master routing table, and the kernel routing table. 
+We will explain each part of the diagram in the rest of this 
+section. 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The \texttt{device}, \texttt{direct}, and \texttt{kernel} Protocols} 
+
+BIRD has a few special types of ``protocol'', which are not
+real protocols, however, they do generate route information,
+except that the generation is not through a protocol. 
+The followings
+are the two important ``fake'' protocols:
+
+\paragraph{The device protocol}. This is not a real routing protocol. It doesn't
 generate any route, nor does it accept any route. It is only used to get
 information about the network interfaces from the kernel. Without the
 \texttt{device protocol}, BIRD will know nothing about the network
 interfaces; it will not even be able to run BGP, as it does not know how
 to reach BGP peer's IP address. Therefore, this block is mandatory.
 
-\item The \texttt{direct protocol} is for generating routes for the directly
+\begin{lstlisting}
+protocol device {   }
+\end{lstlisting}
+
+
+\paragraph{The direct protocol.} 
+This is for generating routes for the directly
 connected networks from a list of interfaces. In the \texttt{direct protocol}
 block, the \textit{interface} keyword is used to generate routes from an
 interface. In this case, \texttt{AS150}'s bgp router uses \texttt{eth0} to
 connect to \texttt{AS150}'s internal network (\texttt{10.150.0.0/24}).
 Therefore, this \texttt{direct protocol} block will generate a routing
-entry for \texttt{10.150.0.0/24}. BGP will announce this network
+entry for \texttt{10.150.0.0/24}. This 
 prefix to the peers.
 
-\item The \texttt{kernel} protocol is not a real routing protocol like BGP or
-OSPF. Instead of communicating with other routers in the network, it connects
+\begin{lstlisting}
+protocol direct local_nets {
+    ipv4 {
+        table t_direct;
+        import all;
+    };
+
+    interface "net_100_103";
+    interface "net_103_105";
+    interface "net_103_104";
+}
+\end{lstlisting}
+
+
+\paragraph{The \texttt{kernel} Protocol.} 
+This is not a real routing protocol either.
+Instead of communicating with other routers in the network, it connects
 BIRD's routing table to kernel's routing table. It is the kernel's routing table
 that is used in the actual routing, not BIRD's routing table.
 This protocol is used to set the kernel routing table using the routes
@@ -214,38 +228,14 @@ the kernel's routing table; \texttt{export all} means BIRD's routing table
 will export all the routes to the kernel's routing table. This is how BGP
 routers set the routing table using the data collected from the BGP
 protocol.
-\end{itemize}
-
-
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{The Static Protocol} 
-
-A special type of protocol is called \texttt{static}, which is 
-useful in our BGP attack task. Just like the other special
-types of protocols, this protocol is not a real protocol either.
-It does not import routes from a peer, instead, it provides 
-predefined routes that need to be imported into 
-the routing table. Each route can have a route-specific
-filter. This is especially useful for configuring route attributes. 
-
-When specifying a route, we can either specify a router, or 
-specifying a special target name, indicating the actions 
-that need to be performed on the matching packets. 
-A target name is \texttt{blackhole},
-indicating that packet to the specified destination should be 
-dropped. See the following example.
 
 \begin{lstlisting}
-protocol static {
-    ipv4 {
-        table t_bgp;  # Connect to a non-default routing table
-    };
-    route 10.152.0.0/24 via 10.3.0.100 { ... filter ... };
-    route 10.153.0.0/24 blackhole { ... filter ... };
+protocol kernel {
+    import none;
+    export all;
 }
 \end{lstlisting}
+
 
 
 % -------------------------------------------
@@ -325,6 +315,37 @@ Here are some filter examples:
 \end{lstlisting}
  
 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The \texttt{static} Protocol} 
+
+A special type of protocol is called \texttt{static}, which is 
+useful in our BGP attack task. Just like the other special
+types of protocols, this protocol is not a real protocol either.
+It does not import routes from a peer, instead, it provides 
+predefined routes that need to be imported into 
+the routing table. Each route can have a route-specific
+filter. This is especially useful for configuring route attributes. 
+
+When specifying a route, we can either specify a router, or 
+specifying a special target name, indicating the actions 
+that need to be performed on the matching packets. 
+A target name is \texttt{blackhole},
+indicating that packet to the specified destination should be 
+dropped. See the following example.
+
+\begin{lstlisting}
+protocol static {
+    ipv4 {
+        table t_bgp;  # Connect to a non-default routing table
+    };
+    route 10.152.0.0/24 via 10.3.0.100 { ... filter ... };
+    route 10.153.0.0/24 blackhole { ... filter ... };
+}
+\end{lstlisting}
+
+
 
 % -------------------------------------------
 % SUBSECTION
@@ -368,6 +389,28 @@ protocol pipe {
 }
 \end{lstlisting}
  
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Large Community Attribute} 
+
+BGP communities are attribute tags that can be applied to incoming or outgoing prefixes to
+achieve some common goal~\cite{rfc1997}. For example, ISP can label the incoming routes 
+from a particular autonomous system with a special attribute value, 
+so when it announces the route to its peers, it can choose to announce 
+the routes only to a particular set of peers (hence the community). 
+The BGP community attribute makes it convenient to enforce such a policy.
+
+The original BGP communities standard was originally proposed in RFC1997~\cite{rfc1997},
+but it has limitations. That is why the BGP Large communities 
+standard was proposed~\cite{rfc}. We use this new standard in our 
+setup. 
+
+
+
+
 
 
 % *******************************************
