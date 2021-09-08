@@ -79,6 +79,8 @@ Makers.makeStubAs(emu, base, 152, 101, [None, None])
 Makers.makeStubAs(emu, base, 153, 101, [web, None, None])
 
 Makers.makeStubAs(emu, base, 154, 102, [None, web])
+Makers.makeStubAs(emu, base, 155, 102, [None, web])
+Makers.makeStubAs(emu, base, 156, 102, [None, web])
 
 Makers.makeStubAs(emu, base, 160, 103, [web, None])
 Makers.makeStubAs(emu, base, 161, 103, [web, None])
@@ -115,8 +117,10 @@ ebgp.addPrivatePeerings(100, [150], [151], PeerRelationship.Peer)
 ebgp.addPrivatePeerings(101, [2],  [12], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(101, [12], [152, 153], PeerRelationship.Provider)
 
-ebgp.addPrivatePeerings(102, [2, 4],  [11, 154], PeerRelationship.Provider)
-ebgp.addPrivatePeerings(102, [11], [154], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(102, [2, 4], [11, 154, 155], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(102, [11],   [154], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(102, [4],    [156], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(102, [155],  [156], PeerRelationship.Peer)
 
 ebgp.addPrivatePeerings(103, [3],  [160, 161, 162], PeerRelationship.Provider)
 
