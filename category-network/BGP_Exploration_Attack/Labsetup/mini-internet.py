@@ -110,6 +110,7 @@ ebgp.addRsPeers(105, [2, 3])
 
 ebgp.addPrivatePeerings(100, [2],  [150, 151], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(100, [3],  [150], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(100, [150], [151], PeerRelationship.Peer)
 
 ebgp.addPrivatePeerings(101, [2],  [12], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(101, [12], [152, 153], PeerRelationship.Provider)
