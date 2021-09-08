@@ -308,13 +308,9 @@ the attributes, and make changes to the route if needed.
 At the end, the filter decides
 whether to pass the route through (using \texttt{accept}) 
 or reject it (using \texttt{reject}). 
-Here are some filter examples:
+More filter examples will be provided later.
 
 
-\begin{lstlisting}
-
-\end{lstlisting}
- 
 
 % -------------------------------------------
 % SUBSECTION
@@ -455,6 +451,26 @@ define PEER_COMM     = (150, 2, 0);   # large community value: 150:2:0
 define PROVIDER_COMM = (150, 3, 0);   # large community value: 150:3:0
 \end{lstlisting}
 
+
+In the configuration, we can add/delete communities to a route. We can
+also check whether a route belongs to a community or not.
+We will use them in our export and import filters. 
+
+\begin{lstlisting}
+# Check whether the route belongs to a community
+if ((150, 1, 0) ~ bgp_large_community) then return true;
+
+# Delete community from the route
+bgp_large_community.delete([(150, *, *)]);
+bgp_large_community.delete([(150, 2, 0)]);
+
+# Add community to the route
+bgp_large_community.add((150, 0, 0));
+bgp_large_community.add([(150, 1, 0), (150, 2, 0)]);
+\end{lstlisting}
+ 
+
+
 \paragraph{The Local community.}
 As we have discussed earlier, in the BGP setup, 
 the \texttt{direct} protocol is used to generate the routes
@@ -591,69 +607,76 @@ large communities.
 % -------------------------------------------
 \subsection{Task 1.a: Exploration} 
 
-Pick a BGP router from the emulator. Let us use AS-150, which
-peers other autonomous systems at IX-100 (NYC).
-Design the following activities.
+Please study the BGP configuration on AS-155, and answer the following question:
 
 \begin{itemize}
-  \item Start with a stub AS (with two upstream ASes). AS-150
-
   \item Study the BGP configuration file, and understand how it
     peer with others. Do not worry about the filtering part.
-    What ASes does AS-150 peer with? 
+    What ASes does AS-155 peer with? 
 
-  \item Inspect the BGP route table. Disable the peering with 
-    both peers. Check the routing table. Enable the peer one by
-    one, and see the routing table changes. See the traffic pattern
-    changes. Also check the routing table from another BGP router
-    and see the difference. 
-
+  \item AS-155 peers with both AS-2 and AS-4, so if AS-155
+    loses the connection with one of them, it can still connect
+    to the Internet. Please design an experiment to 
+    demonstrate this. You can enable/disable BGP sessions
+    either from the \texttt{birdc} command or from the 
+    graph. In your experiment, please show 
+    how the routing table changes when a particular 
+    BGP session is disabled. 
 \end{itemize}
 
 
-\begin{lstlisting}
-# birdc configure 
-\end{lstlisting}
- 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 1.b: BGP Update} 
+\subsection{Task 1.b: Emergency Solution} 
+
+Due to some technical issue, the connection between AS-4 and AS-156 is broken. 
+Since AS-4 is the only service provider for AS-156, this essentially
+disconnects AS-156 from the Internet. However, AS-156 still peers with AS-155, 
+which is still connected to the Internet, so why is AS-156 not able to 
+connect to the Internet?  
+
+While AS-156 and AS-4 are trying to problem, AS-156 holds an 
+emergency meeting with AS-155, agreeing to pay AS-155, so its 
+traffic can temporarily go through AS-155 to reach the Internet. 
+This requires some changes on AS-155's BGP router. 
+Please make such changes, so AS-155 can temporarily 
+provide a transit service to AS-156.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1.c: BGP Update} 
 
 Run \texttt{tcpdump} on another BGP router, use it to monitor the BGP traffic.
 Identify the update and withdraw message. When would a withdraw message be 
 triggered and when would an update message be triggered? 
 
-
 \begin{lstlisting}
 # ip address
 
 # tcpdump -n -i ix105 -vvvvv port 179
-
 \end{lstlisting}
  
-
-
-
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 1.b: Configuring AS-180} 
+\subsection{Task 1.d: Configuring AS-180} 
 
-This AS is already included in the emulator. It connects to the
-IX105 Internet exchange (Houston), but it does not peer with anybody. 
+AS-180 is already included in the emulator. It connects to the
+IX105 Internet exchange (Houston), but it does not peer with anybody, 
+so it is not connected to the Internet. 
 In this task, students need to do the following:
-
 
 \begin{itemize}[noitemsep]
   \item Peer AS-180 with AS-171, so they can directly reach each other
-  \item Peer with AS-2 and AS-3 transit autonomous systems, so they can
-    reach other destination via these transits
+  \item Peer AS-180 with the AS-2 and AS-3 transit autonomous systems, so they can
+    reach other destination via these transits.
 \end{itemize}
 
 
-\paragraph{Submission.}
 In your lab report, please include the content you add to the 
 BIRD configuration file, and provide proper explanation.
 Please also include screenshots (such as traceroute) to demonstrate 
@@ -963,6 +986,35 @@ results before and after disabling OSPF. Based on the
 observation, explain why the IGP is essential for the transit 
 autonomous systems. 
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2.c: Configuring AS-5} 
+
+The transit autonomous system AS-5 is already included in the emulator. 
+It connects to three 
+Internet exchanges: IX-101, IX-103, and IX-105 Internet exchange,
+but it does not peer with anybody. Its topology can be found 
+in Figure~\ref{bgp:fig:as5}.
+In this task, students need to conduct the following tasks:
+
+\begin{itemize}[noitemsep]
+  \item Establish the IBGP inside AS-5 (this part is already created 
+    inside the emulator, so we need to remove it before giving the container 
+    files to students). The OSPF is also created, but we will keep it. 
+
+  \item Peer AS-5 with AS-153, AS-160, AS-171, with AS-5 being their service provider.
+
+  \item Peer AS-5 with the AS-3 at IX-103 (Miami). Since they are both Tier-1 ASes,
+    they don't pay each other, and their relationship is peer-to-peer.
+\end{itemize}
+
+
+In your lab report, please include the content you add to the 
+BIRD configuration file, and provide proper explanation.
+Please also include screenshots (such as traceroute) to demonstrate 
+that your task is successful. 
 
 
 % *******************************************
