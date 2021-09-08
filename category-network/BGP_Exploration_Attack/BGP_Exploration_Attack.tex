@@ -57,9 +57,10 @@ depends on the Internet.
 This lab covers the following topics:
 \begin{itemize}[noitemsep]
 \item How the BGP protocol works
-\item BGP configuration
+\item Autonomous systems
+\item BGP configuration, BGP Large Communities 
 \item Routing 
-\item Internet Exchange Point (IXP)
+\item Internet Exchange (IX)
 \item BGP attack
 \end{itemize}
 
@@ -394,21 +395,187 @@ protocol pipe {
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Large Community Attribute} 
+\subsection{BGP Large Communities} 
+
+
+When a BGP router sends routes to its peers, they do not send all the routes they
+know. What routes are sent depends on many factors, such as the
+region of the peers, the business relationship between the peers, 
+and policies. To help BGP routers make such decisions, additional 
+information needs to be attached to each route.
+The BGP communities are created to serve this goal.
+
 
 BGP communities are attribute tags that can be applied to incoming or outgoing prefixes to
 achieve some common goal~\cite{rfc1997}. For example, ISP can label the incoming routes 
 from a particular autonomous system with a special attribute value, 
-so when it announces the route to its peers, it can choose to announce 
+so when it forwards the route to its peers, it can choose to forward
 the routes only to a particular set of peers (hence the community). 
 The BGP community attribute makes it convenient to enforce such a policy.
 
 The original BGP communities standard was originally proposed in RFC1997~\cite{rfc1997},
 but it has limitations. That is why the BGP Large communities 
-standard was proposed~\cite{rfc}. We use this new standard in our 
-setup. 
+standard was proposed~\cite{rfc8195}. 
+BGP Large Communities are composed of three 4-byte integers.
+Using the canonical notation this format can be summarized 
+as ``ASN:Function:Parameter''.
+
+\begin{itemize}
+\item The first integer is the Global Administrator field, whose value is the
+   Autonomous System Number (ASN) of the AS that has defined the meaning
+   of the remaining two 4-octet fields. Since ASN is unique, 
+   each community is unique globally.
+
+\item The second integer is the function identifier. This field defines
+  the meaning of the community. Each AS can define their own
+  functions. 
+
+\item The third integer is the parameter value. 
+\end{itemize}
+ 
+There are many applications of the BGP Large Communities, such as 
+identifying routes by their geographically locations (countries, 
+continent etc.), the business relationships between peers (customers,
+providers, or peers), and many other aspects. When exporting and importing 
+routes, actions can be applied to these routes based on which
+communities they belong to. RFC 8195 provides many 
+examples~\cite{ref8195}.
+
+\paragraph{BGP large communities defined in our setup.}
+In our Internet emulator, we use the BGP large communities to 
+capture the business relationships among peers. These relationships
+will affect how a route is exported to peers. 
+Let's use AS-150 as an example to show how the BGP large communities are used
+in our setup. In this autonomous system, we defined four communities. 
+
+\begin{lstlisting}
+define LOCAL_COMM    = (150, 0, 0);   # large community value: 150:0:0
+define CUSTOMER_COMM = (150, 1, 0);   # large community value: 150:1:0
+define PEER_COMM     = (150, 2, 0);   # large community value: 150:2:0
+define PROVIDER_COMM = (150, 3, 0);   # large community value: 150:3:0
+\end{lstlisting}
+
+\paragraph{The Local community.}
+As we have discussed earlier, in the BGP setup, 
+the \texttt{direct} protocol is used to generate the routes
+to the local networks. These routes are put inside
+the \texttt{t\_direct} table first, and then they
+will be exported to the \texttt{t\_bgp} table (containing
+all the BGP routes) through a pipe. 
+A filter is applied during the exporting, so the 
+routes are tagged with the \texttt{LOCAL\_COMM}
+community, indicating that the routes are locally 
+generated. 
+
+\begin{lstlisting}
+protocol pipe {
+    table t_direct;
+    peer table t_bgp;
+    import none;
+    export filter { bgp_large_community.add(LOCAL_COMM); ... };
+}
+\end{lstlisting}
 
 
+\paragraph{The Provider and Customer communities.}
+Let us look at the peering between AS-150 and AS-2. 
+AS-2 is a transit AS, which is the Internet service provider 
+to AS-150. In the real world, AS-150 will pay AS-2 to get the service. Therefore, 
+in AS-150's BGP configuration, the routes from AS-2 are put
+in the \texttt{PROVIDER\_COMM} community, indicating that
+the routes are from the provider. 
+Correspondingly, in AS-2's BGP configuration, all the routes
+from AS-150 are put in the \texttt{CUSTOMER\_COMM} community. 
+
+\begin{lstlisting}
+protocol bgp u_as2 {
+    ipv4 {
+        table t_bgp;
+        import filter {
+            bgp_large_community.add(PROVIDER_COMM);
+	    ...
+        };
+        export where bgp_large_community ~ [LOCAL_COMM, CUSTOMER_COMM];
+    };
+    ...
+}
+\end{lstlisting}
+
+Using the community information, an autonomous system
+can now enforce the policies corresponding to its relationship with
+peers. As a provider to AS-150, AS-2 is obligated to serve as the 
+transit for AS-150's networks and its customer's networks (in our setup, 
+AS-150 is a stub AS, so it does not have customers). 
+This policy is enforced from the export filter of AS-150. We can see
+that AS-150 only exports the routes from the 
+\texttt{LOCAL\_COMM} and \texttt{CUSTOMER\_COMM} communities to AS-2.
+This means, only the routes locally generated by or the routes 
+from AS-150's customers are sent to AS-2. Routes in other 
+communities (such as the Peer community discussed below)
+will not be sent to AS-2.
+
+
+\paragraph{The Peer community.}
+AS-150 also peers with another stub autonomous system AS-151, but they 
+are not in a provider-to-customer peering relationship. 
+They peer with each other so the traffic between them
+can go to each other directly, instead of going through another 
+autonomous system. This is for mutual benefit, so
+typically they do not pay each other. 
+
+Because of this kind of business relationship, they do not want to
+become a provider to the other. How they forward the routes to each other 
+will be based on the peer-to-peer policy, 
+not on the provider-to-customer policy. Let's see how such a policy
+can be enforced using the BGP large communities. 
+Here is the peering configuration between AS-150 and AS-151:
+
+\begin{lstlisting}
+protocol bgp p_as151 {
+    ipv4 {
+        table t_bgp;
+        import filter {
+            # Put the route in the PEER_COMM community
+            bgp_large_community.add(PEER_COMM);
+            ...
+        };
+        # Only export the routes from the specified communities
+        export where bgp_large_community ~ [LOCAL_COMM, CUSTOMER_COMM];
+    };
+    ...
+}
+\end{lstlisting}
+
+When two autonomous systems are in the peer-to-peer relationship, none of them
+will will serve as the transit for the others in either upstream or 
+downstream directions. Here is how this is achieved using the BGP 
+large communities.
+
+\begin{itemize}
+  \item When AS-150 exports routes to AS-151, it only exports the routes
+    from these two communities: \texttt{LOCAL\_COMM} and \texttt{CUSTOMER\_COMM}.
+    Namely, it only exports the routes belonging to itself and its 
+    customers (it does not have customers in our setup). It will not export the 
+    routes from AS-2 to its peer AS-151, because those routes are put in the 
+    \texttt{PROVIDER\_COMM} community (see the peering setup with AS-2).
+    Therefore, even though AS-150 can reach the rest of the Internet via AS-2,
+    it does not tell AS-151, so AS-151 will never use AS-150 to reach the 
+    Internet even if AS-151 loses its connection with its own Internet service
+    providers. This policy essentially prevents AS-151 from using AS-150 
+    as a upstream transit to reach the Internet.
+
+
+  \item When AS-150 import routes from AS-151, it put the routes in
+    the \texttt{PEER\_COMM} community. Based on the export 
+    filter defined in the peering with AS-2, 
+    AS-150 only exports the routes belonging to itself and its 
+    customers to AS-2, not the routes in the \texttt{PEER\_COMM} community. 
+    Therefore, so even though AS-150 can reach AS-151, it does not announcement that
+    AS-2, so AS-2 will never route the AS-151 bound packets to AS-150, 
+    essentially preventing AS-2 from using AS-150 as 
+    a downstream transit to reach AS-151.
+\end{itemize}
+ 
 
 
 
