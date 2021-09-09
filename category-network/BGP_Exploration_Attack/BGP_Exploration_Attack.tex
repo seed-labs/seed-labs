@@ -139,7 +139,6 @@ BIRD has has several routing tables in memory. It uses
 the term ``protocol'' to specify how 
 to connect a routing table with another entity. Exactly
 what entity is connected to depends on the type of the protocol.
-
 If the protocol is a routing protocol, 
 such as BGP, OSPF, or RIP, the entity will be an external router.
 Namely, the routes received from the external router
@@ -147,28 +146,33 @@ are imported to the routing table, while
 the routes stored in the routing table are exported 
 to the external router.
 
-Some protocols used in BIRD are not not real protocols; 
+Some protocols used in BIRD are not real protocols; 
 BIRD simply uses the keyword \texttt{protocol} to specify where
 a BIRD routing table gets its routes from, and where the routes
 in the table need to be sent to. It also uses \texttt{protocol} 
 to connect two routing tables. 
 
-To define a routing protocol in BIRD, we use the \texttt{protocol} keyword.
-BIRD supports many different routing protocols, like BGP and OSPF. A
-\texttt{protocol} can import or export routes to the BIRD's routing table.
-For this lab, we will use either \texttt{all} or \texttt{none}. In future
-BGP labs, we will introduce filters here, so you can set up
-rules to decide what routes can be imported or exported.
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.4\textwidth]{Figs/bird-table.pdf}
+  \end{center}
+  \caption{Relationships among the tables in BIRD}
+  \label{bgp:fig:bird-table}
+\end{figure}
+ 
+In our setup, we save the routes from the BGP protocol 
+into the table \texttt{t\_bgp}, and save
+the routes from the OSPF protocol into the table \texttt{t\_ospf}. 
+Through \texttt{pipe} protocols, routes in these tables
+will flow to BIRD's master table (\texttt{master4} for IPv4).
+Through the \texttt{device} protocol, the routes
+in the \texttt{master4} table will eventually get 
+into the kernel routing table, which is the acutually
+routing table used by the operating system for packet forwarding.
+Figure~\ref{bgp:fig:bird-table} depicts 
+the relationships of these tables. We will explain 
+them in further details in the rest of this section. 
 
-
-Figure~\ref{bgp:fig:bird-architecture} depicts the architecture
-of these routing tables inside our configuration. We save
-the routes from the BGP protocol inside the table \texttt{t\_bgp}, and save
-the routes from the OSPF protocol inside the table \texttt{t\_ospf}. 
-The diagram depicts the relationships of these tables and 
-the BIRD's master routing table, and the kernel routing table. 
-We will explain each part of the diagram in the rest of this 
-section. 
 
 % -------------------------------------------
 % SUBSECTION
@@ -197,11 +201,15 @@ protocol device {   }
 This is for generating routes for the directly
 connected networks from a list of interfaces. In the \texttt{direct protocol}
 block, the \textit{interface} keyword is used to generate routes from an
-interface. In this case, \texttt{AS150}'s bgp router uses \texttt{eth0} to
-connect to \texttt{AS150}'s internal network (\texttt{10.150.0.0/24}).
-Therefore, this \texttt{direct protocol} block will generate a routing
-entry for \texttt{10.150.0.0/24}. This 
-prefix to the peers.
+interface. Assuming that a BGP router uses \texttt{eth0} and \texttt{eth1}
+to connect to the autonomous system's internal networks 
+\texttt{10.150.0.0/24} and \texttt{10.150.1.0/24}, respectively, 
+the \texttt{direct protocol} block in the following 
+will generate routing entries for 
+\texttt{10.150.0.0/24} and \texttt{10.150.1.0/24}. These routes 
+will be stored in the \texttt{t\_direct} table. Later we will 
+see that through a pipe, the routes in this table can get 
+into the BGP table, and will thus be used by the BGP protocol. 
 
 \begin{lstlisting}
 protocol direct local_nets {
@@ -210,9 +218,8 @@ protocol direct local_nets {
         import all;
     };
 
-    interface "net_100_103";
-    interface "net_103_105";
-    interface "net_103_104";
+    interface "eth0";
+    interface "eth1";
 }
 \end{lstlisting}
 
