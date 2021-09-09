@@ -44,16 +44,13 @@ and is an essential piece of the Internet infrastructure. It is
 also a primary attack target, because if attackers can 
 compromise BGP, they can disconnect the Internet and redirect traffics. 
 
-Because of the complexity of BGP, it is hard to do everything in a single lab. 
-Therefore, we have developed a series of labs related to BGP. This lab
-is the first in the series, and it is the basis for all the other BGP labs.  
 The goal of this lab is to help students understand how
 BGP ``glues'' the Internet together, and how the Internet is actually
-connected. In this lab, we guide students to build a small-scale Internet.
-We call this Internet the Internet Simulator (or simply
-Simulator in short). This simulator will be the basis for 
-all other BGP labs, as well as for some non-BGP labs that 
-depends on the Internet. 
+connected. We have built an Internet emulator, and will 
+use this emulator as the basis for the lab activities. Due to the 
+complexity of BGP, a significant portion of this lab description 
+is devoted to explaining how BGP works. They are 
+essential for the lab activities. 
 This lab covers the following topics:
 \begin{itemize}[noitemsep]
 \item How the BGP protocol works
@@ -458,10 +455,10 @@ define PEER_COMM     = (150, 2, 0);   # large community value: 150:2:0
 define PROVIDER_COMM = (150, 3, 0);   # large community value: 150:3:0
 \end{lstlisting}
 
-
-In the configuration, we can add/delete communities to a route. We can
-also check whether a route belongs to a community or not.
-We will use them in our export and import filters. 
+When we import or export a route, using filters,
+We can add communities to a route, or delete communities from it. 
+We can also check whether a route belongs to a community or not. See the 
+following examples. We will use them in our export and import filters. 
 
 \begin{lstlisting}
 # Check whether the route belongs to a community
@@ -601,8 +598,6 @@ large communities.
  
 
 
-
-
 % *******************************************
 % SECTION
 % *******************************************
@@ -612,7 +607,7 @@ large communities.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 1.a: Exploration} 
+\subsection{Task 1.a: Understanding AS-155's BGP Configuration} 
 
 Please study the BGP configuration on AS-155, and answer the following question:
 
@@ -636,7 +631,7 @@ Please study the BGP configuration on AS-155, and answer the following question:
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 1.b: Emergency Solution} 
+\subsection{Task 1.b: Experimenting with Large Communities} 
 
 Due to some technical issue, the connection between AS-4 and AS-156 is broken. 
 Since AS-4 is the only service provider for AS-156, this essentially
@@ -644,7 +639,7 @@ disconnects AS-156 from the Internet. However, AS-156 still peers with AS-155,
 which is still connected to the Internet, so why is AS-156 not able to 
 connect to the Internet?  
 
-While AS-156 and AS-4 are trying to problem, AS-156 holds an 
+While AS-156 and AS-4 are trying to solve the problem, AS-156 holds an 
 emergency meeting with AS-155, agreeing to pay AS-155, so its 
 traffic can temporarily go through AS-155 to reach the Internet. 
 This requires some changes on AS-155's BGP router. 
@@ -655,7 +650,7 @@ provide a transit service to AS-156.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 1.c: BGP Update} 
+\subsection{Task 1.c: Observing BGP Update} 
 
 Run \texttt{tcpdump} on another BGP router, use it to monitor the BGP traffic.
 Identify the update and withdraw message. When would a withdraw message be 
@@ -826,7 +821,7 @@ The \texttt{igp table} entry specifies this IGP routing table.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 2.a: IBGP Exploration} 
+\subsection{Task 2.a: Experimenting with IBGP} 
 
 
 For the task, we first need to find some traffics that 
@@ -940,7 +935,7 @@ Explain the \texttt{hello 1; dead count 2;} part.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 2.b: IGP Exploration} 
+\subsection{Task 2.b: Experimenting with IGP} 
 
 In this task, we will disable the OSPF routing protocol, and see 
 how it affects the routing. There are several ways to disable
@@ -1029,40 +1024,71 @@ that your task is successful.
 % *******************************************
 \section{Task 3: Path Selection} 
 
-Use filter to conduct path-selection experiments, helping students
-understand how the path selection works.
-These are the top 2 rules used by BIRD: 
+BGP routers typically receive multiple routes to the same network. 
+All these routes will be kept, but BGP will run a best route 
+selection algorithm to choose one route as the current best route. 
+This route will be the one announced to the peers; 
+it is also the one given to the kernel routing table, 
+so routing is based on this selected route. 
+When the best route is retracted, BGP router re-runs the 
+best route selection algorithm to find the current best route. 
+
+
+Although different BGP software may implement the path selection
+differently, they mostly follow the similar order. The following
+lists the first four criteria used by most algorithms.
+
+\begin{enumerate}[noitemsep]
+  \item Prefer the path with the highest weight. 
+  \item Prefer the path with the highest local preference.
+  \item Prefer the path that was locally originated via a network or 
+        aggregate BGP subcommand or through redistribution from an IGP.
+  \item Prefer the path with the shortest AS path. 
+\end{enumerate}
+
+The top-2 criteria used by BIRD is the following:
 (1) prefer route with the highest Local Preference attribute,
-the path with the highest local preference is preferred;
-(2) prefer route with the shortest AS path.
+(2) prefer route with the shortest AS path. In this task, we will
+experiment with these two criteria, and see how they affect 
+the path selection. 
 
 
-Try the followings:
-\begin{itemize}
-  \item Change \texttt{bgp\_local\_pref} 
-  \item Prepend AS: change the AS path: \texttt{bgp\_path.prepend(1000)} 
-\end{itemize}
- 
+\paragraph{Task 3.a.} The \texttt{"birdc show route all > all-routes"} command
+can list all the BGP routes (the output is quite long, so it is better to
+save the output to a file). The \texttt{"ip route"} command
+can list all the entries in the kernel routing table. 
 
-We pick AS-150, which peers with both AS-2 and AS-3. 
-We will use AS2 as the backup upstream link.
+Go to AS-150's BGP router, and show all the BGP routes. Find a network prefix
+that has more than one routes. Explain their differences. Compare these 
+routes to the entries in the kernel routing table, and identify which route is 
+selected as the best route, and explain why this route is selected? 
+
+
+\paragraph{Task 3.b.}
+AS-150 peers with both AS-2 and AS-3, which provides the 
+Internet services to AS-150.
+However, because the link to AS-2 is slower than
+the link to AS-3, AS-150 wants 
+to use AS-2 only as the backup upstream link, i.e., traffic
+from AS-150 should always use AS-3, unless the link is broken.
+Please use two different ways to achieve this goal: 
+(1) setting the local preference, 
+(2) penalizing the path from AS-2 by artificially
+increasing the length of the AS paths from AS-2.
+
+
+The following filter example shows how to set the
+local preference for a route, and how to prepend 
+additional ASes (AS-2 is used in this example) to 
+the route's AS path.
 
 \begin{lstlisting}
-protocol bgp u_as2 {
-    ipv4 {
-        table t_bgp;
-        import filter {
-            bgp_large_community.add(PROVIDER_COMM);
-            bgp_local_pref = 10;
-	    bgp_path.prepend(2);
-	    bgp_path.prepend(2);
-            accept;
-        };
-        export where bgp_large_community ~ [LOCAL_COMM, CUSTOMER_COMM];
-        next hop self;
-    };
-    local    10.100.0.150 as 150;
-    neighbor 10.100.0.2   as 2;
+filter {
+    bgp_local_pref = 10;
+    bgp_path.prepend(2);
+    bgp_path.prepend(2);
+    accept;
+};
 \end{lstlisting}
  
 
