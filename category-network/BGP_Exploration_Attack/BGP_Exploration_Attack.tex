@@ -320,6 +320,7 @@ More filter examples will be provided later.
 % SUBSECTION
 % -------------------------------------------
 \subsection{The \texttt{static} Protocol} 
+\label{bgp:subsec:static}
 
 A special type of protocol is called \texttt{static}, which is 
 useful in our BGP attack task. Just like the other special
@@ -1127,19 +1128,45 @@ the packets reach two different destinations.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 5: BGP Attacks} 
+\section{Task 5: BGP Prefix Attack} 
+
+BGP Route Hijacking, also called prefix hijacking, is a typical
+attack on BGP. In this attack, the attackers' BGP routers 
+announce the IP prefix that are not assigned to them, so
+the traffic to this IP prefix can get rerouted to the 
+attackers, who can intercept or modify the traffic.
+Many of the incidents on the Internet are caused by
+such an ``attack'', although they are mostly caused 
+by the mis-configured BGP routers.
+
+
+The task is modeled after the famous YouTube incident. In 2008, ...
+...
 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{IP Prefix Hijacking} 
+\subsection{Task 5.a. Launching the Prefix Hijacking Attack from AS-160} 
 
-Please use AS-160 as the attacker's autonomous system.
-The goal is to blackhole the network in AS-156.
-You can use the static protocol. The following example
-use the static protocol to create a route 
-to \texttt{10.130.0.0/16}. The action is ... 
+In this task, we will launch the prefix hijacking attack
+using a BGP router in AS-160. Our goal is to hijack
+the IP prefix owned by AS-156. If the attack is successful,
+all the packets going to AS-156 will be rerouted to AS-160, where
+they will be dropped. Essentially, we are black holing AS-156.
+
+The prefixes announced by a BGP router can come from different 
+sources: they can come from the \texttt{direct} protocol, 
+i.e., they are obtained from the actual network interface attached
+to the BGP router. They can also come from \texttt{static} protocol,
+which contains pre-defined routes. The easiest way for a BGP router to 
+announce a prefix that it does not own is to use 
+the \texttt{static} protocol. The following  
+example creates a pre-defined route to \texttt{10.130.0.0/16}. 
+See \S~\ref{bgp:subsec:static} for detailed explanation of the static protocol.
+It should be noted that in the filter part of the route,
+we need to add the route to the \texttt{LOCAL\_COMM} community; 
+otherwise, the BGP router will export it to the outside.   
 
 \begin{lstlisting}
 protocol static {
@@ -1154,31 +1181,32 @@ protocol static {
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{BGP Session Reset Attack} 
+\subsection{Task 5.b. Fighting Back from AS-156} 
+
+AS-156 immediately noticed the attack, the operators tried to contact
+the operators of AS-3, which is the upstream service provider for AS-160,
+asking them to block the attack. Unfortunately, it was midnight for AS-3's
+operators, so nobody could be reached. The loss of the service provided 
+by AS-156 is very significant, so the operators of AS-156 decide to 
+fight back; they want to ``steal'' back their own network prefixes, without the help
+of AS-3. Please reconfigure the BGP routers of AS-156, so 
+you can get the traffic back. 
 
 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 5.c. Fixing the Problem at AS-3} 
 
-Countermeasure: TTL security switch (RFC 5082).
-Design an experiment to demonstrate its effect.
-
-\begin{lstlisting}
-protocol bgp c_as12 {
-    ipv4 {
-        table t_bgp;
-        import filter {
-	   ...
-        };
-        export all;
-        next hop self;
-    };
-    local 10.104.0.3 as 3;
-    neighbor 10.104.0.12 as 12;
-    ttl security;
-}
-\end{lstlisting}
- 
-
- 
+Eventually, the operators of AS-3 are reached. Without knowing 
+whether this is a misconfiguration on the AS-160 side or it is an 
+attack, AS-3 decides not cut the peering with AS-160, so the users 
+of AS-160 can still reach the Internet (AS-3 is the only service 
+provider to AS-160). However, AS-3 must stop the propagation of the 
+fake announcement. This can be done by removing the 
+fake routes from its own announcement to its own peers. Please 
+modify the filter in AS-3's BGP configuration, so the problem
+can be fixed. 
 
 
 % *******************************************
