@@ -20,9 +20,9 @@ base    = Base()
 routing = Routing()
 ebgp    = Ebgp()
 ibgp    = Ibgp()
-ospf    = Ospf()
+#ospf    = Ospf()
 web     = WebService()
-ovpn    = OpenVpnRemoteAccessProvider()
+#ovpn    = OpenVpnRemoteAccessProvider()
 
 
 ###############################################################################
@@ -97,6 +97,24 @@ Makers.makeStubAs(emu, base, 180, 105, [web, None])
 
 
 ###############################################################################
+# This stub AS is for IP anycast
+# Create a new AS with two disjoint networks, but the
+# IP prefix of these two networks are the same.
+as190 = base.createAutonomousSystem(190)
+as190.createNetwork('net0', '10.190.0.0/24')
+as190.createNetwork('net1', '10.190.0.0/24')
+
+# Create a host on each network, but assign them the same IP address
+as190.createHost('host-0').joinNetwork('net0', address = '10.190.0.100')
+as190.createHost('host-1').joinNetwork('net1', address = '10.190.0.100')
+
+# Attach one network to IX-100 and the other to IX-105 (via BGP router)
+as190.createRouter('router0').joinNetwork('net0').joinNetwork('ix100')
+as190.createRouter('router1').joinNetwork('net1').joinNetwork('ix105')
+
+
+
+###############################################################################
 # Peering via RS (route server). The default peering mode for RS is PeerRelationship.Peer, 
 # which means each AS will only export its customers and their own prefixes. 
 # We will use this peering relationship to peer all the ASes in an IX.
@@ -131,6 +149,10 @@ ebgp.addPrivatePeerings(104, [12], [164], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(105, [3],  [11, 170], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(105, [11], [171], PeerRelationship.Provider)
 
+# AS-190 is for the IP anycast task
+ebgp.addPrivatePeerings(100, [3, 4],  [190], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(105, [2, 3],  [190], PeerRelationship.Provider)
+
 
 ###############################################################################
 
@@ -139,12 +161,15 @@ emu.addLayer(base)
 emu.addLayer(routing)
 emu.addLayer(ebgp)
 emu.addLayer(ibgp)
-emu.addLayer(ospf)
+#emu.addLayer(ospf)
+emu.addLayer(Ospf())
 emu.addLayer(web)
 
 # Save it to a component file, so it can be used by other emulators
 #emu.dump('base-component.bin')
 
 emu.render()
-emu.compile(Docker(clientEnabled = True), './output')
+#emu.compile(Docker(clientEnabled = True), './output')
+
+emu.compile(Docker(selfManagedNetwork=True, clientEnabled = True), './output')
 

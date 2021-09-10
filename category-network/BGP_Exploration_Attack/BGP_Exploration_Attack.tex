@@ -1098,22 +1098,57 @@ filter {
 % *******************************************
 \section{Task 4: IP Anycast} 
 
-Provide the AS (IP address T is an IP anycast address). 
-Ask students to conduct the following experiment:
+IP Anycast is a network addressing and routing methodology in which a single
+IP address is shared by multiple machines (usually in different locations).
+When we send a packet to this IP address, one of the computers will get 
+the packet. Exactly which one will get it is hard to tell, because it depends
+on the routing. IP anycast is naturally supported by BGP. 
+One of the well-known applications of IP anycast is DNS, 
+as all 13 root servers A–M exist in multiple locations. 
 
-\begin{itemize}
-  \item Inspect the BGP route table to identify the route.
-  \item From A and B, ping T. They get to two different T.
-  \item Break a BGP session, so they get to the same T.
-  \item Use UDP instead of ping.
-\end{itemize}
+
+On the emulator map, type \texttt{190} in the search box, you will find 
+out that AS-190 has two networks, but they are disconnected. One network
+is connected to IX-100, and the other is connected to IX-105. A closer 
+look at these two networks will reveal that these two networks have the 
+identical network prefix \texttt{10.190.0.0/24}. The only hosts on
+these two networks have the identical IP address \texttt{10.190.0.100}. 
+
+Please find two different hosts in the emulator, so 
+when you ping \texttt{10.190.0.100} from these two hosts, 
+the destinations are different (even though the destination
+IP address is the same). Please set the filter on the map to
+\texttt{icmp} to visualize the packet trace, then 
+look at the BGP routers on the path, and explain why
+the packets reach two different destinations. 
+
  
-
 
 % *******************************************
 % SECTION
 % *******************************************
 \section{Task 5: BGP Attacks} 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{IP Prefix Hijacking} 
+
+Please use AS-160 as the attacker's autonomous system.
+The goal is to blackhole the network in AS-156.
+You can use the static protocol. The following example
+use the static protocol to create a route 
+to \texttt{10.130.0.0/16}. The action is ... 
+
+\begin{lstlisting}
+protocol static {
+    ipv4 {
+        table t_bgp;
+    };
+    route 10.130.0.0/16 blackhole { bgp_large_community.add(LOCAL_COMM); };
+}
+\end{lstlisting}
 
 
 % -------------------------------------------
@@ -1143,22 +1178,6 @@ protocol bgp c_as12 {
 \end{lstlisting}
  
 
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{IP Prefix Hijacking} 
-
-
-
-\begin{lstlisting}
-protocol static hijacks {
-    ipv4 {
-        table t_bgp;
-    };
-    route 10.153.0.0/25 blackhole   { bgp_large_community.add(LOCAL_COMM); };
-    route 10.153.0.128/25 blackhole { bgp_large_community.add(LOCAL_COMM); };
-}
-\end{lstlisting}
  
 
 
