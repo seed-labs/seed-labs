@@ -64,12 +64,15 @@ This lab covers the following topics:
 \end{itemize}
 
 
-\paragraph{Videos.}
+\paragraph{Supporting materials.}
 Detailed coverage of the BGP protocol can be found in 
 Section 10 of the SEED Lecture at Udemy, \seedisvideo 
-The lecture was recorded before this lab was developed; 
-it focuses mostly on the theory part, i.e., explaining how the BGP protocol works. 
-This lab provides the practical part.  
+It focuses mostly on the theory part, i.e., explaining how the 
+BGP protocol and attacks work. 
+A detailed manual regarding the practical side of BGP is 
+also provided (see the linked document in the web page).
+The document describes how to configure BGP in BIRD, which
+is the BGP daemon program used in this lab. 
 
 
 \paragraph{Lab environment.} 
@@ -77,59 +80,56 @@ This lab provides the practical part.
 \nodependency
 
 
-\paragraph{Acknowledgment.} 
-This lab was developed with the help of Honghao Zeng, a graduate student
-in the Department of Electrical Engineering and Computer Science at Syracuse University.
-The SEED project is funded by the US National Science Foundation. 
-
 
 % *******************************************
 % SECTION
 % *******************************************
 \section{The Lab Setup and the SEED Internet Emulator} 
 
-This lab will be performed inside the SEED Internet Emulator. We will
-provide a pre-built emulator in two different forms: (1) Python code,
+This lab will be performed inside the SEED Internet Emulator (simply
+called the Emulator in this document). 
+We provide a pre-built emulator in two different forms: (1) Python code,
 and (2) container files. The container files are generated from
-the Python code. However, students need to install the SEED Emulator source 
+the Python code, but students need to install the SEED Emulator source 
 code from the GitHub to run the Python code. The container files
 can be directly used without the Emulator source code. 
-
+Detailed manuals for the Emulator can be found from 
+the project's GiHub repository (the link is provided on the web page).
 Instructors who would like to customize the emulator can modify the Python
 code, generate their own container files, and then provide these
 container files to students, replacing the ones included in the 
-setup file. 
+setup file.
 
 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Container Setup and Commands}
 
-% *******************************************
-% SECTION
-% *******************************************
-\section{Understanding the Configuration in BIRD} 
-
-The routing software used in this lab is called BIRD, which is 
-an acronym standing for ``BIRD Internet Routing Daemon''~\cite{bird}.
-It is open source under the GNU General Public License. It 
-supports a number of standard routing protocols, including 
-the Border Gateway Protocol (BGP),
-the Routing Information Protocol (RIP),
-and the Open Shortest Path First protocol (OSPF). We will
-mainly use BGP and OSPF in this lab. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/container/setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-BIRD takes the configuration
-file \texttt{bird.conf} from the \texttt{/etc/bird/} folder.
-In this lab, students need to understand the entries in the 
-configuration file. Students also need to make changes
-to the file for some tasks. In this section, we provide 
-a tutorial to help students understand the 
-configuration file. It should be noted that the actual configuration
-for BIRD is quite complicated, and most configuration entries 
-are protocol specific. Full details of the configuration 
-can be found in the BIRD manual~\cite{birdmanual}.
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The Network Map} 
 
+Each computer (hosts or routers) running inside the Emulator is a docker container.
+Users can access these computers using docker commands, such as getting a shell
+inside a container.
+The Emulator also comes with a very useful web application, 
+which visualizes all the hosts, routers, and networks. The 
+web application runs inside one of the containers. 
+After the Emulator starts, the map can be accessed from this
+URL: \url{http://localhost:8080/map.html}.
+Users can interact with this map, such as getting a terminal from 
+a container, disabling BGP sessions, and set filters to visualize network traffic.
+The syntax of the filter is the same as that in \texttt{tcpdump},
+because the filter is actually fed into
+the \texttt{tcpdump} program running on each container.
 
-Read the tutorial.
 
 
 
@@ -137,6 +137,10 @@ Read the tutorial.
 % SECTION
 % *******************************************
 \section{Task 1: Stub Autonomous System} 
+
+In this task, we will configure stub autonomous systems. 
+Students who are not familiar with the BIRD software should
+read the Sections 2, 3, 4, and 6 before working on this task. 
 
 % -------------------------------------------
 % SUBSECTION
@@ -238,8 +242,10 @@ hand it over to another AS. This type of AS provides the transit
 service for other ASes. That is how the hosts in one AS can reach the hosts in
 another AS, even though these ASes are not peers with each other.
 This special of AS is called \textit{Transit AS}.
+
 In this task, we will first understand how a transit AS works and
-then we will configure a transit AS in our Internet emulator.  
+then we will configure a transit AS in our Internet emulator. 
+Students should read Section 7 of the tutorial before working on this task.
 
 % -------------------------------------------
 % SUBSECTION
@@ -297,24 +303,8 @@ birdc> show protocols ospf1
 ospf1      OSPF       t_ospf     down   19:57:37.187
 \end{lstlisting}
  
-Another way is to modify the \texttt{bird.conf} configuration file,
-changing the \texttt{"import/export all"} to 
-\texttt{"import/export none"}. This will keep OSPF running, but  
-no routes obtained from the protocol will be used. 
 
-\begin{lstlisting}
-protocol ospf ospf1 {
-    ipv4 {
-        table t_ospf;
-        import none;  (*@\pointleft{import no route from peer}@*) 
-        export none;  (*@\pointleft{export no route to peer}@*) 
-    };
-    ...
-}
-\end{lstlisting}
- 
-
-\paragraph{Task.} We pick AS-3 transit autonomous system in this 
+We pick AS-3 transit autonomous system in this 
 task. This AS has four BGP routers, and we pick the one 
 connected to the IX-103 (Miami) Internet exchange.
 For the task, we also need to find some traffics that 
@@ -345,7 +335,7 @@ but it does not peer with anybody. Its topology can be found
 in Figure~\ref{bgp:fig:as5}.
 In this task, students need to conduct the following tasks:
 
-\begin{itemize}[noitemsep]
+\begin{itemize}
   \item Establish the IBGP inside AS-5 (this part is already created 
     inside the emulator, so we need to remove it before giving the container 
     files to students). The OSPF is also created, but we will keep it. 
@@ -377,24 +367,12 @@ so routing is based on this selected route.
 When the best route is retracted, BGP router re-runs the 
 best route selection algorithm to find the current best route. 
 
-
-Although different BGP software may implement the path selection
-differently, they mostly follow the similar order. The following
-lists the first four criteria used by most algorithms.
-
-\begin{enumerate}[noitemsep]
-  \item Prefer the path with the highest weight. 
-  \item Prefer the path with the highest local preference.
-  \item Prefer the path that was locally originated via a network or 
-        aggregate BGP subcommand or through redistribution from an IGP.
-  \item Prefer the path with the shortest AS path. 
-\end{enumerate}
-
 The top-2 criteria used by BIRD is the following:
 (1) prefer route with the highest Local Preference attribute,
 (2) prefer route with the shortest AS path. In this task, we will
 experiment with these two criteria, and see how they affect 
-the path selection. 
+the path selection. Students should read Section 5 of the tutorials
+before working on this task.
 
 
 \paragraph{Task 3.a.} The \texttt{"birdc show route all > all-routes"} command
@@ -413,28 +391,11 @@ AS-150 peers with both AS-2 and AS-3, which provides the
 Internet services to AS-150.
 However, because the link to AS-2 is slower than
 the link to AS-3, AS-150 wants 
-to use AS-2 only as the backup upstream link, i.e., traffic
-from AS-150 should always use AS-3, unless the link is broken.
-Please use two different ways to achieve this goal: 
-(1) setting the local preference, 
-(2) penalizing the path from AS-2 by artificially
-increasing the length of the AS paths from AS-2.
+to use AS-2 only as the backup upstream link, i.e., 
+AS-150's inbound and outbound traffic should 
+always use AS-3, unless the link is broken. 
+Please modify AS-150's BGP configuration to achieve this goal.
 
-
-The following filter example shows how to set the
-local preference for a route, and how to prepend 
-additional ASes (AS-2 is used in this example) to 
-the route's AS path.
-
-\begin{lstlisting}
-filter {
-    bgp_local_pref = 10;
-    bgp_path.prepend(2);
-    bgp_path.prepend(2);
-    accept;
-};
-\end{lstlisting}
- 
 
 
 % *******************************************
@@ -466,7 +427,7 @@ IP address is the same). Please set the filter on the map to
 look at the BGP routers on the path, and explain why
 the packets reach two different destinations. 
 
- 
+
 
 % *******************************************
 % SECTION
@@ -481,10 +442,6 @@ attackers, who can intercept or modify the traffic.
 Many of the incidents on the Internet are caused by
 such an ``attack'', although they are mostly caused 
 by the mis-configured BGP routers.
-
-
-The task is modeled after the famous YouTube incident. In 2008, ...
-...
 
 
 % -------------------------------------------
@@ -506,10 +463,10 @@ which contains pre-defined routes. The easiest way for a BGP router to
 announce a prefix that it does not own is to use 
 the \texttt{static} protocol. The following  
 example creates a pre-defined route to \texttt{10.130.0.0/16}. 
-See \S~\ref{bgp:subsec:static} for detailed explanation of the static protocol.
+See Section 3 of the tutorial for detailed explanation of the static protocol.
 It should be noted that in the filter part of the route,
 we need to add the route to the \texttt{LOCAL\_COMM} community; 
-otherwise, the BGP router will export it to the outside.   
+otherwise, the BGP router will not export it to the outside.   
 
 \begin{lstlisting}
 protocol static {
@@ -542,14 +499,15 @@ you can get the traffic back.
 \subsection{Task 5.c. Fixing the Problem at AS-3} 
 
 Eventually, the operators of AS-3 are reached. Without knowing 
-whether this is a misconfiguration on the AS-160 side or it is an 
-attack, AS-3 decides not cut the peering with AS-160, so the users 
+whether this is a misconfiguration on the AS-160 side or an intentional
+attack, AS-3 decides not to cut the peering with AS-160, so the users 
 of AS-160 can still reach the Internet (AS-3 is the only service 
 provider to AS-160). However, AS-3 must stop the propagation of the 
 fake announcement. This can be done by removing the 
-fake routes from its own announcement to its own peers. Please 
-modify the filter in AS-3's BGP configuration, so the problem
-can be fixed. 
+fake routes from its own announcement to its own peers.
+More specifically, AS-3 can add some code to its export 
+filter, so the fake routes will not be exported to
+the peers.
 
 
 % *******************************************
@@ -560,6 +518,19 @@ can be fixed.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section*{Acknowledgment} 
+
+This lab was developed with the help of Honghao Zeng, 
+a graduate student in the Department of Electrical Engineering 
+and Computer Science at Syracuse University. 
+The SEED project is funded by the US National Science Foundation. 
+
 
 
 \end{document}
