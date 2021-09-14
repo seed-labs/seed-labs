@@ -150,8 +150,8 @@ ebgp.addPrivatePeerings(105, [3],  [11, 170], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(105, [11], [171], PeerRelationship.Provider)
 
 # AS-190 is for the IP anycast task
-ebgp.addPrivatePeerings(100, [3, 4],  [190], PeerRelationship.Provider)
-ebgp.addPrivatePeerings(105, [2, 3],  [190], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(100, [4],  [190], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(105, [3],  [190], PeerRelationship.Provider)
 
 
 ###############################################################################
