@@ -548,9 +548,10 @@ Inside the lab setup folder, the \texttt{unsafe.php} program is
 in the \path{image_www/Code/defense} folder. You can directly 
 modify the program there. After you are done, you need
 to rebuild and restart the container, or the changes will not
-take effect. 
+take effect. You can also use the \texttt{"docker cp"} command
+to copy the file into the running container, and vice versa.
 
-You can also modify the file while the container is running.
+You can also modify the file inside the running container.
 On the running container, the \texttt{unsafe.php} program is 
 inside \path{/var/www/SQL_Injection/defense}. 
 The downside of this
@@ -558,7 +559,7 @@ approach is that in order to keep the docker image small,
 we have only installed a very simple text editor called \texttt{nano}
 inside the container. It should be sufficient for simple editing.
 If you do not like this editor, you can always use \texttt{"apt install"} to install
-your favoriate command-line editor inside the container. For example,
+your favorite command-line editor inside the container. For example,
 for people who like \texttt{vim}, you can do the following:
 
 \begin{lstlisting}

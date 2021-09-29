@@ -578,8 +578,10 @@ In the experiment, you need to modify this Apache
 configuration file (\texttt{apache\_csp.conf}). If you make a modification
 directly on the file inside the image folder, you need to rebuild the image
 and restart the container, so the change can take effect. 
+You can also use the \texttt{"docker cp"} command
+to copy the file into the running container, and vice versa.
 
-You can also modify the file while the container is running. 
+You can also modify the file inside the running container.
 The downside of this 
 option is that in order to keep the docker image small, 
 we have only installed a very simple text editor called \texttt{nano} 
