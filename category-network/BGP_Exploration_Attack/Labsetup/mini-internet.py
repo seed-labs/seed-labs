@@ -10,7 +10,6 @@ from seedemu.core import Emulator, Service, Binding, Filter
 from seedemu.layers import Router
 from seedemu.raps import OpenVpnRemoteAccessProvider
 from seedemu.utilities import Makers
-from os import mkdir
 
 from typing import List, Tuple, Dict
 
@@ -21,9 +20,7 @@ base    = Base()
 routing = Routing()
 ebgp    = Ebgp()
 ibgp    = Ibgp()
-#ospf    = Ospf()
 web     = WebService()
-#ovpn    = OpenVpnRemoteAccessProvider()
 
 
 ###############################################################################
@@ -75,8 +72,8 @@ Makers.makeTransitAs(base, 12, [101, 104], [(101, 104)])
 
 Makers.makeStubAs(emu, base, 150, 100, [web, None])
 # Add a shared folder to AS-150's BGP router (need it for the experiment)
-as150 = base.getAutonomousSystem(150)
-as150.getRouter('router0').addSharedFolder('/volumes', './volumes')
+#as150 = base.getAutonomousSystem(150)
+#as150.getRouter('router0').addSharedFolder('/volumes', './volumes')
 
 
 Makers.makeStubAs(emu, base, 151, 100, [web, None])
@@ -167,7 +164,6 @@ emu.addLayer(base)
 emu.addLayer(routing)
 emu.addLayer(ebgp)
 emu.addLayer(ibgp)
-#emu.addLayer(ospf)
 emu.addLayer(Ospf())
 emu.addLayer(web)
 
@@ -175,11 +171,7 @@ emu.addLayer(web)
 #emu.dump('base-component.bin')
 
 emu.render()
-#emu.compile(Docker(clientEnabled = True), './output')
 
 emu.compile(Docker(selfManagedNetwork=True, clientEnabled = True), './output')
 
-
-# Create the shared folder
-mkdir('./output/volumes')
 
