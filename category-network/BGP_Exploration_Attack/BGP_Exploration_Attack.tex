@@ -36,9 +36,6 @@
 
 \begin{center}
 {\LARGE BGP Exploration and Attack Lab}
-
-  \vspace{0.1in}
-  {\LARGE (Work in Progress)}
 \end{center}
 
 \seedlabcopyright{2021}
@@ -394,6 +391,7 @@ observation, explain why the IGP is essential for the transit
 autonomous systems. 
 
 
+
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
@@ -401,27 +399,39 @@ autonomous systems.
 
 The transit autonomous system AS-5 is already included in the emulator. 
 It connects to three 
-Internet exchanges: IX-101, IX-103, and IX-105 Internet exchange,
+Internet exchanges: IX-101, IX-103, and IX-105,
 but it does not peer with anybody. Its topology can be found 
 in Figure~\ref{bgp:fig:as5}.
 In this task, students need to conduct the following tasks:
 
 \begin{itemize}
-  \item Establish the IBGP inside AS-5 (this part is already created 
-    inside the emulator, so we need to remove it before giving the container 
-    files to students). The OSPF is also created, but we will keep it. 
+  \item The IBGP peering for AS-5 is already established in the 
+    emulator. Please use AS-5's BGP router at IX-101 as an example,
+    explain the meaning of its IBGP configuration.
 
-  \item Peer AS-5 with AS-153, AS-160, AS-171, with AS-5 being their service provider.
+  \item AS-5 will provide the transit service for AS-153, AS-160, and AS-171. 
+    Please configure their EBGP peering accordingly.
 
-  \item Peer AS-5 with the AS-3 at IX-103 (Miami). Since they are both Tier-1 ASes,
-    they don't pay each other, and their relationship is peer-to-peer.
+  \item AS-5 and AS-3 decide to peer at IX-103 (Miami). 
+    Since they are both Tier-1 ASes, they don't pay each other, 
+    and their relationship is peer-to-peer, not provider-to-customer.
 \end{itemize}
+
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.7\textwidth]{\bgpFigs/as-5.pdf}
+  \end{center}
+  \caption{AS-5's network diagram}
+  \label{bgp:fig:as5}
+\end{figure}
 
 
 In your lab report, please include the content you add to the 
 BIRD configuration file, and provide proper explanation.
 Please also include screenshots (such as traceroute) to demonstrate 
 that your task is successful. 
+
 
 
 % *******************************************
@@ -580,9 +590,8 @@ of AS-160 can still reach the Internet (AS-3 is the only service
 provider to AS-160). However, AS-3 must stop the propagation of the 
 fake announcement. This can be done by removing the 
 fake routes from its own announcement to its own peers.
-More specifically, AS-3 can add some code to its export 
-filter, so the fake routes will not be exported to
-the peers.
+More specifically, AS-3 can add some code to its 
+filters, so the fake routes will be discarded. 
 
 
 % *******************************************
