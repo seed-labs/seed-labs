@@ -8,6 +8,7 @@
 
 \newcommand{\commonfolder}{../../common-files}
 
+
 \input{\commonfolder/header}
 \input{\commonfolder/copyright}
 \hypersetup{%
@@ -16,6 +17,19 @@
 
 \lhead{\bfseries SEED Labs -- BGP Exploration and Attack}
 \newcommand{\bgpFigs}{./Figs}
+
+% Chapter numbers in the tutorial
+\newcommand{\bgpintro}{1\xspace}
+\newcommand{\bgpprotocol}{3\xspace}
+\newcommand{\bgpupdate}{7\xspace}
+\newcommand{\pathselection}{8\xspace}
+\newcommand{\bigcommunity}{9\xspace}
+\newcommand{\transitas}{10\xspace}
+\newcommand{\ipanycast}{11\xspace}
+\newcommand{\bgphijacking}{12\xspace}
+
+
+\usepackage{hyperref}
 
 \begin{document}
 
@@ -29,7 +43,7 @@
 
 \seedlabcopyright{2021}
 
-\tableofcontents
+%\tableofcontents
 
 
 
@@ -65,14 +79,15 @@ This lab covers the following topics:
 
 
 \paragraph{Supporting materials.}
-Detailed coverage of the BGP protocol can be found in 
-Section 10 of the SEED Lecture at Udemy, \seedisvideo 
-It focuses mostly on the theory part, i.e., explaining how the 
-BGP protocol and attacks work. 
-A detailed manual regarding the practical side of BGP is 
-also provided (see the linked document in the web page).
-The document describes how to configure BGP in BIRD, which
-is the BGP daemon program used in this lab. 
+BGP is quite complicated, especially its practice side.
+To help students work on this lab, I have written a chapter on
+BGP, which will be included in the 3rd edition of my book.
+I will make this chapter a sample chapter, so it is free
+for everybody to download. 
+The link to this chapter can be found from the web page of this lab.
+Without reading this chapter
+or covering it in the lecture, it will be quite hard 
+for students to work on this lab.
 
 
 \paragraph{Lab environment.} 
@@ -88,8 +103,8 @@ is the BGP daemon program used in this lab.
 
 This lab will be performed inside the SEED Internet Emulator (simply
 called the Emulator in this document). 
-We provide a pre-built emulator in two different forms: (1) Python code,
-and (2) container files. The container files are generated from
+We provide a pre-built emulator in two different forms: Python code
+and container files. The container files are generated from
 the Python code, but students need to install the SEED Emulator source 
 code from the GitHub to run the Python code. The container files
 can be directly used without the Emulator source code. 
@@ -101,68 +116,124 @@ container files to students, replacing the ones included in the
 setup file.
 
 
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{Container Setup and Commands}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{\commonfolder/container/setup}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Download the emulator files.}
+Please download the \texttt{Labsetup.zip} file from the web page, and 
+Unzip it. The files inside the \texttt{output} sub-folder are the actual
+emulation files (container files) that are
+generated from the Python code \texttt{mini-internet.py}.
 
 
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{The Network Map} 
+\paragraph{Start the emulation.}
+We will directly use the container files in the \texttt{output} folder. 
+Go to this folder, and run the following docker commands
+to build and start the containers. We recommend that you run the Emulator inside
+the provided SEED Ubuntu 20.04 VM, but doing it in a generic Ubuntu 20.04 operating system
+should not have any problem, as long as the docker software is installed. 
+Readers can find the docker manual from 
+\href{https://github.com/seed-labs/seed-labs/blob/master/manuals/docker/SEEDManual-Container.md}
+{\underline{this link}}.
 
+\begin{lstlisting}
+$ docker-compose build
+$ docker-compose up
+
+// Aliases for the Compose commands above (only available in the SEED VM)
+$ dcbuild       # Alias for: docker-compose build
+$ dcup          # Alias for: docker-compose up
+$ dcdown        # Alias for: docker-compose down
+\end{lstlisting}
+
+\paragraph{The network map.}
 Each computer (hosts or routers) running inside the Emulator is a docker container.
 Users can access these computers using docker commands, such as getting a shell
 inside a container.
-The Emulator also comes with a very useful web application, 
-which visualizes all the hosts, routers, and networks. The 
-web application runs inside one of the containers. 
+The Emulator also comes with a web application, which visualizes all the hosts, routers,
+and networks.
 After the Emulator starts, the map can be accessed from this
 URL: \url{http://localhost:8080/map.html}.
-Users can interact with this map, such as getting a terminal from 
-a container, disabling BGP sessions, and set filters to visualize network traffic.
-The syntax of the filter is the same as that in \texttt{tcpdump},
-because the filter is actually fed into
-the \texttt{tcpdump} program running on each container.
+See Figure~\ref{bgp:fig:emulator-map}.
+Users can interact with this map, such as getting a terminal from any of the container,
+disabling BGP sessions, and set filters to visualize network traffic.
+The syntax of the filter is the same as that in \texttt{tcpdump}; actually,
+the filter is given into the \texttt{tcpdump} program.
 
-
-
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{\bgpFigs/emulator_map.jpg}
+  \end{center}
+  \caption{The SEED Internet Emulator}
+  \label{bgp:fig:emulator-map}
+\end{figure}
+ 
 
 % *******************************************
 % SECTION
 % *******************************************
 \section{Task 1: Stub Autonomous System} 
 
-In this task, we will configure stub autonomous systems. 
-Students who are not familiar with the BIRD software should
-read the Sections 2, 3, 4, and 6 before working on this task. 
+An autonomous system (AS) is a collection of connected Internet Protocol (IP) routing prefixes
+under the control of one or more network operators on behalf of a single administrative entity
+or domain. It is a basic unit in BGP. 
+A stub AS the type of AS that does not provide transit service to others.
+Most of end users are stub ASes, including universities, organization,
+and most companies. Another type of AS is called transit AS. They
+provide transit services for other ASes, and they 
+are Internet service providers.  
+
+In this task, we focus on stub ASes, see how it peers with others. 
+For this type of ASes, we will gain a glimpse of how BGP works. 
+Students should read Sections \bgpintro - \bgpupdate 
+before working on this task. 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
 \subsection{Task 1.a: Understanding AS-155's BGP Configuration} 
 
-Please study the BGP configuration on AS-155, and answer the following question:
+AS-155 is a stub AS, which has one BGP router. Please  
+get a terminal on the container of this router, study its 
+BGP configuration file at \path{/etc/bird/bird.conf}, and
+do the followings.
 
 \begin{itemize}
-  \item Study the BGP configuration file, and understand how it
-    peer with others. Do not worry about the filtering part.
-    What ASes does AS-155 peer with? 
+  \item From the BGP configuration file, identify who
+    AS-155 peers with. You can ignore the filtering
+    part of the configuration for now.
 
-  \item AS-155 peers with both AS-2 and AS-4, so if AS-155
+  \item AS-155 peers with several ASes, so if AS-155
     loses the connection with one of them, it can still connect
     to the Internet. Please design an experiment to 
     demonstrate this. You can enable/disable BGP sessions
     either from the \texttt{birdc} command or from the 
-    graph. In your experiment, please show 
-    how the routing table changes when a particular 
-    BGP session is disabled. 
+    graph.
+    In your experiment, please show how the routing table changes when a particular 
+    BGP session is disabled/enabled. 
 \end{itemize}
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1.b: Observing BGP UPDATE Messages} 
+
+The objective of this task is to understand the BGP UPDATE messages. 
+Run \texttt{tcpdump} on AS-150's BGP router,
+use it to monitor the BGP traffic. This command will save the 
+captured BGP packets into \texttt{/tmp/bgp.pcap}.  
+
+\begin{lstlisting}
+# tcpdump -i any -w /tmp/bgp.pcap "tcp port 179"
+\end{lstlisting}
+
+Your job is to do something on AS-155's BGP router to trigger
+at least one BGP route withdrawal and one BGP route advertisement
+messages. These UPDATE messages should be captured by
+the \texttt{tcpdump} command on AS-150 and stored inside \texttt{bgp.pcap}.
+Copy this file to the host computer using the \texttt{"docker cp"} command (from the host),
+and then load it into Wireshark. 
+Pick a route advertisement message and a route withdraw message, provide
+explanation on these two messages. Screenshots should be provided in the 
+lab report.
 
 
 
@@ -171,11 +242,24 @@ Please study the BGP configuration on AS-155, and answer the following question:
 % -------------------------------------------
 \subsection{Task 1.b: Experimenting with Large Communities} 
 
+When a BGP router sends routes to its peers, they do not send all the routes they
+know. What routes are sent depends on many factors, such as the
+region of the peers, the business relationship between the peers,
+and policies. To help BGP routers make such decisions, additional
+information needs to be attached to each route, as the predefined
+set of route attributes cannot capture such information.
+The BGP Large Communities are created to serve this goal.
+The objective of this task is to learn how it is used 
+in the Emulator to reflect the business relationship
+among peers. 
+
+
 Due to some technical issue, the connection between AS-4 and AS-156 is broken. 
 Since AS-4 is the only service provider for AS-156, this essentially
 disconnects AS-156 from the Internet. However, AS-156 still peers with AS-155, 
 which is still connected to the Internet, so why is AS-156 not able to 
 connect to the Internet?  
+Please read Section \bigcommunity before working on this task. 
 
 While AS-156 and AS-4 are trying to solve the problem, AS-156 holds an 
 emergency meeting with AS-155, agreeing to pay AS-155, so its 
@@ -185,20 +269,6 @@ Please make such changes, so AS-155 can temporarily
 provide a transit service to AS-156.
 
 
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{Task 1.c: Observing BGP Update} 
-
-Run \texttt{tcpdump} on another BGP router, use it to monitor the BGP traffic.
-Identify the update and withdraw message. When would a withdraw message be 
-triggered and when would an update message be triggered? 
-
-\begin{lstlisting}
-# ip address
-
-# tcpdump -n -i ix105 -vvvvv port 179
-\end{lstlisting}
  
 % -------------------------------------------
 % SUBSECTION
@@ -208,17 +278,18 @@ triggered and when would an update message be triggered?
 AS-180 is already included in the emulator. It connects to the
 IX105 Internet exchange (Houston), but it does not peer with anybody, 
 so it is not connected to the Internet. 
-In this task, students need to do the following:
+In this task, students need to complete the configuration of 
+AS-180's BGP router and other related BGP routers, 
+so the following is achieved:
 
 \begin{itemize}[noitemsep]
-  \item Peer AS-180 with AS-171, so they can directly reach each other
+  \item Peer AS-180 with AS-171, so they can directly reach each other.
   \item Peer AS-180 with the AS-2 and AS-3 transit autonomous systems, so they can
     reach other destination via these transits.
 \end{itemize}
 
-
-In your lab report, please include the content you add to the 
-BIRD configuration file, and provide proper explanation.
+In your lab report, please include the content that you add to the 
+BIRD configuration files, and provide proper explanation.
 Please also include screenshots (such as traceroute) to demonstrate 
 that your task is successful. 
 
@@ -245,7 +316,7 @@ This special of AS is called \textit{Transit AS}.
 
 In this task, we will first understand how a transit AS works and
 then we will configure a transit AS in our Internet emulator. 
-Students should read Section 7 of the tutorial before working on this task.
+Students should read Section \transitas of the tutorial before working on this task.
 
 % -------------------------------------------
 % SUBSECTION
@@ -371,8 +442,8 @@ The top-2 criteria used by BIRD is the following:
 (1) prefer route with the highest Local Preference attribute,
 (2) prefer route with the shortest AS path. In this task, we will
 experiment with these two criteria, and see how they affect 
-the path selection. Students should read Section 5 of the tutorials
-before working on this task.
+the path selection. Students should read Section \pathselection 
+of the tutorials before working on this task.
 
 
 \paragraph{Task 3.a.} The \texttt{"birdc show route all > all-routes"} command
@@ -426,6 +497,8 @@ IP address is the same). Please set the filter on the map to
 \texttt{icmp} to visualize the packet trace, then 
 look at the BGP routers on the path, and explain why
 the packets reach two different destinations. 
+Students should read Section \ipanycast of the tutorial 
+before working on this task.
 
 
 
@@ -442,6 +515,8 @@ attackers, who can intercept or modify the traffic.
 Many of the incidents on the Internet are caused by
 such an ``attack'', although they are mostly caused 
 by the mis-configured BGP routers.
+Students should read Section \bgphijacking of the tutorial 
+before working on this task.
 
 
 % -------------------------------------------
@@ -529,7 +604,8 @@ the peers.
 This lab was developed with the help of Honghao Zeng, 
 a graduate student in the Department of Electrical Engineering 
 and Computer Science at Syracuse University. 
-The SEED project is funded by the US National Science Foundation. 
+The SEED project was funded in part 
+by the US National Science Foundation. 
 
 
 
