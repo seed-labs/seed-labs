@@ -13,6 +13,7 @@
 \label{sidechannel:sec:compilation}
 
 
+\paragraph{For Ubuntu 16.04 OS.}
 For most of our tasks, you need to add \texttt{-march=native}
 flag when compiling the code with
 \texttt{gcc}. The \texttt{march} flag tells the compiler to enable all
@@ -23,6 +24,16 @@ For example, we compile \texttt{myprog.c} using the following command:
 $ gcc -march=native -o myprog myprog.c
 \end{lstlisting}
 
+\paragraph{For Ubuntu 20.04 OS.}
+On Ubuntu 20.04 OS, including the \texttt{-march=native} option may 
+cause errors to some computers. From our debugging effort,
+it seemed this option was no longer needed. Therefore, if you 
+do encounter errors due to this option, try the compilation
+without using the option:
+
+\begin{lstlisting}
+$ gcc -o myprog myprog.c
+\end{lstlisting}
 
 
 
