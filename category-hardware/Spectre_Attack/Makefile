@@ -9,7 +9,7 @@ WEB    = ../../seedwebsite/Labs_16.04/PDF
 all: $(LABPDF)
 
 
-%.pdf: %.tex
+%.pdf: %.tex ../Meltdown_Attack/Side_Channel_Attack.tex
 	pdflatex $<
 	pdflatex $<
 

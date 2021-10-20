@@ -6,7 +6,7 @@ LABPDF = $(LAB).pdf
 all: $(LABPDF)
 
 
-%.pdf: %.tex
+%.pdf: %.tex Side_Channel_Attack.tex
 	pdflatex $<
 	pdflatex $<
 
