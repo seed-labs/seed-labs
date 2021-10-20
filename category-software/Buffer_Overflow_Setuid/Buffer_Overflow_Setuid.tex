@@ -470,25 +470,25 @@ We need to create a file called
 \texttt{badfile} before running the program. 
 
 
-\newcommand{\pointleft}{\reflectbox{\ding{221}}\xspace}
+%\newcommand{\pointleft}{\reflectbox{\ding{221}}\xspace}
 
 \begin{lstlisting}
-$ touch badfile       (*@\pointleft \textbf{Create an empty badfile}@*)
+$ touch badfile       (*@\pointleft{Create an empty badfile}@*)
 $ gdb stack-L1-dbg
-gdb-peda$ b bof       (*@\pointleft \textbf{Set a break point at function bof()}@*)
+gdb-peda$ b bof       (*@\pointleft{Set a break point at function bof()}@*)
 Breakpoint 1 at 0x124d: file stack.c, line 18.
-gdb-peda$ run         (*@\pointleft \textbf{Start executing the program}@*)
+gdb-peda$ run         (*@\pointleft{Start executing the program}@*)
 ...
 Breakpoint 1, bof (str=0xffffcf57 ...) at stack.c:18
 18  {
-gdb-peda$ next        (*@\pointleft \textbf{See the note below}@*)
+gdb-peda$ next        (*@\pointleft{See the note below}@*)
 ...
 22	    strcpy(buffer, str);
-gdb-peda$ p $ebp      (*@\pointleft \textbf{Get the ebp value}@*)
+gdb-peda$ p $ebp      (*@\pointleft{Get the ebp value}@*)
 $1 = (void *) 0xffffdfd8   
-gdb-peda$ p &buffer   (*@\pointleft \textbf{Get the buffer's address}@*)
+gdb-peda$ p &buffer   (*@\pointleft{Get the buffer's address}@*)
 $2 = (char (*)[100]) 0xffffdfac
-gdb-peda$ quit        (*@\pointleft \textbf{exit}@*)
+gdb-peda$ quit        (*@\pointleft{exit}@*)
 \end{lstlisting}
 
 \paragraph{Note 1.} When \texttt{gdb} stops inside the \texttt{bof()} function, it 
