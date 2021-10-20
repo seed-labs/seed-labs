@@ -12,15 +12,26 @@ services:
                 - ./volumes:/volumes
         network_mode: host
 
-    host:
+    hostA:
         image: handsonsecurity/seed-ubuntu:large
-        container_name: host-10.9.0.5
+        container_name: hostA-10.9.0.5
         tty: true
         cap_add:
                 - ALL
         networks:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.5
+
+    hostB:
+        image: handsonsecurity/seed-ubuntu:large
+        container_name: hostB-10.9.0.6
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.6
+                  
                   
 networks:
     net-10.9.0.0:
