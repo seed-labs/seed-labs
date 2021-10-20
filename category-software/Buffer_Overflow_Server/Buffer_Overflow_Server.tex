@@ -288,19 +288,19 @@ and \texttt{codefile\_64}, respectively. You can then use
 \texttt{call\_shellcode} to execute the shellcode in them. 
 
 
-\newcommand{\pointright}{\ding{221}}
+%\newcommand{\pointright}{\ding{221}}
 
 \begin{lstlisting}
 // Generate the shellcode binary 
-$ ./shellcode_32.py    (*@\pointright@*) generate codefile_32
-$ ./shellcode_64.py    (*@\pointright@*) generate codefile_64
+$ ./shellcode_32.py    (*@\pointright{}@*) generate codefile_32
+$ ./shellcode_64.py    (*@\pointright{}@*) generate codefile_64
 
 // Compile call_shellcode.c
-$ make                 (*@\pointright@*) generate a32.out and a64.out 
+$ make                 (*@\pointright{}@*) generate a32.out and a64.out 
 
 // Test the shellcode 
-$ a32.out              (*@\pointright@*) execute the shellcode in codefile_32
-$ a64.out              (*@\pointright@*) execute the shellcode in codefile_64
+$ a32.out              (*@\pointright{}@*) execute the shellcode in codefile_32
+$ a64.out              (*@\pointright{}@*) execute the shellcode in codefile_64
 \end{lstlisting}
  
 
