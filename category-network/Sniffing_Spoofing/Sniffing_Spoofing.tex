@@ -100,35 +100,22 @@ their students' programming background.
 % ******************************************* 
 \section{Environment Setup using Container} 
 
-In this lab, we will use two machines that are connected
-to the same LAN. We can either use two VMs or use two containers. 
+In this lab, we will use three machines that are connected
+to the same LAN. We can either use three VMs or three containers. 
 Figure~\ref{fig:labsetup} depicts the lab environment setup using 
 containers.
 We will do all the attacks on the attacker container, while using
-the other container as the user machine. 
+the other containers as the user machines. 
 
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/OneLan_onehost.pdf}
+\includegraphics[width=0.8\textwidth]{\commonfolder/Figs/OneLan_twohosts.pdf}
 \end{center}
 \caption{Lab environment setup}
 \label{fig:labsetup}
 \end{figure}
  
-
-%\begin{lstlisting}[backgroundcolor=]
-%                +--------------+      +--------------+
-%                |  (attacker)  |      |    (user)    |
-%                |   10.9.0.1   |      |   10.9.0.5   |
-%                +-----+--------+      +------+-------+
-%                      | br-<id>              | eth0
-%         10.9.0.0/24  |                      |
-%         -------------+----------------------+------------
-%
-%\end{lstlisting}
- 
-
 
 % -------------------------------------------
 % SUBSECTION
@@ -461,7 +448,20 @@ ip route get 1.2.3.4
 \section{Lab Task Set 2: Writing Programs to Sniff and Spoof Packets}
 
 For this set up of tasks, you should compile the C code 
-inside the host VM, and then run the code inside the container. 
+inside the host VM, and then run the code inside the container. You can use the
+\texttt{"docker cp"} command to copy a file from the host VM to a container.
+See the following example (there is no need to type the docker ID in full):
+
+\begin{lstlisting}
+$ dockps
+f4501a488a69  hostA-10.9.0.5
+85058cbdee62  hostB-10.9.0.6
+24cbc879e371  seed-attacker
+
+// Copy a.out to the seed-attacker container's /tmp folder
+$ docker cp a.out 24cbc879e371:/tmp
+\end{lstlisting}
+ 
 
 % -------------------------------------------
 % SUBSECTION
@@ -500,9 +500,10 @@ int main()
   char filter_exp[] = "icmp";
   bpf_u_int32 net;
 
-  // Step 1: Open live pcap session on NIC with name eth3
-  //         Students needs to change "eth3" to the name 
-  //         found on their own machines (using ifconfig).
+  // Step 1: Open live pcap session on NIC with name eth3.
+  //         Students need to change "eth3" to the name found on their own 
+  //         machines (using ifconfig). The interface to the 10.9.0.0/24 
+  //         network has a prefix "br-" (if the container setup is used).
   handle = pcap_open_live("eth3", BUFSIZ, 1, 1000, errbuf); 
 
   // Step 2: Compile filter_exp into BPF psuedo-code
@@ -550,8 +551,19 @@ does the program fail if it is executed without the root privilege?
 
 
 \item \textbf{Question 3.} Please turn on and turn off the promiscuous mode in your sniffer
-program. Can you demonstrate the difference when this mode is on and off? Please describe how
-you can demonstrate this.
+    program. The value \texttt{1} of the third
+    parameter in \texttt{pcap\_open\_live()} turns on the promiscuous mode (use \texttt{0}
+    to turn it off). 
+    Can you demonstrate the difference when this mode is on and off? Please describe how
+    you can demonstrate this. You can use the following command to check
+    whether an interface's promiscuous mode is on or off (look at the \texttt{promiscuity}'s
+    value).
+
+\begin{lstlisting}
+# ip -d link show dev br-f2478ef59744
+1249: br-f2478ef59744: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 ...
+    link/ether 02:42:ac:99:d1:88 brd ff:ff:ff:ff:ff:ff (*@\textbf{promiscuity 1}@*) ...
+\end{lstlisting}
 \end{itemize}
 
 
@@ -692,11 +704,11 @@ privilege?
 
 In this task, you will combine the sniffing and spoofing techniques
 to implement the following sniff-and-then-spoof program. 
-You need two VMs on the same LAN. From VM A, you 
+You need two machines on the same LAN. From machine A, you 
 {\tt ping} an IP X. This will generate an ICMP echo 
 request packet. If X is alive, the {\tt ping} program will receive 
 an echo reply, and print out the response. Your sniff-and-then-spoof
-program runs on VM B, which monitors the LAN through packet sniffing. Whenever it 
+program runs on the attacker machine, which monitors the LAN through packet sniffing. Whenever it 
 sees an ICMP echo request, regardless of what the target IP address is,
 your program should immediately send out an echo reply using the 
 packet spoofing technique. Therefore, regardless of whether machine X
