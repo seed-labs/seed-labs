@@ -21,6 +21,10 @@ services:
         networks:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.5
+        command: bash -c "
+                      /etc/init.d/openbsd-inetd start  &&
+                      tail -f /dev/null
+                 "
 
     hostB:
         image: handsonsecurity/seed-ubuntu:large
@@ -31,7 +35,10 @@ services:
         networks:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.6
-                  
+        command: bash -c "
+                      /etc/init.d/openbsd-inetd start  &&
+                      tail -f /dev/null
+                 "
                   
 networks:
     net-10.9.0.0:
