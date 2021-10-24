@@ -25,6 +25,7 @@ Compose to set up its container-based lab environments.
 We provide manuals to help students who are not familiar with containers.
 
 - [Running Commands inside Containers](./container-execute.md)
+- [Copying Files Between Container and Host](./container-copyfile.md)
 - [Packet sniffing inside container](./container-sniffing.md)
 - [Finding out network interface name](./container-interface.md)
 - [Detaching the VM From a Network](./detaching.md)
