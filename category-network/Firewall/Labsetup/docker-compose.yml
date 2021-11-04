@@ -51,8 +51,7 @@ services:
                  "
 
     Host3:
-      # image: handsonsecurity/seed-ubuntu:large
-        image: seed-router-image
+        image: handsonsecurity/seed-ubuntu:large
         container_name: host3-192.168.60.7
         tty: true
         cap_add:
@@ -71,7 +70,7 @@ services:
 
     Router:
         build: router
-        image: seed-router-image 
+        image: handsonsecurity/seed-ubuntu:large
         container_name: seed-router
         tty: true
         cap_add:
