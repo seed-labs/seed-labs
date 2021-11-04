@@ -56,8 +56,6 @@ services:
         tty: true
         cap_add:
                 - ALL
-        volumes:
-                - ./volumes:/volumes
         networks:
             net-192.168.60.0:
                 ipv4_address: 192.168.60.7
@@ -70,7 +68,7 @@ services:
 
     Router:
         build: router
-        image: handsonsecurity/seed-ubuntu:large
+        image: seed-router-image
         container_name: seed-router
         tty: true
         cap_add:
