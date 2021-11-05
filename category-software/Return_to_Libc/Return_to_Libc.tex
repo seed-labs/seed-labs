@@ -438,13 +438,22 @@ void main(){
 
 Compile the code above into a binary called \texttt{prtenv}.  
 If the address randomization is turned off, you will find out that the same 
-address is printed out. When you run the vulnerable program \texttt{retlib}
+address is printed out.
+When you run the vulnerable program \texttt{retlib}
 inside the same terminal, the address of the environment
-variable will be the same. You can verify that by putting 
+variable will be the same (see the special note below). 
+You can verify that by putting 
 the code above inside \texttt{retlib.c}. However, 
 the length of the program name does make a difference. That's why
 we choose 6 characters for the program name \texttt{prtenv} to match
 the length of \texttt{retlib}.  
+
+\paragraph{Note.} You should use the \texttt{-m32} flag when 
+compiling the above program, so the binary code \texttt{prtenv} 
+will be for 32-bit machines, 
+instead of for 64-bit ones. The vulnerable program \texttt{retlib} is 
+a 32-bit binary, so if \texttt{prtenv} is 64-bit, the address of the 
+environment variable will be different.
 
 
 
