@@ -151,6 +151,34 @@ It is included in \texttt{Labsetup.zip} file, which
 can be downloaded from the lab's website. Your job is to use the frequency analysis
 to figure out the encryption key and the original plaintext.
 
+We have also provided a Python program (\texttt{freq.py}) inside 
+the \path{Labsetup/Files} folder. It reads the \texttt{ciphertext.txt} file,
+and produces the statistics for n-grams, including the single-letter frequencies, 
+bigram frequencies (2-letter sequence), and trigram frequencies (3-letter sequence), etc.
+
+
+\begin{lstlisting}
+$ ./freq.py 
+-------------------------------------
+1-gram (top 20):
+n: 488
+y: 373
+v: 348
+...
+-------------------------------------
+2-gram (top 20):
+yt: 115
+tn: 89
+mu: 74
+...
+-------------------------------------
+3-gram (top 20):
+ytn: 78
+vup: 30
+mur: 20
+...
+\end{lstlisting}
+ 
 
 
 \paragraph{Guidelines.} Using the frequency analysis, you can find
@@ -168,15 +196,10 @@ the results are saved in \texttt{out.txt}.
 $ tr 'aet' 'XGE' < in.txt > out.txt
 \end{lstlisting}
 
-
-There are many online resources that you can use. We list four useful links in
+There are many online resources that you can use. We list some useful links in
 the following:
 
-
 \begin{itemize}
-\item \url{http://www.richkni.co.uk/php/crypta/freq.php} : This website can produce the
-statistics from a ciphertext, including the single-letter frequencies, bigram
-frequencies (2-letter sequence), and trigram frequencies (3-letter sequence), etc.
 
 \item \url{https://en.wikipedia.org/wiki/Frequency_analysis}: This Wikipedia page
 provides frequencies for a typical English plaintext.
