@@ -152,11 +152,11 @@ See Figure~\ref{bgp:fig:emulator-map}.
 Users can interact with this map, such as getting a terminal from any of the container,
 disabling BGP sessions, and set filters to visualize network traffic.
 The syntax of the filter is the same as that in \texttt{tcpdump}; actually,
-the filter is given into the \texttt{tcpdump} program.
+the filter is directly fed into the \texttt{tcpdump} program running on all nodes.
 
 \begin{figure}[htb]
   \begin{center}
-    \includegraphics[width=0.8\textwidth]{\bgpFigs/emulator_map.jpg}
+    \includegraphics[width=0.95\textwidth]{\bgpFigs/emulator_gui.pdf}
   \end{center}
   \caption{The SEED Internet Emulator}
   \label{bgp:fig:emulator-map}
@@ -237,7 +237,7 @@ lab report.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 1.b: Experimenting with Large Communities} 
+\subsection{Task 1.c: Experimenting with Large Communities} 
 
 When a BGP router sends routes to its peers, they do not send all the routes they
 know. What routes are sent depends on many factors, such as the
@@ -250,8 +250,9 @@ The objective of this task is to learn how it is used
 in the Emulator to reflect the business relationship
 among peers. 
 
-
-Due to some technical issue, the connection between AS-4 and AS-156 is broken. 
+Let us assume that due to some technical issue, 
+the connection between AS-4 and AS-156 is broken.  We can
+emulate this by disabling the peering between AS-4 and AS-156.
 Since AS-4 is the only service provider for AS-156, this essentially
 disconnects AS-156 from the Internet. However, AS-156 still peers with AS-155, 
 which is still connected to the Internet, so why is AS-156 not able to 
@@ -321,16 +322,17 @@ Students should read Section \transitas of the tutorial before working on this t
 \subsection{Task 2.a: Experimenting with IBGP} 
 
 
-For the task, we first need to find some traffics that 
-go through AS-3. We will ping \texttt{10.164.0.71} from a host in AS-162. Using the 
+For the task, we first need to find some traffic that 
+goes through AS-3. We will ping \texttt{10.164.0.71} from a host in AS-162. Using the 
 map client program, we can see that the packets go through
 the AS-3 transit AS. If this is not consistent with your observation,
 do find some other traffics that go through AS-3. 
 
-We will now disable the IBGP sessions either the map client or 
+We will now disable the IBGP sessions either using the map client or 
 from the command line. See the following example.
 
 \begin{lstlisting}
+# birdc
 bird> show protocols
 Name       Proto      Table      State  Since         Info
 ...
@@ -375,8 +377,8 @@ ospf1      OSPF       t_ospf     down   19:57:37.187
 We pick AS-3 transit autonomous system in this 
 task. This AS has four BGP routers, and we pick the one 
 connected to the IX-103 (Miami) Internet exchange.
-For the task, we also need to find some traffics that 
-go through AS-3. 
+For the task, we also need to find some traffic that 
+goes through AS-3. 
 We will ping \texttt{10.164.0.71} from a host in AS-162. Using the 
 map client program, we can see that the packets go through
 the AS-3 transit AS. If this is not consistent with your observation,
@@ -400,7 +402,7 @@ autonomous systems.
 The transit autonomous system AS-5 is already included in the emulator. 
 It connects to three 
 Internet exchanges: IX-101, IX-103, and IX-105,
-but it does not peer with anybody. Its topology can be found 
+but it does not peer with any AS. Its topology can be found 
 in Figure~\ref{bgp:fig:as5}.
 In this task, students need to conduct the following tasks:
 
