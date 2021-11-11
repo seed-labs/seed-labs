@@ -158,13 +158,8 @@ The objective of this task is to use packet spoofing to launch an ARP cache pois
 a target, such that when two victim machines A and B try to communicate with each other, their
 packets will be intercepted by the attacker, who can make changes to the packets, and can thus
 become the man in the middle between A and B. This is called Man-In-The-Middle (MITM) attack.
-In this lab, we use ARP cache poisoning to conduct an MITM attack. 
-
-
-
+In this task, we focus on the ARP cache poisoning part.
 The following code skeleton shows how to construct an ARP packet using Scapy. 
-Please replace the interface name \texttt{br-05f0c56e8085} with the one in your 
-own setup (see the previous section). 
 
 \begin{lstlisting}
 #!/usr/bin/env python3
@@ -172,19 +167,27 @@ from scapy.all import *
 
 E = Ether()
 A = ARP()
+A.op = 1     # 1 for ARP request; 2 for ARP reply
 
 pkt = E/A
-sendp(pkt, iface='br-05f0c56e8085')
+sendp(pkt)
 \end{lstlisting}
 
 The above program constructs and sends an ARP packet. Please set necessary attribute
-names/values to define your own ARP packet. We can use \texttt{ls(ARP)} to see the attribute
-names of the ARP class. If a field is not set, a default value will be used (see the third
+names/values to define your own ARP packet. We can use \texttt{ls(ARP)}
+and \texttt{ls(Ether)} to see the attribute names of the \texttt{ARP} and \texttt{Ether} classes. 
+If a field is not set, a default value will be used (see the third
 column of the output):
 
 \begin{lstlisting}
 $ python3
 >>> from scapy.all import *
+
+>>> ls(Ether)
+dst        : DestMACField                        = (None)
+src        : SourceMACField                      = (None)
+type       : XShortEnumField                     = (36864)
+
 >>> ls(ARP)
 hwtype     : XShortField                         = (1)
 ptype      : XShortEnumField                     = (2048)
@@ -198,9 +201,10 @@ pdst       : IPField                             = ('0.0.0.0')
 \end{lstlisting}
 
 In this task, we have three machines (containers), A, B, and M. 
-We would like to attack A's ARP cache, such that
-B's IP address is mapped to M's MAC address. We can check
-a computer's ARP cache using the following command. If you 
+We use M as the attacker machine. We would like to cause 
+A to add a fake entry to its ARP cache, such that 
+B's IP address is mapped to M's MAC address.
+We can check a computer's ARP cache using the following command. If you 
 want to look at the ARP cache associated with a specific
 interface, you can use the \texttt{-i} option. 
 
@@ -215,21 +219,25 @@ There are many ways to conduct ARP cache poisoning attack. Students need to try 
 three methods, and report whether each method works or not. 
 
 \begin{itemize}
-\item \textbf{Task 1.A (using ARP request).} On host M, construct an ARP request packet and send
-to host A. Check A's ARP cache, and see whether M's MAC address is mapped to B's IP address.
+\item \textbf{Task 1.A (using ARP request).} On host M, construct an ARP request packet 
+  to map B's IP address to M's MAC address. Send the packet to A and 
+  check whether the attack is successful or not.
     
-\item \textbf{Task 1.B (using ARP reply).} On host M, construct an ARP reply packet and send to
-host A. Check A's ARP cache, and see whether M's MAC address is mapped to B's IP address.
-Try the attack for two different scenarios: 
+\item \textbf{Task 1.B (using ARP reply).} On host M, construct an ARP reply packet 
+  to map B's IP address to M's MAC address. Send the packet to A and 
+  check whether the attack is successful or not.
+  Try the attack under the following two scenarios, and report the results of your attack: 
   
     \begin{itemize}
       \item Scenario 1: B's IP is already in A's cache.
-      \item Scenario 2: B's IP is not in A's cache.
+      \item Scenario 2: B's IP is not in A's cache. You can use the 
+	    command \texttt{"arp -d a.b.c.d"} to remove the ARP cache 
+	    entry for the IP address \texttt{a.b.c.d}.  
     \end{itemize}
      
     
 \item \textbf{Task 1.C (using ARP gratuitous message).} On host M, construct an ARP gratuitous
-packet, and use it to map M's MAC address to B's IP address. Please launch the attack
+packet, and use it to map B's IP address to M's MAC address. Please launch the attack
 under the same two scenarios as those described in Task 1.B. 
 
 ARP gratuitous packet is a special ARP request packet. It is used when a host machine
