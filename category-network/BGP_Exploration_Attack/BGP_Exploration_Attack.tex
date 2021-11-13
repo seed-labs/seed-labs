@@ -84,7 +84,7 @@ for everybody to download.
 The link to this chapter can be found from the web page of this lab.
 Without reading this chapter
 or covering it in the lecture, it will be quite hard 
-for students to work on this lab.
+for students to work on this lab. 
 
 
 \paragraph{Lab environment.} 
@@ -140,19 +140,11 @@ $ dcup          # Alias for: docker-compose up
 $ dcdown        # Alias for: docker-compose down
 \end{lstlisting}
 
-\paragraph{The network map.}
-Each computer (hosts or routers) running inside the Emulator is a docker container.
-Users can access these computers using docker commands, such as getting a shell
-inside a container.
-The Emulator also comes with a web application, which visualizes all the hosts, routers,
-and networks.
-After the Emulator starts, the map can be accessed from this
-URL: \url{http://localhost:8080/map.html}.
-See Figure~\ref{bgp:fig:emulator-map}.
-Users can interact with this map, such as getting a terminal from any of the container,
-disabling BGP sessions, and set filters to visualize network traffic.
-The syntax of the filter is the same as that in \texttt{tcpdump}; actually,
-the filter is directly fed into the \texttt{tcpdump} program running on all nodes.
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The Network Map}
 
 \begin{figure}[htb]
   \begin{center}
@@ -162,6 +154,67 @@ the filter is directly fed into the \texttt{tcpdump} program running on all node
   \label{bgp:fig:emulator-map}
 \end{figure}
  
+
+Each computer (hosts or routers) running inside the Emulator is a docker container.
+Users can access these computers using docker commands, such as getting a shell
+inside a container.
+The Emulator also comes with a web application, which visualizes all the hosts, routers,
+and networks.
+After the Emulator starts, the map can be accessed from this
+URL: \url{http://localhost:8080/map.html}.
+See Figure~\ref{bgp:fig:emulator-map}.
+Users can interact with this map, such as getting a terminal from any of the container,
+disabling BGP sessions (see Figure~\ref{bgp:fig:node-info}). 
+Users can also set filters to visualize network traffic.
+The syntax of the filter is the same as that in \texttt{tcpdump}; actually,
+the filter is directly fed into the \texttt{tcpdump} program running on all nodes.
+
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{\bgpFigs/emulator_node_info.pdf}
+  \end{center}
+  \caption{Interact with a node}
+  \label{bgp:fig:node-info}
+\end{figure}
+ 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Modifying the BGP Configuration File} 
+
+We need to modify the BGP configuration file in several tasks.
+We can do that by directly modifying the configuration file
+inside a container. Anther way is to copy the file into the host VM,
+do the editing from the host VM, and then copy it back. Let us 
+see an example (assuming that we want to modify the BGP configuration
+file of AS-180):
+
+\begin{lstlisting}
+// Find out the IP of the AS-180's BGP router container
+$ dockps | grep 180
+6bf0bcda8d06  as180h-host_1-10.180.0.72
+437874056b15  as180h-webservice_0-10.180.0.71
+(*@\textbf{2967}@*)6d5034ce  as180r-router0-10.180.0.254     (*@\pointleft{This is AS-180's BGP router}@*) 
+
+// Copy the configuration file from the container to the host machine
+$ docker cp 2967:/etc/bird/bird.conf ./as180_bird.conf
+
+... edit the file ...
+
+// Copy the file back to the container 
+$ docker cp ./as180_bird.conf 2967:/etc/bird/bird.conf 
+
+// Reload the configuration on the container
+$ docker exec 2967 birdc configure    (*@\pointleft{Run "birdc configure"}@*) 
+BIRD 2.0.7 ready.
+Reading configuration from /etc/bird/bird.conf
+Reconfigured
+\end{lstlisting}
+ 
+
+
 
 % *******************************************
 % SECTION
@@ -195,16 +248,61 @@ do the followings.
 \begin{itemize}
   \item From the BGP configuration file, identify who
     AS-155 peers with. You can ignore the filtering
-    part of the configuration for now.
+    part of the configuration for now. Here is one of the
+    BGP entries in the configuration file. See Section 6
+    of the provided BGP chapter for the explanation of each entry.
+    
+\begin{lstlisting}
+protocol bgp u_as2 {
+    ipv4 {
+        table t_bgp;
+        import filter {
+            bgp_large_community.add(PROVIDER_COMM);
+            bgp_local_pref = 10;
+            accept;
+        };
+        export where bgp_large_community ~ [LOCAL_COMM, CUSTOMER_COMM];
+        next hop self;
+    };
+    local 10.102.0.155 as 155;
+    neighbor 10.102.0.2 as 2;
+}
+\end{lstlisting}
+     
 
   \item AS-155 peers with several ASes, so if AS-155
     loses the connection with one of them, it can still connect
     to the Internet. Please design an experiment to 
     demonstrate this. You can enable/disable BGP sessions
-    either from the \texttt{birdc} command or from the 
-    graph.
+    either from the graph (see Figure~\ref{bgp:fig:node-info}) or
+    using the \texttt{birdc} command (see the following examples). 
     In your experiment, please show how the routing table changes when a particular 
-    BGP session is disabled/enabled. 
+    BGP session is disabled/enabled (you can use the \texttt{"ip route"} to 
+    see the content of a routing table). 
+
+
+\begin{lstlisting}
+root@0c97d3ade85a / # birdc show protocols
+BIRD 2.0.7 ready.
+Name       Proto      Table      State  Since         Info
+...
+u_as2      BGP        ---        (*@\textbf{up}@*)     14:51:40.447  Established
+u_as4      BGP        ---        up     14:51:39.500  Established
+...
+
+root@0c97d3ade85a / # birdc disable u_as2   (*@\pointleft{Disable peering with AS-2}@*) 
+BIRD 2.0.7 ready.
+u_as2: disabled
+
+root@0c97d3ade85a / # birdc show protocols
+BIRD 2.0.7 ready.
+Name       Proto      Table      State  Since         Info
+...
+u_as2      BGP        ---        (*@\textbf{down}@*)   16:32:14.883
+u_as4      BGP        ---        up     14:51:39.500  Established
+...
+\end{lstlisting}
+
 \end{itemize}
 
 
@@ -254,10 +352,33 @@ Let us assume that due to some technical issue,
 the connection between AS-4 and AS-156 is broken.  We can
 emulate this by disabling the peering between AS-4 and AS-156.
 Since AS-4 is the only service provider for AS-156, this essentially
-disconnects AS-156 from the Internet. However, AS-156 still peers with AS-155, 
+disconnects AS-156 from the Internet. If we ping another host from
+one of the hosts in AS-156, we can see the following results (please 
+do not run ping from the BGP router; only run it from a host):
+
+\begin{lstlisting}
+// On 10.156.0.72
+# ping 10.155.0.71
+PING 10.155.0.71 (10.155.0.71) 56(84) bytes of data.
+64 bytes from 10.155.0.71: icmp_seq=1 ttl=62 time=14.6 ms
+64 bytes from 10.155.0.71: icmp_seq=2 ttl=62 time=0.363 ms
+
+# ping 10.161.0.71
+PING 10.161.0.71 (10.161.0.71) 56(84) bytes of data.
+From 10.156.0.254 icmp_seq=1 Destination Net Unreachable
+From 10.156.0.254 icmp_seq=2 Destination Net Unreachable
+From 10.156.0.254 icmp_seq=3 Destination Net Unreachable
+\end{lstlisting}
+ 
+We can see that \texttt{10.155.0.71} is still reachable, because it
+belongs to AS-155, which is still peered with AS-156. However,
+\texttt{10.161.0.71} (belonging to AS-161) cannot be reached, because 
+nobody will route the packet for AS-156.
+The question is, AS-156 still peers with AS-155, 
 which is still connected to the Internet, so why is AS-156 not able to 
-connect to the Internet?  
-Please read Section \bigcommunity before working on this task. 
+connect to the Internet?  This is because whether an AS forwards 
+traffic for another AS depends on their business relationship. 
+
 
 While AS-156 and AS-4 are trying to solve the problem, AS-156 holds an 
 emergency meeting with AS-155, agreeing to pay AS-155, so its 
@@ -265,7 +386,17 @@ traffic can temporarily go through AS-155 to reach the Internet.
 This requires some changes on AS-155's BGP router. 
 Please make such changes, so AS-155 can temporarily 
 provide a transit service to AS-156.
+Please read Section \bigcommunity before working on this task. 
+After making the changes, please make sure run the following 
+command to reload the BIRD configuration.
 
+\begin{lstlisting}
+# birdc configure
+BIRD 2.0.7 ready.
+Reading configuration from /etc/bird/bird.conf
+Reconfigured
+\end{lstlisting}
+ 
 
  
 % -------------------------------------------
@@ -290,6 +421,21 @@ In your lab report, please include the content that you add to the
 BIRD configuration files, and provide proper explanation.
 Please also include screenshots (such as traceroute) to demonstrate 
 that your task is successful. 
+
+In this task, if the result is not what you have expected, 
+you may need to debug to find out what has gone wrong. In particular, 
+you want to know where your packets go. For example, if you run \texttt{ping},
+but you do not get the reply, you want to know where the problem is. You can
+use the filter option in the map client, and visualize the traffic flow.  
+The syntax of the filter is the same as that in \texttt{tcpdump}.
+We give a few examples in the following.
+
+\begin{lstlisting}
+"icmp"                      (*@\pointleft{show all icmp traffic}@*) 
+"icmp and src 10.180.0.71"  (*@\pointleft{show icmp traffic from 10.180.0.71}@*)
+"icmp and dst 10.180.0.71"  (*@\pointleft{show icmp traffic  to 10.180.0.71}@*)
+\end{lstlisting}
+ 
 
 
 % *******************************************
