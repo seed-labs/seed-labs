@@ -463,10 +463,10 @@ A skeleton code is provided in the following. You need to replace each
 from scapy.all import *
 
 ip  = IP(src="@@@@", dst="@@@@")
-tcp = TCP(sport=@@@@, dport=@@@@, flags="@@@@", seq=@@@@, ack=@@@@)
+tcp = TCP(sport=@@@@, dport=@@@@, flags="R", seq=@@@@)
 pkt = ip/tcp
 ls(pkt)
-send(pkt,verbose=0)
+send(pkt, verbose=0)
 \end{lstlisting}
 
 \paragraph{Optional: Launching the attack automatically.} 
@@ -576,11 +576,11 @@ should put into each field of the spoofed TCP packets.
 from scapy.all import *
 
 ip  = IP(src="@@@@", dst="@@@@")
-tcp = TCP(sport=@@@@, dport=@@@@, flags="@@@@", seq=@@@@, ack=@@@@)
+tcp = TCP(sport=@@@@, dport=@@@@, flags="A", seq=@@@@, ack=@@@@)
 data = "@@@@"
 pkt = ip/tcp/data
 ls(pkt)
-send(pkt,verbose=0)
+send(pkt, verbose=0)
 \end{lstlisting}
 
 
