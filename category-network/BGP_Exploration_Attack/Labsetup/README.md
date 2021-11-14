@@ -9,5 +9,5 @@ the `output` folder.
 ## Container Files
 
 The container files are stored in the 
-`emulator` folder. 
+`output` folder. 
 
