@@ -21,12 +21,15 @@
 % Chapter numbers in the tutorial
 \newcommand{\bgpintro}{1\xspace}
 \newcommand{\bgpprotocol}{3\xspace}
+\newcommand{\bgppeering}{6\xspace}
 \newcommand{\bgpupdate}{7\xspace}
 \newcommand{\pathselection}{8\xspace}
 \newcommand{\bigcommunity}{9\xspace}
 \newcommand{\transitas}{10\xspace}
 \newcommand{\ipanycast}{11\xspace}
 \newcommand{\bgphijacking}{12\xspace}
+
+
 
 
 \usepackage{hyperref}
@@ -86,6 +89,16 @@ Without reading this chapter
 or covering it in the lecture, it will be quite hard 
 for students to work on this lab. 
 
+
+\paragraph{Note for instructors.} 
+Tasks 1 to 4 are designed to help students understand the technical 
+details of BGP, it is for the instructors who do cover BGP in-depth in
+their classes. Only Task 5, BGP attacks, is related to security,
+so if instructors only want students to
+focus on the security aspect of BGP, they can skip Tasks 1 - 4, and 
+assign Task 5 directly to students, as this task
+does not depend on the earlier tasks. 
+High-level knowledge on BGP should be sufficient for Task 5.
 
 \paragraph{Lab environment.} 
 \seedenvironmentB
@@ -249,7 +262,7 @@ do the followings.
   \item From the BGP configuration file, identify who
     AS-155 peers with. You can ignore the filtering
     part of the configuration for now. Here is one of the
-    BGP entries in the configuration file. See Section 6
+    BGP entries in the configuration file. See Section \bgppeering 
     of the provided BGP chapter for the explanation of each entry.
     
 \begin{lstlisting}
@@ -417,12 +430,28 @@ so the following is achieved:
     reach other destination via these transits.
 \end{itemize}
 
-In your lab report, please include the content that you add to the 
-BIRD configuration files, and provide proper explanation.
-Please also include screenshots (such as traceroute) to demonstrate 
-that your task is successful. 
+\paragraph{Shell script.}
+In this task, we need to modify several bird configuration files.
+Instead of going to each container to make changes, we can copy
+all the bird configuration files from the containers to the host VM,
+make changes, and then copy them back to the containers.
+We have included two shell scripts in the \texttt{task1} folder
+to facilitate the process:
 
-In this task, if the result is not what you have expected, 
+\begin{itemize}[noitemsep]
+  \item \texttt{import\_bird\_conf.sh}:
+    get all the needed bird configuration files from the containers.
+    If a configuration file already exists in the current folder,
+    the file will not be overwritten.
+
+  \item \texttt{export\_bird\_conf.sh}: copy the bird configuration
+    files to the containers and run \texttt{"birdc configure"}
+    to reload the configuration.
+\end{itemize}
+
+
+\paragraph{Debugging.}
+If the result is not what you have expected, 
 you may need to debug to find out what has gone wrong. In particular, 
 you want to know where your packets go. For example, if you run \texttt{ping},
 but you do not get the reply, you want to know where the problem is. You can
@@ -436,6 +465,13 @@ We give a few examples in the following.
 "icmp and dst 10.180.0.71"  (*@\pointleft{show icmp traffic  to 10.180.0.71}@*)
 \end{lstlisting}
  
+
+\paragraph{Lab report.}
+In your lab report, please include the content that you add to the 
+BIRD configuration files, and provide proper explanation.
+Please also include screenshots (such as traceroute) to demonstrate 
+that your task is successful. 
+
 
 
 % *******************************************
@@ -545,6 +581,15 @@ autonomous systems.
 % -------------------------------------------
 \subsection{Task 2.c: Configuring AS-5} 
 
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.7\textwidth]{\bgpFigs/as-5.pdf}
+  \end{center}
+  \caption{AS-5's network diagram}
+  \label{bgp:fig:as5}
+\end{figure}
+
 The transit autonomous system AS-5 is already included in the emulator. 
 It connects to three 
 Internet exchanges: IX-101, IX-103, and IX-105,
@@ -557,22 +602,25 @@ In this task, students need to conduct the following tasks:
     emulator. Please use AS-5's BGP router at IX-101 as an example,
     explain the meaning of its IBGP configuration.
 
-  \item AS-5 will provide the transit service for AS-153, AS-160, and AS-171. 
-    Please configure their EBGP peering accordingly.
+  \item AS-5 will provide the transit service for AS-153 (at IX-101), 
+    AS-160 (at IX-103), and AS-171 (at IX-105). 
+    Please configure their EBGP peering accordingly. Students can 
+    learn from the other transit ASes, and see how their peering
+    is configured. 
+
 
   \item AS-5 and AS-3 decide to peer at IX-103 (Miami). 
-    Since they are both Tier-1 ASes, they don't pay each other, 
-    and their relationship is peer-to-peer, not provider-to-customer.
+    Since they are roughly the same size, they both benefit from the 
+    peering equally, so they decide 
+    their relationship should be peer-to-peer, not provider-to-customer.
+    They do not pay each other. 
 \end{itemize}
 
-
-\begin{figure}[htb]
-  \begin{center}
-    \includegraphics[width=0.7\textwidth]{\bgpFigs/as-5.pdf}
-  \end{center}
-  \caption{AS-5's network diagram}
-  \label{bgp:fig:as5}
-\end{figure}
+In this task, we need to modify several bird configuration files.
+Just like in Task 1, we have created two shell scripts in the 
+\texttt{task2} folder. They can be used to automate the 
+downloading/uploading of the bird configuration from/to the 
+containers.
 
 
 In your lab report, please include the content you add to the 
@@ -683,10 +731,10 @@ before working on this task.
 \subsection{Task 5.a. Launching the Prefix Hijacking Attack from AS-160} 
 
 In this task, we will launch the prefix hijacking attack
-using a BGP router in AS-160. Our goal is to hijack
-the IP prefix owned by AS-156. If the attack is successful,
-all the packets going to AS-156 will be rerouted to AS-160, where
-they will be dropped. Essentially, we are black holing AS-156.
+using a BGP router in AS-161. Our goal is to hijack
+the IP prefix owned by AS-154. If the attack is successful,
+all the packets going to AS-154 will be rerouted to AS-161, where
+they will be dropped. Essentially, we are black holing AS-154.
 
 The prefixes announced by a BGP router can come from different 
 sources: they can come from the \texttt{direct} protocol, 
@@ -696,7 +744,7 @@ which contains pre-defined routes. The easiest way for a BGP router to
 announce a prefix that it does not own is to use 
 the \texttt{static} protocol. The following  
 example creates a pre-defined route to \texttt{10.130.0.0/16}. 
-See Section 3 of the tutorial for detailed explanation of the static protocol.
+See Section \bgpprotocol of the tutorial for detailed explanation of the static protocol.
 It should be noted that in the filter part of the route,
 we need to add the route to the \texttt{LOCAL\_COMM} community; 
 otherwise, the BGP router will not export it to the outside.   
@@ -716,13 +764,13 @@ protocol static {
 % -------------------------------------------
 \subsection{Task 5.b. Fighting Back from AS-156} 
 
-AS-156 immediately noticed the attack, the operators tried to contact
-the operators of AS-3, which is the upstream service provider for AS-160,
+AS-154 immediately noticed the attack, the operators tried to contact
+the operators of AS-3, which is the upstream service provider for AS-161,
 asking them to block the attack. Unfortunately, it was midnight for AS-3's
 operators, so nobody could be reached. The loss of the service provided 
-by AS-156 is very significant, so the operators of AS-156 decide to 
+by AS-156 is very significant, so the operators of AS-154 decide to 
 fight back; they want to ``steal'' back their own network prefixes, without the help
-of AS-3. Please reconfigure the BGP routers of AS-156, so 
+of AS-3. Please reconfigure the BGP routers of AS-154, so 
 you can get the traffic back. 
 
 
@@ -732,10 +780,10 @@ you can get the traffic back.
 \subsection{Task 5.c. Fixing the Problem at AS-3} 
 
 Eventually, the operators of AS-3 are reached. Without knowing 
-whether this is a misconfiguration on the AS-160 side or an intentional
-attack, AS-3 decides not to cut the peering with AS-160, so the users 
-of AS-160 can still reach the Internet (AS-3 is the only service 
-provider to AS-160). However, AS-3 must stop the propagation of the 
+whether this is a misconfiguration on the AS-161 side or an intentional
+attack, AS-3 decides not to cut the peering with AS-161, so the users 
+of AS-161 can still reach the Internet (AS-3 is the only service 
+provider to AS-161). However, AS-3 must stop the propagation of the 
 fake announcement. This can be done by removing the 
 fake routes from its own announcement to its own peers.
 More specifically, AS-3 can add some code to its 
