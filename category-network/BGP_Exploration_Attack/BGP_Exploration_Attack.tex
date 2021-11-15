@@ -65,7 +65,7 @@ BGP ``glues'' the Internet together, and how the Internet is actually
 connected. We have built an Internet emulator, and will 
 use this emulator as the basis for the lab activities. Due to the 
 complexity of BGP, the explanation of how BGP works is provided
-in a separate document. They are essential for the lab activities, 
+in a separate document. It is essential for the lab activities, 
 so students should read
 the document before working on the lab. 
 This lab covers the following topics:
@@ -113,23 +113,21 @@ High-level knowledge on BGP should be sufficient for Task 5.
 \section{The Lab Setup and the SEED Internet Emulator} 
 
 This lab will be performed inside the SEED Internet Emulator (simply
-called the Emulator in this document). 
+called the emulator in this document). 
 We provide a pre-built emulator in two different forms: Python code
 and container files. The container files are generated from
 the Python code, but students need to install the SEED Emulator source 
 code from the GitHub to run the Python code. The container files
-can be directly used without the Emulator source code. 
-Detailed manuals for the Emulator can be found from 
-the project's GiHub repository (the link is provided on the web page).
+can be directly used without the emulator source code. 
 Instructors who would like to customize the emulator can modify the Python
-code, generate their own container files, and then provide these
-container files to students, replacing the ones included in the 
-setup file.
+code, generate their own container files, and then provide the
+files to students, replacing the ones included in the 
+lab setup file.
 
 
 \paragraph{Download the emulator files.}
 Please download the \texttt{Labsetup.zip} file from the web page, and 
-Unzip it. The files inside the \texttt{output} sub-folder are the actual
+unzip it. The files inside the \texttt{output} sub-folder are the actual
 emulation files (container files) that are
 generated from the Python code \texttt{mini-internet.py}.
 
@@ -137,7 +135,7 @@ generated from the Python code \texttt{mini-internet.py}.
 \paragraph{Start the emulation.}
 We will directly use the container files in the \texttt{output} folder. 
 Go to this folder, and run the following docker commands
-to build and start the containers. We recommend that you run the Emulator inside
+to build and start the containers. We recommend that you run the emulator inside
 the provided SEED Ubuntu 20.04 VM, but doing it in a generic Ubuntu 20.04 operating system
 should not have any problem, as long as the docker software is installed. 
 Readers can find the docker manual from 
@@ -169,12 +167,12 @@ $ dcdown        # Alias for: docker-compose down
 \end{figure}
  
 
-Each computer (hosts or routers) running inside the Emulator is a docker container.
+Each computer (hosts or routers) running inside the emulator is a docker container.
 Users can access these computers using docker commands, such as getting a shell
 inside a container.
-The Emulator also comes with a web application, which visualizes all the hosts, routers,
+The emulator also comes with a web application, which visualizes all the hosts, routers,
 and networks.
-After the Emulator starts, the map can be accessed from this
+After the emulator starts, the map can be accessed from this
 URL: \url{http://localhost:8080/map.html}.
 See Figure~\ref{bgp:fig:emulator-map}.
 Users can interact with this map, such as getting a terminal from any of the container,
@@ -186,7 +184,7 @@ the filter is directly fed into the \texttt{tcpdump} program running on all node
 
 \begin{figure}[htb]
   \begin{center}
-    \includegraphics[width=0.6\textwidth]{\bgpFigs/emulator_node_info.pdf}
+    \includegraphics[width=0.5\textwidth]{\bgpFigs/emulator_node_info.pdf}
   \end{center}
   \caption{Interact with a node}
   \label{bgp:fig:node-info}
@@ -228,6 +226,43 @@ Reconfigured
 \end{lstlisting}
  
 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Convention used in the Emulator}
+
+To make it easy to identify the roles of each node in the 
+emulator, we have created a set of conventions when assigning
+various numbers to nodes. 
+These conventions are only for the emulator, and they
+do not hold in the real world. 
+
+\begin{itemize}
+  \item Autonomous System Number (ASN) assignment:
+    \begin{itemize}
+      \item ASN \texttt{2 - 9:} for large transit ASes (e.g., national backbone).
+      \item ASN \texttt{10 - 19:} for smaller transit ASes.
+      \item ASN \texttt{100 - 149:} for Internet Exchanges (IX).
+      \item ASN \texttt{150 - 199:} for stub ASes. 
+    \end{itemize}
+
+  \item Network prefixes and IP addresses:
+    
+    \begin{itemize}
+      \item For an autonomous system N, its first internal network's prefix
+	is \texttt{10.N.0.0/24}, the second internal network
+	is \texttt{10.N.1.0/24}, and so on.
+   
+      \item In each network, the address \texttt{200} to \texttt{255} 
+	are for routers. For hosts (non-router), their IP address 
+	start from \texttt{71}. For example, in AS-155, 
+	\texttt{10.155.0.255} is a BGP router, while \texttt{10.155.0.71}
+	is a host. 
+    \end{itemize}
+     
+
+\end{itemize}
+
 
 
 % *******************************************
@@ -249,25 +284,30 @@ For this type of ASes, we will gain a glimpse of how BGP works.
 Students should read Sections \bgpintro - \bgpupdate 
 before working on this task. 
 
+
+
+ 
+
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
 \subsection{Task 1.a: Understanding AS-155's BGP Configuration} 
 
-AS-155 is a stub AS, which has one BGP router. Please  
-get a terminal on the container of this router, study its 
-BGP configuration file at \path{/etc/bird/bird.conf}, and
-do the followings.
+AS-155 is a stub AS, which has one network (\texttt{10.155.0.0/24})
+and one BGP router (\texttt{10.155.0.254}). 
+Please  get a terminal on the container of this router, study its 
+BGP configuration in \path{/etc/bird/bird.conf}, and then
+do the following tasks.
 
 \begin{itemize}
-  \item From the BGP configuration file, identify who
+  \item \textbf{Task 1.a.1:} From the BGP configuration file, identify who
     AS-155 peers with. You can ignore the filtering
     part of the configuration for now. Here is one of the
     BGP entries in the configuration file. See Section \bgppeering 
-    of the provided BGP chapter for the explanation of each entry.
+    of the provided BGP tutorial for the explanation of each entry.
     
 \begin{lstlisting}
-protocol bgp u_as2 {
+(*@\textbf{protocol bgp}@*) u_as2 {
     ipv4 {
         table t_bgp;
         import filter {
@@ -284,7 +324,7 @@ protocol bgp u_as2 {
 \end{lstlisting}
      
 
-  \item AS-155 peers with several ASes, so if AS-155
+  \item \textbf{Task 1.a.2:} AS-155 peers with several ASes, so if AS-155
     loses the connection with one of them, it can still connect
     to the Internet. Please design an experiment to 
     demonstrate this. You can enable/disable BGP sessions
@@ -299,10 +339,8 @@ protocol bgp u_as2 {
 root@0c97d3ade85a / # birdc show protocols
 BIRD 2.0.7 ready.
 Name       Proto      Table      State  Since         Info
-...
 u_as2      BGP        ---        (*@\textbf{up}@*)     14:51:40.447  Established
 u_as4      BGP        ---        up     14:51:39.500  Established
-...
 
 root@0c97d3ade85a / # birdc disable u_as2   (*@\pointleft{Disable peering with AS-2}@*) 
 BIRD 2.0.7 ready.
@@ -311,10 +349,8 @@ u_as2: disabled
 root@0c97d3ade85a / # birdc show protocols
 BIRD 2.0.7 ready.
 Name       Proto      Table      State  Since         Info
-...
 u_as2      BGP        ---        (*@\textbf{down}@*)   16:32:14.883
 u_as4      BGP        ---        up     14:51:39.500  Established
-...
 \end{lstlisting}
 
 \end{itemize}
@@ -359,7 +395,7 @@ information needs to be attached to each route, as the predefined
 set of route attributes cannot capture such information.
 The BGP Large Communities are created to serve this goal.
 The objective of this task is to learn how it is used 
-in the Emulator to reflect the business relationship
+in the emulator to reflect the business relationship
 among peers. 
 
 Let us assume that due to some technical issue, 
@@ -389,7 +425,7 @@ belongs to AS-155, which is still peered with AS-156. However,
 \texttt{10.161.0.71} (belonging to AS-161) cannot be reached, because 
 nobody will route the packet for AS-156.
 The question is, AS-156 still peers with AS-155, 
-which is still connected to the Internet, so why is AS-156 not able to 
+which is connected to the Internet, so why is AS-156 not able to 
 connect to the Internet?  This is because whether an AS forwards 
 traffic for another AS depends on their business relationship. 
 
@@ -419,11 +455,11 @@ Reconfigured
 \subsection{Task 1.d: Configuring AS-180} 
 
 AS-180 is already included in the emulator. It connects to the
-IX105 Internet exchange (Houston), but it does not peer with anybody, 
+IX-105 Internet exchange (Houston), but it does not peer with anybody, 
 so it is not connected to the Internet. 
 In this task, students need to complete the configuration of 
-AS-180's BGP router and other related BGP routers, 
-so the following is achieved:
+AS-180's BGP router and all the related BGP routers, 
+so the following goals are achieved:
 
 \begin{itemize}[noitemsep]
   \item Peer AS-180 with AS-171, so they can directly reach each other.
@@ -432,20 +468,20 @@ so the following is achieved:
 \end{itemize}
 
 \paragraph{Shell script.}
-In this task, we need to modify several bird configuration files.
+In this task, we need to modify several BIRD configuration files.
 Instead of going to each container to make changes, we can copy
-all the bird configuration files from the containers to the host VM,
+all the BIRD configuration files from the containers to the host VM,
 make changes, and then copy them back to the containers.
 We have included two shell scripts in the \texttt{task1} folder
 to facilitate the process:
 
 \begin{itemize}[noitemsep]
   \item \texttt{import\_bird\_conf.sh}:
-    get all the needed bird configuration files from the containers.
+    get all the needed BIRD configuration files from the containers.
     If a configuration file already exists in the current folder,
     the file will not be overwritten.
 
-  \item \texttt{export\_bird\_conf.sh}: copy the bird configuration
+  \item \texttt{export\_bird\_conf.sh}: copy the BIRD configuration
     files to the containers and run \texttt{"birdc configure"}
     to reload the configuration.
 \end{itemize}
@@ -455,7 +491,7 @@ to facilitate the process:
 If the result is not what you have expected, 
 you may need to debug to find out what has gone wrong. In particular, 
 you want to know where your packets go. For example, if you run \texttt{ping},
-but you do not get the reply, you want to know where the problem is. You can
+but you do not get a reply, you want to know where the problem is. You can
 use the filter option in the map client, and visualize the traffic flow.  
 The syntax of the filter is the same as that in \texttt{tcpdump}.
 We give a few examples in the following.
@@ -482,28 +518,31 @@ that your task is successful.
 
 If two ASes want to connect, they can peer with each other
 at an Internet exchange point. The question is how two ASes in two different locations
-get connected to each other. It is hard for them
+can reach each other. It is hard for them
 to find a common location to peer. To solve this problem,
 a special type of AS is needed.
 
 This type of AS have BGP routers in many Internet
 Exchange Points, where they peer with many other ASes. Once packets get into
 its networks, they will be pulled from one IX to another IX (typically via
-some internal routers), and eventually
-hand it over to another AS. This type of AS provides the transit
+some internal routers), and eventually be
+handed over to another AS. This type of AS provides the transit
 service for other ASes. That is how the hosts in one AS can reach the hosts in
-another AS, even though these ASes are not peers with each other.
+another AS, even though they are not peers with each other.
 This special of AS is called \textit{Transit AS}.
 
 In this task, we will first understand how a transit AS works and
 then we will configure a transit AS in our Internet emulator. 
 Students should read Section \transitas of the tutorial before working on this task.
+We pick AS-3 transit autonomous system in this 
+task. This AS has four BGP routers, each at a different 
+Internet exchange (IX).
+We pick the one connected to the Miami Internet exchange (IX-103).
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
 \subsection{Task 2.a: Experimenting with IBGP} 
-
 
 For the task, we first need to find some traffic that 
 goes through AS-3. We will ping \texttt{10.164.0.71} from a host in AS-162. Using the 
@@ -511,8 +550,9 @@ map client program, we can see that the packets go through
 the AS-3 transit AS. If this is not consistent with your observation,
 do find some other traffics that go through AS-3. 
 
-We will now disable the IBGP sessions either using the map client or 
-from the command line. See the following example.
+We will now disable the IBGP sessions on AS-3's BGP router 
+at IX-103 either using the map client or 
+from the command line (see the following example).
 
 \begin{lstlisting}
 # birdc
@@ -521,12 +561,12 @@ Name       Proto      Table      State  Since         Info
 ...
 ibgp1      BGP        ---        up     20:19:03.800  Established
 ibgp2      BGP        ---        up     20:19:11.921  Established
-ibgp3      BGP        ---        up     20:20:50.238  Established
+ibgp3      BGP        ---        (*@\textbf{up}@*)     20:20:50.238  Established
 
 bird> disable ibgp3 
 bird> show protocols ibgp3
 Name       Proto      Table      State  Since         Info
-ibgp3      BGP        ---        down   20:26:44.526
+ibgp3      BGP        ---        (*@\textbf{down}@*)   20:26:44.526
 \end{lstlisting}
  
 Before disabling IBGP, show the routing table 
@@ -540,7 +580,8 @@ your observations.
 % -------------------------------------------
 \subsection{Task 2.b: Experimenting with IGP} 
 
-In this task, we will disable the OSPF routing protocol, and see 
+In this task, we will use the same BGP router. 
+We will disable the OSPF routing protocol, and see 
 how it affects the routing. There are several ways to disable
 OSPF. One way is to do it inside \texttt{birdc}: 
 
@@ -548,32 +589,18 @@ OSPF. One way is to do it inside \texttt{birdc}:
 # bridc
 birdc> show protocols
 ...
-ospf1      OSPF       t_ospf     up     19:49:43.343  Running
+ospf1      OSPF       t_ospf     (*@\textbf{up}@*)     19:49:43.343  Running
 ...
 
 birdc> disable ospf1
 birdc> show protocols ospf1
-ospf1      OSPF       t_ospf     down   19:57:37.187
+ospf1      OSPF       t_ospf     (*@\textbf{down}@*)   19:57:37.187
 \end{lstlisting}
  
-
-We pick AS-3 transit autonomous system in this 
-task. This AS has four BGP routers, and we pick the one 
-connected to the IX-103 (Miami) Internet exchange.
-For the task, we also need to find some traffic that 
-goes through AS-3. 
-We will ping \texttt{10.164.0.71} from a host in AS-162. Using the 
-map client program, we can see that the packets go through
-the AS-3 transit AS. If this is not consistent with your observation,
-do find some other traffics that go through AS-3. 
-
-
-We will now disable the OSPF using one of the methods mentioned above.
-Before disabling OSPF, show the routing table 
+Before and after disabling OSPF, show the routing table 
 on the BGP router (using \texttt{"ip route"}). Compare the 
-results before and after disabling OSPF. Based on the 
-observation, explain why the IGP is essential for the transit 
-autonomous systems. 
+results. Based on the observation, explain why the IGP is essential 
+for the transit autonomous systems. 
 
 
 
@@ -610,17 +637,17 @@ In this task, students need to conduct the following tasks:
     is configured. 
 
 
-  \item AS-5 and AS-3 decide to peer at IX-103 (Miami). 
+  \item AS-5 and AS-3 are both transit ASes, and they decide to peer at IX-103 (Miami). 
     Since they are roughly the same size, they both benefit from the 
-    peering equally, so they decide 
+    peering equally, so they decide that
     their relationship should be peer-to-peer, not provider-to-customer.
     They do not pay each other. 
 \end{itemize}
 
-In this task, we need to modify several bird configuration files.
+In this task, we need to modify several BIRD configuration files.
 Just like in Task 1, we have created two shell scripts in the 
 \texttt{task2} folder. They can be used to automate the 
-downloading/uploading of the bird configuration from/to the 
+downloading/uploading of the BIRD configuration from/to the 
 containers.
 
 
@@ -665,7 +692,7 @@ selected as the best route, and explain why this route is selected?
 
 
 \paragraph{Task 3.b.}
-AS-150 peers with both AS-2 and AS-3, which provides the 
+AS-150 peers with both AS-2 and AS-3, which provide the 
 Internet services to AS-150.
 However, because the link to AS-2 is slower than
 the link to AS-3, AS-150 wants 
@@ -729,23 +756,24 @@ before working on this task.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 5.a. Launching the Prefix Hijacking Attack from AS-160} 
+\subsection{Task 5.a. Launching the Prefix Hijacking Attack from AS-161} 
 
 In this task, we will launch the prefix hijacking attack
 using a BGP router in AS-161. Our goal is to hijack
 the IP prefix owned by AS-154. If the attack is successful,
 all the packets going to AS-154 will be rerouted to AS-161, where
-they will be dropped. Essentially, we are black holing AS-154.
+they will be dropped. Essentially, we are blackholing AS-154.
 
-The prefixes announced by a BGP router can come from different 
+In BIRD, the prefixes announced by a BGP router can come from different 
 sources: they can come from the \texttt{direct} protocol, 
 i.e., they are obtained from the actual network interface attached
-to the BGP router. They can also come from \texttt{static} protocol,
+to the BGP router. They can also come from the \texttt{static} protocol,
 which contains pre-defined routes. The easiest way for a BGP router to 
 announce a prefix that it does not own is to use 
 the \texttt{static} protocol. The following  
 example creates a pre-defined route to \texttt{10.130.0.0/16}. 
-See Section \bgpprotocol of the tutorial for detailed explanation of the static protocol.
+See Section \bgpprotocol of the tutorial for detailed explanation of 
+the \texttt{static} protocol.
 It should be noted that in the filter part of the route,
 we need to add the route to the \texttt{LOCAL\_COMM} community; 
 otherwise, the BGP router will not export it to the outside.   
@@ -763,14 +791,15 @@ protocol static {
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 5.b. Fighting Back from AS-156} 
+\subsection{Task 5.b. Fighting Back from AS-154} 
 
-AS-154 immediately noticed the attack, the operators tried to contact
+AS-154 has a detection system. After the attack was launched,
+it immediately detected the attack. It tried to contact
 the operators of AS-3, which is the upstream service provider for AS-161,
 asking them to block the attack. Unfortunately, it was midnight for AS-3's
-operators, so nobody could be reached. The loss of the service provided 
-by AS-156 is very significant, so the operators of AS-154 decide to 
-fight back; they want to ``steal'' back their own network prefixes, without the help
+operators, so nobody could be reached. The loss of the service
+is very significant, so the operators of AS-154 decide to 
+fight back: they want to ``steal'' back their own network prefixes, without the help
 of AS-3. Please reconfigure the BGP routers of AS-154, so 
 you can get the traffic back. 
 
@@ -788,7 +817,9 @@ provider to AS-161). However, AS-3 must stop the propagation of the
 fake announcement. This can be done by removing the 
 fake routes from its own announcement to its own peers.
 More specifically, AS-3 can add some code to its 
-filters, so the fake routes will be discarded. 
+filters, so the fake routes can be discarded. 
+See Section~\bgphijacking of the BGP tutorial to learn how to write
+filters. 
 
 
 % *******************************************
