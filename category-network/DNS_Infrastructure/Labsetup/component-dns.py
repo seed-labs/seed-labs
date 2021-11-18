@@ -17,8 +17,9 @@ dns.install('b-root-server').addZone('.')               # Slave server
 # Create nameservers for TLD and ccTLD zones
 dns.install('a-com-server').addZone('com.').setMaster()  
 dns.install('b-com-server').addZone('com.')  
-dns.install('a-net-server').addZone('net.')
-dns.install('a-edu-server').addZone('edu.')
+dns.install('net-server').addZone('net.')
+dns.install('edu-server').addZone('edu.')
+dns.install('edu-server').addZone('xyz.')
 
 # Create nameservers for second-level zones
 dns.install('ns-google-com').addZone('google.com.')
