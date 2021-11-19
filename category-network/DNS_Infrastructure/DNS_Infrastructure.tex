@@ -31,22 +31,172 @@
 
 
 
-
 % *******************************************
 % SECTION
 % ******************************************* 
 \section{Overview}
 
-This lab covers the following topics:
+DNS (Domain Name System) is the Internet's phone book; it
+translates hostnames to IP addresses (and vice versa).
+This translation is through DNS resolution, which happens behind
+the scene. The resolution process involves many nameservers,
+including root servers, TLD servers, and final domain servers.
+These nameservers form the entire DNS system, which is an
+essential infrastructure for the Internet.
+
+To help students understand how these nameservers work together
+to form the infrastructure, we will create a miniature DNS system
+called \textit{DNS in a Box}. As suggested by its name,
+the entire DNS system, which consists of multiple
+nameservers, runs inside a single machine. This is made
+possible by the container technology.
+
+
+Even though this system is small, it has all the essential
+elements of a real DNS infrastructure. By building such a system,
+students will have a deeper understanding of how the DNS actually works.
+Although this lab is not a security lab, it is the basis for
+several SEED labs. This lab covers the following topics:
+
 \begin{itemize}[noitemsep]
-\item How the DNS protocol works
+\item DNS and how it works
+\item The DNS query process
+\item Root and TLD servers
+\item Docker container, docker compose
 \end{itemize}
 
+
+\paragraph{Readings and videos.}
+Detailed coverage of the DNS protocol can be found in the following:
+
+\begin{itemize}
+\item Chapter 18 of the SEED Book, \seedbook
+\item Section 7 of the SEED Lecture, \seedisvideo
+\end{itemize}
 
 
 \paragraph{Lab environment.} 
 \seedenvironmentB
 \nodependency
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\section{The Lab Setup and the SEED Internet Emulator}
+
+This lab will be performed inside the SEED Internet Emulator (simply
+called the emulator in this document).
+We provide a pre-built emulator in two different forms: Python code
+and container files. The container files are generated from
+the Python code, but students need to install the SEED Emulator source
+code from the GitHub to run the Python code. The container files
+can be directly used without the emulator source code.
+Instructors who would like to customize the emulator can modify the Python
+code, generate their own container files, and then provide the
+files to students, replacing the ones included in the
+lab setup file.
+
+
+\paragraph{Download the emulator files.}
+Please download the \texttt{Labsetup.zip} file from the web page, and
+unzip it. The files inside the \texttt{output/} sub-folder are the actual
+emulation files (container files) that are
+generated from the Python code \texttt{internet-emulator.py}.
+
+
+\paragraph{Start the emulation.}
+We will directly use the container files in the \texttt{output/} folder.
+Go to this folder, and run the following docker commands
+to build and start the containers. We recommend that you run the emulator inside
+the provided SEED Ubuntu 20.04 VM, but doing it in a generic Ubuntu 20.04 operating system
+should not have any problem, as long as the docker software is installed.
+Readers can find the docker manual from
+\href{https://github.com/seed-labs/seed-labs/blob/master/manuals/docker/SEEDManual-Container.md}
+{\underline{this link}}.
+
+\begin{lstlisting}
+$ docker-compose build
+$ docker-compose up
+
+// Aliases for the Compose commands above (only available in the SEED VM)
+$ dcbuild       # Alias for: docker-compose build
+$ dcup          # Alias for: docker-compose up
+$ dcdown        # Alias for: docker-compose down
+\end{lstlisting}
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 1: Local DNS Server and Public DNS Resolvers} 
+
+Set up the local DNS server for all except AS-150. So students
+can configure this one.
+Set up the root hint.
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 2: Root and TLD Servers} 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The Root Servers} 
+
+
+
+\begin{lstlisting}
+$ dig @a.root-servers.net www.example.com
+\end{lstlisting}
+ 
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{The TLD Servers} 
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 3: Domain Nameservers} 
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 4: Reverse DNS Lookup} 
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 5: IP Anycast}
+
+
+
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+%\section{Task 6: Using DNS for Load Balancing} 
 
 
 
