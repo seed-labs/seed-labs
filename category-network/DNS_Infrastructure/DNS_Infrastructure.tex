@@ -139,10 +139,18 @@ $ dcdown        # Alias for: docker-compose down
 
 
 
+
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
 \subsection{Get Familiar with the Emulator} 
+
+In this emulator, the DNS infrastructure is formed 
+by a number of the containers running DNS nameservers. 
+We have customized their container names, so we can easily
+list them. All of the containers have the term
+\texttt{DNS} in their names. The following command 
+can list all of them. 
 
 \begin{lstlisting}
 $ dockps | grep DNS
@@ -162,8 +170,11 @@ root@cfabce676bed / #
 \end{lstlisting}
 
 
-
-\paragraph{Set the terminal title.} ...
+\paragraph{Set the terminal title.} In this lab,
+we need to get into several containers. It will be very difficult 
+to know which one is which. To solve this problem, once we 
+are inside a container, we can set the terminal title using the 
+following command (it sets the title to \texttt{Example.com}). 
 
 \begin{lstlisting}
 # NOPRECMD=1 zsh
@@ -171,26 +182,69 @@ root@cfabce676bed / #
 \end{lstlisting}
  
 
-\paragraph{Copy files.} ... 
+\paragraph{Copy files.} In this lab, we need to modify the zone files (also
+some of the configuration files) inside several containers. We can do that
+inside those containers. The problem is that once the containers are stopped
+and removed, those changes will be lost. It is better to copy those files
+to the hosting machine, make change on the host, and then copy them 
+back to the container.  We can use the \texttt{"docker cp"} command
+to do that. Since we need to run this command very often, we wrote 
+the following shell scripts, one for getting a zone file from container
+to the host, and the other for copying the zone file back 
+to the container. Both files are included in the lab setup folder.
+
+\begin{lstlisting}[caption=Getting the zone file from container: \texttt{getzone.sh}]
+#!/bin/bash
+
+keyword=$1
+filename=$2
+filename_to=${keyword}_${filename}                                  (*@\lineone@*)
+containerID=$(docker ps | grep $keyword | awk '{print $1}')         (*@\linetwo@*) 
+if [[ ! -f $filename_to ]]; then
+   docker cp $containerID:/etc/bind/zones/$filename ./$filename_to  (*@\linethree@*) 
+else
+   echo "** File $filename_to already exists; will not overwrite."
+fi
+\end{lstlisting}
+
+In the emulator, zone files are stored inside the \texttt{/etc/bind/zones} folder.  
+Each DNS nameservers have a unique keyword in its container name, for example
+the nameserver for the \texttt{example.com} zone has the keyword \texttt{Example}
+in its name. We use this keyword to find the corresponding container's ID (see
+Line~\linetwo). We also prepend the keyword to the name of the zone file, so we can
+easily identify them once they are copied to the host machine (see Lines~\lineone
+and~\linethree). The following examples show how we get the zone file from
+the two root nameservers and the \texttt{example.com} nameserver.  
+
 
 \begin{lstlisting}
-$ docker cp dedc:/etc/bind/zones/root ./Root-A_root
-
-// getfile.sh
-// First arguement: 
-// Second arguement: the zone file
-#!/bin/bash
-keyword=$1
-file=$2
-containerID=$(docker ps | grep $keyword | awk '{print $1}')
-docker cp $containerID:/etc/bind/zones/$file ./$keyword_file
-
-// Execute 
-$ ./getfile.sh Example example.com.
+$ ./getfile.sh Root-A root           (*@\pointleft{}@*) New file: Root-A_root
+$ ./getfile.sh Root-B root           (*@\pointleft{}@*) New file: Root-B_root
+$ ./getfile.sh Example example.com.  (*@\pointleft{}@*) New file: Example_example.com
 \end{lstlisting}
  
 
+Copying files back to  the container is quite similar, except that 
+we need to restart the nameserver after the zone file is copied (see Line~\linefour).
 
+\begin{lstlisting}[caption=Sending the zone file to container: \texttt{sendzone.sh}]
+#!/bin/bash
+
+keyword=$1
+filename=$2
+filename_from=${keyword}_${filename}
+containerID=$(docker ps | grep $keyword | awk '{print $1}')
+if [[ -f $filename_from ]]; then
+   echo "== Copy zone file to container"
+   docker cp ./$filename_from $containerID:/etc/bind/zones/$filename
+
+   echo "== Restart the nameserver"
+   docker exec $containerID service named restart      (*@\linefour@*) 
+else
+   echo "** File $filename_from does not exists."
+fi
+\end{lstlisting}
+ 
 
 
 % -------------------------------------------
@@ -198,36 +252,58 @@ $ ./getfile.sh Example example.com.
 % -------------------------------------------
 \subsection{Get Familiar with BIND9's Configuration Files}
 
+In the emulator, the zones hosted by a nameserver are placed 
+in the \path{/etc/bind/named.conf.zones} file (multiple zones
+can be placed in this file). Here is 
+an example, where the \texttt{file} entry specifies
+the actual file containing the zone information.  If we want 
+to host another zone on this nameserver, we can add a corresponding
+zone entry in this file. 
 
 \begin{lstlisting}
-//  /etc/bind/named.conf.zones
 zone "example.com" { 
     type master; 
     allow-update { any; }; 
-    file "/etc/bind/zones/root"; 
+    file "/etc/bind/zones/example.com.";  (*@\pointleft{the actual zone file}@*) 
 };
 \end{lstlisting}
  
-Explain 
+In the emulator, the actual zone files are placed inside the 
+\path{/etc/bind/zones} folder. It should be noted that 
+most of the zone files (except the root zone) have the \texttt{.} 
+at the end of the filename.  This is the main file that we need
+to modify in this lab. 
+
 
 \begin{lstlisting}
-$TTL 300
-$ORIGIN example.com.
-@ SOA ns1.example.com. admin.example.com. 1635647622 900 900 1800 60
+$TTL 300               (*@\pointleft{The default time to live: 300 seconds}@*) 
+$ORIGIN example.com.   (*@\pointleft{The start of this zone file in the namespace}@*) 
+@ SOA ns1.example.com. admin.example.com. (*@\textbf{1635647622}@*) 900 900 1800 60
 
 @                  NS    ns1.example.com.
 ns1.example.com.   A     10.154.0.71
+
+www                A     10.154.0.72
+abc                A     10.154.0.73 
 \end{lstlisting}
 
+The zone file must specify the Start of Authority (SOA) record, which
+contains the name of the authoritative master name server for the zone, 
+the email address of someone responsible for management of the name server,
+The parameters of the SOA record also specify a list of timing
+and expiration parameters (serial number, slave refresh period, slave retry time, slave
+expiration time, and the maximum time to cache the record). 
+If we modify the zone file, we should change the serial number (the highlighted 
+number in the SOA entry), so the change can be synchronized to the 
+slave nameservers. 
 
-To register a TLD, we need to add the following entries:
+In the zone file, domain names that end with a full stop character (i.e., the dot),
+are fully qualified while those that do not end with a full stop are
+relative to the current origin. 
+For example, in the above example, \texttt{ns1.example.com.} is a full name,
+while \texttt{www} example refers to \texttt{www.example.com}.
 
-\begin{lstlisting}
-net.          NS     ns1.net.
-ns1.net.      A      <IP address> 
-\end{lstlisting}
- 
- 
+
 
 % *******************************************
 % SECTION
@@ -263,12 +339,16 @@ ns2.   A    10.160.0.72
 \section{Task 2: Root and TLD Servers} 
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
 \subsection{The Root Servers} 
 
+Although there are multiple root servers, they do not synchronize with
+each other; instead, they synchronize with a root zone file. 
+
+In this lab, we will emulate this process: if we modify one root zone
+file, we will modify the other accordingly. 
 
 \begin{lstlisting}
 //  /etc/bind/named.conf.zones
@@ -299,12 +379,25 @@ $ dig @a.root-servers.net www.example.com
 
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
 \subsection{The TLD Servers} 
 
+
+We have two nameservers for the \texttt{com.} zone. One is configured as 
+the master, and the other as the slave. We only need to modify the zone 
+file on the master, as the slave will automatically synchronize its 
+zone data with the master. 
+
+\begin{lstlisting}
+// For master
+zone "com." { type master; allow-transfer { any; }; ...};
+
+// For slave
+zone "com." { type slave; masters { 10.151.0.72; }; ... };
+\end{lstlisting}
+ 
 
 
 % *******************************************
