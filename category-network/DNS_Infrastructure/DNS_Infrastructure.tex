@@ -126,16 +126,135 @@ $ dcdown        # Alias for: docker-compose down
 \end{lstlisting}
 
 
+
+
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Preparation}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Get Familiar with the Emulator} 
+
+\begin{lstlisting}
+$ dockps | grep DNS
+dedc6676421e  as150h-DNS-Root-A-10.150.0.72
+84cf7c7f337d  as151h-DNS-COM-A-10.151.0.72
+f20fe7ed115f  as152h-DNS-EDU-10.152.0.71
+c357ff76bda6  as153h-Global_DNS-1-10.153.0.53
+cfabce676bed  as154h-DNS-Example-10.154.0.71
+de5dc343224f  as160h-DNS-Root-B-10.160.0.72
+20c134dceee4  as161h-DNS-COM-B-10.161.0.72
+5801404d45d2  as162h-DNS-AAAAA-10.162.0.72
+d65e76c44437  as163h-Global_DNS-2-10.163.0.53
+
+// Get a shell on a selected container
+$ docksh cfab   (*@\pointleft{container ID}@*) 
+root@cfabce676bed / #
+\end{lstlisting}
+
+
+
+\paragraph{Set the terminal title.} ...
+
+\begin{lstlisting}
+# NOPRECMD=1 zsh
+# set_title Example.com
+\end{lstlisting}
+ 
+
+\paragraph{Copy files.} ... 
+
+\begin{lstlisting}
+$ docker cp dedc:/etc/bind/zones/root ./Root-A_root
+
+// getfile.sh
+// First arguement: 
+// Second arguement: the zone file
+#!/bin/bash
+keyword=$1
+file=$2
+containerID=$(docker ps | grep $keyword | awk '{print $1}')
+docker cp $containerID:/etc/bind/zones/$file ./$keyword_file
+
+// Execute 
+$ ./getfile.sh Example example.com.
+\end{lstlisting}
+ 
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Get Familiar with BIND9's Configuration Files}
+
+
+\begin{lstlisting}
+//  /etc/bind/named.conf.zones
+zone "example.com" { 
+    type master; 
+    allow-update { any; }; 
+    file "/etc/bind/zones/root"; 
+};
+\end{lstlisting}
+ 
+Explain 
+
+\begin{lstlisting}
+$TTL 300
+$ORIGIN example.com.
+@ SOA ns1.example.com. admin.example.com. 1635647622 900 900 1800 60
+
+@                  NS    ns1.example.com.
+ns1.example.com.   A     10.154.0.71
+\end{lstlisting}
+
+
+To register a TLD, we need to add the following entries:
+
+\begin{lstlisting}
+net.          NS     ns1.net.
+ns1.net.      A      <IP address> 
+\end{lstlisting}
+ 
+ 
+
 % *******************************************
 % SECTION
 % *******************************************
 \section{Task 1: Local DNS Server and Public DNS Resolvers} 
 
-Set up the local DNS server for all except AS-150. So students
-can configure this one.
+Set up the local DNS server for all except AS-155.
+So students can configure this one.
 Set up the root hint.
 
 
+
+\begin{lstlisting}
+// In /etc/bind/named.conf.default-zones
+zone "." {
+	type hint;
+	file "/usr/share/dns/root.hints";
+};
+
+
+# more /usr/share/dns/root.hints
+.      NS   ns1.
+.      NS   ns2.
+ns1.   A    10.150.0.72
+ns2.   A    10.160.0.72
+\end{lstlisting}
+ 
 
 
 % *******************************************
@@ -144,11 +263,33 @@ Set up the root hint.
 \section{Task 2: Root and TLD Servers} 
 
 
+
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
 \subsection{The Root Servers} 
 
+
+\begin{lstlisting}
+//  /etc/bind/named.conf.zones
+zone "." { 
+    type master; 
+    allow-update { any; }; 
+    file "/etc/bind/zones/root"; 
+};
+\end{lstlisting}
+ 
+
+\begin{lstlisting}
+$TTL 300
+$ORIGIN .
+@ SOA ns1. admin. 2159658311 900 900 1800 60
+@      NS   ns1.
+@      NS   ns2.
+ns1.   A    10.150.0.72
+ns2.   A    10.160.0.72
+\end{lstlisting}
+ 
 
 
 \begin{lstlisting}
