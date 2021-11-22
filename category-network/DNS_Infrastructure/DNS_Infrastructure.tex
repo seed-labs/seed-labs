@@ -46,12 +46,7 @@ essential infrastructure for the Internet.
 
 To help students understand how these nameservers work together
 to form the infrastructure, we will create a miniature DNS system
-called \textit{DNS in a Box}. As suggested by its name,
-the entire DNS system, which consists of multiple
-nameservers, runs inside a single machine. This is made
-possible by the container technology.
-
-
+inside an Internet Emulator.
 Even though this system is small, it has all the essential
 elements of a real DNS infrastructure. By building such a system,
 students will have a deeper understanding of how the DNS actually works.
@@ -250,7 +245,8 @@ fi
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Get Familiar with BIND9's Configuration Files}
+\subsection{Get Familiar with BIND's Configuration Files}
+\label{dns-inf:subsec:bind-configuration}
 
 In the emulator, the zones hosted by a nameserver are placed 
 in the \path{/etc/bind/named.conf.zones} file (multiple zones
@@ -308,23 +304,274 @@ while \texttt{www} example refers to \texttt{www.example.com}.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 1: Local DNS Server and Public DNS Resolvers} 
+\section{Task 1: Configure the Domain Nameserver}
 
-Set up the local DNS server for all except AS-155.
-So students can configure this one.
-Set up the root hint.
+In this task, we will configure the nameservers 
+for two domains, one is \texttt{example.com}, 
+and the other is a customized name based on 
+student's name. 
 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1.a: Configure the Nameserver for \texttt{example.com}} 
 
+In this task, we will configure the nameserver for a domain
+called \texttt{example.com}. The nameserver is hosted on 
+one of the containers inside the emulator. The keyword \texttt{Example} is 
+included in the container name, as well
+as the IP address. 
 
 \begin{lstlisting}
-// In /etc/bind/named.conf.default-zones
+$ dockps | grep Example
+46ab89e26738  as154h-DNS-Example-10.154.0.71
+\end{lstlisting}
+
+
+\paragraph{Step 1. Add the zone entry.} 
+To host a server for the \texttt{example.com} domain, we need to
+add a zone entry to the BIND's configuration, 
+so it knows what zones it is going to host. 
+See Section~\ref{dns-inf:subsec:bind-configuration} 
+for detailed explanation of the configuration file. 
+This entry indicates that the current nameserver
+is the master server for this domain, and the zone file is
+specified in the \texttt{file} entry.
+
+
+\paragraph{Step 2. Modify the zone file.}
+Add at least four records (type \texttt{A}) to the zone file
+to map hostnames to IP addresses. You can use the 
+asterisk (\texttt{*}) as a wildcard hostname. 
+Once this step is done, restart the nameserver. 
+If there are mistakes in the configuration files,
+the nameserver will fail to start.
+
+\begin{lstlisting}
+# service named restart
+\end{lstlisting}
+
+
+\paragraph{Step 3. Testing.} 
+Since we have not finished setting up the entire 
+DNS infrastructure, we need to 
+use the \texttt{@10.154.0.71} option to send our DNS query
+directly to \texttt{10.154.0.71}, which is the IP
+address of the \texttt{example.com} nameserver in our emulator.
+If everything is done correctly, you can get the IP address specified
+in your zone file. Please report your observations.
+
+\begin{lstlisting}
+$ dig @10.154.0.71 www.example.com
+... 
+;; ANSWER SECTION:
+xyz.example.com.    300    IN    A    (*@\textbf{1.2.3.6}@*)
+...
+\end{lstlisting}
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1.b: Configure Nameserver for Another Domain} 
+
+
+In this task, we will configure the nameserver for another domain.
+The name of the domain should use the following 
+format \texttt{<NAME><YEAR>.edu}, where \texttt{<NAME>} should be 
+replaced with your last name, and \texttt{<YEAR>} be replaced 
+with the current year. 
+For example, if your last name is \texttt{Smith}, and 
+it is year 2021, the domain will be \texttt{smith2021.edu}.  
+In the emulator, an empty nameserver has already been created;
+the keyword \texttt{AAAAA} is encoded in the container name. Please 
+use this nameserver to host your domain. 
+
+\begin{lstlisting}
+$ dockps | grep AAAAA
+70f2e8a57a96  as162h-DNS-AAAAA-10.162.0.72
+\end{lstlisting}
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 2: Configure the TLD servers}
+
+
+In this task, we will configure the nameservers for two TLD domain,
+the \texttt{com.} and \texttt{edu.} domains. We have already created
+three nameservers for these two TLD domains. 
+
+\begin{lstlisting}
+$ dockps | grep DNS
+c3040914667c  as151h-DNS-COM-A-10.151.0.72    (*@\pointleft{The master com server}@*) 
+3fa8fa41afb6  as161h-DNS-COM-B-10.161.0.72    (*@\pointleft{The slave com server}@*)
+6c7132feb7d4  as152h-DNS-EDU-10.152.0.71      (*@\pointleft{The edu server}@*)
+...
+\end{lstlisting}
+ 
+There are two nameservers for the \texttt{com.} zone. One is configured as 
+the master server, and the other as the slave server. 
+We only need to modify the zone file on the master (\texttt{COM-A}), 
+as the slave server will automatically synchronize its 
+zone data with the master. See the following zone configuration
+on these two servers. 
+
+\begin{lstlisting}
+// For master (COM-A)
+zone "com." { type master; allow-transfer { any; }; ...};
+
+// For slave
+zone "com." { type slave; masters { 10.151.0.72; }; ... };
+\end{lstlisting}
+
+
+All the nameservers within a TLS domain
+must register their nameservers with this
+TLD server; otherwise, nobody can find them. 
+For each domain, such as \texttt{example.com},  
+we need to add two records in the \texttt{com} server's
+zone file, an \texttt{NS} record and an \texttt{A} record.
+The \texttt{NS} record specifies the nameserver for the
+\texttt{example.com} domain, while the \texttt{A} record
+specifies the IP address of the nameserver. 
+
+
+\paragraph{Lab Task.}
+Please register your \texttt{example.com} and \texttt{<NAME><YEAR>.edu} 
+nameservers with their corresponding TLD servers. Remember to run
+\texttt{"service named restart"}  to restart the nameserver after the
+changes. Also remember to change the serial number of the zone file; otherwise,
+the changes on the master server will not be synchronized to the 
+slave server. After making the changes, please run the following commands
+to test the servers. 
+Report and explain your observations. 
+
+\begin{lstlisting}
+# dig @10.151.0.72 www.example.com       (*@\pointleft{Query the COM-A server}@*) 
+# dig @10.161.0.72 www.example.com       (*@\pointleft{Query the COM-B server}@*) 
+# dig @10.152.0.72 www.<NAME><YEAR>.edu  (*@\pointleft{Query the EDU server}@*) 
+\end{lstlisting}
+
+
+
+It should be noted, the TLD servers are configured
+not to conduct the recursive query, so they will only tell you
+the nameserver for the domain name in the query; it will not
+resolve the query for you.  See the following configuration.
+
+\begin{lstlisting}
+// File: named.conf.options
+options {
+        directory "/var/cache/bind";
+        (*@\textbf{recursion no;}@*)  
+        dnssec-validation no;
+        empty-zones-enable no;
+        allow-query { any; };
+        allow-update { any; };
+};
+\end{lstlisting}
+ 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 3: Configure the Root servers}
+
+In this task, we will configure the nameservers for the root zone. 
+In the real world, there are 13 nameservers for the root zone,
+and they are synchronized through the root zone file maintained by IANA. 
+In our emulator, we have only created two root servers, 
+and their container names contain the keyword \texttt{Root}. 
+
+\begin{lstlisting}
+$ dockps | grep Root
+9a96092c7c85  as150h-DNS-Root-A-10.150.0.72
+60f171f92287  as160h-DNS-Root-B-10.160.0.72
+\end{lstlisting}
+ 
+
+All TLD nameservers need to register
+with the root nameserver, so they can be found
+in the DNS query process.
+For every TLD zone that we would like to include in our
+miniature DNS system, we need to add at least two records
+in the zone file, including an \texttt{NS} record
+and an \texttt{A} record.  In this task, students need to
+modify both root server's zone files to support the 
+\texttt{com} and \texttt{edu} TLDs inside the emulator. 
+After restarting the nameservers, please run the 
+following commands from another container (replace
+the \texttt{<ip>} with the root server's IP address;
+please try both root servers). 
+Report and explain your observations. 
+
+\begin{lstlisting}
+$ dig @<ip>    <ANYNAME>.com
+$ dig @<ip>    <ANYNAME>.edu
+$ dig @<ip>    com
+$ dig @<ip>    edu
+\end{lstlisting}
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 4: Configure the Local DNS Server} 
+
+
+When a computer needs to resolve the IP address from a hostname (or vice versa),
+it sends a request to its helper, which is called local DNS server, also
+called DNS resolver. This DNS resolver will conduct the
+entire DNS resolution process, and then send the result back to the computer.
+Although it is called ``local'', this server does not need to be local.
+In the past, when a computer is set up, it usually uses the DNS servers on its own
+local network, but nowadays, there are many non-local DNS servers that can be used as
+``local'' DNS servers. For example, the Google Public DNS\index{Google Public DNS}
+is a DNS service offered by Google, serving any host on the Internet.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task: The Root Hint File} 
+
+If the local DNS server cannot find the answer from its cache, it
+will go through an iterative process to get the answer from outside
+nameservers.  The process starts from the root server.
+Therefore, the local DNS server needs to
+know the IP address of the root servers.
+
+
+In \path{/etc/bind/named.conf.default-zones}, which is included
+in BIRD's configuration file \path{/etc/bind/named.conf}, there is an
+entry for the root zone. This entry specifies a hint file for the
+root zone, and that is how the local DNS server knows the IP address of the
+root server.
+
+\begin{lstlisting}
 zone "." {
 	type hint;
 	file "/usr/share/dns/root.hints";
 };
+\end{lstlisting}
 
+The root hint file specifies the nameservers for the
+root zone. In the real world, there are 13 nameservers for the root zone, 
+so their IP addresses are provided in this file. 
+In our emulator, we have only two root servers. They are already included 
+in the root hint file. Please change their IP addresses to something else (e.g.,
+changing \texttt{72} to \texttt{75}),  and then show how  that affects
+the DNS resolution process. Please remember to change them back after this task,
+as all the tasks in this lab depend on them.
 
-# more /usr/share/dns/root.hints
+\begin{lstlisting}
 .      NS   ns1.
 .      NS   ns2.
 ns1.   A    10.150.0.72
@@ -333,104 +580,61 @@ ns2.   A    10.160.0.72
  
 
 
+
+
+
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 2: Root and TLD Servers} 
+\section{Task 5. Configure the Client} 
 
 
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{The Root Servers} 
-
-Although there are multiple root servers, they do not synchronize with
-each other; instead, they synchronize with a root zone file. 
-
-In this lab, we will emulate this process: if we modify one root zone
-file, we will modify the other accordingly. 
+We have created two DNS resolvers in the emulator. We put \texttt{Global\_DNS} in 
+their container names. Their IP addresses are also encoded in the names. 
+You can use the following command to find out these two DNS resolvers. 
 
 \begin{lstlisting}
-//  /etc/bind/named.conf.zones
-zone "." { 
-    type master; 
-    allow-update { any; }; 
-    file "/etc/bind/zones/root"; 
-};
+$ dockps | grep Global_DNS
+c357ff76bda6  as153h-Global_DNS-1-10.153.0.53
+d65e76c44437  as163h-Global_DNS-2-10.163.0.53
 \end{lstlisting}
  
+We have already configured all the machines to use \texttt{10.153.0.53} 
+as the DNS resolver, except for the machines in AS-155. Your job is to
+configure the host machines in AS-155, so they can use one 
+of the DNS resolvers (or both of them).
+In the Emulator, the resolver is specified in \path{/etc/resolv.conf}. 
+You can add the following entries (one or both). 
 
 \begin{lstlisting}
-$TTL 300
-$ORIGIN .
-@ SOA ns1. admin. 2159658311 900 900 1800 60
-@      NS   ns1.
-@      NS   ns2.
-ns1.   A    10.150.0.72
-ns2.   A    10.160.0.72
+nameserver 10.153.0.53
+nameserver 10.163.0.53
 \end{lstlisting}
- 
+
+
+\paragraph{Testing the entire DNS Infrastructure.} 
+...
+
 
 
 \begin{lstlisting}
-$ dig @a.root-servers.net www.example.com
+# dig www.example.com
+# dig <NAME><YEAR>.edu 
 \end{lstlisting}
+
+
+Record and reply ...
  
 
 
 
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{The TLD Servers} 
-
-
-We have two nameservers for the \texttt{com.} zone. One is configured as 
-the master, and the other as the slave. We only need to modify the zone 
-file on the master, as the slave will automatically synchronize its 
-zone data with the master. 
-
-\begin{lstlisting}
-// For master
-zone "com." { type master; allow-transfer { any; }; ...};
-
-// For slave
-zone "com." { type slave; masters { 10.151.0.72; }; ... };
-\end{lstlisting}
- 
-
-
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 3: Domain Nameservers} 
+\section{Task 5: Reverse DNS Lookup} 
 
 
 
-
-% *******************************************
-% SECTION
-% *******************************************
-\section{Task 4: Reverse DNS Lookup} 
-
-
-
-
-% *******************************************
-% SECTION
-% *******************************************
-\section{Task 5: IP Anycast}
-
-
-
-
-
-
-
-% *******************************************
-% SECTION
-% *******************************************
-%\section{Task 6: Using DNS for Load Balancing} 
 
 
 
@@ -450,13 +654,11 @@ zone "com." { type slave; masters { 10.151.0.72; }; ... };
 % *******************************************
 \section*{Acknowledgment} 
 
-This lab was developed with the help of Honghao Zeng, 
-a graduate student in the Department of Electrical Engineering 
-and Computer Science at Syracuse University. 
-The SEED project was funded in part 
+This lab was developed with the help of Honghao Zeng and Keyi Li, who
+contributed to the development of the DNS module in the SEED 
+Internet Emulator. The SEED project was funded in part 
 by the grants from the US National Science Foundation
 and Syracuse University.
-
 \end{document}
 
 
