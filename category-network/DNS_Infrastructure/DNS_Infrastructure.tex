@@ -431,7 +431,7 @@ zone "com." { type slave; masters { 10.151.0.72; }; ... };
 \end{lstlisting}
 
 
-All the nameservers within a TLS domain
+All the nameservers within a TLD domain
 must register their nameservers with this
 TLD server; otherwise, nobody can find them. 
 For each domain, such as \texttt{example.com},  
@@ -489,6 +489,8 @@ In the real world, there are 13 nameservers for the root zone,
 and they are synchronized through the root zone file maintained by IANA. 
 In our emulator, we have only created two root servers, 
 and their container names contain the keyword \texttt{Root}. 
+We will manually synchronize them by putting the identical content 
+in their zone files. 
 
 \begin{lstlisting}
 $ dockps | grep Root
@@ -506,17 +508,18 @@ in the zone file, including an \texttt{NS} record
 and an \texttt{A} record.  In this task, students need to
 modify both root server's zone files to support the 
 \texttt{com} and \texttt{edu} TLDs inside the emulator. 
-After restarting the nameservers, please run the 
-following commands from another container (replace
-the \texttt{<ip>} with the root server's IP address;
+The zone file is located in \path{/etc/bind/zones}.
+After making the changes, restart both nameservers, 
+and then run the following commands from another container (replace
+the \texttt{<root-ip>} with the root server's IP address;
 please try both root servers). 
 Report and explain your observations. 
 
 \begin{lstlisting}
-$ dig @<ip>    <ANYNAME>.com
-$ dig @<ip>    <ANYNAME>.edu
-$ dig @<ip>    com
-$ dig @<ip>    edu
+$ dig @<root-ip>    <ANYNAME>.com   (*@\pointleft{choose an arbitrary name}@*) 
+$ dig @<root-ip>    <ANYNAME>.edu
+$ dig @<root-ip>    com
+$ dig @<root-ip>    edu
 \end{lstlisting}
 
 
@@ -537,23 +540,32 @@ local network, but nowadays, there are many non-local DNS servers that can be us
 is a DNS service offered by Google, serving any host on the Internet.
 
 
-% -------------------------------------------
-% SUBSECTION
-% -------------------------------------------
-\subsection{Task: The Root Hint File} 
+When we configure the root, TLD, and domain nameservers, we configure them
+to be non-recursive, i.e., they will only tell you what they know, and they
+will not conduct the entire resolution process to get the final answer for you. 
+When we configure the local DNS server, we turn on the recursive option (see
+the following), so it will get the answer for you. 
+
+\begin{lstlisting}
+options {
+    recursion yes;
+    ...
+};
+\end{lstlisting}
+ 
 
 If the local DNS server cannot find the answer from its cache, it
 will go through an iterative process to get the answer from outside
-nameservers.  The process starts from the root server.
+nameservers.  The process starts from the root servers.
 Therefore, the local DNS server needs to
-know the IP address of the root servers.
+know the IP addresses of the root servers.
 
 
 In \path{/etc/bind/named.conf.default-zones}, which is included
 in BIRD's configuration file \path{/etc/bind/named.conf}, there is an
 entry for the root zone. This entry specifies a hint file for the
-root zone, and that is how the local DNS server knows the IP address of the
-root server.
+root zone, and that is how the local DNS server knows the IP addresses of the
+root servers.
 
 \begin{lstlisting}
 zone "." {
@@ -562,14 +574,10 @@ zone "." {
 };
 \end{lstlisting}
 
-The root hint file specifies the nameservers for the
-root zone. In the real world, there are 13 nameservers for the root zone, 
-so their IP addresses are provided in this file. 
-In our emulator, we have only two root servers. They are already included 
-in the root hint file. Please change their IP addresses to something else (e.g.,
-changing \texttt{72} to \texttt{75}),  and then show how  that affects
-the DNS resolution process. Please remember to change them back after this task,
-as all the tasks in this lab depend on them.
+In the real world, there are 13 nameservers for the root zone, 
+so their IP addresses are provided in the \texttt{root.hints} file. 
+In our emulator, we have only two root servers. Their 
+information is already added to the hints file. 
 
 \begin{lstlisting}
 .      NS   ns1.
@@ -580,6 +588,32 @@ ns2.   A    10.160.0.72
  
 
 
+\paragraph{The task.} We have created two DNS resolvers in the emulator. 
+We put \texttt{Global\_DNS} in
+their container names. Their IP addresses are also encoded in the names.
+You can use the following command to find out these two DNS resolvers.
+
+\begin{lstlisting}
+$ dockps | grep Global_DNS
+c357ff76bda6  as153h-Global_DNS-1-10.153.0.53
+d65e76c44437  as163h-Global_DNS-2-10.163.0.53
+\end{lstlisting}
+
+
+Please go to their \texttt{root.hints} file.
+Inside the file, please change the IP addresses of the root nameservers 
+to something else (random, e.g., changing \texttt{72} to \texttt{75}), 
+and then show how that affects
+the DNS resolution process (run the following commands). 
+Please report and explain your observations. 
+Please do remember to change them back after this task,
+because the subsequent tasks depend on them.
+
+\begin{lstlisting}
+# dig @10.153.0.53  example.com
+# dig @10.163.0.53  example.com
+\end{lstlisting}
+ 
 
 
 
@@ -588,23 +622,24 @@ ns2.   A    10.160.0.72
 % *******************************************
 \section{Task 5. Configure the Client} 
 
+So far, we need to use \texttt{@<ip>} in our \texttt{dig} command
+to indicate what DNS server the \texttt{dig} command should talk to. While this
+is not an issue for \texttt{dig}, it is a problem for other software that
+depends on DNS. We need to tell the operating system that the
+DNS server container built in this task is the system's
+local DNS server.
 
-We have created two DNS resolvers in the emulator. We put \texttt{Global\_DNS} in 
-their container names. Their IP addresses are also encoded in the names. 
-You can use the following command to find out these two DNS resolvers. 
+This is achieved by changing
+the resolver configuration file~(\texttt{/etc/resolv.conf}) of the user machine,
+so the container's IP address is added as the first \texttt{nameserver} entry in the file, i.e.,
+this server will be used as the primary DNS resolver.
 
-\begin{lstlisting}
-$ dockps | grep Global_DNS
-c357ff76bda6  as153h-Global_DNS-1-10.153.0.53
-d65e76c44437  as163h-Global_DNS-2-10.163.0.53
-\end{lstlisting}
- 
 We have already configured all the machines to use \texttt{10.153.0.53} 
-as the DNS resolver, except for the machines in AS-155. Your job is to
+as the primary DNS resolver, except for the machines in AS-155. Your job is to
 configure the host machines in AS-155, so they can use one 
 of the DNS resolvers (or both of them).
-In the Emulator, the resolver is specified in \path{/etc/resolv.conf}. 
-You can add the following entries (one or both). 
+You can add the following entries (one or both) to the 
+\texttt{/etc/resolv.conf} file.
 
 \begin{lstlisting}
 nameserver 10.153.0.53
@@ -613,8 +648,11 @@ nameserver 10.163.0.53
 
 
 \paragraph{Testing the entire DNS Infrastructure.} 
-...
-
+At this point, the DNS infrastructure is completely set up,
+we can run the \texttt{dig} without using the \texttt{@<ip>} option; 
+\texttt{dig} will use the local DNS server set by the system. Please 
+run the following commands from a host inside AS-155. If everything 
+is set up correctly, you should be able to get the answer as expected. 
 
 
 \begin{lstlisting}
@@ -623,8 +661,8 @@ nameserver 10.163.0.53
 \end{lstlisting}
 
 
-Record and reply ...
- 
+Please use the map ....
+
 
 
 
@@ -633,7 +671,121 @@ Record and reply ...
 % *******************************************
 \section{Task 5: Reverse DNS Lookup} 
 
+Reverse DNS lookup is the process of finding out the hostname 
+from an IP address. 
+This process is actually quite similar to the forward lookup. 
+We use an example to illustrate the process. Given an IP address,
+such as \texttt{128.230.171.184} (an IP address belonging to
+\texttt{syr.edu}), the DNS resolver constructs a ``fake''
+name \texttt{184.171.230.128.in-addr.arpa}, and then send queries through an
+iterative process, just like the forward lookup. Namely, it starts from the
+ROOT server, to the \texttt{in-addr.arpa} server, \texttt{128.in-addr.arpa} server,
+and eventually reach the \texttt{230.128.in-addr.arpa} server, which is the
+same nameserver as that hosting the \texttt{syr.edu} zone. 
 
+Tasks 1 - 4 only set up the DNS infrastructure for the forward 
+lookup. In this task, we will set up the infrastructure 
+for the reverse lookup. For the sake of simplicity,
+We will only support the reverse 
+lookup for the IP addresses belonging to the \texttt{example.com} 
+domain in the emulator (i.e., the IP addresses in the 
+\texttt{10.154.0.0/24} network). You need to set up the following 
+nameservers:
+
+
+\begin{itemize}
+\item Step 1: Configure the root server. 
+The root servers need to host the NS records for the \texttt{in-addr.arpa} zone.
+We need to add the records to the \texttt{/etc/bind/zones/root} file
+on both root servers.
+
+\item Step 2: Configure the \texttt{in-addr.arpa} server. 
+This server should host the \texttt{in-addr.arpa.} zone.  
+We can use the \texttt{com} nameserver to host this zone by
+adding the zone to the \path{/etc/bind/named.conf.zones}. 
+A nameserver can simultaneous host multiple zones. 
+
+\begin{lstlisting}
+zone "com." {
+       ... already there ...
+};
+
+zone "in-addr.arpa." {
+       type master;
+       notify yes;
+       allow-transfer { any; };
+       allow-update { any; };
+       file "/etc/bind/zones/in-addr.arpa.";  (*@\pointleft{the zone file}@*) 
+};
+\end{lstlisting}
+     
+We need to create the zone file \texttt{in-addr.arpa.} specified 
+in the entry above. We add the NS record for the 
+\texttt{154.10.in-addr.arpa} zone in the zone file. 
+For the sake of simplicity,
+we directly provide the NS for the \texttt{154.10} sub-zone,
+instead of only providing the NS record for the
+\texttt{10.in-addr.arpa} zone (and then reply on 
+the \texttt{10.in-addr.arpa} server to provide the information 
+for the \texttt{154.10} sub-zone.  A skeleton zone file 
+is provided in the following: 
+
+\begin{lstlisting}
+$TTL 300
+$ORIGIN in-addr.arpa.
+
+@        SOA ns1.com. admin.com. 1565237345 900 900 1800 60
+@        NS  ns1.com.
+@        NS  ns2.com.
+ns1.com. A 10.151.0.72
+ns2.com. A 10.161.0.72
+
+; Please replace ____ with the correct information
+154.10.in-addr.arpa.  NS  ____   (*@\pointleft{The nameserver of the domain}@*) 
+____                  A   ____   (*@\pointleft{The IP address of the nameserver}@*)
+\end{lstlisting}
+     
+    
+
+\item Step 3: Configure the \texttt{154.10.in-addr.arpa} server: 
+this nameserver can be hosted on the same nameserver
+where the \texttt{example.com} zone is hosted.
+We should add a zone entry in its 
+\path{/etc/bind/named.conf.zones} file (similar to Step 2), and then
+create the corresponding zone file, which should 
+contain the reverse lookup records for the \texttt{example.com} domain.
+We give an example of the zone file in the following:
+    
+\begin{lstlisting}
+$TTL 300
+
+$ORIGIN 154.10.in-addr.arpa.
+@ SOA ns1.example.com. admin.example.com. 1635647622 900 900 1800 60
+
+@                NS ns1.example.com.
+ns1.example.com. A  10.154.0.71
+
+71.0     IN      PTR     ns1.example.com.
+72.0     IN      PTR     www.example.com.
+73.0     IN      PTR     abc.example.com.
+\end{lstlisting}
+     
+\end{itemize}
+
+
+
+\paragraph{Testing.}  After making the changes to a nameserver, make sure 
+run the \texttt{"service named restart"} to restart the nameserver. If everything
+is set up correctly, we can go to any of the hosts in the emulator, 
+run the following reverse query commands. Please report and explain 
+your observations. 
+
+\begin{lstlisting}
+# dig -x 10.154.0.71
+# dig -x 10.154.0.72
+# dig -x 10.154.0.73
+\end{lstlisting}
+ 
 
 
 
