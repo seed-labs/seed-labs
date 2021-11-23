@@ -32,8 +32,8 @@ emu.addBinding(Binding('com-server-a',   filter=Filter(asn=151), action=Action.F
 emu.addBinding(Binding('com-server-b',   filter=Filter(asn=161), action=Action.FIRST))
 emu.addBinding(Binding('edu-server',     filter=Filter(asn=152), action=Action.FIRST))
 emu.addBinding(Binding('ns-example-com', filter=Filter(asn=154), action=Action.FIRST))
-emu.addBinding(Binding('ns-AAAAA',     filter=Filter(asn=162), action=Action.FIRST))
-emu.addBinding(Binding('ns-BBBBB',   filter=Filter(asn=170), action=Action.FIRST))
+emu.addBinding(Binding('ns-AAAAA',     filter=Filter(asn=162), action=Action.NEW))
+emu.addBinding(Binding('ns-BBBBB',     filter=Filter(asn=162), action=Action.NEW))
 
 #####################################################################################
 # Create two local DNS servers (virtual nodes).
@@ -50,6 +50,7 @@ emu.getVirtualNode('global-dns-2').setDisplayName('Global DNS-2')
 base: Base = emu.getLayer('Base')
 as153 = base.getAutonomousSystem(153)
 as153.createHost('local-dns-1').joinNetwork('net0', address = '10.153.0.53')
+
 as163 = base.getAutonomousSystem(163)
 as163.createHost('local-dns-2').joinNetwork('net0', address = '10.163.0.53')
 
@@ -62,8 +63,8 @@ emu.addBinding(Binding('global-dns-2', filter = Filter(asn=163, nodeName="local-
 
 
 # We choose to set the local DNS for individual nodes
-# We skip 155 and 164, so students can work on that.
-asnlist = [150, 151, 152, 153, 154, 156, 160, 161, 162, 163, 170, 171, 190]
+# We skip 155, so students can work on that.
+asnlist = [150, 151, 152, 153, 154, 156, 160, 161, 162, 163, 164, 170, 171, 190]
 for asn in asnlist: 
     base.getAutonomousSystem(asn).setNameServers(['10.153.0.53'])
 
@@ -78,5 +79,6 @@ emu.render()
 ###############################################
 # Render the emulation
 # Since we use IP anycast, we will set the selfManagedNetwork to true
-emu.compile(Docker(selfManagedNetwork=True, clientEnabled = True), './output')
+#emu.compile(Docker(selfManagedNetwork=True, clientEnabled = True), './output')
+emu.compile(Docker(selfManagedNetwork=True), './output')
 
