@@ -1,0 +1,99 @@
+We provide a pre-built emulator in two different forms: Python code
+and container files. The container files are generated from
+the Python code, but students need to install the SEED Emulator source
+code from the GitHub to run the Python code. The container files
+can be directly used without the emulator source code.
+Instructors who would like to customize the emulator can modify the Python
+code, generate their own container files, and then provide the
+files to students, replacing the ones included in the
+lab setup file. See the \texttt{README.md} file for instructions. 
+
+
+\paragraph{Download the emulator files.}
+Please download the \texttt{Labsetup.zip} file from the web page, and
+unzip it. The files inside the \texttt{output/} sub-folder are the actual
+emulation files (container files) that are
+generated from the Python code.
+
+
+\paragraph{Start the emulation.}
+We will directly use the container files in the \texttt{output/} folder.
+Go to this folder, and run the docker commands
+to build and start the containers. We recommend that you run the emulator inside
+the provided SEED Ubuntu 20.04 VM, but doing it in a generic Ubuntu 20.04 operating system
+should not have any problem, as long as the docker software is installed.
+Readers can find the docker manual from
+\href{https://github.com/seed-labs/seed-labs/blob/master/manuals/docker/SEEDManual-Container.md}
+{\underline{this link}}.
+If this is the first time you set up a SEED lab environment
+using containers, it is very important that you read 
+the user manual. 
+
+
+In the following, we list some of the commonly
+used commands related to Docker and Compose. 
+Since we are going to use 
+these commands very frequently, we have created aliases for them
+in the \texttt{.bashrc} file (in our provided SEEDUbuntu 20.04 VM).
+
+\begin{lstlisting}
+$ docker-compose build  # Build the container images
+$ docker-compose up     # Start the containers
+$ docker-compose down   # Shut don the containers
+
+
+// Aliases for the Compose commands above
+$ dcbuild       # Alias for: docker-compose build
+$ dcup          # Alias for: docker-compose up
+$ dcdown        # Alias for: docker-compose down
+\end{lstlisting}
+
+
+All the containers will be running in the background. To run
+commands on a container, we often need to get a shell on
+that container. We first need to use the \texttt{"docker ps"}  
+command to find out the ID of the container, and then
+use \texttt{"docker exec"} to start a shell on that 
+container. We have created aliases for them in
+the \texttt{.bashrc} file.
+
+\begin{lstlisting}
+$ dockps        // Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
+$ docksh <id>   // Alias for: docker exec -it <id> /bin/bash
+
+// The following example shows how to get a shell inside hostC
+$ dockps
+b1004832e275  hostA-10.9.0.5
+0af4ea7a3e2e  hostB-10.9.0.6
+9652715c8e0a  hostC-10.9.0.7
+
+$ docksh 96
+root@9652715c8e0a:/#  
+
+// Note: If a docker command requires a container ID, you do not need to 
+//       type the entire ID string. Typing the first few characters will 
+//       be sufficient, as long as they are unique among all the containers. 
+\end{lstlisting}
+
+
+If you encounter problems when setting up the lab environment, 
+please read the ``Common Problems'' section of the manual
+for potential solutions.
+
+
+
+\paragraph{Set the terminal title.} 
+We may need to get into several containers using the terminal.
+We will likely create several terminal tabs, and switch back
+and forth among these tabs. We can easily get lost, because
+it is difficult to know which tab runs which container. 
+To solve this problem, once we
+are inside a container, we can set the terminal title using
+one of the following commands (it sets the title to \texttt{"New Title"}).
+
+\begin{lstlisting}
+# set_title New Title
+# st New Title       (*@\pointleft{st} is an alias of set\_title@*)
+\end{lstlisting}
+
+
