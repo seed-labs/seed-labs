@@ -80,5 +80,5 @@ emu.render()
 # Render the emulation
 # Since we use IP anycast, we will set the selfManagedNetwork to true
 #emu.compile(Docker(selfManagedNetwork=True, clientEnabled = True), './output')
-emu.compile(Docker(selfManagedNetwork=True), './output2')
+emu.compile(Docker(selfManagedNetwork=True), './output')
 
