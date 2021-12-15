@@ -30,7 +30,7 @@ button{
 .navbar button{
 	background: #2C3539;
 	color: white;
-	border: 1px solid balck;
+	border: 1px solid black;
 }
 .navbar button:hover{
 	background: white;
