@@ -46,11 +46,11 @@ Update: The password was stored in the session was updated when password is chan
   if($input_pwd!=''){
     // In case password field is not empty.
     $hashed_pwd = sha1($input_pwd);
-    //Update the password stored in the session.
+    // Update the password stored in the session.
     $_SESSION['pwd']=$hashed_pwd;
     $sql = "UPDATE credential SET nickname='$input_nickname',email='$input_email',address='$input_address',Password='$hashed_pwd',PhoneNumber='$input_phonenumber' where ID=$id;";
   }else{
-    // if passowrd field is empty.
+    // If password field is empty.
     $sql = "UPDATE credential SET nickname='$input_nickname',email='$input_email',address='$input_address',PhoneNumber='$input_phonenumber' where ID=$id;";
   }
   $conn->query($sql);
