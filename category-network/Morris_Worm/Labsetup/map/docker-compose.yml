@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+    seedsim-client:
+        build: .
+        container_name: seedemu_client
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        ports:
+            - 8080:8080

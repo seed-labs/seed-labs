@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=.7">
+</head>
+
+<body>
+    <noscript>
+        You need javascript to run the map.
+    </noscript>
+    <div class="map-area">
+        <div class="map" id="map"></div>
+        <div class="panel filter-panel">
+            <div class="panel-title clickable" id="tab-filter-mode">Filter</div>
+            <div class="panel-title inactive clickable" id="tab-node-search-mode">Search</div>
+            <div class="filter-wrap wrap" id="filter-wrap">
+                <input class="filter" id="filter" placeholder="Type a BPF expression to animate packet flows on the map..." autocorrect="off" autocapitalize="off" spellcheck="false" />
+            </div>
+            <div class="suggestions" id="filter-suggestions"></div>
+        </div>
+        <div class="panel replay-panel">
+            <div class="panel-title">Replay</div>
+            <div class="replay-plate-wrap wrap">
+                <div class="replay-plate" id="replay-plate">
+                    <div id="replay-status">Replay stopped.</div>
+                    <div>
+                        <button id="replay-record" title="start recording"><i class="bi bi-record-fill"></i></button>
+                        <button id="replay-replay" title="start / pause replay"><i class="bi bi-play-fill"></i></button>
+                        <button id="replay-stop" title="stop replay" disabled><i class="bi bi-stop-fill"></i></button>
+                        <button id="replay-backward" title="step backward" disabled><i class="bi bi-arrow-left-short"></i></button>
+                        <button id="replay-forward" title="step forward" disabled><i class="bi bi-arrow-right-short"></i></button>
+                    </div>
+                    <div>
+                        <input type="range" id="replay-seek" name="cowbell" min="0" max="1" value="0" step="1" disabled>
+                    </div>
+                    <div>
+                        <label for="interval">event interval (ms)</label>
+                        <input type="number" id="replay-interval" value="200">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel info-plate-panel">
+            <div class="panel-title">Details</div>
+            <div class="info-plate-wrap wrap">
+                <div class="info-plate" id="info-plate">
+                    No object selected.
+                </div>
+            </div>
+        </div>
+        <div class="panel log-panel" id="log-panel">
+            <div class="panel-title clickable" id="log-panel-toggle">
+                <span>Log</span>
+                <i class="bi bi-chevron-up" id="log-toggle-chevron"></i>
+            </div>
+            <div class="log-wrap wrap minimized" id="log-wrap">
+                <div class="log" id="log-viewport">
+                    <table class="log">
+                        <thead>
+                            <tr>
+                              <th>Time</th>
+                              <th>Node</th>
+                              <th>Log</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="log-controls">
+                    <button id="log-clear">clear</button>
+                    <input type="checkbox" id="log-autoscroll" checked />
+                    <label for="log-autoscroll" >autoscroll</label>
+                    <input type="checkbox" id="log-disable" />
+                    <label for="log-disable" >disable log</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="console-area" id="console-area"></div>
+    <div class="taskbar hide" id="taskbar"></div>
+</body>
+<script src="./map.js"></script>
+
+</html>

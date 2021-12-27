@@ -1,0 +1,17 @@
+body {
+    padding-top: 4.5rem;
+    padding-bottom: 4.5rem;
+}
+
+.network .name {
+    font-weight: bold;
+}
+
+.network .name::after {
+    content: ':';
+} 
+
+.network .address {
+    margin-left: .2em;
+}
+

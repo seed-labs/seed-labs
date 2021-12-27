@@ -1,0 +1,98 @@
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+
+body, h1, h2, h3, h4, h5, h6, p, ol, ul {
+    margin: 0;
+    padding: 0;
+}
+
+html, body, .terminal {
+    height: 100%;
+    width: 100%;
+    background-color: #1D1F21;
+}
+
+html, body, .container {
+    height: 100%;
+    width: 100vw;
+    overflow: hidden;
+    position: relative;
+}
+
+.container {
+    padding: .5em;
+}
+
+.bottom-tooltip {
+    bottom: .25em;
+}
+
+.right-tooltip {
+    top: .25em;
+    right: .25em;
+}
+
+.persistent-tooltip {
+    transition: opacity .2s;
+}
+
+.persistent-tooltip:hover {
+    opacity: 0%;
+}
+
+.tooltip {
+    color: #C5C8C6;
+    position: absolute;
+    padding: .2em;
+    font-family: monospace;
+    background-color: rgba(29, 31, 33, 0.84);
+    border: 2px solid #C5C8C6;
+    z-index: 114514;
+}
+
+.as-name {
+    font-weight: bold;
+}
+
+.loading, .muted {
+    color: #a5a8a6;
+}
+
+.muted {
+    font-size: .85em;
+}
+
+.infopanel-label {
+    font-weight: bold;
+}
+
+.infopanel-label:after {
+    content: ":";
+}
+
+.infopanel-text {
+    margin-left: .2em;
+    font-family: monospace;
+}
+
+.infopanel-title {
+    font-family: monospace;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: .2em;
+    border-left: .4em solid;
+    padding-left: .3em;
+}
+
+.xterm-viewport {
+    scrollbar-width: 1px;
+    scrollbar-color: rgba(0, 0, 0, 255);
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.xterm-viewport::-webkit-scrollbar {
+    width: 1px;
+    height: 0;
+    opacity: 0%;
+}
