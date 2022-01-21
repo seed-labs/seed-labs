@@ -150,7 +150,7 @@ emu.render()
 
 # Use the "morris-worm-base" custom base image
 docker = Docker()
-docker.addImage(DockerImage('morris-worm-base', []))
+docker.addImage(DockerImage('morris-worm-base', [], local = True))
 docker.forceImage('morris-worm-base')
 emu.compile(docker, './output', override = True)
 
