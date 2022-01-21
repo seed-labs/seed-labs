@@ -155,7 +155,7 @@ configuration file.
 The configuration file usually has an extension
 {\tt .cnf}. It is used by three \OpenSSL commands: {\tt ca}, {\tt req} and {\tt x509}. 
 The manual page of \texttt{openssl.conf} can be found from online resources. 
-By default, \OpenSSL use the configuration file from \path{/usr/lib/ssl/openssl.cnf}. 
+By default, \OpenSSL uses the configuration file from \path{/usr/lib/ssl/openssl.cnf}.
 Since we need to make changes to this file, we will copy it 
 into our current directory, and instruct \OpenSSL to use this copy instead. 
 
@@ -235,7 +235,7 @@ openssl rsa  -in ca.key -text -noout
 
 
 Please run the above commands. From the output, please identify
-the followings: 
+the following:
 
 \begin{itemize}[noitemsep]
 \item What part of the certificate indicates this is a CA's certificate?
@@ -545,7 +545,7 @@ The goal of this task is to help students understand how PKI can defeat such MIT
 In the task, we will emulate an MITM attack, and see how exactly PKI can defeat it.
 We will select a target website first. In this document, we use 
 \texttt{www.example.com} as the target website, but in the task, to make it more meaningful,
-students should pick a popular website, such as a banking site and social network site. 
+students should pick a popular website, such as a banking site or social network site.
 
 
 \paragraph{Step 1: Setting up the malicious website.} 
