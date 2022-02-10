@@ -222,7 +222,7 @@ def spoof_dns(pkt):
 
     ip = IP(...)           # Create an IP object
     udp = UDP(...)         # Create a UPD object
-    Anssec = DNSRR(...)    # Create an aswer record
+    Anssec = DNSRR(...)    # Create an answer record
     dns = DNS(...)         # Create a DNS object
     spoofpkt = ip/udp/dns  # Assemble the spoofed DNS packet
     send(spoofpkt)

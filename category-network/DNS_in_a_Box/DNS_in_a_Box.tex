@@ -207,7 +207,7 @@ FROM seed-base-image-bind                         (*@\ding{202}@*)
 
 ARG BIND_CONF_DIR
 
-# Copy the BIND confirguration files
+# Copy the BIND configuration files
 COPY named.conf named.conf.options  /etc/bind/    (*@\ding{203}@*)
 COPY ${BIND_CONF_DIR}     /etc/bind/              (*@\ding{204}@*)
 

@@ -1,4 +1,4 @@
-/* Vunlerable program: stack.c */
+/* Vulnerable program: stack.c */
 /* You can get this program from the lab's website */
 
 #include <stdlib.h>
@@ -18,7 +18,7 @@ int bof(char *str)
     char buffer[BUF_SIZE];
 
     /* The following statement has a buffer overflow problem */
-    strcpy(buffer, str);       
+    strcpy(buffer, str);
 
     return 1;
 }

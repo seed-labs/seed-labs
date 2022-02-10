@@ -171,7 +171,7 @@ Many tools can be used to do sniffing and spoofing, but most of them only provid
 fixed functionalities. Scapy is different: it can be used not only as a tool, 
 but also as a building block to construct other sniffing and spoofing
 tools, i.e., we can integrate the Scapy functionalities into our own
-program.  In this set of tasks, we will use Scapy for each task. 
+program. In this set of tasks, we will use Scapy for each task. 
 
 
 To use Scapy, we can write a Python program, and then execute this program
@@ -506,7 +506,7 @@ int main()
   //         network has a prefix "br-" (if the container setup is used).
   handle = pcap_open_live("eth3", BUFSIZ, 1, 1000, errbuf); 
 
-  // Step 2: Compile filter_exp into BPF psuedo-code
+  // Step 2: Compile filter_exp into BPF pseudo-code
   pcap_compile(handle, &fp, filter_exp, 0, net);            
   if (pcap_setfilter(handle, &fp) !=0) {                   
       pcap_perror(handle, "Error:");
@@ -628,7 +628,7 @@ struct sockaddr_in sin;
 char buffer[1024]; // You can change the buffer size
 
 /* Create a raw socket with IP protocol. The IPPROTO_RAW parameter
- * tells the sytem that the IP header is already included;
+ * tells the system that the IP header is already included;
  * this prevents the OS from adding another IP header.  */
 sd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
 if(sd < 0) {
