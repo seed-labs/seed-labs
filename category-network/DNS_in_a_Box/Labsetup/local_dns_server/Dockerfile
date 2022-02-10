@@ -1,6 +1,6 @@
 FROM seed-base-image-bind
   
-# Copy the BIND confirguration files
+# Copy the BIND configuration files
 COPY named.conf named.conf.options   /etc/bind/
 
 # Copy the Root Hints
