@@ -35,7 +35,7 @@ services:
 
     VPN_Client:
         image: handsonsecurity/seed-ubuntu:large
-        container_name: client-10.9.0.5
+        container_name: client-router
         tty: true
         cap_add:
                 - ALL
