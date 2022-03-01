@@ -35,7 +35,7 @@ layers to trick a user into clicking on a button or link on another page when th
 were intending to click on the top level page. Users can be easily fooled, and do not
 even realise where they are really clicking. Attackers need user interaction to make this attack 
 successful, hence they usually design clickjacking attack applications in the form of games or 
-survery forms.
+survey forms.
 
 The learning objective of this lab is for students to gain a first-hand
 experience in Clickjacking attack, so they can better understand 
@@ -88,17 +88,17 @@ Both VMs and their user manuals can be downloaded from the SEED web site.
 In this task we will demonstrate a clickjacking attack, where we will delete a contact. We have already designed an
 application which does a clickjacking attack and it is installed in your AndroidVM.
 Our application behaves as a Calibration phase before playing a game, it will ask you to click various button in order to complete the 
-calibration for best user experience. What is actually happenning in the background is that we are deleting a contact. In order to perform
+calibration for best user experience. What is actually happening in the background is that we are deleting a contact. In order to perform
 this attack, we need to get the users permission for "Permit drawing over other apps". 
 
 \paragraph{Attack Code}
 Before performing the attack, we will first talk about how we did this attack. \\
-After getting the required permissions, we need to design views and overlay them on the page. We have to make sure to cover the whole page and make it possible to click through these views. So, when the user clicks, the click is actually happenning in the background of that view (which is not visible to the user). We control how wide or long the views are using coordinate values and have to position them perfectly. 
+After getting the required permissions, we need to design views and overlay them on the page. We have to make sure to cover the whole page and make it possible to click through these views. So, when the user clicks, the click is actually happening in the background of that view (which is not visible to the user). We control how wide or long the views are using coordinate values and have to position them perfectly. 
 
 \begin{enumerate}
 
 \item Step 1: We use an intent to open the page which closest to our goal,
-programitically. For example, to delete contacts we will open the contacts
+programmatically. For example, to delete contacts we will open the contacts
 application first and then design our views.
     
 \begin{lstlisting}
@@ -489,9 +489,9 @@ $ adb install YOUR-APK.apk
 \item 1 : You should first install the application on the AndroidVM without
 changes to get a feel of the views
 
-\item 2: You have to delete the application from the AndroidVM before re-installing, everytime.
+\item 2: You have to delete the application from the AndroidVM before re-installing, every time.
 
-\item 3: You will probably have to modify, recompile and re-install multiple times before you can allign the views perfectly
+\item 3: You will probably have to modify, recompile and re-install multiple times before you can align the views perfectly
 \end{itemize}
 
 \section{Submission and Demonstration}

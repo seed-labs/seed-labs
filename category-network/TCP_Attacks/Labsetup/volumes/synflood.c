@@ -48,7 +48,7 @@ struct tcpheader {
     u_short tcp_urp;                 /* urgent pointer */
 };
 
-/* Psuedo TCP header */
+/* Pseudo TCP header */
 struct pseudo_tcp
 {
         unsigned saddr, daddr;

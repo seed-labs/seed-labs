@@ -1,4 +1,4 @@
-/* Vunlerable program: stack.c */
+/* Vulnerable program: stack.c */
 /* You can get this program from the lab's website */
 
 #include <stdlib.h>
@@ -55,9 +55,9 @@ int main(int argc, char **argv)
     return 1;
 }
 
-// This function is used to insert a stack frame of size 
-// 1000 (approximately) between main's and bof's stack frames. 
-// The function itself does not do anything. 
+// This function is used to insert a stack frame of size
+// 1000 (approximately) between main's and bof's stack frames.
+// The function itself does not do anything.
 void dummy_function(char *str)
 {
     char dummy_buffer[1000];
