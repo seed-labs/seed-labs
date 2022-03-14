@@ -15,3 +15,4 @@ void cleanup(void)
 module_init(initialization);
 module_exit(cleanup);
 
+MODULE_LICENSE("GPL");
