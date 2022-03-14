@@ -6,6 +6,8 @@ services:
         image: seed-image-www
         container_name: elgg-10.9.0.5
         tty: true
+        ports:
+          - 80:80
         networks:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.5

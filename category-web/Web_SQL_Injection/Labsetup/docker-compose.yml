@@ -5,6 +5,8 @@ services:
         build: ./image_www
         image: seed-image-www-sqli
         container_name: www-10.9.0.5
+        ports:
+          - 80:80
         tty: true
         networks:
             net-10.9.0.0:

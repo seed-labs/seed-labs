@@ -1,7 +1,7 @@
 FROM handsonsecurity/seed-elgg:original
 
 # The original Elgg is installed inside /var/www/elgg
-ARG WWWDir=/var/www/elgg
+ARG WWWDir=/var/www/html
 
 # We customize the original Elgg program for the XSS lab.
 # (1) disable the countermeasure and (2) set up the MySQL database.
@@ -17,7 +17,7 @@ RUN  a2ensite apache_elgg.conf
 
 
 # Set up the CSP site (for one of the lab tasks) 
-COPY csp /var/www/csp
-COPY apache_csp.conf   /etc/apache2/sites-available
-RUN  a2ensite apache_csp.conf  
+# COPY csp /var/www/csp
+# COPY apache_csp.conf   /etc/apache2/sites-available
+# RUN  a2ensite apache_csp.conf  
 

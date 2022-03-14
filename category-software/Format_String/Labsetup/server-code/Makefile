@@ -19,6 +19,6 @@ clean:
 	rm -f badfile $(TARGET)
 
 install:
-	cp server ../fmt-containers
-	cp format-* ../fmt-containers
+	mv server ../fmt-containers
+	mv format-* ../fmt-containers
 

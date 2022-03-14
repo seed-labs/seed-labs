@@ -13,17 +13,29 @@ services:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.5
 
-    fmt-server-2:
-        build: 
-            context: ./fmt-containers
-            args:
-                ARCH: 64
-        image: seed-image-fmt-server-2
-        container_name: server-10.9.0.6
+    # fmt-server-2:
+    #     build: 
+    #         context: ./fmt-containers
+    #         args:
+    #             ARCH: 64
+    #     image: seed-image-fmt-server-2
+    #     container_name: server-10.9.0.6
+    #     tty: true
+    #     networks:
+    #         net-10.9.0.0:
+    #             ipv4_address: 10.9.0.6
+    
+    local_machine:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        container_name: seed-lab
         tty: true
+        privileged: true
         networks:
             net-10.9.0.0:
-                ipv4_address: 10.9.0.6
+                ipv4_address: 10.9.0.4
+
 
 networks:
     net-10.9.0.0:
