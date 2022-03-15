@@ -53,7 +53,8 @@ int main()
   char a[26]="abcdefghijklmnopqrstuvwxyz";
   while (1) {
     // Generate a random name with length 5
-    char name[5];
+    char name[6];
+    name[5] = '\0';
     for (int k=0; k<5; k++)  name[k] = a[rand() % 26];
 
     //##################################################################
