@@ -5,7 +5,7 @@ services:
   # We do this to avoid making too many image pulls from 
   # the Docker Hub, which has set limit for anonymous users.  
   # This container will exit as soon as it starts.
-  seed_base_router:
+  seed_base_bind:
     build: ./base_image
     image: seed-base-image-bind
     container_name: seed-base-bind
@@ -55,6 +55,17 @@ services:
     networks:
       seed-net:
         ipv4_address: 10.9.0.53
+
+  user:
+    build: ./user
+    image: seed-user
+    container_name: user-10.9.0.5
+    tty: true
+    cap_add:
+           - ALL
+    networks:
+      seed-net:
+        ipv4_address: 10.9.0.5
 
 networks:
     seed-net: 
