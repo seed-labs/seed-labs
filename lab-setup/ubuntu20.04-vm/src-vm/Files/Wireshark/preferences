@@ -1353,11 +1353,11 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # TRUE or FALSE (case-insensitive)
 #can.byte_swap: FALSE
 
-# Try to decode a packet using an heuristic sub-dissector before using a sub-dissector registered to "decode as"
+# Try to decode a packet using a heuristic sub-dissector before using a sub-dissector registered to "decode as"
 # TRUE or FALSE (case-insensitive)
 #can.try_heuristic_first: FALSE
 
-# Try to decode a packet using an heuristic sub-dissector before using a sub-dissector registered to "decode as"
+# Try to decode a packet using a heuristic sub-dissector before using a sub-dissector registered to "decode as"
 # TRUE or FALSE (case-insensitive)
 #acf-can.try_heuristic_first: FALSE
 
@@ -1490,7 +1490,7 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # (case-insensitive).
 #cotp.tsap_display: As strings if printable
 
-# Whether to decode OSI TPDUs with ATN (Aereonautical Telecommunications Network) extensions. To use this option, you must also enable "Always try to decode NSDU as transport PDUs" in the CLNP protocol settings.
+# Whether to decode OSI TPDUs with ATN (Aeronautical Telecommunications Network) extensions. To use this option, you must also enable "Always try to decode NSDU as transport PDUs" in the CLNP protocol settings.
 # TRUE or FALSE (case-insensitive)
 #cotp.decode_atn: FALSE
 
@@ -1534,7 +1534,7 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # TRUE or FALSE (case-insensitive)
 #db-lsp.desegment_pdus: TRUE
 
-# Try to decode the payload using an heuristic sub-dissector
+# Try to decode the payload using a heuristic sub-dissector
 # TRUE or FALSE (case-insensitive)
 #db-lsp.try_heuristic: TRUE
 
@@ -1542,7 +1542,7 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # TRUE or FALSE (case-insensitive)
 #dccp.summary_in_tree: TRUE
 
-# Try to decode a packet using an heuristic sub-dissector before using a sub-dissector registered to a specific port
+# Try to decode a packet using a heuristic sub-dissector before using a sub-dissector registered to a specific port
 # TRUE or FALSE (case-insensitive)
 #dccp.try_heuristic_first: FALSE
 
@@ -1570,19 +1570,19 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # TRUE or FALSE (case-insensitive)
 #dct2000.sctpprim_heuristic: TRUE
 
-# When set, attempt to decode LTE RRC frames. Note that this won't affect other protocols that also call the LTE RRC dissector
+# When set, attempt to decode LTE RRC frames. Note that this won't affect other protocols that also call the LTE RRC dissector.
 # TRUE or FALSE (case-insensitive)
 #dct2000.decode_lte_rrc: TRUE
 
-# When set, look for formatted messages indicating specific events.  This may be quite slow, so should be disabled if LTE MAC is not being analysed
+# When set, look for formatted messages indicating specific events.  This may be quite slow, so it should be disabled if LTE MAC is not being analyzed
 # TRUE or FALSE (case-insensitive)
 #dct2000.decode_mac_lte_oob_messages: TRUE
 
-# When set, look for some older protocol names so thatthey may be matched with wireshark dissectors.
+# When set, look for some older protocol names so that they may be matched with Wireshark dissectors.
 # TRUE or FALSE (case-insensitive)
 #dct2000.convert_old_protocol_names: FALSE
 
-# Novell Servers option 85 can be configured as a string instead of address
+# Novell Servers option 85 can be configured as a string instead of an address
 # TRUE or FALSE (case-insensitive)
 #dhcp.novellserverstring: FALSE
 
@@ -1620,7 +1620,7 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # TRUE or FALSE (case-insensitive)
 #diameter.desegment: TRUE
 
-# Create DICOM File Meta Header according to PS 3.10 on export for PDUs. If the captured PDV does not contain a SOP Class UID and SOP Instance UID (e.g. for command PDVs), wireshark specific ones will be created.
+# Create DICOM File Meta Header according to PS 3.10 on export for PDUs. If the captured PDV does not contain an SOP Class UID and SOP Instance UID (e.g. for command PDVs), Wireshark specific ones will be created.
 # TRUE or FALSE (case-insensitive)
 #dicom.export_header: TRUE
 
@@ -1697,7 +1697,7 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # TRUE or FALSE (case-insensitive)
 #dns.desegment_dns_messages: TRUE
 
-# Number of seconds allowed between DNS requests with the same transaction ID to consider it a retransmission. Otherwise its considered a new request.
+# Number of seconds allowed between DNS requests with the same transaction ID to consider it a retransmission. Otherwise it's considered a new request.
 # A decimal number
 #dns.retransmission_timer: 5
 
@@ -1821,7 +1821,7 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # TRUE or FALSE (case-insensitive)
 #epl.interpret_untyped_as_le: TRUE
 
-# If you have a capture without IdentResponse and many nodes, it's easier to set a default profile here than to add entries for all MAC address or Node IDs
+# If you have a capture without IdentResponse and many nodes, it's easier to set a default profile here than to add entries for all MAC addresses or Node IDs
 # A path to a file
 #epl.default_profile: 
 
@@ -1948,7 +1948,7 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # TRUE or FALSE (case-insensitive)
 #f5ethtrailer.rstcause_in_info: TRUE
 
-# If enabled, KEYLOG entires will be added to the TLS decode in the f5ethtrailer protocol tree.  It will populate the f5ethtrailer.tls.keylog field.
+# If enabled, KEYLOG entries will be added to the TLS decode in the f5ethtrailer protocol tree.  It will populate the f5ethtrailer.tls.keylog field.
 # TRUE or FALSE (case-insensitive)
 #f5ethtrailer.generate_keylog: TRUE
 
@@ -1984,7 +1984,7 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # TRUE or FALSE (case-insensitive)
 #fix.desegment: TRUE
 
-# Try to decode a packet using an heuristic sub-dissector before using a sub-dissector registered to "decode as"
+# Try to decode a packet using a heuristic sub-dissector before using a sub-dissector registered to "decode as"
 # TRUE or FALSE (case-insensitive)
 #flexray.try_heuristic_first: FALSE
 
@@ -2361,7 +2361,7 @@ gui.qt.font_name: Liberation Mono,11,-1,5,50,0,0,0,0,0
 # A decimal number
 #infiniband.rroce.port: 4791
 
-# Try to decode a packet using an heuristic sub-dissector before using Decode As
+# Try to decode a packet using a heuristic sub-dissector before using Decode As
 # TRUE or FALSE (case-insensitive)
 #infiniband.try_heuristic_first: TRUE
 
