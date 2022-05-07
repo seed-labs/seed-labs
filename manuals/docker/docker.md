@@ -45,7 +45,7 @@ in the comments.
 
 We will statically assign IP addresses to our container. To do that,
 we need to attach our container to a network first. We can let docker
-attach our container to the default network. If you ca take this option,
+attach our container to the default network. If you can take this option,
 you can skip the following network-creation step.
 
 In many situations, we would like to attach our containers to a custom network.
