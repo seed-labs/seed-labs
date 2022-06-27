@@ -121,7 +121,7 @@ function elgg_make_sticky_form($form_name) {
  * Remove form submission data from the session
  *
  * Call this if validation is successful in the action handler or
- * when they sticky values have been used to repopulate the form
+ * when the sticky values have been used to repopulate the form
  * after a validation error.
  *
  * @param string $form_name Form namespace
