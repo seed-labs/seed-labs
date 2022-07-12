@@ -1,14 +1,15 @@
 DROP DATABASE IF EXISTS ctf_sql;
-CREATE DATABASE ctf_sql;
+CREATE DATABASE IF NOT EXISTS ctf_sql;
 USE ctf_sql;
 
 DROP TABLE IF EXISTS Secret;
-CREATE TABLE Secret (
-   id INT NOT NULL UNIQUE AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS Secret (
+   id INT NOT NULL UNIQUE AUTO_INCREMENT PRIMARY KEY,
    task VARCHAR(1024) NOT NULL
 );
 
-INSERT INTO Secret VALUES
+INSERT INTO Secret(id, task)
+VALUES
    (1, 'Not the flag'),
    (2, 'Not the flag'),
    (3, 'Not the flag'),
@@ -21,12 +22,13 @@ INSERT INTO Secret VALUES
    (10, 'Not the flag');
 
 DROP TABLE IF EXISTS ToDos;
-CREATE TABLE ToDos (
-   id INT NOT NULL UNIQUE AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS ToDos (
+   id INT NOT NULL UNIQUE AUTO_INCREMENT PRIMARY KEY,
    task VARCHAR(1024) NOT NULL
 );
 
-INSERT INTO ToDos VALUES
+INSERT INTO ToDos(id, task)
+VALUES
    (1, 'Mow the lawn'),
    (2, 'Go grocery shopping'),
    (3, 'Take out the trash'),

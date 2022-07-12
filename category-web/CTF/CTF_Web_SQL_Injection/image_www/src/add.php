@@ -2,12 +2,13 @@
 require("dbconnect.php");
 
 try {
+   session_start();
    $conn = dbconnect();
-   if ($conn == false) { exit(); }
+   //if ($conn == false) { exit(); }
    
    $todo = $_POST["todo"];
    if (strlen($todo) > 0) {
-      $query = "INSERT INTO ToDos (task) VALUES ('$todo');";
+      $query = "INSERT INTO " . session_id() . "_ToDos (task) VALUES ('$todo');";
       $conn->multi_query($query);
       while ($conn->more_results()) {
          if (!$conn->next_result()) {
@@ -18,8 +19,7 @@ try {
    $conn->close();
    
    header('Location: index.php', true, 303);
-}
-catch (Exception $e) {
-   echo "Error when inserting task into table 'ToDos': " . $e->getMessage(); 
+} catch (Exception $e) {
+   exit("Error when inserting task into table 'ToDos': " . $e->getMessage()); 
 }
 ?>
