@@ -8,7 +8,7 @@
 
 3. Change the default admin credentials to your desired credentials (see below for procedure).
 
-4. Clone this repository on your Linux server, and download the .zip file(s) for the CTF module(s) you would like to use from the associated directories within each module (e.g. web, cryptography).
+4. Clone this repository on your Linux server, and download the .zip file(s) for the CTF module(s) you would like to use from the associated directories within each module (e.g. web, cryptography). Alternatively, you can download the full set of challenges in a single zip file in this directory ("challenges-all.zip").
 
 5. Visit the CTFd site you launched above; you should be logged in as an admin.
 
