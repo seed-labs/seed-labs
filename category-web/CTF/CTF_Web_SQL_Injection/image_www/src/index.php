@@ -1,61 +1,29 @@
 <?php
-//include_once 'session.php';
-include_once 'database.php';
 
 session_start();
 
-//error_reporting(0); // disable PHP error reporting, will manually check
+require 'database.php';
 
-if (isset($_SESSION['hits']) === true)
+error_reporting(0); // disable PHP error reporting, will manually check
+
+if (isset($_SESSION['hits']))
 {
    $_SESSION['hits']++;
 }
 else
 {
-   printf("Initializing session<br>\n");
    $_SESSION['hits'] = 1;
-   $_SESSION['todosTableName'] = session_id() . "_ToDos";
-   $_SESSION['secretTableName'] = session_id() . "_Secret";
-   $_SESSION['todosTableCreated'] = false;
-   $_SESSION['secretTableCreated'] = false;
-   $_SESSION['bothTablesCreated'] = false;
-   $_SESSION['dbConn'] = NULL;
+   $_SESSION['todosTable'] = session_id() . "_ToDos";
+   $_SESSION['secretTable'] = session_id() . "_Secret";
+   $_SESSION['todosTableCreated'] = FALSE;
+   $_SESSION['secretTableCreated'] = FALSE;
 }
 
-var_dump($_SESSION);
-
-if (isset($_SESSION['dbConn']) === false)
+if (!$_SESSION['todosTableCreated'] || !$_SESSION['secretTableCreated'])
 {
-   $_SESSION['dbConn'] = dbConnect();
+   dbInit();
 }
 
-$conn = dbConnect();
-if ($conn === NULL)
-{
-   exit();
-}
-
-
-
-
-//$newSessionStarted = sessStart();
-//if ($newSessionStarted === true) {
-//   var_dump($_SESSION);
-//}
-//$_SESSION['hits']++;
-
-
-printf("bothTablesCreated === %s<br>\n", $_SESSION['bothTablesCreated'] === true ? "true" : "false");
-
-if ($_SESSION['bothTablesCreated'] === false)
-{
-   //dbInit($conn);
-   dbInit($_SESSION['dbConn']);
-}
-else 
-{
-   printf("Both tables exist<br>\n");
-}
 ?>
 
 <html lang="en">
@@ -68,22 +36,23 @@ else
    </head>
 
    <body>
-      <p>You have visited this page <?php printf($_SESSION['hits']); ?> times</p>
+      <p>PHP session ID: <?php echo session_id(); ?></p>
       
       <div class="center">
          <h1 style="text-decoration:underline">To do list</h1>
 
          <form action="add.php" method="POST" target="_self">
             <label for="todo">New task:</label>
-            <input type="text" id="todo" name="todo">
+            <input type="text" id="todo" name="todo" placeholder="Task description...">
             <input type="submit" value="Add to 'ToDos'">
          </form>
 
          <br>
         
          <?php
-         session_start();
-         $max = 0;
+         //session_start();
+         $conn = dbConnect();
+         $max = PHP_INT_MIN;
          $min = PHP_INT_MAX;
          $sql = "SELECT id FROM " . $_SESSION['todosTable'];
          $result = $conn->query($sql);
@@ -91,15 +60,33 @@ else
          {
             while ($row = $result->fetch_assoc()) 
             {
-               if ($row["id"] > $max) { $max = $row["id"]; }
-               if ($row["id"] < $min) { $min = $row["id"]; }
+               if ($row["id"] > $max) 
+               { 
+                  $max = $row["id"]; 
+               }
+               
+               if ($row["id"] < $min) 
+               { 
+                  $min = $row["id"]; 
+               }
             }
          }
+
+         if ($min === PHP_INT_MAX)
+         {
+            $min = 0;
+         }
+
+         if ($max === PHP_INT_MIN)
+         {
+            $max = 0;
+         } 
+         //$conn->close();
          ?>
          
          <form action="remove.php" method="POST" target="_self">
             <label for="taskId">Complete task by 'id':</label>
-            <input type="number" id="taskId" name="taskId" min=<?php echo $min; ?> max=<?php echo $max; ?>>
+            <input type="number" id="taskId" name="taskId" value=<?php echo $min; ?> min=<?php echo $min; ?> max=<?php echo $max; ?>>
             <input type="submit" value="Submit">
          </form>
          
@@ -112,7 +99,8 @@ else
             </tr>
 
          <?php
-         session_start();
+         //session_start();
+         //$conn = dbConnect();
          $sql = "SELECT id, task FROM " . $_SESSION['todosTable'];
          $result = $conn->query($sql);
          if ($result->num_rows > 0) 
@@ -122,7 +110,8 @@ else
                echo "<tr><td>" . $row["id"] . "</td><td>" . $row["task"] . "</td></tr>\n";
             }
          }
-         $conn->close();
+
+         $conn->close(); 
          ?>
          </table>
       </div>

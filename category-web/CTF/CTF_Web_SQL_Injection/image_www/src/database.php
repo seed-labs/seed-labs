@@ -1,118 +1,75 @@
 <?php
 
-function dbConnect()
+function dbConnect() 
 {
    session_start();
-   mysqli_report(MYSQLI_REPORT_OFF); // turn off error reporting/exception throwing for mysqli functions, will manually check for errors
+
+   $driver = new mysqli_driver();
+   $driver->report_mode = MYSQLI_REPORT_STRICT; // Throw mysqli_sql_exception for errors instead of warnings
    
-   $hostname = '10.9.0.3';
-   $username = 'seed';
-   $password = 'dees';
-   $database = 'ctf_sql';
-   
-   $conn = new mysqli($hostname, $username, $password, $database);
-   
-   if ($conn->connect_errno !== 0) // an error occured
-   { 
-      printf("Error when connecting to database: %s<br>\n", $conn->connect_error);
-      $conn = NULL;
+   try
+   {
+      $hostname = '10.9.0.3';
+      $username = 'seed';
+      $password = 'dees';
+      $database = 'ctf_sql';
+
+      $mysqli = new mysqli($hostname, $username, $password, $database);
+      
+      if ($mysqli->connect_errno)
+      {
+         exit("mysqli connection error: " . $mysqli->connect_error . "<br>\n");
+      }
+
+      return $mysqli;
    }
-   return $conn;
+   catch (mysqli_sql_exception $e)
+   {
+      exit("mysqli connection error: " . $e->getMessage() . "<br>\n");
+   }
 }
 
-function dbInit($mysqliConnection)
+function dbInit()
 {
    session_start();
    
-   if ($mysqliConnection === NULL)
-   {
-      exit();
-   }
-   
-   if (session_status() === PHP_SESSION_ACTIVE)
-   {
-      printf("todosTableCreated === %s<br>\n", $_SESSION['todosTableCreated'] === true ? "true" : "false");
-      if ($_SESSION['todosTableCreated'] === false)
+   $driver = new mysqli_driver();
+   $driver->report_mode = MYSQLI_REPORT_STRICT; // Throw mysqli_sql_exception for errors instead of warnings
+  
+   try
+   { 
+      $conn = dbConnect(); 
+      
+      if (!$_SESSION['todosTableCreated'])
       {
          // copy the 'ToDos' table
-         if ($mysqliConnection->query("CREATE TABLE IF NOT EXISTS " . $_SESSION['todosTableName'] . " LIKE ToDos") == true)
+         if ($conn->query("CREATE TABLE IF NOT EXISTS " . $_SESSION['todosTable'] . " LIKE ToDos"))
          {
-            if ($mysqliConnection->query("INSERT " . $_SESSION['todosTableName'] . " SELECT * FROM ToDos") == false)
+            if ($conn->query("INSERT " . $_SESSION['todosTable'] . " SELECT * FROM ToDos"))
             {
-               printf("Failed to populate table %s: %s<br>\n", $_SESSION["todosTableName"], $mysqliConnection->error);
-            }
-            else
-            {
-               $_SESSION['todosTableCreated'] = true;
-               printf("todosTableCreated === %s<br>\n", $_SESSION['todosTableCreated'] === true ? "true" : "false");
+               $_SESSION['todosTableCreated'] = TRUE;
             }
          }
-         else
-         {
-            printf("Failed to create table %s <br>\n", $_SESSION["todosTableName"]);
-         }
-      }
-      else
-      {
-         printf("todos table already created<br>\n");
       }
       
-      if ($_SESSION['secretTableCreated'] == false)
+      if (!$_SESSION['secretTableCreated'])
       {
          // copy the 'Secret' table
-         if ($mysqliConnection->query("CREATE TABLE IF NOT EXISTS " . $_SESSION['secretTableName'] . " LIKE Secret") == true)
+         if ($conn->query("CREATE TABLE IF NOT EXISTS " . $_SESSION['secretTable'] . " LIKE Secret"))
          {
-            if ($mysqliConnection->query("INSERT " . $_SESSION['secretTableName'] . " SELECT * FROM Secret") == false)
+            if ($conn->query("INSERT " . $_SESSION['secretTable'] . " SELECT * FROM Secret"))
             {
-               printf("Failed to populate table %s<br>\n", $_SESSION["secretTableName"]);
-            }
-            else
-            {
-               $_SESSION['secretTableCreated'] = true;
+               $_SESSION['secretTableCreated'] = TRUE;
             }
          }
-         else
-         {
-            printf("Failed to create table %s <br>\n", $_SESSION["secretTableName"]);
-         }
-      }
-      else
-      {
-         printf("todos table already created<br>\n");
       }
 
-      $_SESSION['bothTablesCreated'] = ($_SESSION['todosTableCreated'] && $_SESSION['secretTableCreated']);
+      $conn->close();
    }
-   else
+   catch (mysqli_sql_exception $e)
    {
-      printf("In dbInit, session not active<br>\n");
+      exit("mysqli error: " . $e->getMessage() . "<br>\n");
    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ?>
