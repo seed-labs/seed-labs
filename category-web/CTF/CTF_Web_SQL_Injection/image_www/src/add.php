@@ -2,7 +2,7 @@
 
 session_start();
 
-require 'database.php';
+include_once 'database.php';
 
 $driver = new mysqli_driver();
 $driver->report_mode = MYSQLI_REPORT_STRICT; // Throw mysqli_sql_exception for errors instead of warnings

@@ -2,9 +2,14 @@
 
 session_start();
 
-require 'database.php';
+ignore_user_abort(TRUE); // Set whether a client disconnect should abort script execution
+
+include_once 'database.php';
+include_once 'cleanup.php';
 
 error_reporting(0); // disable PHP error reporting, will manually check
+
+//register_shutdown_function('cleanup');
 
 if (isset($_SESSION['hits']))
 {
@@ -50,7 +55,6 @@ if (!$_SESSION['todosTableCreated'] || !$_SESSION['secretTableCreated'])
          <br>
         
          <?php
-         //session_start();
          $conn = dbConnect();
          $max = PHP_INT_MIN;
          $min = PHP_INT_MAX;
@@ -81,7 +85,6 @@ if (!$_SESSION['todosTableCreated'] || !$_SESSION['secretTableCreated'])
          {
             $max = 0;
          } 
-         //$conn->close();
          ?>
          
          <form action="remove.php" method="POST" target="_self">
@@ -99,8 +102,6 @@ if (!$_SESSION['todosTableCreated'] || !$_SESSION['secretTableCreated'])
             </tr>
 
          <?php
-         //session_start();
-         //$conn = dbConnect();
          $sql = "SELECT id, task FROM " . $_SESSION['todosTable'];
          $result = $conn->query($sql);
          if ($result->num_rows > 0) 
