@@ -12,7 +12,7 @@
 \input{\commonfolder/copyright}
 
 
-\newcommand{\dnsFigs}{../DNS_in_a_Box/Figs}
+\newcommand{\dnsFigs}{./Figs}
 \lhead{\bfseries SEED Labs -- DNSSEC Lab}
 
 
@@ -22,7 +22,6 @@
 \newcommand{\wwwbank}{\url{www.bank32.com}\xspace}
 \newcommand{\examplenet}{\url{example.net}\xspace}
 \newcommand{\wwwexample}{\url{www.example.net}\xspace}
-\newcommand{\apollo}{\texttt{Apollo}\xspace}
 
 \begin{document}
 
@@ -30,7 +29,7 @@
 {\LARGE DNS Security Extensions (DNSSEC) Lab}
 \end{center}
 
-\seedlabcopyright{2020}
+\seedlabcopyright{2022}
 
 
 % *******************************************
@@ -68,7 +67,7 @@ DNSSEC. This lab covers the following topics:
 Detailed coverage of the DNS protocol and attacks can be found in the following:
 
 \begin{itemize}
-\item Chapter 18 of the SEED Book, \seedbook
+\item Chapter 11 of the SEED Book, \seedisbook
 \item Section 7 of the SEED Lecture, \seedisvideo
 \end{itemize}
 
@@ -77,7 +76,9 @@ Detailed coverage of the DNS protocol and attacks can be found in the following:
 \seedenvironmentB
 \nodependency
 
-
+\paragraph{Note to instructors.} 
+We have prepared two lab environments for instructors to choose. 
+See the environment setup section for details. 
 
 
 % *******************************************
@@ -85,11 +86,23 @@ Detailed coverage of the DNS protocol and attacks can be found in the following:
 % *******************************************
 \section{Lab Environment Setup} 
 
+Students can do this lab using two different lab environments. The first 
+one is a simplified setup, where all the nameservers in the DNS infrastructure
+are placed on the same LAN (see Figure~\ref{dnssec:fig:labsetup-simple}). 
+The second environment setup emulates a miniature Internet, where 
+the nameservers of the DNS infrastructure 
+are scattered across the Internet. The first environment 
+only involves less than 10 containers, while the second one has over 60 
+containers. The second environment is more realistic, but requires 
+more resources to run (at least 4GB of RAM). The difficulties of the 
+lab are almost the same for both setup. It is up to the instructor 
+to decide which environment setup should be used. 
 
-This lab depends on the DNS-In-a-Box lab, 
-so students should do that lab first. After doing the lab,
-we will have a miniature DNS system depicted in 
-Figure~\ref{dnssec:fig:dns-in-a-box}. In this lab, we will
+
+
+
+
+In this lab, we will
 enhance this infrastructure with DNSSEC. 
 In this lab description, we assume that the miniature DNS system 
 has already been set up
@@ -102,10 +115,10 @@ from one used in the DNS-In-a-Box lab).
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=0.95\textwidth]{\dnsFigs/DNS-in-a-box.pdf}
+\includegraphics[width=0.95\textwidth]{\dnsFigs/labsetup.pdf}
 \end{center}
 \caption{Lab environment setup}
-\label{dnssec:fig:dns-in-a-box}
+\label{dnssec:fig:labsetup-simple}
 \end{figure}
  
 
@@ -132,22 +145,6 @@ from the DNS-in-a-Box lab, hosts
 the \texttt{example.edu} domain. 
 We will modify the files inside this folder, so the nameserver
 can support DNSSEC queries. 
-
-
-
-% -------------------------------------------
-% SUBSECTION
-% ------------------------------------------- 
-\subsection{Task 1.a: Enabling DNSSEC}
-
-To enable DNSSEC on this server, we need to add the following entry to the 
-configuration file \path{named.conf.options}. Please check the settings
-in the lab setup file to ensure this is set. 
-
-\begin{lstlisting}
-dnssec-enable yes;
-dnssec-validation auto;
-\end{lstlisting}
 
 
 
@@ -440,6 +437,17 @@ trust-anchors {
 };
 \end{lstlisting}
 
+We also need to enable DNSSEC on the local DNS server.
+We just need to
+modify the \texttt{named.conf.options} file for the local DNS
+server container, changing the DNSSEC entries to the following:
+
+\begin{lstlisting}
+dnssec-validation auto;
+dnssec-enable yes;
+\end{lstlisting}
+
+
 
 \paragraph{Testing.} After starting the local server container, run the 
 following command (\texttt{10.9.0.53} is the IP address 
@@ -450,21 +458,12 @@ $ dig @10.9.0.53 www.example.edu +dnssec
 \end{lstlisting}
 
 If everything has been set up correctly, you should able to get the 
-answer, the IP address of \url{www.example.com}. All your containers
-should be running to get this result. 
-
-
-
-
-% *******************************************
-% SECTION
-% *******************************************
-\section{Notes} 
-
-This lab has not been finished yet. Although we have set up the DNSSEC, the local
-DNS server still couldn't verify the query results. Something is still missing, and
-we are still trying to figure it out. Helps are appreciated. 
-
+answer, the IP address of \url{www.example.com} if the reply 
+is authentic. If the reply is fake, you will get error message. 
+Please design an experiment to demonstrate that when the reply 
+is fake, the local DNS server will be able to detect it and 
+show an error message. You do not need to conduct a real attack 
+in this experiment. 
 
 
 
