@@ -381,9 +381,9 @@ if (hbtype == TLS1_HB_REQUEST)
      // this function will copy the 3+payload+padding bytes
      // from the buffer and put them into the heartbeat response 
      // packet to send back to the request client side.
-     OPENSSL_free(buffer);
      r = ssl3_write_bytes(s, TLS1_RT_HEARTBEAT, buffer,
            3 + payload + padding); 
+     OPENSSL_free(buffer);	   
 }
 \end{lstlisting}
 
