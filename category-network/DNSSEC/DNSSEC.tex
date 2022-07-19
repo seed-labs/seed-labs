@@ -76,51 +76,36 @@ Detailed coverage of the DNS protocol and attacks can be found in the following:
 \seedenvironmentB
 \nodependency
 
-\paragraph{Note to instructors.} 
-We have prepared two lab environments for instructors to choose. 
-See the environment setup section for details. 
-
-
 % *******************************************
 % SECTION
 % *******************************************
 \section{Lab Environment Setup} 
 
-Students can do this lab using two different lab environments. The first 
-one is a simplified setup, where all the nameservers in the DNS infrastructure
-are placed on the same LAN (see Figure~\ref{dnssec:fig:labsetup-simple}). 
-The second environment setup emulates a miniature Internet, where 
-the nameservers of the DNS infrastructure 
-are scattered across the Internet. The first environment 
-only involves less than 10 containers, while the second one has over 60 
-containers. The second environment is more realistic, but requires 
-more resources to run (at least 4GB of RAM). The difficulties of the 
-lab are almost the same for both setup. It is up to the instructor 
-to decide which environment setup should be used. 
+In the lab environment, we provide a mini DNS infrastructure, consisting 
+of a root server, a top-level domain server for \texttt{net}, 
+a domain server for \texttt{example.net}, and local DNS server. 
+Each of these nameservers are hosted on a container. 
+For the sake of simplicity, we all the containers on the same LAN (see 
+Figure~\ref{dnssec:fig:labsetup-simple}). This is a simplified setup, 
+because in the real world, these nameservers are not on the same LAN.
+However, the configuration of these nameservers are similar to that in the 
+real world, regardless of whether they are on the same LAN or scattered across
+the Internet. 
 
-
-
-
-
-In this lab, we will
-enhance this infrastructure with DNSSEC. 
-In this lab description, we assume that the miniature DNS system 
-has already been set up
-correctly, and each nameserver is hosted inside a container. 
-We will modify each of the container, so the nameserver inside 
-can support DNSSEC. Please download the \texttt{Labsetup.zip}
-file from the website of this lab (this file is slightly different 
-from one used in the DNS-In-a-Box lab).
-
+If students have finished the DNS Infrastructure Lab before this lab,
+they can use the same setup from that lab, because 
+that setup uses an Internet emulator, which
+emulates a small Internet; the nameservers in the setup 
+are scattered across the Internet. 
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=0.95\textwidth]{\dnsFigs/labsetup.pdf}
+\includegraphics[width=0.90\textwidth]{\dnsFigs/labsetup.pdf}
 \end{center}
-\caption{Lab environment setup}
+\caption{Lab environment setup (the simplified option)}
 \label{dnssec:fig:labsetup-simple}
 \end{figure}
- 
+
 
 
 \paragraph{Software installation.} We will use some tools that 
@@ -131,6 +116,20 @@ command to install the software:
 $ sudo apt-get install bind9utils
 \end{lstlisting}
  
+The DNSSEC commands required for this lab are included in this package, 
+and we only install them in the host VM, not inside the container. 
+However, the results of the commands need to be copied into
+a corresponding container. 
+We can use the \texttt{"docker cp"}
+command to copy files between the hosts and containers: 
+
+\begin{lstlisting}
+// Copy file xyz to container
+$ docker cp xyz <docker id>:/tmp
+
+// Copy file abc from container
+$ docker cp <docker id>:/tmp/abc . 
+\end{lstlisting}
 
 
 % *******************************************
@@ -140,9 +139,8 @@ $ sudo apt-get install bind9utils
 
 
 In this task, we will go to the container folder for the 
-\texttt{example.edu} nameserver. This container, built 
-from the DNS-in-a-Box lab, hosts 
-the \texttt{example.edu} domain. 
+\texttt{example.edu} nameserver. This container
+hosts the \texttt{example.edu} domain. 
 We will modify the files inside this folder, so the nameserver
 can support DNSSEC queries. 
 
@@ -151,7 +149,7 @@ can support DNSSEC queries.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1.b: Generating keys for \texttt{example.edu} server} 
+\subsection{Task 1.a: Generating keys for \texttt{example.edu} server} 
 
 First, we need to generate two pairs of keys, one is called Zone Signing Key (ZSK), and 
 the other is called Key Signing Key (KSK). Each key consists of a public key and a private key.
@@ -191,11 +189,10 @@ the key file, indicating this is the ZSK.
 
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1.c: Signing the \texttt{example.edu} domain's zone file} 
+\subsection{Task 1.b: Signing the \texttt{example.edu} domain's zone file} 
 
 We will sign the zone file. This zone file 
 is the same as the one used in the DNS-in-a-Box lab. We use the 
@@ -203,7 +200,7 @@ following \texttt{dnssec-signzone} command to sign the zone file.
 
 
 \begin{lstlisting}
-dnssec-signzone -S -o example.edu example.edu.db
+dnssec-signzone -e 20501231000000 -S -o example.edu example.edu.db
 \end{lstlisting}
  
 With the \texttt{-S} option, the command will look
@@ -213,6 +210,15 @@ using the \texttt{-K} option, so the default is the current folder)
 If you have multiple pairs of keys in the specified folder,
 the command will generate signatures using each key, so you would get 
 multiple signatures for each record. 
+
+The \texttt{-e} option specifies the expiration time for the 
+signatures. By default, the expiration time is only one month. Therefore,
+if you do not use the \texttt{-e} option, when you check your setup
+a month later, it will not work any more. For students, one month 
+should be sufficient, but for instructors who might reuse their answers in
+the future, setting a long expiration time can avoid unnecessary trouble. 
+The format of the expiration time is \texttt{YYYYMMDDHHMMSS}. In the example, we 
+set the expiration time to 2050. 
 
 
 Once the zone file is signed, a new zone file ended with
@@ -237,7 +243,7 @@ zone "example.edu" {
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1.d: Testing the server}
+\subsection{Task 1.c: Testing the server}
 
 Using the docker-compose command, we can build and start all the 
 containers. We then use the following \texttt{dig} command to conduct the testing. 
@@ -274,7 +280,7 @@ $ dig @10.9.0.65 www.example.edu A +dnssec
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 3: Setting Up the \texttt{edu} Server}
+\section{Task 2: Setting Up the \texttt{edu} Server}
 
 
 In this task, we will set up the \texttt{edu} server. 
@@ -284,7 +290,7 @@ The instructions are similar to those in Task 1, so we will not repeat them.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3.a: Finding and understanding the DS record}
+\subsection{Task 2.a: Finding and understanding the DS record}
 
 
 After signing the zone file of \texttt{example.edu}, a DS record is generated for the Key
@@ -317,20 +323,18 @@ KSK can be verified. That is the main purpose of this DS record.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3.b: Setting up the \texttt{edu} server} 
+\subsection{Task 2.b: Setting up the \texttt{edu} server} 
 
 Follow the instruction in Task 1 to set up the configuration 
 file and generate the ZSK and KSK keys 
 for this domain, and then use the keys to sign
-the zone file. The zone file is similar to that used 
-in the DNS-in-a-Box lab, but we need to add one more 
-entry to the zone file before signing it. 
-
+the zone file. Before signing the zone file,
+we need to add an entry to it.
 
 The entry is the DS record of the sub-delegated zone. 
 In our case, the \texttt{example.edu} zone is delegated to 
 another nameserver, so the digest of its Key Signing Key must 
-be included in the \texttt{edu} zone, so the 
+be included in the \texttt{edu} zone; this way, the 
 integrity of the key can be verified. 
 
 
@@ -351,7 +355,7 @@ $INCLUDE ../edu.example/dsset-example.edu.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 3.c: Testing} 
+\subsection{Task 2.c: Testing} 
 
 Build and run all the containers. Then
 run the following commands to get different types of records
@@ -373,7 +377,7 @@ $ dig @10.9.0.60 example.edu +dnssec
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 4: Setting up the root server} 
+\section{Task 3: Setting up the root server} 
 
 The procedure to set up the root server is the same as that in the 
 previous task. Remember to add the \texttt{edu} zone's DS record 
@@ -401,7 +405,7 @@ $ dig @10.9.0.30 example.edu +dnssec
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 5: Setting up the Local DNS Server} 
+\section{Task 4: Setting up the Local DNS Server} 
 
 
 When a computer needs to resolve the IP address from a hostname (or vice versa),
@@ -455,15 +459,50 @@ assigned to the local DNS server in our setup).
 
 \begin{lstlisting}
 $ dig @10.9.0.53 www.example.edu +dnssec
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: (*@\textbf{NOERROR}@*), id: 37130
+;; flags: qr rd ra (*@\textbf{ad}@*); QUERY: 1, (*@\textbf{ANSWER: 2}@*), AUTHORITY: 0, ...
+
+;; ANSWER SECTION:
+www.example.edu.        259200  IN      A       1.2.3.5
+www.example.edu.        259200  IN      RRSIG   ... <signature>
 \end{lstlisting}
 
 If everything has been set up correctly, you should able to get the 
-answer, the IP address of \url{www.example.com} if the reply 
-is authentic. If the reply is fake, you will get error message. 
+answer, the IP address of \url{www.example.edu} if the reply 
+is authentic. Pay attention to the \texttt{ad} flag, which
+means \textit{authentic data}. If this flag is set, all the records in the
+reply are authentic, i.e., the DNSSEC validation is successful.
+If the DNSSEC is not enabled, you will still get answers, but 
+this flag will not be set.
+
+If the reply is not authentic, you will get an error message. 
 Please design an experiment to demonstrate that when the reply 
 is fake, the local DNS server will be able to detect it and 
 show an error message. You do not need to conduct a real attack 
-in this experiment. 
+in this experiment. You can directly modify some of the existing
+records without generating a signature (you can also corrupt 
+a signature). 
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 5: Adding Another Domain Nameserver} 
+
+Assume that you own a domain name inside \texttt{edu}, 
+and you want to 
+set up a DNSSEC-enabled nameserver for this domain. We have already
+created a spare container for this purpose (the BIND9 server is already
+installed on this container). For the simplified 
+setup, the name of the container is called \texttt{xyz}. 
+For tie mini-Internet setup, the container is called \texttt{abc}. 
+Your task is to configure the nameserver, so it supports DNSSEC.
+The name of the domain should contain your last name and the year
+when this lab is conducted. For example, if your last name is Smith and
+the year is 2022, the domain name should be \texttt{smith2022.edu}. 
+You do not need to actually own this domain in the real world. We only 
+set it up in the DNS infrastructure within our lab environment.
 
 
 
