@@ -19,12 +19,12 @@ else
 {
    $_SESSION['hits'] = 1;
    $_SESSION['todosTable'] = session_id() . "_ToDos";
-   $_SESSION['secretTable'] = session_id() . "_Secret";
+   $_SESSION['completedTable'] = session_id() . "_Completed";
    $_SESSION['todosTableCreated'] = FALSE;
-   $_SESSION['secretTableCreated'] = FALSE;
+   $_SESSION['completedTableCreated'] = FALSE;
 }
 
-if (!$_SESSION['todosTableCreated'] || !$_SESSION['secretTableCreated'])
+if (!$_SESSION['todosTableCreated'] || !$_SESSION['completedTableCreated'])
 {
    dbInit();
 }
@@ -87,10 +87,10 @@ if (!$_SESSION['todosTableCreated'] || !$_SESSION['secretTableCreated'])
          } 
          ?>
          
-         <form action="remove.php" method="POST" target="_self">
+         <form action="complete.php" method="POST" target="_self">
             <label for="taskId">Complete task by 'id':</label>
             <input type="number" id="taskId" name="taskId" value=<?php echo $min; ?> min=<?php echo $min; ?> max=<?php echo $max; ?>>
-            <input type="submit" value="Submit">
+            <input type="submit" value="Move to 'Completed'">
          </form>
          
          <br>

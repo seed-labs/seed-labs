@@ -25,7 +25,7 @@ function dbConnect()
    }
    catch (mysqli_sql_exception $e)
    {
-      exit("mysqli connection error: " . $e->getMessage() . "<br>\n");
+      exit("mysqli exception: " . $e->getMessage() . "<br>\n");
    }
 }
 
@@ -42,24 +42,24 @@ function dbInit()
       
       if (!$_SESSION['todosTableCreated'])
       {
-         // copy the 'ToDos' table
-         if ($conn->query("CREATE TABLE IF NOT EXISTS " . $_SESSION['todosTable'] . " LIKE ToDos"))
+         // copy the 'initToDos' table
+         if ($conn->query("CREATE TABLE IF NOT EXISTS " . $_SESSION['todosTable'] . " LIKE initToDos"))
          {
-            if ($conn->query("INSERT " . $_SESSION['todosTable'] . " SELECT * FROM ToDos"))
+            if ($conn->query("INSERT " . $_SESSION['todosTable'] . " SELECT * FROM initToDos"))
             {
                $_SESSION['todosTableCreated'] = TRUE;
             }
          }
       }
       
-      if (!$_SESSION['secretTableCreated'])
+      if (!$_SESSION['completedTableCreated'])
       {
-         // copy the 'Secret' table
-         if ($conn->query("CREATE TABLE IF NOT EXISTS " . $_SESSION['secretTable'] . " LIKE Secret"))
+         // copy the 'initCompleted' table
+         if ($conn->query("CREATE TABLE IF NOT EXISTS " . $_SESSION['completedTable'] . " LIKE initCompleted"))
          {
-            if ($conn->query("INSERT " . $_SESSION['secretTable'] . " SELECT * FROM Secret"))
+            if ($conn->query("INSERT " . $_SESSION['completedTable'] . " SELECT * FROM initCompleted"))
             {
-               $_SESSION['secretTableCreated'] = TRUE;
+               $_SESSION['completedTableCreated'] = TRUE;
             }
          }
       }
@@ -68,7 +68,7 @@ function dbInit()
    }
    catch (mysqli_sql_exception $e)
    {
-      exit("mysqli error: " . $e->getMessage() . "<br>\n");
+      exit("mysqli exception: " . $e->getMessage() . "<br>\n");
    }
 }
 

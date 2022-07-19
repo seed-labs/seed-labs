@@ -2,32 +2,23 @@ DROP DATABASE IF EXISTS ctf_sql;
 CREATE DATABASE IF NOT EXISTS ctf_sql;
 USE ctf_sql;
 
-DROP TABLE IF EXISTS Secret;
-CREATE TABLE IF NOT EXISTS Secret (
+DROP TABLE IF EXISTS initCompleted;
+CREATE TABLE IF NOT EXISTS initCompleted (
    id INT NOT NULL UNIQUE AUTO_INCREMENT PRIMARY KEY,
    task VARCHAR(1024) NOT NULL
 );
 
-INSERT INTO Secret(id, task)
+INSERT INTO initCompleted(id, task)
 VALUES
-   (1, 'Not the flag'),
-   (2, 'Not the flag'),
-   (3, 'Not the flag'),
-   (4, 'Not the flag'),
-   (5, 'Not the flag'),
-   (6, 'Not the flag'),
-   (7, 'The flag is: secret'),
-   (8, 'Not the flag'),
-   (9, 'Not the flag'),
-   (10, 'Not the flag');
+   (1, '<!--The flag is: INj3cteD_by_b@d_sQl-->'); -- Wrap in HTML comment so it is hidden when printed to HTML page
 
-DROP TABLE IF EXISTS ToDos;
-CREATE TABLE IF NOT EXISTS ToDos (
+DROP TABLE IF EXISTS initToDos;
+CREATE TABLE IF NOT EXISTS initToDos (
    id INT NOT NULL UNIQUE AUTO_INCREMENT PRIMARY KEY,
    task VARCHAR(1024) NOT NULL
 );
 
-INSERT INTO ToDos(id, task)
+INSERT INTO initToDos(id, task)
 VALUES
    (1, 'Mow the lawn'),
    (2, 'Go grocery shopping'),
