@@ -10,8 +10,8 @@ services:
          net-10.9.0.0:
             ipv4_address: '10.9.0.2'
       ports:
-         - '80:80/tcp'
-         - '443:443/tcp'
+         - '808:80/tcp'
+         - '4434:443/tcp'
    mysql:
       build: './image_mysql'
       container_name: 'ctf_sql_mysql'
