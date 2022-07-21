@@ -9,7 +9,7 @@ include_once 'cleanup.php';
 
 error_reporting(0); // disable PHP error reporting, will manually check
 
-//register_shutdown_function('cleanup');
+register_shutdown_function('cleanup');
 
 if (isset($_SESSION['hits']))
 {
