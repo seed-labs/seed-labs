@@ -11,6 +11,18 @@ services:
     container_name: seed-base-bind
     command: " echo 'exiting ...' "
 
+  spare_nameserver:
+    build:
+        context: ./nameserver
+        args:
+            BIND_CONF_DIR: edu.smith2022
+    image: spare-nameserver
+    container_name: spare-edu-10.9.0.66
+    tty: true
+    networks:
+      seed-net:
+        ipv4_address: 10.9.0.66
+
   example_edu_server:
     build:
         context: ./nameserver

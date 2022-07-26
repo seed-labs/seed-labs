@@ -3,7 +3,7 @@ options {
 
         recursion yes;
 	allow-query { any; };
-        dnssec-validation auto;
-        dnssec-enable yes;
+        dnssec-validation no;
+        dnssec-enable no;
         dump-file "/var/cache/bind/dump.db";
 };
