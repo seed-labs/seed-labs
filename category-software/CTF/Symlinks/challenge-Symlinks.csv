@@ -1,0 +1,2 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+"Symlinks","I'm trying to prank my friend by creating a symlink that links /tmp/myfriend to /tmp/me to steal his files.  What command should I use  in the linux command line so that I successfully pull off my prank, even if a link already exists?","Race Conditions",10,standard,hidden,0,"sln -sf /tmp/me /tmp/myfriend",,,
