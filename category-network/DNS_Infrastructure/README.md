@@ -5,11 +5,3 @@ to show show students how the DNS Infrastructure
 works. This lab is not related to security, but it is the 
 basis for the other DNS labs. 
 
-
-## Status
-
-This is still a work in progress. 
-
-
-## TO-DO List
-
