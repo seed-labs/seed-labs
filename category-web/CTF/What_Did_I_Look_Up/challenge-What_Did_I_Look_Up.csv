@@ -1,0 +1,2 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+"What Did I Look Up?","I made a DNS query. As the flag for this challenge, please enter in order, separated by underscores:  the IP address returned by the DNS lookup, the second level domain of the DNS lookup, and the ip address of the DNS server used for this query.","DNS",10,standard,hidden,0,"8.8.8.8_google_192.168.1.254",,,

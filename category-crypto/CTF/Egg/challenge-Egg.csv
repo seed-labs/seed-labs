@@ -1,0 +1,2 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+"Egg","I forgot my password :(",Encryption,20,standard,hidden,0,k1k_th3_d00r_d0wn,,,

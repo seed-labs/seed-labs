@@ -1,0 +1,2 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+"Key Submission","Please submit the key you got for Task 2 of the PRNG SEED Lab here.",PRNG,10,standard,hidden,0,95fa2030e73ed3f8da761b4eb805dfd7,,,
