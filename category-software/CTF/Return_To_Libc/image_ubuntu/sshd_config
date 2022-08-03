@@ -1,0 +1,5 @@
+AllowUsers seed
+Banner /etc/ssh/ssh_banner
+MaxSessions 100
+PermitRootLogin no
+PrintLastLog no
