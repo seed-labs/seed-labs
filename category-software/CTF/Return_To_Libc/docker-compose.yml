@@ -2,8 +2,14 @@ version: "3.8"
 services:
    ubuntu:
       build: ./image_ubuntu
-      container_name: ctf_ret_libc_ubuntu
-      restart: unless-stopped
+      #container_name: ctf_ret_libc_ubuntu
+      #restart: unless-stopped
       tty: true
       ports:
-         - "22000:22"
+         - "22000-32000:22"
+      deploy:
+         mode: replicated
+         replicas: 5
+         restart_policy:
+            condition: on-failure
+            max_attempts: 10
