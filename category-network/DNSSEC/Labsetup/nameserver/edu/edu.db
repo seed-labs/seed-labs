@@ -1,5 +1,5 @@
 $TTL 3600
-@       IN      SOA   a.tld-edu-servers.edu. admin.tld-edu-servers.edu. (
+@       IN      SOA   ns1.edu. admin.ns1.edu. (
                 2008111001
                 8H
                 2H
@@ -7,13 +7,14 @@ $TTL 3600
                 1D)
 
 ; Records for this nameserver (you need to make changes)
-@                       IN      NS   a.tld-edu-servers.edu.
-a.tld-edu-servers.edu.  IN      A    1.1.1.1
+@                       IN      NS   ns1.edu.
+ns1.edu.                IN      A    10.9.0.60 
 
 
 ; Real records for syr.edu
 syr.edu.                IN      NS   ns1.syr.edu.
 ns1.syr.edu.            IN      A    128.230.12.8
 
-; Add records in the following
-
+; Records for the example.edu domain
+example.edu.            IN      NS   ns.example.edu.
+ns.example.edu.         IN      A    10.9.0.65

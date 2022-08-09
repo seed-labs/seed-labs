@@ -1,15 +1,14 @@
 $TTL 3D
-.       IN      SOA   root.seed.net. admin.see.net. (
+.       IN      SOA   root-ns1.net. admin.root-ns1.net. (
                 2008111001
                 8H
                 2H
                 4W
                 1D)
-        IN      NS	a.root-seed.net.
+.                       IN      NS	root-ns1.net.
+root-ns1.net.           IN      A       10.9.0.30
 
-; The following information is from the real-world DNS system
-com.    IN      NS	a.gtld-servers.net.    
-net.    IN      NS	a.gtld-servers.net.
-a.gtld-servers.net.	IN	A	192.5.6.30
 
-; Add records in the following 
+; Records for TLDs  
+edu                     IN      NS   ns1.edu.
+ns1.edu.                IN      A    10.9.0.60
