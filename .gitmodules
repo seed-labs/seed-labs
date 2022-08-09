@@ -1,3 +1,0 @@
-[submodule "ctfd-setup/CTFd"]
-	path = ctfd-setup/CTFd
-	url = https://github.com/CTFd/CTFd.git
