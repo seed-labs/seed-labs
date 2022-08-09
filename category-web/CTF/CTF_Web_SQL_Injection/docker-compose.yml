@@ -2,7 +2,10 @@ version: '3'
 
 services:
    web:
-      build: './image_www'
+      build: 
+         context: './image_www'
+         args:
+            hard_mode: 0 # set to 0 or 1
       container_name: 'ctf_sql_web'
       tty: 'true'
       restart: 'on-failure'

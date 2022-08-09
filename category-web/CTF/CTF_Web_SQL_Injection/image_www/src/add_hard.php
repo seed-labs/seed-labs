@@ -18,27 +18,12 @@ try
       
       $query = "INSERT INTO " . $_SESSION['todosTable'] . " (task) VALUES ('$todo');";
       
-      if ($conn->multi_query($query))
+      $conn->multi_query($query);
+      
+      if ($conn->errno)
       {
-         while ($conn->more_results())
-         {
-            if ($conn->next_result())
-            {
-               if ($result = $conn->store_result()) 
-               {
-                  while ($row = $result->fetch_row()) 
-                  {
-                     $showOutput = TRUE; // want to show the user output from their query
-                     
-                     foreach ($row as $item)
-                     {
-                        echo $item . ' ';
-                     }
-                     echo "<br>\n";
-                  }
-               }
-            }
-         }
+         $showOutput = TRUE; // want to show the user output from their query
+         printf("mysqli error: %s<br>\n", $conn->error);
       }
       
       $conn->close();
