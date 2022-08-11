@@ -3,7 +3,7 @@
 #include <string.h>
 
 #ifndef BUF_SIZE
-#define BUF_SIZE 12
+#define BUF_SIZE 37
 #endif
 
 int bof(char *str)
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
    char input[1000];
    FILE *badfile;
 
-   badfile = fopen("badfile", "r");
+   badfile = fopen("/home/seed/the_file", "r");
    int length = fread(input, sizeof(char), 1000, badfile);
    printf("Address of input[] inside main():  0x%x\n", (unsigned int) input);
    printf("Input size: %d\n", length);
