@@ -5,16 +5,13 @@ services:
       build: 
          context: ./image_ubuntu
          args: 
-            VULN_PROG_BUF_SIZE: 100
             SEED_USER_PASS: "dees"
-      cap_add:
-         - "LINUX_IMMUTABLE" # for setting the immutable attribute
       tty: true
       ports:
          - "49152-65535:22"
       deploy:
          mode: replicated
-         replicas: 10
+         replicas: 5
          restart_policy:
             condition: on-failure
             max_attempts: 10
