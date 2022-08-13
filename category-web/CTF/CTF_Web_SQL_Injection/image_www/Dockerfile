@@ -1,7 +1,10 @@
 FROM php:apache
 ARG hard_mode
+
+# Comment/uncomment the next two lines to set/unset production vs. development mode.
 #RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
 RUN docker-php-ext-install mysqli
 RUN apt update
 RUN apt install -y ssl-cert
