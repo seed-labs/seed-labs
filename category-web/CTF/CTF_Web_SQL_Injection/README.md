@@ -13,6 +13,11 @@ The frontend web application is an Apache web server with PHP.
 There is one argument that can be specified for the fronted web app in the `docker-compose.yml` file: `hard_mode`, which accepts a value of `0` or `1`.
 When `hard_mode` is set to `0`, the web app will show the user the results of successful SQL queries that are injected via the frontend.
 When `hard_mode` is set to `1`, the web app will only show the user the results of failed SQL queries that are injected via the frontend.
+* Example:
+   * When `hard_mode==0`, successfully injecting the **valid** SQL query `SHOW TABLES` will show a webpage containing the results of the valid SQL query: the names of the tables in the database.
+   * When `hard_mode==1`, successfully injecting the **valid** SQL query `SHOW TABLES` will not show the results of the valid SQL query; it will show the main to-do list page with all of the tasks in the list.
+   * When `hard_mode==0`, successfully injecting the **invalid** SQL query `SHOOOW TTTABLES` will not show any output from the invalid SQL query; it will show the main to-do list page with all of the tasks in the list.
+   * When `hard_mode==1`, successfully injecting the **invalid** SQL query `SHOOOW TTTABLES` will show a webpage displaying the error message describing the invalid SQL query.
 
 ### Backend Database
 
