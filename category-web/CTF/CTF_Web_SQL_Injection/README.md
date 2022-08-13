@@ -1,10 +1,8 @@
 # CTF - SQL Injection
 
----
-
 ## Docker
 
-The `docker-compose.yml` file specifies two services and one network for Docker application.
+The `docker-compose.yml` file specifies two services and one network for the Docker application.
 One service is a frontend web application and the other service is a backend database; and the two services use the specified internal network to communicate with each other.
 
 ### Frontend Web Application
@@ -36,7 +34,7 @@ There are three provided shell scripts, `build.sh`, `start.sh`, and `stop.sh` th
 If the `hard_mode` argument is modifed for the frontend web application service defined in `docker-compose.yml`, then the application should be built again.
 If there are any issues that arise while the application is running, the easiest form of troubleshooting will be to stop the application, build it again, and start it up.
 **Building the application will delete any data other than the initial tables from the database.**
-Users can access the application from a web browser, and should specify port `808` for non-TLS connections, and should specify port `4434` for TLS enabled connections. 
+Users can access the application from a web browser, and should specify port `808` for non-TLS connections, and should specify port `4434` for TLS enabled connections: [http://\<server-ip\>:808](http://\<server-ip\>:808) or [https://\<server-ip\>:4434](https://\<server-ip\>:4434). 
 
 ## Implementation
 
@@ -50,3 +48,8 @@ The system does not perform any cleanup of the database.
 Since each new web client that is connected starts a new PHP session, which in turn will create two new tables in the database, this poses a risk for the database to grow too large.
 It is a shortcoming of PHP to require input from a client before it can do anything, so PHP is not aware that a web client has disconnected because it's looking for input, which it won't receive since the client has disconnected.
 If you suspect that the database is growing too large, you can manually delete tables from the database by connecting to the Docker container hosting the database, or simply delete the database by rebuilding the application.
+
+## CTFd
+
+The file `challenge-Web_SQL_Injection.csv` can be loaded into CTFd to automatically add the challenge to an existing CTFd instance.
+Additionally, the challenge is included in the `SEED_Labs_CTF-Web.zip` file, which is a snapshot of a CTFd instance will all of the web CTF challenges loaded, as well as the `challenges_all.zip` file, which is a snapshot of a CTFd instance with all of the CTF challenges from all categories loaded.
