@@ -3,7 +3,7 @@
 #include <string.h>
 
 #ifndef BUF_SIZE
-#define BUF_SIZE 37
+#define BUF_SIZE 12
 #endif
 
 int bof(char *str)
@@ -21,12 +21,6 @@ int bof(char *str)
     strcpy(buffer, str);   
 
     return 1;
-}
-
-void foo(){
-    static int i = 1;
-    printf("Function foo() is invoked %d times\n", i++);
-    return;
 }
 
 int main(int argc, char **argv)
