@@ -1,0 +1,34 @@
+version: "3"
+  
+services:
+    fmt-server-1:
+        build: 
+            context: ./fmt-containers
+            args:
+                ARCH: 32 
+        image: seed-image-fmt-server-1
+        container_name: server-10.9.0.5
+        tty: true
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.5
+
+    fmt-server-2:
+        build: 
+            context: ./fmt-containers
+            args:
+                ARCH: 64
+        image: seed-image-fmt-server-2
+        container_name: server-10.9.0.6
+        tty: true
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.6
+
+networks:
+    net-10.9.0.0:
+        name: net-10.9.0.0
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+
