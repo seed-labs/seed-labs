@@ -1,5 +1,7 @@
 # Open-Source CTF Platform
 
+---
+
 ## For Administrators
 
 ### CTFd
@@ -61,6 +63,11 @@ There are a few differences between the two import options:
 
 Most of the CTF challenges will require spinning up a Docker container that will host the infrastructure that is unique to running that challenge.
 The pertinent information for setting up challenge specific Docker containers will be included in a `README.md` file along with the other CTF challenge files.
+
+#### SEED Labs
+
+The following CTF challenges are inspired from existing SEED Labs, and in some cases may reuse source code and designs from the SEED Lab:
+* The **Web SQL Injection CTF** challenge is based on the SEED Lab [SQL Injection Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Web/Web_SQL_Injection/), and the source can be found in the repo at `/category-web/CTF/CTF_Web_SQL_Injection`
 
 #### Management & Troubleshooting
 
