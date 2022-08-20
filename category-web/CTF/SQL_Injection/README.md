@@ -1,21 +1,27 @@
 # CTF - SQL Injection
 
+## Easy vs. Difficult Challenges
+
+This challenge has been broken up into two nearly identical challenges, with one being more difficult than the other to solve.
+The pertinent files needed to run the easier version of the challenge are in the `easy` directory, and the pertinent files needed to run the more difficult version of the challenge are in the `difficult` directory.
+The difference between the easy and difficult challenge is the behavior of the frontend web application.
+More specifically, in the easier version of the challenge, the web app will show the user the results of successful SQL queries that are injected via the frontend.
+In the more difficult version of the challenge the web app will only show the user the results of failed SQL queries that are injected via the frontend.
+* Example:
+   * Easy challenge: successfully injecting the **valid** SQL query `SHOW TABLES` will show a webpage containing the results of the valid SQL query: the names of the tables in the database.
+   * Difficult challenge: successfully injecting the **valid** SQL query `SHOW TABLES` will not show the results of the valid SQL query; it will show the main to-do list page with all of the tasks in the list.
+   * Easy challenge: successfully injecting the **invalid** SQL query `SHOOOW TTTABLES` will not show any output from the invalid SQL query; it will show the main to-do list page with all of the tasks in the list.
+   * Difficult challenge: successfully injecting the **invalid** SQL query `SHOOOW TTTABLES` will show a webpage displaying the error message describing the invalid SQL query.
+
 ## Docker
 
-The `docker-compose.yml` file specifies two services and one network for the Docker application.
+The `docker-compose_[easy|difficult].yml` files specify two services and one network for the Docker application.
 One service is a frontend web application and the other service is a backend database; and the two services use the specified internal network to communicate with each other.
 
 ### Frontend Web Application
 
 The frontend web application is an Apache web server with PHP.
-There is one argument that can be specified for the fronted web app in the `docker-compose.yml` file: `hard_mode`, which accepts a value of `0` or `1`.
-When `hard_mode` is set to `0`, the web app will show the user the results of successful SQL queries that are injected via the frontend.
-When `hard_mode` is set to `1`, the web app will only show the user the results of failed SQL queries that are injected via the frontend.
-* Example:
-   * When `hard_mode==0`, successfully injecting the **valid** SQL query `SHOW TABLES` will show a webpage containing the results of the valid SQL query: the names of the tables in the database.
-   * When `hard_mode==1`, successfully injecting the **valid** SQL query `SHOW TABLES` will not show the results of the valid SQL query; it will show the main to-do list page with all of the tasks in the list.
-   * When `hard_mode==0`, successfully injecting the **invalid** SQL query `SHOOOW TTTABLES` will not show any output from the invalid SQL query; it will show the main to-do list page with all of the tasks in the list.
-   * When `hard_mode==1`, successfully injecting the **invalid** SQL query `SHOOOW TTTABLES` will show a webpage displaying the error message describing the invalid SQL query.
+The frontend interfaces with the backend database and will send MySQL queries to manipulate the data in the database.
 
 ### Backend Database
 
@@ -30,11 +36,10 @@ The internal network that the frontend and backend use to communicate with each 
 
 ### Running the Application
 
-There are three provided shell scripts, `build.sh`, `start.sh`, and `stop.sh` that do as their filename suggests.
-If the `hard_mode` argument is modifed for the frontend web application service defined in `docker-compose.yml`, then the application should be built again.
+There are 6 provided shell scripts, `build_[easy|difficult].sh`, `start_[easy|difficult].sh`, and `stop_[easy|difficult].sh` that do as their filename suggests.
 If there are any issues that arise while the application is running, the easiest form of troubleshooting will be to stop the application, build it again, and start it up.
 **Building the application will delete any data other than the initial tables from the database.**
-Users can access the application from a web browser, and should specify port `808` for non-TLS connections, and should specify port `4434` for TLS enabled connections: [http://\<server-ip\>:808](http://\<server-ip\>:808) or [https://\<server-ip\>:4434](https://\<server-ip\>:4434). 
+Users can access the application from a web browser, and should specify port `808` for non-TLS connections, and should specify port `4434` for TLS enabled connections: [http://\<server-ip\>:808](http://\<server-ip\>:808) or [https://\<server-ip\>:4434](https://\<server-ip\>:4434).
 
 ## Implementation
 
@@ -51,5 +56,5 @@ If you suspect that the database is growing too large, you can manually delete t
 
 ## CTFd
 
-The file `challenge-Web_SQL_Injection.csv` can be loaded into CTFd to automatically add the challenge to an existing CTFd instance.
+The file `challenge-Web_SQL_Injection_[easy|difficult].csv` can be loaded into CTFd to automatically add the challenge to an existing CTFd instance.
 Additionally, the challenge is included in the `SEED_Labs_CTF-Web.zip` file, which is a snapshot of a CTFd instance will all of the web CTF challenges loaded, as well as the `challenges_all.zip` file, which is a snapshot of a CTFd instance with all of the CTF challenges from all categories loaded.

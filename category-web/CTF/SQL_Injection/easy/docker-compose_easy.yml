@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+   web:
+      build: 
+         context: './image_www'
+      container_name: 'ctf_sqli_web_easy'
+      tty: 'true'
+      restart: 'on-failure'
+      networks:
+         net-10.9.0.0:
+            ipv4_address: '10.9.0.2'
+      ports:
+         - '808:80/tcp'
+         - '4434:443/tcp'
+   mysql:
+      build: './image_mysql'
+      container_name: 'ctf_sqli_mysql_easy'
+      tty: 'true'
+      restart: 'on-failure'
+      networks:
+         net-10.9.0.0:
+            ipv4_address: '10.9.0.3'
+
+networks:
+  net-10.9.0.0:
+      name: 'net-10.9.0.0'
+      ipam:
+         config:
+            - subnet: '10.9.0.0/24'

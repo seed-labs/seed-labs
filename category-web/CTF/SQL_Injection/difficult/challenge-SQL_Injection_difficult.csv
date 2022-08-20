@@ -1,0 +1,2 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+"To Do: Find the Flag (Difficult)","A company is testing out their new web based to-do list application, and is soliciting feedback from users to find issues. Use a web browser to connect to the application and take it for a spin. The company knows you're busy, but is hopeful that you will add 'finding the flag' to your to-do list! Connect via (https://<server-ip>:4434)","SQL",10,standard,hidden,0,"m1nd_the_SQL_!nj3cti0n",,,

@@ -4,9 +4,7 @@ services:
    web:
       build: 
          context: './image_www'
-         args:
-            hard_mode: 0 # set to 0 or 1
-      container_name: 'ctf_sql_web'
+      container_name: 'ctf_sqli_web_diff'
       tty: 'true'
       restart: 'on-failure'
       networks:
@@ -17,7 +15,7 @@ services:
          - '4434:443/tcp'
    mysql:
       build: './image_mysql'
-      container_name: 'ctf_sql_mysql'
+      container_name: 'ctf_sqli_mysql_diff'
       tty: 'true'
       restart: 'on-failure'
       networks:
