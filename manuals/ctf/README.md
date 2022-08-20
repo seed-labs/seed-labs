@@ -4,10 +4,16 @@
 
 ### CTFd
 
-#### Installation
-
 This project utilizes the open source [CTFd](https://ctfd.io/) capture the flag platform to host the infrastructure needed to operate a successful capture the flag challenge.
-Please follow the [CTFd Docker installation instructions](https://docs.ctfd.io/docs/deployment/installation#docker) to install the platform.
+
+#### CTFD-as-a-service (hosted)
+
+CTFd offers a hosted version of the platform, in which they will set up the infrastructure needed to run CTFd and give you access to the management interface.
+The CTFd hosted option is available for a cost, and more information can be found [here](https://ctfd.io/pricing/).
+
+#### Self-hosted
+
+Please follow the [CTFd Docker installation instructions](https://docs.ctfd.io/docs/deployment/installation#docker) to install the platform on your own hardware.
 By default CTFd does not have TLS enabled.
 There are tutorials online for enabling TLS on your CTFd Docker instance.
 For your convenience, [this is a third-party GitHub repo](https://github.com/tghosth/CTFd-docker-deploy) with easy deployment instructions for CTFd with TLS enabled.
