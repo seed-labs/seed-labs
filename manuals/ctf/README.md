@@ -57,6 +57,11 @@ There are a few differences between the two import options:
 * Multiple challenges can be imported in a single `.csv` file.
 * Files needed to complete the challenge **will not** be included when imported.
 
+#### Challenge Docker Containers
+
+Most of the CTF challenges will require spinning up a Docker container that will host the infrastructure that is unique to running that challenge.
+The pertinent information for setting up challenge specific Docker containers will be included in a `README.md` file along with the other CTF challenge files.
+
 #### Management & Troubleshooting
 
 Student passwords can be reset through the admin panel by clicking on the user in the "Users" tab.
