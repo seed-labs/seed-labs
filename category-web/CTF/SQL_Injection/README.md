@@ -32,14 +32,23 @@ The database credentials are specified in the Dockerfile at `image_mysql/Dockerf
 
 ### Internal Network
 
-The internal network that the frontend and backend use to communicate with each other has subnet `10.9.0.0/24`, and the frontend web app has IP address `10.9.0.2`, and the backend database has IP address `10.9.0.3`.
+* Easy challenge:
+   * The internal network that the frontend and backend use to communicate with each other has subnet `10.9.0.0/24`, and the frontend web app has IP address `10.9.0.2`, and the backend database has IP address `10.9.0.3`.
+* Difficult challenge:
+   * The internal network that the frontend and backend use to communicate with each other has subnet `10.10.0.0/24`, and the frontend web app has IP address `10.10.0.2`, and the backend database has IP address `10.10.0.3`.
 
 ### Running the Application
 
 There are 6 provided shell scripts, `build_[easy|difficult].sh`, `start_[easy|difficult].sh`, and `stop_[easy|difficult].sh` that do as their filename suggests.
 If there are any issues that arise while the application is running, the easiest form of troubleshooting will be to stop the application, build it again, and start it up.
 **Building the application will delete any data other than the initial tables from the database.**
-Users can access the application from a web browser, and should specify port `808` for non-TLS connections, and should specify port `4434` for TLS enabled connections: [http://\<server-ip\>:808](http://\<server-ip\>:808) or [https://\<server-ip\>:4434](https://\<server-ip\>:4434).
+Users can access the application from a web browser, and should specify the following ports when connecting:
+* Easy challenge:
+   * Port `50080` for non-TLS connections, [http://\<server-ip\>:50080](http://\<server-ip\>:50080)
+   * Port `50443` for TLS enabled connections, [https://\<server-ip\>:50443](https://\<server-ip\>:50443).
+* Difficult challenge:
+   * Port `60080` for non-TLS connections, [http://\<server-ip\>:60080](http://\<server-ip\>:60080)
+   * Port `60443` for TLS enabled connections, [https://\<server-ip\>:60443](https://\<server-ip\>:60443).
 
 ## Implementation
 
