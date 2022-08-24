@@ -15,9 +15,14 @@ RUN apt update
 RUN apt install openssh-server gdb vim build-essential gcc-multilib python3 zsh --assume-yes
 
 # Add the user account that students will use to SSH to the container.
-RUN useradd --home-dir /home/seed --create-home --uid 1000 seed
+RUN useradd --home-dir /home/seed --create-home --uid 1000 --shell /usr/bin/zsh seed
 RUN echo "seed:$SEED_USER_PASS" | chpasswd
 RUN chage -d 0 seed # force seed account to change password on first login
+COPY --chown=seed seed_user_zshrc /home/seed/.zshrc
+# This file is needed to run the vulnerable program
+COPY --chown=seed the_file /home/seed/the_file
+#RUN chown seed /home/seed/*
+RUN chmod 0500 /home/seed/*
 
 # Copy the sshd_config file to configure the SSH server running on the container,
 # and then start the SSH service.
@@ -32,11 +37,8 @@ COPY retlib.c /tmp/retlib.c
 COPY flag.txt /root/.flag.txt
 RUN chown root /root/.flag.txt
 RUN chmod 0500 /root/.flag.txt
+RUN mkdir --parents /the/flag/is/hidden/in/root/dir
 
-# This file is needed to run the vulnerable program
-COPY the_file /home/seed/the_file
-RUN chown seed /home/seed/the_file
-RUN chmod 0500 /home/seed/the_file
 
 # Copy the entrypoint script to the container, and give execution privileges
 COPY entrypoint.sh /entrypoint.sh

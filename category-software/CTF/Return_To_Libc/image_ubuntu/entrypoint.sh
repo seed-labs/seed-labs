@@ -13,7 +13,7 @@ fi
 
 # The following several lines are to generate the buffer size used when compiling the vulnerable program
 RANDOM=$(date +%N%s) # seed the RNG
-MIN=10
+MIN=100
 MAX=800
 DIFF=$(($MAX-$MIN+1))
 BUFF_SIZE=$(($(($RANDOM%$DIFF))+$MIN)) # set BUFF_SIZE in range of [MIN, MAX]
@@ -32,8 +32,6 @@ gcc -m32 -DBUF_SIZE=$BUFF_SIZE -fno-stack-protector -z noexecstack -o /usr/bin/v
 chown root /usr/bin/vuln
 chmod 4755 /usr/bin/vuln
 rm /tmp/*
-
-echo $BUFF_SIZE > /home/seed/buffsize.txt
 
 ln -sf /bin/zsh /bin/sh # link shell that doesn't have Set-UID execution countermeasure
 
