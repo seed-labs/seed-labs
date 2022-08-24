@@ -1,10 +1,10 @@
 #!/bin/bash
 
-if [ -n "$(sudo docker ps -f name=return_to_libc_ -q)" ]
+if [ -n "$(sudo docker ps -f name=easy_ret-to-libc -q)" ]
 then
    echo "STOPPING CONTAINERS..."
    echo
-   sudo docker stop $(sudo docker ps -f name=return_to_libc_ -q)
+   sudo docker stop $(sudo docker ps -f name=easy_ret-to-libc -q)
    echo 
 fi
 
@@ -34,3 +34,4 @@ else
    echo
    echo "ASLR IS ENABLED, YOUR HOST SYSTEM IS SAFE AGAIN!"
 fi
+
