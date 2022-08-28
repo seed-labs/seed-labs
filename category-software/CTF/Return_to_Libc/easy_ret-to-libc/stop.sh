@@ -8,9 +8,16 @@ then
    echo 
 fi
 
-echo "ENABLING ASLR..."
-echo
-sudo sysctl -w kernel.randomize_va_space=2
+if [ -z "$(sudo docker ps --quiet --filter name=ret-to-libc)" ]
+then
+   echo "ENABLING ASLR..."
+   echo
+   sudo sysctl -w kernel.randomize_va_space=2
+else
+   echo
+   echo "LEAVING ASLR DISABLED BECAUSE ANOTHER ret-to-libc CTF IS STILL RUNNING..."
+   echo
+fi
 
 ASLR=$(cat /proc/sys/kernel/randomize_va_space)
 
