@@ -1,2 +1,2 @@
 name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
-"Too-Much-Flow","Can you call the flag function?","Buffer Overflow",50,standard,hidden,0,"pr4ct1c3_s4f3_st4ck5",,,
+"Too-Much-Flow","Can you call the flag function? Connect via 'nc <server-ip> 3002'","Buffer Overflow",50,standard,hidden,0,"pr4ct1c3_s4f3_st4ck5",,,
