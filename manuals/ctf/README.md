@@ -6,10 +6,19 @@
 
 ### CTFd
 
-#### Installation
-
 This project utilizes the open source [CTFd](https://ctfd.io/) capture the flag platform to host the infrastructure needed to operate a successful capture the flag challenge.
-Please follow the [CTFd Docker installation instructions](https://docs.ctfd.io/docs/deployment/installation) to install the platform.
+
+#### CTFD-as-a-service (hosted)
+
+CTFd offers a hosted version of the platform, in which they will set up the infrastructure needed to run CTFd and give you access to the management interface.
+The CTFd hosted option is available for a cost, and more information can be found [here](https://ctfd.io/pricing/).
+
+#### Self-hosted
+
+Please follow the [CTFd Docker installation instructions](https://docs.ctfd.io/docs/deployment/installation#docker) to install the platform on your own hardware.
+By default CTFd does not have TLS enabled.
+There are tutorials online for enabling TLS on your CTFd Docker instance.
+For your convenience, [this is a third-party GitHub repo](https://github.com/tghosth/CTFd-docker-deploy) with easy deployment instructions for CTFd with TLS enabled.
 Once CTFd is installed and running you're able to import the provided CTF challenges into the platform.
 
 #### Admin Account Setup
@@ -49,6 +58,16 @@ There are a few differences between the two import options:
 * This will not overwrite any existing configurations you have in place.
 * Multiple challenges can be imported in a single `.csv` file.
 * Files needed to complete the challenge **will not** be included when imported.
+
+#### Challenge Docker Containers
+
+Most of the CTF challenges will require spinning up a Docker container that will host the infrastructure that is unique to running that challenge.
+The pertinent information for setting up challenge specific Docker containers will be included in a `README.md` file along with the other CTF challenge files.
+
+#### SEED Labs
+
+The following CTF challenges are inspired from existing SEED Labs, and in some cases may reuse source code and designs from the SEED Lab:
+* The **Web SQL Injection CTF** challenge is based on the SEED Lab [SQL Injection Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Web/Web_SQL_Injection/), and the source can be found in the repo at `/category-web/CTF/CTF_Web_SQL_Injection`
 
 #### Management & Troubleshooting
 
