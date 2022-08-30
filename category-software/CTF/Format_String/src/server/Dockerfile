@@ -10,10 +10,12 @@ COPY flag.txt /root/flag.txt
 
 COPY xinetd.conf /etc/xinetd.conf
 
-COPY server.c /ctf/server.c
+COPY format.c /ctf/format.c
 
 COPY banner_success /ctf/banner_success
 COPY banner_fail /ctf/banner_fail
+
+EXPOSE 7777/tcp
 
 COPY entry.sh /ctf/entry.sh
 RUN chmod 0700 /ctf/entry.sh
