@@ -10,7 +10,7 @@
  * won't be able to use the solutions from the past.
  * Suggested value: between 10 and 400  */
 #ifndef BUF_SIZE
-#define BUF_SIZE 100
+#define BUF_SIZE 376
 #endif
 
 
@@ -20,7 +20,7 @@
   unsigned int  target = 0x11223344;
 #endif 
 
-char *secret = "A secret message\n";
+char *secret = "The flag is in /root/\n";
 
 void dummy_function(char *str);
 
