@@ -74,7 +74,7 @@ int main(int argc, char **argv)
     dummy_function(buf);
     printf("(^_^)(^_^)  Returned properly (^_^)(^_^)\n");
 
-    return 1;
+    return 0;
 }
 
 // This function is used to insert a stack frame between main and myprintf.
