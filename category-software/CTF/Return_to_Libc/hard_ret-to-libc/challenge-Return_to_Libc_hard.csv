@@ -1,0 +1,2 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+"Return to Libc (Hard)","When ASLR is away, the bad C programs come to play! Connect via `$ ssh <server-ip> -p <specified-port> -l seed'","Buffer Overflow",10,standard,hidden,0,"ChangeMe",,,
