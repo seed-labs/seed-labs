@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+   ubuntu:
+      build: 
+         context: ./image_ubuntu
+         args: 
+            SEED_USER_PASS: "dees"
+      tty: true
+      ports:
+         - "49152-65535:22"
+      cap_add:
+         - SYS_PTRACE # needed to allow debugging with gdb in container
+      security_opt:
+         - seccomp:unconfined # needed to allow debugging with gdb in container
+      deploy:
+         mode: replicated
+         replicas: 10
+         restart_policy:
+            condition: on-failure
+            max_attempts: 10
