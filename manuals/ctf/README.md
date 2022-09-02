@@ -67,12 +67,14 @@ The pertinent information for setting up challenge specific Docker containers wi
 #### SEED Labs
 
 The following CTF challenges are inspired from existing SEED Labs, and in some cases may reuse source code and designs from the SEED Lab:
-* The **Web SQL Injection CTF** challenge is based on the SEED Lab [SQL Injection Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Web/Web_SQL_Injection/), and the source can be found in the repo at `/category-web/CTF/CTF_Web_SQL_Injection`
+* The **SQL Injection CTF** challenge is based on the SEED Lab [SQL Injection Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Web/Web_SQL_Injection/), and the source can be found in the repo at `seed-labs/ctf/category-web/SQL_Injection`.
+* The **Return to Libc CTF** challenge is based on the SEED Lab [Return-to-libc Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Return_to_Libc/), and the source can be found in the repo at `seed-labs/ctf/category-software/Return_to_Libc`.
 
 #### Management & Troubleshooting
 
 Student passwords can be reset through the admin panel by clicking on the user in the "Users" tab.
-If the server goes down, the containers for both CTFd and the docker challenges may need to be restarted. Use the same docker command from the CTFd setup instructions to launch CTFd, and use the "start containers" bash script in the server challenges folder to restart all challenge containers. It is possible you may need to forcibly shut down and remove old container versions if the server restarts.
+If the server goes down, the containers for both CTFd and the docker challenges may need to be restarted. Use the same docker command from the CTFd setup instructions to launch CTFd, and use the "start containers" bash script in the server challenges folder to restart all challenge containers.
+It is possible you may need to forcibly shut down and remove old container versions if the server restarts.
 Challenges can be enabled/disabled/modified on the fly using the admin panel of the platform online.
 Challenge solutions are available to instructors upon request (see bottom of page for contact info).
 
@@ -120,3 +122,4 @@ Please contact [Dylan Simmons](mailto:dylan.simmons@wustl.edu) or [Steve Cole](m
 * Questions
 * Comments
 * Suggestions
+
