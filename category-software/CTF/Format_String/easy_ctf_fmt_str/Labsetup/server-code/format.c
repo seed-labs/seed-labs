@@ -10,7 +10,7 @@
  * won't be able to use the solutions from the past.
  * Suggested value: between 10 and 400  */
 #ifndef BUF_SIZE
-#define BUF_SIZE 376
+#define BUF_SIZE 100
 #endif
 
 
@@ -20,7 +20,7 @@
   unsigned int  target = 0x11223344;
 #endif 
 
-char *secret = "The flag is in /root/\n";
+char *secret = "A secret message\n";
 
 void dummy_function(char *str);
 
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
     dummy_function(buf);
     printf("(^_^)(^_^)  Returned properly (^_^)(^_^)\n");
 
-    return 0;
+    return 1;
 }
 
 // This function is used to insert a stack frame between main and myprintf.

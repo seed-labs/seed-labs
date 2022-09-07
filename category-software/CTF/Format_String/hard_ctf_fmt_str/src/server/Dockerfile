@@ -4,8 +4,10 @@ FROM ubuntu:20.04
 ARG PACKAGES="gcc-multilib xinetd"
 ARG BUFFER_SIZE
 
-RUN apt --assume-yes update
-RUN apt --assume-yes install $PACKAGES
+# Docker documentation reccomends executing apt-get update and apt-get install in the same RUN command
+RUN apt-get update && \
+    apt-get install -y ${PACKAGES} && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY flag.txt /root/flag.txt
 COPY xinetd.conf /etc/xinetd.conf

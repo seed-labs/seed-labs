@@ -6,8 +6,9 @@ services:
          context: ./src/server
          args: 
             BUFFER_SIZE: 100
-      container_name: ctf_fmt_str_srvr
+      container_name: hard_fmt_str_srv
       tty: true
       ports:
-         - "7777:7777"
+         - "8888:7777"
+      restart: on-failure
 

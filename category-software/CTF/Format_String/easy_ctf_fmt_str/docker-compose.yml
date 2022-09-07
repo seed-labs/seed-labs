@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+   server:
+      build: 
+         context: ./src/server
+         args: 
+            BUFFER_SIZE: 100
+            FLAG: "CHANGE_ME!" # space characters not permitted!
+      container_name: easy_fmt_str_srv
+      tty: true
+      ports:
+         - "7777:7777"
+      restart: on-failure
+
