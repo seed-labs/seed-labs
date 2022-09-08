@@ -66,9 +66,23 @@ The pertinent information for setting up challenge specific Docker containers wi
 
 #### SEED Labs
 
-The following CTF challenges are inspired from existing SEED Labs, and in some cases may reuse source code and designs from the SEED Lab:
-* The **SQL Injection CTF** challenge is based on the SEED Lab [SQL Injection Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Web/Web_SQL_Injection/), and the source can be found in the repo at `seed-labs/ctf/category-web/SQL_Injection`.
-* The **Return to Libc CTF** challenge is based on the SEED Lab [Return-to-libc Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Return_to_Libc/), and the source can be found in the repo at `seed-labs/ctf/category-software/Return_to_Libc`.
+Many of the CTF challenges are based on existing [SEED Labs 2.0](https://seedsecuritylabs.org/Labs_20.04/), and in some cases may reuse source code from the SEED Lab.
+The mapping from SEED Labs to the corresponding CTF challenge is as follows:
+* Cryptography Labs
+  * [Crypto Lab -- Secret-Key Encryption](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_Encryption/) -> `seed-labs/ctf/category-crypto/Encrypted_Image`
+  * [MD5 Collision Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_MD5_Collision/) -> `seed-labs/ctf/category-crypto/Sum_More_Stuff_To_Do`
+  * [PKI Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_PKI/) -> `seed-labs/ctf/category-crypto/GPG_Encryption`
+  * [Pseudo Random Number Generation Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_Random_Number/) -> `seed-labs/ctf/category-crypto/Key_Submission`
+  * [RSA Encryption and Signature Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_RSA/) -> `seed-labs/ctf/category-crypto/Do_It_Yourself_Crypto`
+* Network Security Labs
+  * [Packet Sniffing and Spoofing Lab](https://seedsecuritylabs.org/Labs_20.04/Networking/Sniffing_Spoofing/) -> `seed-labs/ctf/category-network/Ok_Google_Whats_TCP`
+* Software Security
+  * [Buffer-Overflow Attack Lab (Server Version)](https://seedsecuritylabs.org/Labs_20.04/Software/Buffer_Overflow_Server/) -> `seed-labs/ctf/category-software/Too_Much_Flow`
+  * [Race-Condition Vulnerability Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Race_Condition/) -> `seed-labs/ctf/category-software/Symlinks`
+  * [Return-to-libc Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Return_to_Libc/) -> `seed-labs/ctf/category-software/Return_to_Libc`
+* Web Security Labs
+  * [Cross-Site Scripting Attack Lab (Elgg)](https://seedsecuritylabs.org/Labs_20.04/Web/Web_XSS_Elgg/) -> `seed-labs/ctf/category-web/Theres_An_Error_In_My_Image`
+  * [SQL Injection Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Web/Web_SQL_Injection/) -> `seed-labs/ctf/category-web/SQL_Injection`
 
 #### Management & Troubleshooting
 
@@ -122,4 +136,3 @@ Please contact [Dylan Simmons](mailto:dylan.simmons@wustl.edu) or [Steve Cole](m
 * Questions
 * Comments
 * Suggestions
-
