@@ -99,7 +99,7 @@ desktop.
   the TigerVNC server program on the VM. You need to start the
   server.
   ```
-  vncserver -localhost no
+  sudo vncserver -localhost no
   ```  
 
   By default, TigerVNC server only listens to localhost/127.0.0.1. The
