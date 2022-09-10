@@ -246,6 +246,17 @@ We have disabled the countermeasure for this lab, so there is no need to include
 parameters in the forged requests. 
 
 
+\paragraph{Important note:} If you use a cloud VM to do this lab, the Firefox version
+in your VM may be quite recent. Some changes have been made in the browser that makes its
+behavior different from the older versions. In the more recent versions, 
+using the image tag to forge an HTTP GET request will not succeed in the 
+attack.  We have not figured out exactly the reason yet, 
+but we can still make the attack successful. One approach is to 
+use the same approach as the one used in forging the POST request, i.e.,
+using JavaScript to send out a GET request.
+If you are using SEEDUbuntu 20.04 VM, the image tag approach still works, 
+unless you upgrade the Firefox to the more recent version. 
+
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
