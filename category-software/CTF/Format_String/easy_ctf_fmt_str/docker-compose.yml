@@ -1,15 +1,28 @@
 version: "3"
 
 services:
-   server:
+   easy_server:
       build: 
          context: ./src/server
-         args: 
+         args:
+            DIFFICULTY: easy
             BUFFER_SIZE: 100
-            FLAG: "CHANGE_ME!" # space characters not permitted!
-      container_name: easy_fmt_str_srv
+            FLAG_IN_MEM: "CHANGE_ME_EASY" # space characters not permitted!
+      container_name: ctf_format_string_easy_server
       tty: true
       ports:
-         - "7777:7777"
+         - "1111:9999"
       restart: on-failure
 
+   hard_server:
+      build: 
+         context: ./src/server
+         args:
+            DIFFICULTY: hard
+            BUFFER_SIZE: 100
+      container_name: ctf_format_string_hard_server
+      tty: true
+      ports:
+         - "2222:9999"
+      restart: on-failure
+      

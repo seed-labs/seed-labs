@@ -13,17 +13,15 @@
 #define BUF_SIZE 376
 #endif
 
-#ifndef FLAG_IN_PROGRAM
-#define FLAG_IN_PROGRAM "always_format_your_strings"
-#endif
-
 #if __x86_64__
   unsigned long target = 0x1122334455667788;
 #else
   unsigned int  target = 0x11223344;
 #endif 
 
-char *secret = FLAG_IN_PROGRAM;
+#ifdef FLAG_IN_MEM
+char *secret = FLAG_IN_MEM;
+#endif
 
 void dummy_function(char *str);
 
@@ -62,11 +60,15 @@ int main(int argc, char **argv)
 
 #if __x86_64__
     printf("The input buffer's address:    0x%.16lx\n", (unsigned long) buf);
+#ifdef FLAG_IN_MEM
     printf("The secret message's address:  0x%.16lx\n", (unsigned long) secret);
+#endif
     printf("The target variable's address: 0x%.16lx\n", (unsigned long) &target);
 #else
     printf("The input buffer's address:    0x%.8x\n",   (unsigned int)  buf);
+#ifdef FLAG_IN_MEM
     printf("The secret message's address:  0x%.8x\n",   (unsigned int)  secret);
+#endif
     printf("The target variable's address: 0x%.8x\n",   (unsigned int)  &target);
 #endif
 

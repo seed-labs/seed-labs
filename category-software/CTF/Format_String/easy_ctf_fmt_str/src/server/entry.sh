@@ -8,7 +8,7 @@ then
    # if ASLR is not disabled in container we should return before doing more,
    # which will cause the container to die and indicate that there's
    # something wrong
-   return 1
+   exit 1
 fi
 
 # Tells xinetd to stay in the foreground rather than detaching itself, so that Docker container will stay alive.

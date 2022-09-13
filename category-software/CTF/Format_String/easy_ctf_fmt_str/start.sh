@@ -18,7 +18,7 @@ disableAslrAndStart() {
       echo
       sudo docker-compose up -d
       echo
-      sudo docker ps -f ancestor=easy_ctf_fmt_str_server
+      #sudo docker ps -f ancestor=easy_ctf_fmt_str_server
    else
       echo
       echo "ASLR COULD NOT BE DISABLED."
