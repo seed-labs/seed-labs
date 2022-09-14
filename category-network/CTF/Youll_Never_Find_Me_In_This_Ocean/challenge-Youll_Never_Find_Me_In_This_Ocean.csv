@@ -1,2 +1,0 @@
-name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
-"You'll Never Find Me In This Ocean","You'll never find the flag, but it is in the format flag{XXXXXX}. You won't find it though.",Networking,20,standard,hidden,0,flag{telnet_is_dangerous},,,
