@@ -98,7 +98,7 @@ Challenge solutions are available to instructors upon request (see bottom of pag
 
 ### What is a CTF?
 
-A [CTF (Capture The Flag)](https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity) is a kind of information security competition that can challenge contestants to solve a variety of challenges, ranging from a scavenger hunt on Wikipedia to basic programming exercises, to hacking your way into a server to steal data.
+A [CTF (Capture The Flag)](https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)) is a kind of information security competition that can challenge contestants to solve a variety of challenges, ranging from a scavenger hunt on Wikipedia to basic programming exercises, to hacking your way into a server to steal data.
 In these challenges, the contestant is usually asked to find a specific piece of text that may be hidden on the server or behind a webpage.
 This goal is called the flag, [hence the name](https://dev.to/atan/what-is-ctf-and-how-to-get-started-3f04)!
 In the context of this class, these challenges are in CTF format, where each submission consists of a string of text.
