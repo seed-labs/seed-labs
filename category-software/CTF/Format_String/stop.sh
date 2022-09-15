@@ -1,29 +1,54 @@
 #!/bin/bash
 
-if [ -n "$(sudo docker ps -f ancestor=easy_ctf_fmt_str_server -q)" ]
-then
-   echo "STOPPING CONTAINERS..."
-   echo
-   sudo docker stop $(sudo docker ps -f ancestor=easy_ctf_fmt_str_server -q)
-   echo 
-fi
+checkASLR() {
+   return $(cat /proc/sys/kernel/randomize_va_space)
+}
 
-if [ -z "$(sudo docker ps --quiet --filter name=fmt_str)" ]
-then
-   echo "ENABLING ASLR..."
+disableASLR() {
    echo
+   echo "ENABLING ASLR ON THE HOST..."
+
    sudo sysctl -w kernel.randomize_va_space=2
-else
-   echo
-   echo "LEAVING ASLR DISABLED BECAUSE ANOTHER 'Format String' CTF IS STILL RUNNING..."
-   echo
-fi
+   
+   checkASLR
 
-ASLR=$(cat /proc/sys/kernel/randomize_va_space)
+   if [ $? -eq 2 ]
+   then
+      echo
+      echo "ASLR IS ENABLED!"
+      return 0
+   else
+      echo
+      echo "ASLR FAILED TO ENABLE!"
+      echo "MANUALLY ENABLE ASLR VIA '$ sudo sysctl -w kernel.randomize_va_space=2'"
+      return 1
+   fi
+}
 
-if [ $ASLR -ne 2 ]
-then
-   ecdown
+stopContainers() {
+   local CONTAINER=$1
+   case "$CONTAINER" in
+      easy_server)
+         echo
+         echo "STOPPING CONTAINER 'easy_server'..."
+         sudo docker-compose down easy_server
+         ;;
+      hard_server)
+         echo
+         echo "STOPPING CONTAINER 'hard_server'..."
+         sudo docker-compose down hard_server
+         ;;
+      *)
+         echo
+         echo "STOPPING BOTH CONTAINERS..."
+         sudo docker-compose down
+         ;;
+   esac
+   return 0
+}
+
+printWarning() {
+   echo
    echo "  █████   ███   █████   █████████   ███████████   ██████   █████ █████ ██████   █████   █████████  ███"
    echo " ░░███   ░███  ░░███   ███░░░░░███ ░░███░░░░░███ ░░██████ ░░███ ░░███ ░░██████ ░░███   ███░░░░░███░███"
    echo "  ░███   ░███   ░███  ░███    ░███  ░███    ░███  ░███░███ ░███  ░███  ░███░███ ░███  ███     ░░░ ░███"
@@ -36,36 +61,10 @@ then
    echo "ADDRESS SPACE LAYOUT RANDOMIZATION (ASLR) IS DISABLED ON THE HOST."
    echo "THIS IS A SERIOUS SECURITY VULNERABILITY THAT WILL PERSIST BEYOND RUNNING THIS CHALLENGE!"
    echo 
-   echo "ENABLE ASLR VIA 'sudo sysctl -w kernel.randomize_va_space=2'"
-else
-   echo
-   echo "ASLR IS ENABLED, YOUR HOST SYSTEM IS SAFE AGAIN!"
-fi
+   echo "ENABLE ASLR VIA '$ sudo sysctl -w kernel.randomize_va_space=2'"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   return 0
+}
 
 getConsent() {
    while true; do
@@ -76,7 +75,7 @@ getConsent() {
             ;;
          [Nn]* )
             echo
-            echo "IT IS STRONGLY ENCOURAGED TO ENABLE ASLR!"
+            echo "IT IS STRONGLY RECOMMENDED TO ENABLE ASLR!"
             return 1
             ;;
          * )
@@ -128,23 +127,21 @@ while getopts 'hc:' OPTION; do
    esac
 done
 
-printWarning
-
 if getConsent -eq 0 ; then
+   
+   disableASLR
 
-   if disableASLR -eq 0 ; then
-
-      startContainers $CONTAINER
-
-      exit 0
-   fi
 fi
 
-exit 1
+stopContainers $CONTAINER
 
+checkASLR
 
-
-
-
-
+if [ $? -eq 2 ]
+then
+   exit 0
+else
+   printWarning
+   exit 1
+fi
 
