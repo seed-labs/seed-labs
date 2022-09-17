@@ -1,2 +1,0 @@
-name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
-"Noisy Flag","Someone made my flag into a sound file. Can you get it back?","Steganography",20,standard,hidden,0,"smile_and_wav_boys",,,

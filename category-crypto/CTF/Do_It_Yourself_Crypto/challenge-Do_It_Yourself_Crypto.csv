@@ -1,2 +1,0 @@
-name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
-"Do-it-yourself crypto!","I did my own new super secure crypto. You will never be able to decrypt it hahahahhahahahah.",Encryption,50,standard,hidden,0,EBC=BAD,,,

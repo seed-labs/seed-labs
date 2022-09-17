@@ -1,2 +1,0 @@
-name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
-"GPG Encryption","Please encrypt the flag.txt file using the given public key, and don't sign it. The email associated with the key is user@example.com. For flag submission, please submit the first 10 characters after the PGP header of the resulting '.asc' file.",GPG,20,standard,hidden,0,hQGMAwhJOS,,,

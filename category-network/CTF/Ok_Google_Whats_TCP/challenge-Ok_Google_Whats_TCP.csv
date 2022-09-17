@@ -1,2 +1,0 @@
-name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
-"Ok Google, what's TCP?","As the submission for this flag, please enter the following, in order, separated by underscores: the packet number of the TCP reset packet, the Ack number of the TCP reset packet, and the packet numbers of the TCP handshake (individually separated by underscores).",TCP,10,standard,hidden,0,34_5137_5_6_7,,,
