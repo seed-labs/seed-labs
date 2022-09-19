@@ -4,7 +4,7 @@ checkASLR() {
    return $(cat /proc/sys/kernel/randomize_va_space)
 }
 
-disableASLR() {
+enableASLR() {
    echo
    echo "ENABLING ASLR ON THE HOST..."
 
@@ -129,7 +129,7 @@ done
 
 if getConsent -eq 0 ; then
    
-   disableASLR
+   enableASLR
 
 fi
 
