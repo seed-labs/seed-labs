@@ -56,6 +56,8 @@ The start script can start the easy version container or the hard version contai
 ASLR must be disabled on the host so that it'll be disabled in the Docker app.
 Disabling ASLR makes it much more likely that this CTF can be solved, since ASLR is a countermeasure that is quite effective at mitigating vulnerabilities like the one posed by format string.
 The `start.sh` script will disable ASLR on the host machine, and will print a large and obvious warning message about this.
+When the Docker container starts up, it will check to see if ASLR is disabled in the container.
+If ASLR is enabled in the container, then the container will not start properly, and a process that keeps the Docker container alive will not be started.
 
 You should build the Docker image before running the start script.
 To start the Docker app:
@@ -64,6 +66,12 @@ $ cd ctf/category-software/Format_String
 $ ./start.sh -h # Print help instructions
 $ ./start.sh
 ```
+
+#### Checking the health of the Docker app
+
+Issuing the command `$ sudo docker ps` will list all of the Docker containers running on the host system.
+If the status of the two challenge containers are unhealthy, this either means that ASLR is enabled on the container or that the vulnerable program is not being served by xinetd.
+If the containers are unhealthy, the easiest way to troubleshoot them will be to restart the containers.
 
 #### Stopping the Docker App
 
