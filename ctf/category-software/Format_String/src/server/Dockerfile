@@ -3,9 +3,9 @@ FROM ubuntu:20.04
 
 # Default arg values, most will be overwritten in docker-compose.yml
 ARG PACKAGES="gcc-multilib xinetd netcat"
-ARG DIFFICULTY="EASY"
-ARG BUFFER_SIZE=100
-ARG FLAG_IN_MEM="change_me"
+ARG DIFFICULTY
+ARG BUFFER_SIZE
+ARG FLAG_IN_MEM
 
 # Docker documentation reccomends executing apt-get update and apt-get install in the same RUN command
 RUN apt-get update && apt-get install -y ${PACKAGES} && rm -rf /var/lib/apt/lists/*
