@@ -1,0 +1,2 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+"Shark On A Wire","I was just trying to get to my favorite website but I think someone sniffed me out.",Networking,10,standard,hidden,0,pkT_c4ptur3D,,,

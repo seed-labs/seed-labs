@@ -1,0 +1,2 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+EncryptionnoitpyrcnE,"Can you decipher this file for me? I found a key nearby with 13 rotting apples and this message: qrnqorrsqrnqorrsnopq1234. For some reason there were also 17 pieces of pi. The situation is getting out of hand. Your only hint is:  aes-128-cbc. Good luck!",Encryption,10,standard,hidden,0,3NcRyPt3D,,,

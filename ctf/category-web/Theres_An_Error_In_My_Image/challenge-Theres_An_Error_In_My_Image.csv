@@ -1,0 +1,2 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+"There's An Error In My Image","I have attached my super secure webpage. Please load it in your browser and use XSS in the super secure comment section to print the flag to the console using the flag() javascript method.","XSS",10,standard,hidden,0,"al3rtISNTthe0nlyWAY",,,
