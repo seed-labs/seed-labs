@@ -16,6 +16,7 @@ COPY banner_success /ctf/banner_success
 COPY banner_fail /ctf/banner_fail
 COPY entry.sh /ctf/entry.sh
 COPY flag.txt /root/flag.txt
+COPY health.sh /ctf/health.sh
 
 # Wrap FLAG_IN_MEM in quotes so that the C macro will be assigned a string
 RUN if [ $(echo "$DIFFICULTY" | tr [:lower:] [:upper:]) = "EASY" ]; then \
@@ -27,11 +28,11 @@ RUN if [ $(echo "$DIFFICULTY" | tr [:lower:] [:upper:]) = "EASY" ]; then \
     rm /ctf/format.c;
 
 RUN chmod 0700 /ctf/entry.sh
+RUN chmod 0700 /ctf/health.sh
 
 EXPOSE 9999/tcp
 
-# Check that xinetd is still serving up the vulnerable C program
-HEALTHCHECK CMD echo "healthcheck" | nc -N localhost 9999
+HEALTHCHECK CMD /bin/bash /ctf/health.sh
 
 ENTRYPOINT ["/ctf/entry.sh"]
 
