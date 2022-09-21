@@ -86,6 +86,8 @@ The mapping from SEED Labs to the corresponding CTF challenge is as follows:
 * Software Security
   - [Buffer-Overflow Attack Lab (Server Version)](https://seedsecuritylabs.org/Labs_20.04/Software/Buffer_Overflow_Server/)
     * `seed-labs/ctf/category-software/Too_Much_Flow`
+  - [Format-String Vulnerability Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Format_String/)
+    * `seed-labs/ctf/category-software/Format_String`
   - [Race-Condition Vulnerability Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Race_Condition/)
     * `seed-labs/ctf/category-software/Symlinks`
   - [Return-to-libc Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Return_to_Libc/)
