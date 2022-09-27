@@ -1,7 +1,5 @@
 # CTF - Format String
 
----
-
 ## For the Instructor(s)
 
 ### SEED Labs
@@ -95,8 +93,6 @@ $ ./stop.sh
 As specified in the `docker-compose.yml` file, the easy version of the challenge maps to port 1111 on the host machine, and the hard version of the challenge maps to port 2222 on the host machine.
 A TCP connection should be established on either of these two ports to interact with the corresponding challenge.
 It is recommended for the students to use [netcat](https://en.wikipedia.org/wiki/Netcat) to establish a TCP connection with the challenge servers.
-
----
 
 ## For the Student(s)
 
