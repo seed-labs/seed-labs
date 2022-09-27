@@ -1,8 +1,6 @@
 # CTF - Return-to-libc
 
----
-
-## For the Instructor(s)
+## For the Instructor
 
 ### SEED Labs
 
@@ -92,8 +90,6 @@ Those default credentials are:
 
 The first time the student connects to their instance they will be prompted to change the password, and after successfully changing the password the SSH connection will be broken.
 The student can then connect via SSH using their newly changed password going forward.
-
----
 
 ## For the Student(s)
 
