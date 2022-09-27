@@ -1,7 +1,5 @@
 # Open-Source CTF Platform
 
----
-
 ## For Administrators
 
 ### CTFd
