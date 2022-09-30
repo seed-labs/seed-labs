@@ -2,6 +2,12 @@
 
 ---
 
+## Videos
+
+The following videos show a quick walkthrough of setting up the SEED Labs CTF and a quick tour of its usage:
+* [CTFd and .zip import](/ctf/manual/Videos/SEED_CTF_setup_part1.mp4)
+* [SEED Labs CTF tour](/ctf/manual/Videos/SEED_CTF_setup_part2.mp4)
+
 ## For Administrators
 
 ### CTFd
