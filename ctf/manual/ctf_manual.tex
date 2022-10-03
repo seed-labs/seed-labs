@@ -3,21 +3,11 @@
 \usepackage{fancyhdr}
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage[bookmarks=false, colorlinks=true, urlcolor=red]{hyperref}
-\usepackage[noend]{algpseudocode}
-\usepackage[plain]{algorithm}
-\usepackage{xcolor}
-\definecolor{light_grey}{RGB}{200, 200, 200}
-\usepackage{listings} % for including source code
-\lstset{showstringspaces=false, numbers=left, frame=single, breaklines=true, backgroundcolor=\color{light_grey}, tabsize=2}
-\usepackage{xcolor}
-\usepackage{inconsolata} % For fixed width font with \texttt command
+\usepackage[colorlinks=true]{hyperref}
 \usepackage{lastpage}
-\usepackage{multirow}
+\usepackage{float}
 
-\newcommand{\manVers}{\texttt{1.0}}
+\newcommand{\manualVersion}{1.0}
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -28,21 +18,20 @@
 \begin{document}
 
 \begin{center}
-	{\Huge Open-Source CTF Platform Manual}
-	
-	{\small Version \manVers\ - \today}
+	{\Huge Open-Source CTF Platform Manual} \\
+	{\small Version \manualVersion\ - \today}
 \end{center}
 
-\section{Videos}
+\section{For Administrators}
+
+\subsection{Videos}
 
 The following videos show a quick walkthrough of setting up the SEED Labs CTF and a quick tour of its usage:
 
 \begin{itemize}
-	\item \href{run:./videos/SEED_CTF_setup_part1.mp4}{CTFd and .zip import}
+	\item \href{run:./videos/SEED_CTF_setup_part1.mp4}{CTFd and \texttt{.zip} import}
 	\item \href{run:./videos/SEED_CTF_setup_part2.mp4}{SEED Labs CTF tour}
 \end{itemize}
-
-\section{For Administrators}
 
 \subsection{CTFd}
 
@@ -64,23 +53,61 @@ Once CTFd is installed and running you're able to import the provided CTF challe
 \subsubsection{Admin Account Setup}
 
 \begin{enumerate}
-	\item Visit the CTFd site you launched above.
+	\item Visit the CTFd site you launched above and click login.
+   \begin{figure}[H]
+		\centering
+	   \includegraphics[width=\textwidth]{ctfd_landing_page.png}
+  	   \caption{Click login on the CTFd landing page.}
+	\end{figure}
 	\item Login with default admin credentials (obtained by contacting the project maintainers; see bottom of page).
 	\item Change the default admin credentials to your desired credentials (see below for procedure).
 \end{enumerate}
 
-\subsection{Changing Admin Account Credentials}
+\subsubsection{Changing Admin Account Credentials}
 
 \begin{enumerate}
-	\item Register a new user with desired credentials.
-	\item Login with default admin credentials (obtained by contacting the project maintainers; see bottom of page).
-	\item Go to the admin panel, then go to ``Users'' tab.
-	\item Click on the new account.
-	\item Click on ``edit account''.
-	\item Change account type to admin.
-	\item Log out.
-	\item Log in using new account.
-	\item Go to ``Users'' tab in the admin panel and delete the old (default) admin account.
+	
+	\item Login with the default admin credentials (obtained by contacting the project maintainers; see bottom of page), then navigate to the admin panel.
+	
+	\begin{figure}[H]
+		\centering
+	   \includegraphics[width=\textwidth]{point_to_admin_panel.png}
+  	   \caption{Select the Admin Panel.}
+	\end{figure}
+	
+	\item Navigate to the ``Users'' page.
+	
+	\begin{figure}[H]
+		\centering
+	   \includegraphics[width=\textwidth]{admin_panel_point_to_users.png}
+  	   \caption{Select the Users page.}
+	\end{figure}
+	
+	\item Select the $\oplus$ symbol to add a new user.
+	
+	\begin{figure}[H]
+		\centering
+	   \includegraphics[width=\textwidth]{hit_plus_add_new_user.png}
+  	   \caption{Select the ``plus'' symbol to add a new user.}
+	\end{figure}
+
+	\item Fill out the new user account details.
+			Ensure that you set the account type to ``Admin''.
+			
+	\begin{figure}[H]
+		\centering
+	   \includegraphics[width=\textwidth]{create_admin_account.png}
+  	   \caption{Set the new user account type to ``Admin''.}
+	\end{figure}
+
+	\item After you have created the new Admin account, make sure to delete the old one from the ``Users'' page.
+			
+	\begin{figure}[H]
+		\centering
+	   \includegraphics[width=\textwidth]{delete_old_admin.png}
+  	   \caption{Delete the old Admin account.}
+	\end{figure}
+
 \end{enumerate}
 
 \subsubsection{Importing challenges}
