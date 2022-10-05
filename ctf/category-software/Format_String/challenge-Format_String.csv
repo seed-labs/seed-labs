@@ -1,0 +1,3 @@
+name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
+"Serving up some bad formatting (Easy)","The server wants you to interact with it, but you should ensure that your interactions are formatted. Interact with the server via `$ nc <server-ip> 1111`.","Uncontrolled Format String",10,standard,hidden,0,"CHANGE_ME_EASY",,,
+"Serving up some bad formatting (Hard)","The server wants you to interact with it, but you should ensure that your interactions are formatted. Interact with the server via `$ nc <server-ip> 2222`.","Uncontrolled Format String",20,standard,hidden,0,"change_me_hard",,,
