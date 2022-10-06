@@ -1,12 +1,14 @@
 # Open-Source CTF Platform Manual
 
-## Videos
+---
+
+## For Administrators
+
+### Videos
 
 The following videos show a quick walkthrough of setting up the SEED Labs CTF and a quick tour of its usage:
 * [CTFd and .zip import](./videos/SEED_CTF_setup_part1.mp4)
 * [SEED Labs CTF tour](./videos/SEED_CTF_setup_part2.mp4)
-
-## For Administrators
 
 ### CTFd
 
@@ -27,21 +29,23 @@ Once CTFd is installed and running you're able to import the provided CTF challe
 
 #### Admin Account Setup
 
-1. Visit the CTFd site you launched above.
+1. Visit the CTFd site you launched above and click login.
+![Click login on the CTFD landing page](./images/ctfd_landing_page.png)
 2. Login with default admin credentials (obtained by contacting the project maintainers; see bottom of page).
 3. Change the default admin credentials to your desired credentials (see below for procedure).
 
-### Changing Admin Account Credentials
+#### Changing Admin Account Credentials
 
-1. Register a new user with desired credentials.
-2. Login with default admin credentials (obtained by contacting the project maintainers; see bottom of page).
-3. Go to the admin panel, then go to "Users" tab.
-4. Click on the new account.
-5. Click on "edit account" .
-6. Change account type to admin.
-7. Log out.
-8. Log in using new account.
-9. Go to "Users" tab in the admin panel and delete the old (default) admin account.
+1. Login with the default admin credentials (obtained by contacting the project maintainers; see bottom of page), then navigate to the admin panel.
+![Select the Admin Panel](./images/point_to_admin_panel.png)
+2. Navigate to the "Users" page.
+![Select the Users page](./images/admin_panel_point_to_users.png)
+3. Select the ⊕ symbol to add a new user.
+![Select the plus symbol to add a new user](./images/hit_plus_add_new_user.png)
+4. Fill out the new user account details. Ensure that you set the account type to "Admin".
+![Set the new user account type to “Admin”](./images/create_admin_account.png)
+5. After you have created the new Admin account, delete the default Admin account from the "Users" page.
+![Delete the default Admin account](./images/delete_old_admin.png)
 
 #### Importing challenges
 
