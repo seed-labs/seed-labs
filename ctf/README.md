@@ -8,39 +8,25 @@ Welcome to the SEED CTF platform!  This platform is intended to be used as a com
 
 Please see the `manual/README` document for instructions on how to set up and use the platform.
 
-# SEED Labs Covered
+## SEED Labs Covered
 
 Many of the CTF challenges are based on existing [SEED Labs 2.0](https://seedsecuritylabs.org/Labs_20.04/), and in some cases may reuse source code from the SEED Labs.
 The mapping from SEED Labs to corresponding CTF challenges is as follows:
-* Cryptography Labs
-  - [Crypto Lab -- Secret-Key Encryption](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_Encryption/)
-    * `seed-labs/ctf/category-crypto/Encrypted_Image`
-    * `seed-labs/ctf/category-crypto/EncryptionnoitpyrcnE`
-  - [MD5 Collision Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_MD5_Collision/)
-    * `seed-labs/ctf/category-crypto/Sum_More_Stuff_To_Do`
-  - [PKI Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_PKI/)
-    * `seed-labs/ctf/category-crypto/GPG_Encryption`
-  - [Pseudo Random Number Generation Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_Random_Number/)
-    * `seed-labs/ctf/category-crypto/Key_Submission`
-  - [RSA Encryption and Signature Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_RSA/)
-    * `seed-labs/ctf/category-crypto/Do_It_Yourself_Crypto`
-* Network Security Labs
-  - [Packet Sniffing and Spoofing Lab](https://seedsecuritylabs.org/Labs_20.04/Networking/Sniffing_Spoofing/)
-    * `seed-labs/ctf/category-network/Ok_Google_Whats_TCP`
-* Software Security
-  - [Buffer-Overflow Attack Lab (Server Version)](https://seedsecuritylabs.org/Labs_20.04/Software/Buffer_Overflow_Server/)
-    * `seed-labs/ctf/category-software/Too_Much_Flow`
-  - [Format-String Vulnerability Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Format_String/)
-    * `seed-labs/ctf/category-software/Format_String`
-  - [Race-Condition Vulnerability Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Race_Condition/)
-    * `seed-labs/ctf/category-software/Symlinks`
-  - [Return-to-libc Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Return_to_Libc/)
-    * `seed-labs/ctf/category-software/Return_to_Libc`
-* Web Security Labs
-  - [Cross-Site Scripting Attack Lab (Elgg)](https://seedsecuritylabs.org/Labs_20.04/Web/Web_XSS_Elgg/)
-    * `seed-labs/ctf/category-web/Theres_An_Error_In_My_Image`
-  - [SQL Injection Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Web/Web_SQL_Injection/)
-    * `seed-labs/ctf/category-web/SQL_Injection`
+
+| SEED Lab | CTF Challange(s) |
+|----------|------------------|
+| [Crypto Lab -- Secret-Key Encryption](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_Encryption/) | [Encrypted_Image](./category-crypto/Encrypted_Image), [EncryptionnoitpyrcnE](./category-crypto/EncryptionnoitpyrcnE) |
+| [MD5 Collision Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_MD5_Collision/) | [Sum_More_Stuff_To_Do](./category-crypto/Sum_More_Stuff_To_Do) |
+| [PKI Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_PKI/) | [GPG_Encryption](./category-crypto/GPG_Encryption) |
+| [Pseudo Random Number Generation Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_Random_Number/) | [Key_Submission](./category-crypto/Key_Submission) |
+| [RSA Encryption and Signature Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_RSA/) | [Do_It_Yourself_Crypto](./category-crypto/Do_It_Yourself_Crypto) |
+| [Packet Sniffing and Spoofing Lab](https://seedsecuritylabs.org/Labs_20.04/Networking/Sniffing_Spoofing/) | [Ok_Google_Whats_TCP](./category-network/Ok_Google_Whats_TCP) |
+| [Buffer-Overflow Attack Lab (Server Version)](https://seedsecuritylabs.org/Labs_20.04/Software/Buffer_Overflow_Server/) | [Too_Much_Flow](./category-software/Too_Much_Flow)|
+| [Format-String Vulnerability Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Format_String/) | [Format_String](./category-software/Format_String) |
+| [Race-Condition Vulnerability Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Race_Condition/) | [Symlinks](./category-software/Symlinks) |
+| [Return-to-libc Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Software/Return_to_Libc/) | [Return_to_Libc](./category-software/Return_to_Libc) |
+| [Cross-Site Scripting Attack Lab (Elgg)](https://seedsecuritylabs.org/Labs_20.04/Web/Web_XSS_Elgg/) | [Theres_An_Error_In_My_Image](./category-web/Theres_An_Error_In_My_Image) |
+| [SQL Injection Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Web/Web_SQL_Injection/) | [SQL_Injection](./category-web/SQL_Injection) |
 
 ---
 
@@ -59,6 +45,7 @@ We'd love to hear your feedback and work together on this project!
 * If you'd like to discuss the project and how you might use it in our class, please feel free to contact us directly via e-mail and we'd be happy to talk more about that.
 
 ## Publications
+
 1. Zack Kaplan, Ning Zhang, and Stephen V. Cole. [A Capture The Flag (CTF) Platform and Exercises for an Intro to Computer Security Class. (ACM ITiCSE'22)](https://doi.org/10.1145/3502717.3532153)
 
 ## Contact Info
