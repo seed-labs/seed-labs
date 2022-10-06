@@ -4,7 +4,7 @@
 
 * [Welcome video](./manual/videos/SEED_CTF_intro.mp4)
 
-Welcome to the SEED CTF platform!  This platform is intended to be used as a companion to the SEED 2.0 Labs, and contains CTF challenges corresponding to many of the Labs in addition to a few not associated with a specific Lab.  
+Welcome to the SEED CTF platform!  This platform is intended to be used as a companion to the SEED 2.0 Labs, and contains CTF challenges corresponding to many of the Labs in addition to a few not associated with a specific Lab.
 
 Please see the `manual/README` document for instructions on how to set up and use the platform.
 
