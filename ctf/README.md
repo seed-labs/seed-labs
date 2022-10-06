@@ -14,7 +14,7 @@ Many of the CTF challenges are based on existing [SEED Labs 2.0](https://seedsec
 The mapping from SEED Labs to corresponding CTF challenges is as follows:
 
 | SEED Lab | CTF Challange(s) |
-|----------|------------------|
+| - | - |
 | [Crypto Lab -- Secret-Key Encryption](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_Encryption/) | [Encrypted_Image](./category-crypto/Encrypted_Image), [EncryptionnoitpyrcnE](./category-crypto/EncryptionnoitpyrcnE) |
 | [MD5 Collision Attack Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_MD5_Collision/) | [Sum_More_Stuff_To_Do](./category-crypto/Sum_More_Stuff_To_Do) |
 | [PKI Lab](https://seedsecuritylabs.org/Labs_20.04/Crypto/Crypto_PKI/) | [GPG_Encryption](./category-crypto/GPG_Encryption) |
