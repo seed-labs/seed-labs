@@ -1,0 +1,16 @@
+#!/bin/bash
+chmod +x /interface_setup
+/interface_setup
+ip rou del default 2> /dev/null
+ip route add default via 10.150.0.254 dev net0
+[ ! -e "/root/.ethereum/geth/nodekey" ] && geth --datadir /root/.ethereum init /tmp/eth-genesis.json
+cp /tmp/keystore/UTC--2022-10-14T13-29-26.212812000Z--becc5b609518dfb32640bb56ab48b5dcc6d59c23 /root/.ethereum/keystore/
+cp /tmp/keystore/UTC--2022-10-14T13-29-27.324073000Z--9e5fc7ef2af1b0bec218531b050d931d5a6ec807 /root/.ethereum/keystore/
+chmod +x /tmp/eth-bootstrapper
+/tmp/eth-bootstrapper
+geth --datadir /root/.ethereum --identity="NODE_2" --networkid=10 --syncmode full --snapshot=False --verbosity=2 --allow-insecure-unlock --port 30303 --bootnodes "$(cat /tmp/eth-node-urls)" --http --http.addr 0.0.0.0 --http.port 8545 --http.corsdomain "*" --http.api web3,eth,debug,personal,net,clique,engine  &
+
+echo "ready! run 'docker exec -it $HOSTNAME /bin/zsh' to attach to this node" >&2
+for f in /proc/sys/net/ipv4/conf/*/rp_filter; do echo 0 > "$f"; done
+tail -f /dev/null
+
