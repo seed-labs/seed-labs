@@ -1,2 +1,0 @@
-name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
-"Encrypted Image","I found this old encrypted image file of my password that I encrypted using ECB a while ago, but I don't remember the keys. I was only able to recover the header of the original file. Can you figure out what my password is?",Encryption,10,standard,hidden,0,"iLov3433, pa55word2",,,

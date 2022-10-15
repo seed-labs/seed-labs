@@ -1,2 +1,0 @@
-name,description,category,value,type,state,max_attempts,flags,tags,hints,type_data
-"Where's WALD0","Can you find WALD0? Then you will need 2_find_something_to_underscore_your_progress. Connect via 'ssh <server-ip> -p 3001 -l user1'","Linux",20,standard,hidden,0,"red_and_white_str1p3s",,,
