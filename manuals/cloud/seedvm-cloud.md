@@ -23,7 +23,9 @@ so others can benefit.
 
 If you used the `SEEDUbuntu20.04LTS` community AMI image in AWS in this step,
 you should skip Step 2, because everything is already installed and configured
-in this AMI image. Jump to Step 3.
+in this AMI image. Jump to Step 3. If you cannot find the AMI image (it may not 
+be available in your region), you should not skip Step 2.  
+
 
 ## Step 2: Install Software and Configure System
 
