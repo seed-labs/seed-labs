@@ -172,6 +172,6 @@ emu.addLayer(web)
 
 emu.render()
 
-emu.compile(Docker(selfManagedNetwork=True, clientEnabled = True), './output')
+emu.compile(Docker(selfManagedNetwork=True, internetMapEnabled=True ), './output')
 
 
