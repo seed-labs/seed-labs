@@ -128,14 +128,19 @@ ebgp.addPrivatePeerings(104, [12], [164], PeerRelationship.Provider)
 # Create the Ethereum layer
 
 eth = EthereumService()
+blockchain = eth.createBlockchain(chainName="My blockchain",
+                 consensus=ConsensusMechanism.POA)
+
 asns = [150, 151, 152, 153, 154, 160, 161, 162, 163, 164]
+nodes = []
 i = 0
 for asn in asns:
     for id in range(hosts_total):
-        e = eth.install("eth{}".format(i)).setConsensusMechanism(ConsensusMechanism.POA)
         vnode = 'eth{}'.format(i)
-        displayName = 'Ethereum-POA-{}'
+        e = blockchain.createNode(vnode)
+        nodes.append(e)
         e.enableGethHttp()  # Enable HTTP on all nodes
+        displayName = 'Ethereum-POA-{}'.format(i)
         if i%5 == 0:
             e.setBootNode(True)
             e.unlockAccounts()
@@ -145,35 +150,16 @@ for asn in asns:
             e.unlockAccounts()
             displayName = displayName + '-Signer'
 
-        emu.getVirtualNode(vnode).setDisplayName(displayName.format(i))
+        emu.getVirtualNode(vnode).setDisplayName(displayName)
         emu.addBinding(Binding(vnode, filter=Filter(asn=asn, nodeName='host_{}'.format(id))))
         i = i+1
 
-# Create/Import prefunded accounts
-eth.install("eth0").createAccount(balance= 99 * pow(10,20), password="admin")
-eth.install("eth0").createAccount(balance= 0, password="admin")
-
-eth.install("eth1").createAccounts(balance = 55*pow(10,20), password="admin")
-eth.install("eth2").createAccounts(balance = 55*pow(10,20), password="admin")
-eth.install("eth3").createAccounts(balance = 55*pow(10,20), password="admin")
-
-#eth.install("eth2").importAccount(keyfilePath='./resources/keyfile_to_import', 
-#                                  balance= 99 * pow(10,25), password="admin") 
-
-# Enable HTTP and add port forwarding
-# The default port is 8545, we can change it to others using setGethHttpPort()
-e0 = eth.install("eth0")
-e1 = eth.install("eth1")
-e2 = eth.install("eth2")
-e3 = eth.install("eth3")
-e0.enableGethHttp()
-e1.enableGethHttp()
-e2.enableGethHttp()
-e3.enableGethHttp()
-emu.getVirtualNode("eth0").addPortForwarding(8545, e0.getGethHttpPort())
-emu.getVirtualNode("eth1").addPortForwarding(8546, e1.getGethHttpPort())
-emu.getVirtualNode("eth2").addPortForwarding(8547, e2.getGethHttpPort())
-emu.getVirtualNode("eth3").addPortForwarding(8548, e3.getGethHttpPort())
+# Create prefunded accounts
+nodes[0].createAccount(balance= 99 * pow(10,20), password="admin")
+nodes[0].createAccount(balance= 0, password="admin")
+nodes[1].createAccount(balance = 55*pow(10,20), password="admin")
+nodes[2].createAccount(balance = 55*pow(10,20), password="admin")
+nodes[3].createAccount(balance = 55*pow(10,20), password="admin")
 
 # Add layers to the emulator
 emu.addLayer(base)
