@@ -10,12 +10,11 @@ def print_balance(_web3, address):
     else:
        print("Address is None!")
 
-port = 8545  
-web3 = SEEDWeb3.connect_to_geth_poa('http://127.0.0.1:{}'.format(port))
+web3 = SEEDWeb3.connect_to_geth_poa('http://10.151.0.71:8545')
 
 # Get the balance of the accounts on the geth node 
 print("----------------------------------------------------------")
-print("*** This client program connects to 127.0.0.1:{}".format(port))
+print("*** This client program connects to 10.151.0.71:8545")
 print("*** The following are the accounts on this Ethereum node")
 for acct in web3.eth.accounts:
     print_balance(web3, acct)

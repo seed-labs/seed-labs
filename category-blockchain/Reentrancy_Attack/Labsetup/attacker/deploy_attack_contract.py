@@ -10,8 +10,7 @@ victim_contract = 'put the actual address here'
 
 
 # Connect to our geth node 
-port = 8545    # this port maps to the attacker's geth node
-web3 = SEEDWeb3.connect_to_geth_poa('http://127.0.0.1:{}'.format(port))
+web3 = SEEDWeb3.connect_to_geth_poa('http://10.151.0.71:8545')
 
 # We use web3.eth.accounts[1] as the sender because it has more Ethers
 sender_account = web3.eth.accounts[1]
