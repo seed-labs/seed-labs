@@ -7,8 +7,7 @@ abi_file = "../contract/ReentrancyVictim.abi"
 bin_file = "../contract/ReentrancyVictim.bin" 
 
 # Connect to a geth node
-port = 8546   # Deploy the contract from a user node
-web3 = SEEDWeb3.connect_to_geth_poa('http://127.0.0.1:{}'.format(port))
+web3 = SEEDWeb3.connect_to_geth_poa('http://10.150.0.71:8545')
 
 # We use web3.eth.accounts[1] as the sender because it has more Ethers
 sender_account = web3.eth.accounts[1]
