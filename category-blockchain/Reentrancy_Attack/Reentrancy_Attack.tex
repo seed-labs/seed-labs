@@ -181,31 +181,31 @@ $ pip3 install web3
 \subsection{Connecting to the Blockchain} 
 \label{sec:sub:ports}
 
+%These servers are not directly
+%accessible from the outside, so we configured
+%the following port forwarding, which allows us 
+%to access them using a port on our local host (i.e., the VM). 
+%The followings summarize our setup.
+
+%\begin{lstlisting}
+%localhost:8545 --> <IP 1>:8545 : Attacker (eth0)
+%localhost:8546 --> <IP 2>:8545 : Victim   (eth1)
+%localhost:8547 --> <IP 3>:8545 : User 1   (eth2)
+%localhost:8548 --> <IP 4>:8545 : User 2   (eth3)
+%\end{lstlisting}
+
 To conduct activities on the blockchain, we need to 
 do it from a node on the blockchain. Connection to
 such a node is typically done through HTTP or Web Socket. 
 In our emulator, we have enabled the HTTP server on
-four Ethereum nodes. These servers are not directly
-accessible from the outside, so we configured
-the following port forwarding, which allows us 
-to access them using a port on our local host (i.e., the VM). 
-The followings summarize our setup.
-
-\begin{lstlisting}
-localhost:8545 --> <IP 1>:8545 : Attacker (eth0)
-localhost:8546 --> <IP 2>:8545 : Victim   (eth1)
-localhost:8547 --> <IP 3>:8545 : User 1   (eth2)
-localhost:8548 --> <IP 4>:8545 : User 2   (eth3)
-\end{lstlisting}
-
-To connect to a node, we just need to provide its corresponding
-port number on the local host. The following example 
-connects to the one of the nodes (the Victim node using the port \texttt{8546}). 
+all Ethereum nodes. 
+To connect to a node, we just need to provide its IP address 
+and port number \texttt{8545}. 
+The following example connects to the one of the nodes.
 
 \begin{lstlisting}
 # Connect to a geth node
-port = 8546   
-web3 = SEEDWeb3.connect_to_geth_poa('http://127.0.0.1:{}'.format(port))
+web3 = SEEDWeb3.connect_to_geth_poa('http://10.150.0.71:8545')
 \end{lstlisting}
 
 
@@ -389,8 +389,7 @@ abi_file = "../contract/ReentrancyVictim.abi"
 bin_file = "../contract/ReentrancyVictim.bin"
 
 # Connect to a geth node
-port = 8546   # Deploy the contract from the victim node
-web3 = SEEDWeb3.connect_to_geth_poa('http://127.0.0.1:{}'.format(port))
+web3 = SEEDWeb3.connect_to_geth_poa('http://10.150.0.71:8545')
 
 # We use web3.eth.accounts[1] as the sender because it has more ethers
 sender_account = web3.eth.accounts[1]
@@ -429,9 +428,9 @@ with the actual contract address obtained from the
 deployment step. 
 
 
-We choose to deposit money from the \texttt{eth2} node, which
-is accessible using the port \texttt{8547} on the 
-localhost (see the port forwarding setup in \S~\ref{sec:sub:ports}).
+We choose to deposit money from an Ethereum node. In this 
+example, we use node \texttt{10.151.0.71}; students should feel
+free to use other nodes. 
 
 \begin{lstlisting}[language=python,
         caption=Deposit money (\texttt{fund\_victim\_contract.py})]
@@ -439,8 +438,7 @@ abi_file    = "../contract/ReentrancyVictim.abi"
 victim_addr = '0x2c46e14f433E36F17d5D9b1cd958eF9468A90051'  (*@\lineone@*) 
 
 # Connect to our geth node, select the sender account
-port = 8547
-web3 = SEEDWeb3.connect_to_geth_poa('http://127.0.0.1:{}'.format(port))
+web3 = SEEDWeb3.connect_to_geth_poa('http://10.151.0.71:8545')
 sender_account = web3.eth.accounts[1]
 web3.geth.personal.unlockAccount(sender_account, "admin")
 
