@@ -29,13 +29,13 @@ CMD [ "/bin/bash"]
 ```
 
 The above `Dockerfile` indicates that our container
-is be built on top of the official Ubuntu 20.04 Docker image.
+is being built on top of the official Ubuntu 20.04 Docker image.
 That is the purpose of the `FROM` command.
 On top of this base image, we use the `RUN` command
 to install a number of additional software packages, including
 some network utilities and the `nano` editor.
 The `"apt-get clean"` command at the end
-clear the local repository of retrieved package files
+clears the local repository of retrieved package files
 that are left in `/var/cache`, so the final image size
 can be reduced. More explanation can be found
 in the comments.
