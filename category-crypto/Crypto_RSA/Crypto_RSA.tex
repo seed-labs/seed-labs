@@ -307,11 +307,25 @@ convert the hex string to a BIGNUM using the hex-to-bn API \texttt{BN\_hex2bn()}
 The following \texttt{python} command can be used
 to convert a plain ASCII string to a hex string.
 
+SEED Labs 2.0 VM (Ubuntu 20.04.2 LTS):
 \begin{lstlisting}
-$ python  -c 'print("A top secret!".encode("hex"))'
+$ python -c 'print("A top secret!".encode("utf-8").hex())'
 4120746f702073656372657421
 \end{lstlisting}
 
+SEED Labs 1.0 VM (Ubuntu 16.04 LTS):
+\begin{lstlisting}
+$ python -c 'print("A top secret!".encode("hex"))'
+4120746f702073656372657421
+\end{lstlisting}
+
+%%%%%%
+% Alternative approach using xxd that works in both VMs and corresponds to the 3rd ed. of the books
+%    \begin{lstlisting}
+%    $ echo -n "A top secret!" | xxd -p
+%    4120746f702073656372657421
+%    \end{lstlisting}
+%%%%%%
 
 The public keys are listed in the followings (hexadecimal).  We also provide the private key \texttt{d}
  to help you verify your encryption
@@ -338,12 +352,19 @@ a plain ASCII string.
 
 
 You can use the following \texttt{python} command to convert
-a hex string back to to a plain ASCII string.
+a hex string back to to a plain ASCII string (works in both VM versions).
 \begin{lstlisting}
-$ python  -c 'print("4120746f702073656372657421".decode("hex"))'
+$ python -c 'print(bytearray.fromhex("4120746f702073656372657421").decode())'
 A top secret!
 \end{lstlisting}
 
+%%%%%%
+% Alternative approach using xxd that works in both VMs and corresponds to the 3rd ed. of the books
+%    \begin{lstlisting}
+%    $ echo -n 4120746f702073656372657421 | xxd -r -p
+%    A top secret!
+%    \end{lstlisting}
+%%%%%%
 
 
 \subsection{Task 4: Signing a Message}
