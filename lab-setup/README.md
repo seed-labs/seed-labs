@@ -15,10 +15,10 @@ structure of this folder:
 - ```ubuntu20.04-vm```: Building the Ubuntu 20.04 VM for personal computer
 - ```docker-images```: Docker images for the container setup
 - ```aws```: For the AWS cloud platform
-- ```cyber-range```: For the Virginia Cyber Range cloud platform
+- ```virginia-cyber-range```: For the Virginia Cyber Range cloud platform
 
 
-## Building the VM Image For SEED Labs
+## Building the VM Image For SEED Labs (Finished)
 
 We are in the process of moving the SEED platform from Ubuntu 16.04 (32-bit)
 to Ubuntu 20.04 (64-bit). 
@@ -56,7 +56,7 @@ platform led to significant changes to the design of many SEED labs, resulting
 in a new generation of SEED labs.  
 Therefore, the new version will be officially called **SEED Labs 2.0**.
 
-- Current status: work in progress, will finish by mid December
+- Current status: Have been tested for 2 years, quite stable.
 - Beta testing period: Spring 2021
 - Official release date: Summer 2021. An online workshop will be organized to
 help instructors adopt this new platform.  
