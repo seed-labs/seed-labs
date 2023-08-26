@@ -26,7 +26,7 @@ mapping in our `/etc/hosts` file.
   we need to log out and then log in again (or simply reboot the machine).
 
   ```
-  example 
+  export no_proxy='localhost,.seed-server.com,.bank32.com,...' 
   ```
 
 - We will provide a list of the domains used in the SEED labs, and add them to the 
