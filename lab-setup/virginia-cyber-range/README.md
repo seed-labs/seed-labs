@@ -49,18 +49,41 @@ mapping in our `/etc/hosts` file.
   bank32W.com
   ```
 
+## Misc. Issue
+
+- Add the current folder "." to the `PATH` environment variable. Without it,
+  some lab may have small issue. 
+
+- The version of `docker-compose` is 2.18.1, while the version on the SEED VM
+  is 1.27.4, which is much older. The new version of `docker-compose` 
+  does not work well with the `docker-compose.yml` file. 
+
+  - It seems that the problem is caused by the base. This is a problem with
+    the emulator, not the range. We have already found a solution,
+    and are working on fixing it on our side. 
+
+
+- To run the emulator-based labs, the memory of the VM should be 8GB. 
+  The current setup is 4GB, which is good for most SEED labs, except the 
+  emulator-based labs. At this point, only a small number of labs
+  use emulators. 
+
+
 ## Testing Results: Labs with some issues
 
 The follow labs have some issues. We document how they are 
 resolved or what needs to be done to resolve them. 
 
-- name 
-- name 
+- BGP lab: works (the environment building has some issue, see issues above).
+
+- Blockchain Lab: It has several issues: 
+  - Need to install Web3 Python module using `pip3 install web3==5.31.1`.
+    Please make sure to install an older version, as our code does not 
+    work well with the new web3 version. 
 
 
 ## Testing Results: Labs without issues 
 
 The following labs do not have any issue in the Cyber Range.
 
-- name 
-- name 
+- Name ... 
