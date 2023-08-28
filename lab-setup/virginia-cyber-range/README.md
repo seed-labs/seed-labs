@@ -81,9 +81,41 @@ resolved or what needs to be done to resolve them.
     Please make sure to install an older version, as our code does not 
     work well with the new web3 version. 
 
+- Crypto: Secret Key Encryption Lab:
+  - The `openssl` library was not installed. It affects Task 7. 
+  - Use [this script](https://github.com/seed-labs/seed-labs/blob/master/lab-setup/ubuntu20.04-vm/src-vm/openssl.sh) to install the library. This will solve the problem. 
+
+- Crypto: Hash Extension Attack Lab:
+  - Require the `openssl` library. Same problem as the encryption lab. 
+  - Installing the `openssl` library solved the problem. 
+  - Need to add `seedlab-hashlen.com` to the no-proxy list. 
+  - Didn't do the full testing 
+
+- Crypto: RSA lab:
+  - We need to run `openssl s_client -connect www.example.org:443 -showcerts` to 
+    get the certificates from a server. This will not work, as `openssl s_client`
+    command does not recognize proxy. 
+
+  - We can solve this problem by adding the `-proxy` option to the command. 
+    We will add this to the lab description. 
+    ```
+    openssl s_client -proxy proxy.cyberservices.internal:80 -connect www.example.org:443 -showcerts
+    ```
+
+- Crypto: TLS lab
+  - This lab will not work, as it requires communicating with the outside HTTPS
+    servers, using our own Python programs. Making these programs to use the 
+    proxy involves a lot of work. This is not a very popular lab, so 
+    it should not affect too many people. 
+
+
 
 ## Testing Results: Labs without issues 
 
-The following labs do not have any issue in the Cyber Range.
+The following labs do not have issues in the Cyber Range.
 
-- Name ... 
+- Crypto - PKI Lab: tested the scripts, and there is no problem. 
+           Didn't do the full testing.
+- Crypto - MD5 collision lab: fully tested; no issue.
+- Crypto - Random number lab: fully tested; no issue.  
+- Crypto - Padding oracle lab: fully tested; no issue.
