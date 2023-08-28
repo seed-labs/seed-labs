@@ -74,24 +74,28 @@ mapping in our `/etc/hosts` file.
 The follow labs have some issues. We document how they are 
 resolved or what needs to be done to resolve them. 
 
-- BGP lab: works (the environment building has some issue, see issues above).
+- BGP Lab  
+  - The environment building has some issue, but this is the issue with the 
+    emulator. We are fixing it. 
+  - Fully tested after manually fixing the building issue; no other issues.
 
 - Blockchain Lab: It has several issues: 
   - Need to install Web3 Python module using `pip3 install web3==5.31.1`.
     Please make sure to install an older version, as our code does not 
     work well with the new web3 version. 
+  - Have not yet fully tested it. 
 
-- Crypto: Secret Key Encryption Lab:
+- Crypto: Secret Key Encryption Lab 
   - The `openssl` library was not installed. It affects Task 7. 
   - Use [this script](https://github.com/seed-labs/seed-labs/blob/master/lab-setup/ubuntu20.04-vm/src-vm/openssl.sh) to install the library. This will solve the problem. 
 
-- Crypto: Hash Extension Attack Lab:
+- Crypto: Hash Extension Attack Lab 
   - Require the `openssl` library. Same problem as the encryption lab. 
   - Installing the `openssl` library solved the problem. 
   - Need to add `seedlab-hashlen.com` to the no-proxy list. 
   - Didn't do the full testing 
 
-- Crypto: RSA lab:
+- Crypto: RSA lab 
   - We need to run `openssl s_client -connect www.example.org:443 -showcerts` to 
     get the certificates from a server. This will not work, as `openssl s_client`
     command does not recognize proxy. 
@@ -108,14 +112,49 @@ resolved or what needs to be done to resolve them.
     proxy involves a lot of work. This is not a very popular lab, so 
     it should not affect too many people. 
 
+- Network - ICMP Lab
+  - ICMP redirection doesn't affect the router cache, so it does not work.
+  - Will figure out the reason later. 
 
+- Network - Firewall Lab 
+  - Due to the firewall set up in the Cyber Range, some of the tasks will not 
+    work. For example, In task1b , `dig @8.8.8.8 www.example.com` will be 
+    blocked by the Range's firewall even if our firewall is not set up correctly. 
+
+  - This is not a major issue. 
+
+- Network - Mitnick Attack Lab
+  - The `dcup` command shows an error: service "extensions" has 
+    neither an image nor a build context specified: invalid 
+    compose project.
+  - Solution: in new docker compose specification `x-` is the 
+    prefix to declare a extension field. So in our case, 
+    Compose interprets the `x-` as an extension field instead of 
+    a service name. Changing `X-terminal` to `Xterminal` in 
+    `docker-compose.yml` solves the problem. We will fix this 
+    issue on our side. 
+    Reference (https://docs.docker.com/compose/compose-file/compose-file-v3/#extension-fields). 
 
 ## Testing Results: Labs without issues 
 
 The following labs do not have issues in the Cyber Range.
+
+- Software - SetUID Lab: fully tested; no issue.
+- Software - Race Condition lab: fully tested; no issue.
+- Software - Return-to-libc: fully tested; no issue.
+- Software - Buffer-overflow (server version): fully tested; no issue. 
+
+- Web - CSRF, XSS, and SQL Injection Labs: tested the lab setup environment. 
+           After adding the hostname to the `no-proxy` list, the environment starts
+	   without any problem. 
 
 - Crypto - PKI Lab: tested the scripts, and there is no problem. 
            Didn't do the full testing.
 - Crypto - MD5 collision lab: fully tested; no issue.
 - Crypto - Random number lab: fully tested; no issue.  
 - Crypto - Padding oracle lab: fully tested; no issue.
+
+- Network - ARP Lab: fully tested; no issue.
+- Network - TCP Lab: fully tested; no issue.
+- Network - VPN Tunneling Lab: fully tested; no issue.
+
