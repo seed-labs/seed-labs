@@ -5,6 +5,15 @@ to get our SEED labs running in this environment.
 We document the issues encountered and how we resolve
 these issues. 
 
+## Summary of the Suggestions
+
+Based on our testing, here are the summary of our suggestions.
+Details are given later in this document. 
+
+- Add the list of domains to the `no-proxy` list
+- Add the current folder "." to the `PATH` environment variable. 
+- Install the `openssl` library (see instruction in the "Misc. Issues" section).
+
 
 ## Issue: Web Proxy
 
@@ -49,10 +58,10 @@ mapping in our `/etc/hosts` file.
   bank32W.com
   ```
 
-## Misc. Issue
+## Misc. Issues
 
 - Add the current folder "." to the `PATH` environment variable. Without it,
-  some lab may have small issue. 
+  some labs may have small issues. 
 
 - The version of `docker-compose` is 2.18.1, while the version on the SEED VM
   is 1.27.4, which is much older. The new version of `docker-compose` 
@@ -60,7 +69,7 @@ mapping in our `/etc/hosts` file.
 
   - It seems that the problem is caused by the base. This is a problem with
     the emulator, not the range. We have already found a solution,
-    and are working on fixing it on our side. 
+    and are fixing it on our side. 
 
 
 - To run the emulator-based labs, the memory of the VM should be 8GB. 
@@ -82,7 +91,9 @@ resolved or what needs to be done to resolve them.
 - Blockchain Lab: It has several issues: 
   - Need to install Web3 Python module using `pip3 install web3==5.31.1`.
     Please make sure to install an older version, as our code does not 
-    work well with the new web3 version. 
+    work well with the new web3 version. I have added this installation
+    command to the lab description, so it is not necessary to install 
+    it on the VM (students will do that when working on this lab).
   - Have not yet fully tested it. 
 
 - Crypto: Secret Key Encryption Lab 
