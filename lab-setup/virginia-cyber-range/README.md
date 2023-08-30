@@ -7,7 +7,7 @@ these issues.
 
 ## Summary of the Suggestions
 
-Based on our testing, here are the summary of our suggestions.
+Based on our testing, here is the summary of our suggestions.
 Details are given later in this document. 
 
 - Add the list of domains to the `no-proxy` list
