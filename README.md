@@ -49,6 +49,7 @@ You can [read this](LICENSE.md) for more details.
 
 The SEED labs are divided into 6 categories, and each one has its own folder. 
 
+- ```category-blockchain```: For blockchain labs 
 - ```category-crypto```:     For crypto labs
 - ```category-hardware```:   For hardware security labs
 - ```category-mobile```:     For mobile security labs
