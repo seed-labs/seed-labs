@@ -5,7 +5,7 @@
 
 This is the core of the entire SEED project, it consists
 of all the labs that we have developed and maintained 
-for the past 18 years. 
+since 2002. 
 
 
 ## History
@@ -16,7 +16,7 @@ National Science Foundation (NSF). Now SEED labs are being used by over a
 thousand institutes around the world. SEED stands for (SEcurity EDucaton).
 
 The project has been maintained by Professor Du himself in the past, with the help
-from his students. While this has worked quite well for almost 20 years, 
+from his students. While this has worked quite well for more than 20 years, 
 it has now reached a point, where individual efforts can no longer meet 
 the ever increasing needs from the world. There are many interesting things
 that we can do if we work together as a community.
