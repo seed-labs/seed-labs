@@ -50,7 +50,7 @@ In the next screen, select `Erase disk and install Ubuntu` and click on `Install
 
 ![Ubuntu Installation](Figs/ubuntu-installation-erase.png)
 
-Create a user with name `seed` and password `dess` and click on `Continue`.
+Create a user with name `seed` and password `dees` and click on `Continue`.
 
 ![Ubuntu Installation](Figs/ubuntu-installation-user.png)
 
@@ -77,16 +77,6 @@ Docker-compose is not available for arm64 architecture. So we have to install it
 Now you can use docker-compose in your VM.
 
 
-## Testing Results: Labs with some issues
-
-- Software - Buffer Overflow Lab: not able to setup the /bof-container using make as arm does not support -m32 flag in gcc.
-- Software - Return-to-libc Lab: not supported for arm archetecture.
-
-## Testing Results: Labs without issues 
-
-- Software - SetUID Lab: fully tested; no issue.
-- Software - Race Condition lab: fully tested; no issue.
-- Web - CSRF, XSS, and SQL Injection Labs: tested the lab setup environment. 
 
 
 
