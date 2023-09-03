@@ -1,6 +1,6 @@
 # Lab Setup for Apple Silicon Machines
 
-## How to Install VMware Fusion Player on Apple Silicon Machines
+## Step 1: Install VMware Fusion Player on Apple Silicon Machines
 
 Go to [VMware Fusion](https://customerconnect.vmware.com/en/evalcenter?p=fusion-player-personal-13) and register for a free Fusion Player license. Then under License & Download, click on `Manually Download`.
 
@@ -14,7 +14,7 @@ After you have entered the license key, you will be asked to allow the kernel ex
 
 In the Security & Privacy settings, click on `Allow` to allow the kernel extensions.
 
-## How to Install Ubuntu on VMware Fusion Player
+## Step 2: Install Ubuntu on VMware Fusion Player
 
 Now we have to download the Ubuntu ISO image. Go to [Ubuntu 22.04.3](https://cdimage.ubuntu.com/jammy/daily-live/current/) and download the Ubuntu 22.04.3 LTS (Jammy Jellyfish) Daily Build. Make sure you download the `64-bit ARM (ARMv8/AArch64) desktop image`.
 
@@ -62,7 +62,7 @@ If the is giving an error, just remove the ISO image from the VM and restart the
 
 Now you will be greeted with the home screen. Go to terminal download curl using ```sudo apt-get install curl``` and follow the setup instructions from step 2 in the [README](../../manuals/cloud/seedvm-cloud.md) file.
 
-## Setup Docker and Docker Compose
+## Step 3: Setup Docker and Docker Compose
 
 After done with the setup we have to set the docker default platform to linux/arm64. Go to terminal and type the following command.
 
@@ -79,11 +79,15 @@ Now you can use docker-compose in your VM.
 
 ## Testing Results: Labs with some issues
 
-
+- Software - Buffer Overflow Lab: not able to setup the /bof-container using make as arm does not support -m32 flag in gcc.
+- Software - Return-to-libc Lab: not supported for arm archetecture.
 
 ## Testing Results: Labs without issues 
 
+- Software - SetUID Lab: fully tested; no issue.
+- Software - Race Condition lab: fully tested; no issue.
 - Web - CSRF, XSS, and SQL Injection Labs: tested the lab setup environment. 
+
 
 
 
