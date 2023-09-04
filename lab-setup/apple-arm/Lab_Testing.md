@@ -8,19 +8,19 @@ notes should be put in the `Notes_Lab_Testing.md` file.
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Set-UID                   |                  |    |
-| Buffer-Overflow (setuid)  |                  |    |
-| Buffer-Overflow (server)  |                  |    |
-| Return-to-Libc   |                  |             |
+| Set-UID                   | no issue | fully tested |
+| Buffer-Overflow (setuid)  | ---  | Lab needs to be changed to support arm64 architecture |
+| Buffer-Overflow (server)  | ---  |  Lab needs to be changed to support arm64 architecture  |
+| Return-to-Libc   | ---  | Lab needs to be changed to support arm64 architecture  |
 | Format String   |                  |             |
-| Race Condition  |                  |             |
-| Shellcode       |                  |                  |
-| Dirty Cow       |  ---             | will not port    |
-| CSRF | | |
-| XSS | | |
-| SQL Injection | | |
-| Shellshock | | |
-| Clickjacking | | |
+| Race Condition  | no issue |     fully tested        |
+| Shellcode       | --- |                  |
+| Dirty Cow       | --- | will not port |
+| CSRF | no issue | tested the lab setup environment |
+| XSS | no issues | tested the lab setup environment |
+| SQL Injection | no issue | tested the lab setup environment |
+| Shellshock | --- | /bin/bash_shellshock not compatible with arm64 |
+| Clickjacking | no issue | tested the lab setup environment |
 
 ## Network Security 
 
@@ -65,36 +65,3 @@ notes should be put in the `Notes_Lab_Testing.md` file.
 | Meltdown | | will not port | 
 | Spectre  | | will not port | 
 | | | | 
-# Notes for Lab setup in Apple Silicon Machines
-
-
-## Summary of the Suggestions
-
-
-
-
-## Issue: 32-bit Libraries compilation
-
-
-
-## Misc. Issues
-
-
-
-## Testing Results: Labs with some issues
-
-The follow labs have some issues. We document how they are 
-resolved or what needs to be done to resolve them. 
-
-- Software - Buffer Overflow Lab: not able to setup the /bof-container using make as arm does not support -m32 flag in gcc.
-- Software - Return-to-libc Lab: not supported for arm archetecture.
-
-
-
-## Testing Results: Labs without issues 
-
-The following labs do not have issues in the VMware Fusion.
-
-- Software - SetUID Lab: fully tested; no issue.
-- Software - Race Condition lab: fully tested; no issue.
-- Web - CSRF, XSS, and SQL Injection Labs: tested the lab setup environment. 

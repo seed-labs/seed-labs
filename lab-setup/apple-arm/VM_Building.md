@@ -25,12 +25,15 @@ products:
 ## Building the VM
 
 We could not find the ARM version of Ubuntu 20.04, so we will install
-Ubuntu 22.04 instead. A detailed instruction is provided in ....
+Ubuntu 22.04 instead. A detailed instruction is provided in [README.md](./README.md).
 
 
 ## Installing the Software 
 
-Describe the status ...
+- During the setup of VM we need to run a script in ```/src-cloud``` to install
+  the necessary software. The script will throw an error ```E: Package 'gcc-multilib' has no installation candidate```
+  as the package is not available for ARM architecture. This package is required for the compilation of 32-bit so it will cause
+  problem in the compilation of some labs. We will need to find a way to install this package.
 
 
 ## Lab Testing 
