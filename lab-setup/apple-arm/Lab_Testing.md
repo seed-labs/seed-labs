@@ -2,7 +2,7 @@
 
 This document shows the progress of lab testing. 
 Brief notes can be placed in the table, but detailed
-notes should be put in the `Notes_Lab_Testing.md` file. 
+notes should be put in the [Notes_Lab_Testing.md](./Notes_Lab_Testing.md) file. 
 
 ## Software and Web Security 
 
