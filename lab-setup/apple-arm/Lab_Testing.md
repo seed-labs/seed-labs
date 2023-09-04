@@ -2,25 +2,25 @@
 
 This document shows the progress of lab testing. 
 Brief notes can be placed in the table, but detailed
-notes should be put in the `Notes_Lab_Testing.md` file. 
+notes should be put in the [Notes_Lab_Testing.md](./Notes_Lab_Testing.md) file. 
 
 ## Software and Web Security 
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Set-UID                   |                  |    |
-| Buffer-Overflow (setuid)  |                  |    |
-| Buffer-Overflow (server)  |                  |    |
-| Return-to-Libc   |                  |             |
-| Format String   |                  |             |
-| Race Condition  |                  |             |
-| Shellcode       |                  |                  |
-| Dirty Cow       |  ---             | will not port    |
-| CSRF | | |
-| XSS | | |
-| SQL Injection | | |
-| Shellshock | | |
-| Clickjacking | | |
+| Set-UID                   | no issue | fully tested |
+| Buffer-Overflow (setuid)  | ---  | Lab needs to be changed to support arm64 architecture |
+| Buffer-Overflow (server)  | ---  |  Lab needs to be changed to support arm64 architecture  |
+| Return-to-Libc   | ---  | Lab needs to be changed to support arm64 architecture  |
+| Format String   | --- | Lab needs to be changed to support arm64 architecture |
+| Race Condition  | no issue |     fully tested        |
+| Shellcode       | --- |                  |
+| Dirty Cow       | --- | will not port |
+| CSRF | no issue | tested the lab setup environment |
+| XSS | no issues | tested the lab setup environment |
+| SQL Injection | no issue | tested the lab setup environment |
+| Shellshock | --- | /bin/bash_shellshock not compatible with arm64 |
+| Clickjacking | no issue | tested the lab setup environment |
 
 ## Network Security 
 
