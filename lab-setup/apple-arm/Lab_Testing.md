@@ -12,7 +12,7 @@ notes should be put in the [Notes_Lab_Testing.md](./Notes_Lab_Testing.md) file.
 | Buffer-Overflow (setuid)  | ---  | Lab needs to be changed to support arm64 architecture |
 | Buffer-Overflow (server)  | ---  |  Lab needs to be changed to support arm64 architecture  |
 | Return-to-Libc   | ---  | Lab needs to be changed to support arm64 architecture  |
-| Format String   |                  |             |
+| Format String   | --- | Lab needs to be changed to support arm64 architecture |
 | Race Condition  | no issue |     fully tested        |
 | Shellcode       | --- |                  |
 | Dirty Cow       | --- | will not port |
