@@ -1,6 +1,34 @@
 # Lab Setup for Apple Silicon Machines
 
-## Step 1: Install VMware Fusion Player on Apple Silicon Machines
+## Local Setup for Apple Silicon Machines [For Web Security Labs]
+
+Note: This method is only tested for the web security labs with Labsetup for arm version.
+
+For this we are assuming that you have docker setup in your machine. If you don't have docker setup in your machine, please follow the instructions from [here](https://docs.docker.com/desktop/mac/install/).
+
+### Step 1: Install Homebrew
+To install Homebrew, open the terminal and run the following command.
+
+```/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"```
+
+If after installing homebrew you are not able to access brew, run the following command in the terminal.
+
+```echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> ~/.zprofile```
+
+```eval $(/opt/homebrew/bin/brew shellenv)```
+
+### Step 2: Install ```docker-mac-net-connect``` using Homebrew
+This is required to connect the docker container to the host network. To install docker-mac-net-connect, open the terminal and run the following command.
+
+```brew install chipmk/tap/docker-mac-net-connect```
+
+And then start the service using the following command.
+
+```sudo brew services start chipmk/tap/docker-mac-net-connect```
+
+## VMware Fusion Player Setup for Apple Silicon Machines
+
+### Step 1: Install VMware Fusion Player on Apple Silicon Machines
 
 Go to [VMware Fusion](https://customerconnect.vmware.com/en/evalcenter?p=fusion-player-personal-13) and register for a free Fusion Player license. Then under License & Download, click on `Manually Download`.
 
@@ -14,7 +42,7 @@ After you have entered the license key, you will be asked to allow the kernel ex
 
 In the Security & Privacy settings, click on `Allow` to allow the kernel extensions.
 
-## Step 2: Install Ubuntu on VMware Fusion Player
+### Step 2: Install Ubuntu on VMware Fusion Player
 
 Now we have to download the Ubuntu ISO image. Go to [Ubuntu 22.04.3](https://cdimage.ubuntu.com/jammy/daily-live/current/) and download the Ubuntu 22.04.3 LTS (Jammy Jellyfish) Daily Build. Make sure you download the `64-bit ARM (ARMv8/AArch64) desktop image`.
 
@@ -62,7 +90,7 @@ If the is giving an error, just remove the ISO image from the VM and restart the
 
 Now you will be greeted with the home screen. Go to terminal download curl using ```sudo apt-get install curl``` and follow the setup instructions from step 2 in the [README](../../manuals/cloud/seedvm-cloud.md) file.
 
-## Step 3: Setup Docker and Docker Compose
+### Step 3: Setup Docker and Docker Compose
 
 After done with the setup we have to set the docker default platform to linux/arm64. Go to terminal and type the following command.
 
