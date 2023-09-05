@@ -11,13 +11,13 @@ To install Homebrew, open the terminal and run the following command.
 
 ```/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"```
 
-If after installing you are not able to access brew, run the following command in the terminal.
+If after installing homebrew you are not able to access brew, run the following command in the terminal.
 
 ```echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> ~/.zprofile```
 
 ```eval $(/opt/homebrew/bin/brew shellenv)```
 
-### Step 2: Install docker-mac-net-connect
+### Step 2: Install ```docker-mac-net-connect``` using Homebrew
 This is required to connect the docker container to the host network. To install docker-mac-net-connect, open the terminal and run the following command.
 
 ```brew install chipmk/tap/docker-mac-net-connect```
