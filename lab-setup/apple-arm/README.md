@@ -2,7 +2,7 @@
 
 ## Local Setup for Apple Silicon Machines [For Web Security Labs]
 
-Note: This method is only tested for the web security labs.
+Note: This method is only tested for the web security labs with Labsetup for arm version.
 
 For this we are assuming that you have docker setup in your machine. If you don't have docker setup in your machine, please follow the instructions from [here](https://docs.docker.com/desktop/mac/install/).
 
@@ -25,8 +25,6 @@ This is required to connect the docker container to the host network. To install
 And then start the service using the following command.
 
 ```sudo brew services start chipmk/tap/docker-mac-net-connect```
-
-Now if you run the Labsetup for arm version you will be able to perform the web security labs.
 
 ## VMware Fusion Player Setup for Apple Silicon Machines
 
