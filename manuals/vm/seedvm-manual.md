@@ -95,7 +95,7 @@ if the performance seems to be an issue, increase the number.
 
 Go to the `Display` category, and select the `Screen` tab. If the
 display does not seem to work properly, try to increase the amount of video memory.
-In our testing, `58 MB` seems to be sufficient. (`28 MB` video memory may cause a black
+In our testing, `58 MB` seems to be sufficient. (Low video memory may cause a black
   screen error on virtual machine. )
 
 ![display](./Figs/vm-setting-display.png)
