@@ -10,7 +10,7 @@ So some of the labs which require to run on 32-bit amd64 architecture will not w
 even if we compile the code with 32bit cross compiler. This will require the labs to be changed to support
 arm64 architecture.
 
-## Issue: /bin/bash_shellshock not compatible with arm64
+## Solved: /bin/bash_shellshock not compatible with arm64
 
 In Shellshock lab, the apache-php-arm is created and the apache server is started.
 And we can also see the apache server running on ```www.seedlab-shellshock.com``` but when
@@ -75,5 +75,28 @@ seed@seed-virtual-machine:~/Downloads/bash-4.2$ ./configure --build=arm64
 checking build system type... Invalid configuration `arm64': machine `arm64' not recognized
 configure: error: /bin/sh ./support/config.sub arm64 failed
 ```
+
+### Solution:
+
+  We figured out that using the bash-4.2 was the reason for the error as it is outdated and not compatible. So we used this method to install bash ```version 4.3```.
+
+  
+  ``` 
+  wget https://ftp.gnu.org/gnu/bash/bash-4.3.tar.gz
+  tar xzvf bash-4.3.tar.gz
+  cd bash-4.3
+  ./configure
+  ```
+  Change the following thing in the Makefile:
+
+  ```CC = gcc -static```
+
+  The -static option of gcc is for static binding. Static binding is a common solution to deal with the missing library issues. Now run the make command to compile the bash.
+
+  ```
+  make
+  ```
+  After this we will get the bash binary in the ```bash-4.3/bash``` directory. We can copy this binary to the ```image-www/bash_shellshock``` and then the shellshock lab will work.
+
 
 ## Misc. Issues
