@@ -10,7 +10,7 @@ So some of the labs which require to run on 32-bit amd64 architecture will not w
 even if we compile the code with 32bit cross compiler. This will require the labs to be changed to support
 arm64 architecture.
 
-## Issue: /bin/bash_shellshock not compatible with arm64
+## Solved: /bin/bash_shellshock not compatible with arm64
 
 In Shellshock lab, the apache-php-arm is created and the apache server is started.
 And we can also see the apache server running on ```www.seedlab-shellshock.com``` but when
