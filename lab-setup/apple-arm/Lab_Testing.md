@@ -19,7 +19,7 @@ notes should be put in the [Notes_Lab_Testing.md](./Notes_Lab_Testing.md) file.
 | CSRF | no issue | tested the lab setup environment |
 | XSS | no issues | tested the lab setup environment |
 | SQL Injection | no issue | tested the lab setup environment |
-| Shellshock | --- | /bin/bash_shellshock not compatible with arm64 |
+| Shellshock | no issue | tested the lab setup environment - Working with solution mentioned in [Notes_Lab_Testing](Notes_Lab_Testing.md) |
 | Clickjacking | no issue | tested the lab setup environment |
 
 ## Network Security 
