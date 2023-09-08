@@ -47,12 +47,12 @@ notes should be put in the [Notes_Lab_Testing.md](./Notes_Lab_Testing.md) file.
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Secret-Key Encryption | | |
+| Secret-Key Encryption | | The openssl library is compiled successfully |
 | Padding Oracle | | |
-| Hash Collision | | |
+| Hash Collision | | The program md5collgen is compiled successfully |
 | Hash Length Extension | | |
 | Random Number | | |
-| RSA Public Key | | |
+| RSA Public Key | | The program compiled successfully |
 | PKI | | |
 | TLS | | |
 
