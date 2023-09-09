@@ -2,7 +2,7 @@
 
 This document shows the progress of lab testing. 
 Brief notes can be placed in the table, but detailed
-notes should be put in the [Notes_Lab_Testing.md](./Notes_Lab_Testing.md) file. 
+notes should be put inside the [Notes folder](./Notes).
 
 ## Software and Web Security 
 
@@ -19,7 +19,7 @@ notes should be put in the [Notes_Lab_Testing.md](./Notes_Lab_Testing.md) file.
 | CSRF | no issue | tested the lab setup environment |
 | XSS | no issues | tested the lab setup environment |
 | SQL Injection | no issue | tested the lab setup environment |
-| Shellshock | no issue | tested the lab setup environment, see [notes](Notes_Lab_Testing.md#shellshock-lab) |
+| Shellshock | no issue | tested the lab setup environment, see [notes](Notes/Shellshock.md) |
 | Clickjacking | no issue | tested the lab setup environment |
 
 ## Network Security 

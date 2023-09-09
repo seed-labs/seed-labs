@@ -1,7 +1,4 @@
-# Notes for Lab Testing
-
-
-## Shellshock Lab  
+# Shellshock Lab  
 
 The shellshock lab needs to use an old version of `bash`. The one included in 
 the Lab setup file is not compatible with the `arm64` architecture. 
@@ -37,7 +34,7 @@ checking build system type... Invalid configuration `arm64': machine `arm64' not
 configure: error: /bin/sh ./support/config.sub arm64 failed
 ```
 
-### Solution:
+## Solution:
 
 Instead of installing `bash-4.2`, we tried `bash-4.3`, which is also vulnerable 
 to the Shellshock attack. 
@@ -59,4 +56,3 @@ any dynamic linked library (which may be missing in a container).
 Static binding is a common solution to deal with the missing library issues. 
 
 
-## Misc. Issues
