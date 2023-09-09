@@ -9,13 +9,13 @@ In the newer version, the CSRF attack on the GET request (add friend)
 using the image tag does not seem to work. We did some investigation,
 trying to figure out the reason. We document our investigation
 results here (the investigation is still incomplete). We also
-added a special notes in the lab description, warning the users
+added a special note in the lab description, warning the users
 about the difference. 
 
-It seems that newer version of Firefox block the cross-site cookies for 
+It seems that newer versions of Firefox block the cross-site cookies for 
 the GET requests generated from the image tag. When we send out a GET request 
 using the image tag, we saw that Elgg's session cookie is not attached.
-Because of this, Elgg will set a session cookie in the response, 
+Because of this, Elgg will set a new session cookie in the response, 
 but this cookie is not the same as the 
 one in the current session, i.e., it does not represent
 the active session (it is mainly for the login page). 
