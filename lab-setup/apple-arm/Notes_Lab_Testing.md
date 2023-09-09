@@ -1,15 +1,5 @@
 # Notes for Lab Testing
 
-## Summary of the Suggestions
-
-
-## Issue: 32-bit Libraries compilation
-
-As the architecture of the machine is arm64, there are different instruction set for arm64 and amd64.
-So some of the labs which require to run on 32-bit amd64 architecture will not work on arm64 architecture
-even if we compile the code with 32bit cross compiler. This will require the labs to be changed to support
-arm64 architecture.
-
 
 ## Shellshock Lab  
 
