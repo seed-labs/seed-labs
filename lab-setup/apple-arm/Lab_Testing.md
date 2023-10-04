@@ -26,7 +26,7 @@ notes should be put inside the [Notes folder](./Notes).
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Sniffing/Spoofing | | |
+| Sniffing/Spoofing | no issue | tested all the tasks |
 | ARP | | |
 | ICMP Redirect | | |
 | TCP | | |
