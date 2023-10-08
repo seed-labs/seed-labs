@@ -27,9 +27,9 @@ notes should be put inside the [Notes folder](./Notes).
 | Lab | Status | Notes |
 | --- | --- | --- |
 | Sniffing/Spoofing | no issue | tested all the tasks |
-| ARP | | |
+| ARP | no issue | tested all the tasks |
 | ICMP Redirect | | |
-| TCP | | |
+| TCP | minor issue | tested all the tasks; see [notes](Notes/Network_Security.md)|
 | Mitnick | | |
 | Firewall Exploration | | |
 | Firewall Evasion | | |
