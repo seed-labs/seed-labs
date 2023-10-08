@@ -22,25 +22,33 @@ products:
 - VMWare Fusion Player: this one is free. We choose to use this software.
 
 
-## Building a Ubuntu VM
+## Building the SEED VM on Fusion
 
+
+Step 1: Build an Ubuntu VM on VMWare Fusion. 
 We could not find the ARM version of Ubuntu 20.04, so we will install
 Ubuntu 22.04 instead. A detailed instruction is provided 
 in [seedvm-fusion.md](./seedvm-fusion.md).
 
 
-## Installing the Software 
+Step 2: Install software inside the VM. This step is the same 
+as the Step 2 in the 
+[cloud VM manual](https://github.com/seed-labs/seed-labs/blob/master/manuals/cloud/seedvm-cloud.md).
+Here are some notes: 
 
+ - During the setup of VM we need to run a script in ```/src-cloud``` to install
+   the necessary software. The script will throw an error 
+   ```E: Package 'gcc-multilib' has no installation candidate```
+   as the package is not available for ARM architecture. 
+   This package is required for the compilation of 32-bit so it will cause
+   problem in the compilation of some labs. We will need to find a way to 
+   install this package.
 
-- During the setup of VM we need to run a script in ```/src-cloud``` to install
-  the necessary software. The script will throw an error ```E: Package 'gcc-multilib' has no installation candidate```
-  as the package is not available for ARM architecture. This package is required for the compilation of 32-bit so it will cause
-  problem in the compilation of some labs. We will need to find a way to install this package.
 
 
 ## Building Docker Images for ARM64 
 
-All our docker images are built for AMD64, so for each image, we need to build 
+All our docker images were built for AMD64, so for each image, we need to build 
 one for ARM. To use the same tag for both AMD64 and ARM64, 
 we can use the multi-arch build approach.
 The following command actually builds three images, one for each platform.
@@ -59,14 +67,16 @@ otherwise, we will have rebuild all the images.
 There is a concern that some of the software may end up using a 
 newer version, and might break some labs. Since most 
 users use the `amd64` images, to avoid any risk, we will 
-build separate images for `arm64`. 
-When we upgrade the SEED VM to the next version, we 
+build separate images for `arm64` (appending `-arm` to 
+the image tag). When we upgrade the SEED VM to the next version, we 
 will switch to the multi-arch image, so the same image 
 names are used for both platforms. 
 
 
+
 ## Lab Testing 
 
-We will conduct testing for each SEED labs. 
-See [Lab_Testing.md](./Lab_Testing.md) for the testing progress and results. 
+We will conduct testing for each SEED lab. 
+The testing progress and results are described in 
+[Lab_Testing.md](./Lab_Testing.md).
 
