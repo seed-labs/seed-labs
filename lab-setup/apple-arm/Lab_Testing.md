@@ -9,8 +9,8 @@ notes should be put inside the [Notes folder](./Notes).
 | Lab | Status | Notes |
 | --- | --- | --- |
 | Set-UID                   | :thumbsup: | Fully tested |
-| Buffer-Overflow (setuid)  | ---  | Lab needs to be changed to support arm64 architecture |
-| Buffer-Overflow (server)  | ---  |  Lab needs to be changed to support arm64 architecture  |
+| Buffer-Overflow (setuid)  | :construction_worker:  | Lab needs to be revised for arm64 |
+| Buffer-Overflow (server)  | :construction_worker:  | Lab needs to be revised for arm64 |
 | Return-to-Libc  |      | Lab needs to be revised for arm64 |
 | Format String   |      | Lab needs to be revised for arm64 |
 | Shellcode       |     |  Lab needs to be revised for arm64 |
@@ -26,18 +26,18 @@ notes should be put inside the [Notes folder](./Notes).
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Sniffing/Spoofing | :thumbsup: | Fully tested: no issue |
-| ARP               | :thumbsup: | Fully tested: no issue |
+| Sniffing/Spoofing | :thumbsup: | Fully tested; no issue |
+| ARP               | :thumbsup: | Fully tested; no issue |
 | ICMP Redirect     | | |
-| TCP               | :thumbsup:  | Fully tested: [notes](Notes/Network_Security.md)|
+| TCP               | :thumbsup:  | Fully tested; minor issue: [notes](Notes/Network_Security.md)|
 | Mitnick           | | |
 | Firewall Exploration | | |
 | Firewall Evasion  | | |
 | VPN Tunneling     | | |
 | Heartbleed        | x | Will not port |
-| DNS Local         | :thumbsup: | Fully tested: no issue |
+| DNS Local         | :thumbsup: | Fully tested; no issue |
 | DNS Remote        | :question: | See [notes](Notes/Network_Security.md) |
-| DNS Rebinding     | :thumbsup: | Fully tested; fixed issues: [notes](Notes/Network_Security.md) |
+| DNS Rebinding     | :thumbsup: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
 | DNS Infrastructure | | |
 | DNSSEC | | |
 | BGP | | |
