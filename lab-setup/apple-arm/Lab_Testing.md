@@ -31,7 +31,7 @@ notes should be put inside the [Notes folder](./Notes).
 | ICMP Redirect     | | |
 | TCP               | :thumbsup:  | Fully tested; minor issue: [notes](Notes/Network_Security.md)|
 | Mitnick           | | |
-| Firewall Exploration | | |
+| Firewall Exploration | :thumbsup: | Fully tested; no issue: [notes](Notes/Network_Security.md) |
 | Firewall Evasion  | | |
 | VPN Tunneling     | | |
 | Heartbleed        | x | Will not port |

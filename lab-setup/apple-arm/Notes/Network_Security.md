@@ -31,3 +31,7 @@ Go to `Setting` -> `Privacy & Security`, and go to `DNS over HTTPS`, and select
 `off`. 
 
 
+## Firewall Exploration Lab 
+
+The `dmesg` command in Ubuntu 22.04 requires the root privilege. This is 
+different from Ubuntu 20.04.
