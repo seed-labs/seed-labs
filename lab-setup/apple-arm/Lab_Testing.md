@@ -29,12 +29,12 @@ notes should be put inside the [Notes folder](./Notes).
 | Sniffing/Spoofing | :thumbsup: | Fully tested; no issue |
 | ARP               | :thumbsup: | Fully tested; no issue |
 | ICMP Redirect     | | |
-| TCP               | :thumbsup:  | Fully tested; minor issue: [notes](Notes/Network_Security.md)|
-| Mitnick           | | |
+| TCP               | :thumbsup: | Fully tested; minor issue: [notes](Notes/Network_Security.md)|
+| Mitnick           | :thumbsup: | Fully tested; no issue |
 | Firewall Exploration | :thumbsup: | Fully tested; no issue: [notes](Notes/Network_Security.md) |
 | Firewall Evasion  | :thumbsup: | Full tested; no issue  |
 | VPN Tunneling     | :thumbsup: | Fully tested; no issue |
-| Heartbleed        | x | Will not port |
+| Heartbleed        | x          | Will not port          |
 | DNS Local         | :thumbsup: | Fully tested; no issue |
 | DNS Remote        | :question: | See [notes](Notes/Network_Security.md) |
 | DNS Rebinding     | :thumbsup: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
