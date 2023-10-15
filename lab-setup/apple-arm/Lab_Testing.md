@@ -47,10 +47,10 @@ notes should be put inside the [Notes folder](./Notes).
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Secret-Key Encryption | | The openssl library is compiled successfully |
-| Padding Oracle | | |
-| Hash Collision | | The program md5collgen is compiled successfully |
-| Hash Length Extension | | |
+| Secret-Key Encryption | :thumbsup: | Fully tested; no issue |
+| Padding Oracle | :question: | The docker image needs to be built |
+| Hash Collision | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
+| Hash Length Extension | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
 | Random Number | | |
 | RSA Public Key | | The program compiled successfully |
 | PKI | | |
