@@ -53,7 +53,7 @@ notes should be put inside the [Notes folder](./Notes).
 | Hash Length Extension | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
 | Random Number | | |
 | RSA Public Key | | The program compiled successfully |
-| PKI | | |
+| PKI | :thumbsup: | Fully tested; no issue |
 | TLS | | |
 
 
