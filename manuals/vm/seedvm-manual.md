@@ -148,7 +148,8 @@ for instructions. Or, you can just use a cloud storage service, such as
 Dropbox and Google Drive to share files between your VM and host machine.
 
 If you run the VM on your local computer, you can create a shared folder
-between your computer and the VM.
+between your computer and the VM. We recommend you turn off the VM before you do
+Step A. Change the setting while the VM is running may crash the VM.
 
 **Step A.** First you need to create a folder on your local computer (or using
 an existing folder). We will let the VirtualBox know that this folder
@@ -173,6 +174,19 @@ from `~/Share`.
 $ mkdir -p ~/Share
 $ sudo mount -t vboxsf VM_Shared ~/Share
 ```
+
+Nowadays, an issue -- On some latest version VirtualBox, the folder `VM_Shared` doesn't mount on `~/Share` anymore after restart the VM --  is reported. To solve this issue, we can create an auto-mount script under `/etc/profile.d` folder.
+![Shared Folder](./Figs/vm-create-script.png)
+
+Inside the script file, input the mount command we want to run when system initialized and save the file.
+```
+sudo mount -t vboxsf VM_Shared ~/Share
+```
+
+![Shared Folder](./Figs/vm-mount-command.png)
+
+Once VM is started, all scripts under `/etc/profile.d` folder will be executed. So system automatically mount the shared folder `VM_Shared` to this `Share` folder.
+
 
 **Important Note.** Please only use the shared folder to copy files
 between the VM and the host machine, and **never use it
