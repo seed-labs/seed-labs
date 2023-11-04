@@ -33,10 +33,10 @@ Attaching to host-10.9.0.6, host-10.9.0.7, host-10.9.0.5
 
 ## Stopping All the Containers
 
-To stop all the containers, we can use use `Ctrl-C` to
+To stop all the containers, we can use `Ctrl-C` to
 stop the `"docker-compose up"` command,
 that will stop all the containers, but without removing them.
-If we want to removing them, we can run Compose's `down` command.
+If we want to remove them, we can run Compose's `down` command.
 
 ``` shell
 Attaching to host-10.9.0.6, host-10.9.0.7, host-10.9.0.5
