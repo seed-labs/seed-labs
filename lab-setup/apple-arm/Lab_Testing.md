@@ -52,9 +52,9 @@ notes should be put inside the [Notes folder](./Notes).
 | Hash Collision | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
 | Hash Length Extension | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
 | Random Number | | |
-| RSA Public Key | | The program compiled successfully |
+| RSA Public Key | :thumbsup: | Full tested; no issue |
 | PKI | :thumbsup: | Fully tested; no issue |
-| TLS | | |
+| TLS | :thumbsup: | Tested the client and server; no issue |
 
 
 ## Others
