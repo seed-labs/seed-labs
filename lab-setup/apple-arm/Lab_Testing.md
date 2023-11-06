@@ -51,8 +51,8 @@ notes should be put inside the [Notes folder](./Notes).
 | Padding Oracle | :question: | The docker image needs to be built |
 | Hash Collision | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
 | Hash Length Extension | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
-| Random Number | | |
-| RSA Public Key | :thumbsup: | Full tested; no issue |
+| Random Number | :construction_worker: | Lab needs to be modified. See [notes](Notes/Crypto.md) |
+| RSA Public Key | :thumbsup: | Fully tested; no issue |
 | PKI | :thumbsup: | Fully tested; no issue |
 | TLS | :thumbsup: | Tested the client and server; no issue |
 

@@ -44,3 +44,9 @@ it does not break other labs.
 ```
 pip3 install flask==1.1.1
 ```
+
+## Random Number
+
+The way how `/dev/random` works on Apple silicon machines is quite different.
+I believe that most of the tasks can be made to work, but we need to modify the 
+lab description. 
