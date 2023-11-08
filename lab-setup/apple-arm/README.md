@@ -53,7 +53,7 @@ one for ARM. To use the same tag for both AMD64 and ARM64,
 we can use the multi-arch build approach.
 The following command actually builds three images, one for each platform.
 These images share the same tag. When users pull the image from the DockerHub, 
-they can pull one specific to their platform. 
+they can pull one specific to their platform. See our script `build.sh`. 
 
 ```
 docker buildx build --push \
