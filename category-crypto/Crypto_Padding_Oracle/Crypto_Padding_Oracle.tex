@@ -101,6 +101,9 @@ For some block ciphers, when the size of a plaintext is not a multiple
 of the block size, padding may be required.
 The PKCS\#5 padding scheme is widely used by many block
 ciphers (see Chapter 21.4 of the SEED book for details).
+However, PKCS\#5 is only defined for block sizes of 8 bytes or less.
+This proves problematic for ciphers like AES, which have block sizes of 16 bytes or more.
+To fix this issue, the PKCS\#7 padding scheme was invented.
 We will conduct the following experiments to
 understand how this type of padding works.
 
