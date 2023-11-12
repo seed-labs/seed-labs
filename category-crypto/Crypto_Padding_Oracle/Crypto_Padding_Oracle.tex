@@ -101,8 +101,8 @@ For some block ciphers, when the size of a plaintext is not a multiple
 of the block size, padding may be required.
 The PKCS\#5 padding scheme is widely used by many block
 ciphers (see Chapter 21.4 of the SEED book for details).
-However, PKCS\#5 is only defined for block sizes of 8 bytes or less.
-This proves problematic for ciphers like AES, which have block sizes of 16 bytes or more.
+However, PKCS\#5 is only defined for block sizes of 8 bytes.
+This proves problematic for block ciphers which have block sizes longer than 8 bytes, like AES.
 To fix this issue, the PKCS\#7 padding scheme was invented.
 We will conduct the following experiments to
 understand how this type of padding works.
@@ -143,7 +143,7 @@ $ xxd P_new
 Your job is to create three files, which contain 5 bytes, 10 bytes, and 16 bytes, respectively.
 Using the method above, please figure out what paddings are added to the three files.
 
-
+When decrypting the 16 byte file, why do we see a full block of padding? Why is this necessary?
 
 % *******************************************
 % SECTION
