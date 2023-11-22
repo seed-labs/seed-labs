@@ -1,0 +1,36 @@
+#!/bin/bash
+
+net() {
+    [ "$1" = "status" ] && {
+        ip -j link | jq -cr '.[] .operstate' | grep -q UP && echo "up" || echo "down"
+        return
+    }
+
+    ip -j li | jq -cr '.[] .ifname' | while read -r ifname; do ip link set "$ifname" "$1"; done
+}
+
+bgp() {
+    cmd="$1"
+    peer="$2"
+    [ "$cmd" = "bird_peer_down" ] && birdc dis "$2"
+    [ "$cmd" = "bird_peer_up" ] && birdc en "$2"
+}
+
+while read -sr line; do {
+    id="`cut -d ';' -f1 <<< "$line"`"
+    cmd="`cut -d ';' -f2 <<< "$line"`"
+
+    output="no such command."
+
+    [ "$cmd" = "net_down" ] && output="`net down 2>&1`"
+    [ "$cmd" = "net_up" ] && output="`net up 2>&1`"
+    [ "$cmd" = "net_status" ] && output="`net status 2>&1`"
+    [ "$cmd" = "bird_list_peer" ] && output="`birdc s p | grep --color=never BGP 2>&1`"
+
+    [[ "$cmd" == "bird_peer_"* ]] && output="`bgp $cmd 2>&1`"
+
+    printf '_BEGIN_RESULT_'
+    jq -Mcr --arg id "$id" --arg return_value "$?" --arg output "$output" -n '{id: $id | tonumber, return_value: $return_value | tonumber, output: $output }'
+    printf '_END_RESULT_'
+}; done
+

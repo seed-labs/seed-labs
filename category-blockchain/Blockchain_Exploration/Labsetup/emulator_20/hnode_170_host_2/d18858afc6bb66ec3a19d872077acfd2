@@ -1,0 +1,10 @@
+#!/bin/bash
+last_pid=0
+while read -sr expr; do {
+    [ "$last_pid" != 0 ] && kill $last_pid 2> /dev/null
+    [ -z "$expr" ] && continue
+    tcpdump -e -i any -nn -p -q "$expr" &
+    last_pid=$!
+}; done
+[ "$last_pid" != 0 ] && kill $last_pid
+
