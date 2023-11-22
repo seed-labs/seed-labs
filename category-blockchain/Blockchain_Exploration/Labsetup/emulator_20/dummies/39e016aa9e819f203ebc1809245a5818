@@ -1,2 +1,0 @@
-FROM handsonsecurity/seedemu-multiarch-router:buildx-latest
-

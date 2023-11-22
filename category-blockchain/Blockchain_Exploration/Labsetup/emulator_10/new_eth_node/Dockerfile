@@ -1,3 +1,0 @@
-FROM handsonsecurity/seedemu-ethereum
-
-

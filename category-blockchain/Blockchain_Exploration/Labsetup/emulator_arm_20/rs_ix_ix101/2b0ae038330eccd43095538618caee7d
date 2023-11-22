@@ -1,4 +1,0 @@
-router id 10.101.0.101;
-protocol device {
-}
-
