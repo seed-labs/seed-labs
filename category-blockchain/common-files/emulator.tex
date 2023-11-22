@@ -1,0 +1,113 @@
+
+
+\paragraph{Download the emulator files.}
+Please download the \texttt{Labsetup.zip} file from the web page, and
+unzip it. You will get the emulator files. 
+The emulator consists of a number of container files, which are stored 
+in the \path{Labsetup/emulator_*} folders. The \texttt{emulator\_NN}
+folders are for AMD64 machines, while the \texttt{emulator\_arm\_NN}
+are for the Apple silicon machines. The number 
+\texttt{NN} represents the number of nodes on the blockchain network:
+students can choose the smaller one if the RAM given for their virtual 
+machine is less than 4GB. 
+
+
+To run the emulator, we 
+only need these container files. These files are generated using
+the Python code stored in the \path{Labsetup/emulator_code} folder. 
+Unless you want to modify the emulator files, you do not 
+need to run the code in this folder (you need to 
+install the SEED Emulator library from the GitHub to run the code). 
+Instructors who would like to customize the emulator can modify the Python
+code and generate their own emulator files.
+
+For the sake of simplicity, the blockchain running inside the emulator
+uses the Proof-of-Authority (PoA) consensus protocol, instead of the
+Proof-of-Stake protocol used in the MAINET. 
+The activities conducted in this lab are not dependent on 
+any specific consensus protocol.
+
+
+\paragraph{Start the emulator.}
+Go to the \texttt{emulator} folder, and run the following docker commands
+to build and start the containers. The commands listed below are aliases 
+created on the SEED VM.
+If you are not using the SEED VM, you can use
+the original commands. 
+
+\begin{lstlisting}
+$ dcbuild       # Alias for: docker-compose build
+$ dcup          # Alias for: docker-compose up
+\end{lstlisting}
+
+We recommend that you run the emulator inside
+the provided SEED Ubuntu 20.04 VM, but doing it in a generic Ubuntu 20.04 
+operating system
+should not have any problem, as long as the docker software is installed.
+For newer operating system version, the \texttt{docker-compose} command 
+has already been phased out; it is integrated into the \texttt{docker}
+command, and you can run it using \texttt{"docker compose"},
+instead of \texttt{docker-compose}.  
+Readers can find the docker manual from
+\href{https://github.com/seed-labs/seed-labs/blob/master/manuals/docker/SEEDManual-Container.md}
+{\underline{this link}}.
+If this is the first time you set up a SEED lab environment
+using containers, it is very important that you read 
+the user manual. 
+
+
+
+
+All the containers will be running in the background. To run
+commands on a container, we often need to get a shell on
+that container. We first need to use the \texttt{"docker ps"}  
+command to find out the ID of the container, and then
+use \texttt{"docker exec"} to start a shell on that 
+container. We have created aliases for them in
+the \texttt{.bashrc} file.
+
+\begin{lstlisting}
+$ dockps        // Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
+$ docksh <id>   // Alias for: docker exec -it <id> /bin/bash
+
+// The following example shows how to get a shell inside hostC
+$ dockps
+b1004832e275  hostA-10.9.0.5
+0af4ea7a3e2e  hostB-10.9.0.6
+9652715c8e0a  hostC-10.9.0.7
+
+$ docksh 96
+root@9652715c8e0a:/#  
+
+// Note: If a docker command requires a container ID, you do not need to 
+//       type the entire ID string. Typing the first few characters will 
+//       be sufficient, as long as they are unique among all the containers. 
+\end{lstlisting}
+
+
+
+
+
+If you encounter problems when setting up the lab environment, 
+please read the ``Common Problems'' section of the manual
+for potential solutions.
+
+
+\paragraph{Stop the emulator.} 
+To stop the emulator, we just need to stop all the containers. 
+We can go to the terminal where we run the 
+\texttt{"docker-compose up"} command, type \texttt{Ctrl-C}.
+That will stop all the containers, but without removing them, i.e., all the data 
+in the containers are still preserved, and they can be resumed by 
+running \texttt{"docker-compose up"} again. 
+If we want to remove them, we can run the \texttt{"docker-compose down"}
+command. Another way to do this is to go to a different terminal (but still in the
+same \texttt{emulator} folder) and directly run this command.  
+That will stop and removing all the containers.
+
+\begin{lstlisting}
+$ dcdown        # Alias for: docker-compose down
+\end{lstlisting}
+
+
+
