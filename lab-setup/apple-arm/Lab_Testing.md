@@ -41,7 +41,7 @@ notes should be put inside the [Notes folder](./Notes).
 | DNS Infrastructure | | |
 | DNSSEC | | |
 | BGP | :thumbsup: | Full tested; no issue |
-| Morris Worm | | |
+| Morris Worm | :construction_worker: | See [notes](Notes/Network_Security.md) |
 
 ## Crypto Lab 
 

@@ -35,3 +35,22 @@ Go to `Setting` -> `Privacy & Security`, and go to `DNS over HTTPS`, and select
 
 The `dmesg` command in Ubuntu 22.04 requires the root privilege. This is 
 different from Ubuntu 20.04.
+
+
+## Morris Worm Lab
+
+The Internet emulator works, but since the attack depends on the 
+buffer overflow attack, the shellcode in the solution needs to
+change. We are still working on revising 
+the buffer overflow attack lab for ARM. When that is done,
+this lab should work. Here are some minor issues:
+
+- On Apple VM, we need to use `docker compose` instead of `docker-compose`.
+- On Apple VM, building the images directly using `dcbuild`
+  has a problem, but if we build 10 images at a time (like the command
+  in `z_start.sh`, there is no problem.
+- On Apple VM, we don't need the `z_start.sh` to start the containers.
+  Simply running `dcup` should work. 
+- On AMD machine, it is opposite: `dcbuild` is fine, but we need to use 
+  `z_start.sh` to start the containers. 
+
