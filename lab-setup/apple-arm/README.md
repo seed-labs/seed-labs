@@ -58,7 +58,7 @@ they can pull one specific to their platform. See our script `build.sh`.
 ```
 docker buildx build --push \
        --platform linux/arm64/v8,linux/amd64 \ 
-       --tag handsonsecurity/seed-ubuntu-multi:large  .
+       --tag handsonsecurity/seed-ubuntu:large-multi  .
 ```
 
 

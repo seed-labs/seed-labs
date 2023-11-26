@@ -57,11 +57,18 @@ notes should be put inside the [Notes folder](./Notes).
 | TLS | :thumbsup: | Tested the client and server; no issue |
 
 
+## Blockchain
+
+| Lab | Status | Notes |
+| --- | --- | --- |
+| Blockchain Exploration | :thumbsup: | Fully tested; no issue |
+| Smart Contract Lab | :thumbsup: | Fully tested; no issue |
+| Blockchain: Reentrancy | | | 
+
+
 ## Others
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Blockchain: Reentrancy | | | 
 | Meltdown | x | Will not port | 
 | Spectre  | x | Will not port | 
-| | | | 
