@@ -63,7 +63,7 @@ docker buildx build --push \
 
 
 Note: for now, let's separate the `amd64` and `arm64` images;
-otherwise, we will have rebuild all the images. 
+otherwise, we will have to rebuild all the images. 
 There is a concern that some of the software may end up using a 
 newer version, and might break some labs. Since most 
 users use the `amd64` images, to avoid any risk, we will 

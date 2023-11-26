@@ -40,7 +40,7 @@ notes should be put inside the [Notes folder](./Notes).
 | DNS Rebinding     | :thumbsup: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
 | DNS Infrastructure | | |
 | DNSSEC | | |
-| BGP | | |
+| BGP | :thumbsup: | Full tested; no issue |
 | Morris Worm | | |
 
 ## Crypto Lab 
