@@ -86,6 +86,10 @@ so they can focus on the worm part in this lab.
 \seedenvironmentB
 \nodependency
 
+This lab does not work on the Apple silicon machines (M1/M2 chips) yet,
+because the shellcode used in the attack is x86 based. Efforts are being 
+made to support the Apple machines. Meanwhile, students with such
+Apple machines should do that using a cloud machine. 
 
 % -------------------------------------------
 % SUBSECTION
@@ -115,13 +119,13 @@ help students get familiar with the emulator.
 
 \input{../../common-files/emulator/map.tex}
 
-\paragraph{Note:} At this point, we are still actively improving
-the Map application, so the map container is not included 
-in the internet emulator folder. Instead, it is included 
-in a separate folder, the \texttt{Labsetup/map} folder. 
-Please go to this folder, run \texttt{dcbuild} and \texttt{dcup}
-to build and start the Map container. Then you can access the Map
-using the URL mentioned above. 
+%\paragraph{Note:} At this point, we are still actively improving
+%the Map application, so the map container is not included 
+%in the internet emulator folder. Instead, it is included 
+%in a separate folder, the \texttt{Labsetup/map} folder. 
+%Please go to this folder, run \texttt{dcbuild} and \texttt{dcup}
+%to build and start the Map container. Then you can access the Map
+%using the URL mentioned above. 
 
 % -------------------------------------------
 % SUBSECTION
@@ -139,17 +143,17 @@ using the URL mentioned above.
 \section{Task 1: Get Familiar with the Lab Setup } 
 
 We provide two setups for this lab, 
-one with 275 containers (called mini internet)
-and the other with 15 containers (called nano internet).
+one with 275 containers (called mini Internet)
+and the other with 15 containers (called nano Internet).
 The larger one is used for the final task (Task 6). For 
 all others, we will use the smaller one, as it is much
 quicker to set up. When everything works, we will
-switch to the mini internet setup. In this task, we will
-only start the nano internet. Instructions on how to 
-start the mini internet will be given in Task 6.
+switch to the mini Internet setup. In this task, we will
+only start the nano Internet. Instructions on how to 
+start the mini Internet will be given in Task 6.
 
 
-The nano internet has three autonomous systems (ASes), 
+The nano Internet has three autonomous systems (ASes), 
 which peer with one another at a single Internet exchange.
 Each AS has one internal network, and 
 its network prefix is \texttt{10.X.0.0/24}, 
@@ -163,7 +167,7 @@ Each network has five hosts, with the host IDs ranging from
   \begin{center}
     \includegraphics[width=0.8\textwidth]{\wormFigs/nano-internet.jpg}
   \end{center}
-  \caption{The nano internet}
+  \caption{The nano Internet}
   \label{fig:nano-internet}
 \end{figure}
  
@@ -171,14 +175,8 @@ Each network has five hosts, with the host IDs ranging from
 Go to the \texttt{Labsetup/internet-nano} folder, 
 follow the instruction in Section~\ref{sec:emulator} to 
 start the containers (i.e. use \texttt{dcbuild} to build and 
-\texttt{dcup} to start). This will start the nano internet
-emulator. We have also implemented a visualization tool
-to help visualize the networks in the emulator. The tool
-is installed in a separate container inside the 
-\texttt{Labsetup/map} folder.  
-Go to this folder, run \texttt{dcbuild} and \texttt{dcup}
-to bring it up.
-Once the emulator and the Map have been started, 
+\texttt{dcup} to start). This will start the nano Internet
+emulator. Once the emulator starts,
 point the browser to \url{http://localhost:8080/map.html}, and 
 you can see the network diagram (see Figure~\ref{fig:nano-internet}). 
 
@@ -640,16 +638,16 @@ else:
 \paragraph{Lab tasks.}
 After finishing this step, students need to demonstrate that their worms can 
 spread from one computer to another, and eventually reach the entire 
-nano internet. In your initial attack, you should only release the worm 
+nano Internet. In your initial attack, you should only release the worm 
 on one of the nodes, instead of keep
 attacking the other nodes from your attack machine. We want the 
 worm to attack others automatically. 
 
 Let the attack continue for some time, and keep a close eye 
 on the CPU and memory usages. Once the CPU usage hits 100
-percent, shut down the nano internet (using \texttt{dcdown} or
+percent, shut down the nano Internet (using \texttt{dcdown} or
 \texttt{"docker-compose down"}). If you wait too long, your VM
-may freeze, i.e., you have successfully brought down the internet. 
+may freeze, i.e., you have successfully brought down the Internet. 
 
 You can use the \texttt{htop} command to observe the resource usages. If
 your machine does not have this command, you can easily install it 
@@ -726,9 +724,9 @@ If the connection succeeds, the program will stop the attack.
 % *******************************************
 \section{Task 6: Releasing the Worm on the Mini Internet} 
 
-In this task, we will switch to a larger internet, the mini internet. 
+In this task, we will switch to a larger Internet, the mini Internet. 
 This task is more for enhanced satisfaction, as seeing
-how the worm spread in a more realistic emulated internet is more 
+how the worm spread in a more realistic emulated Internet is more 
 satisfactory. 
 
 For this setup, at least 8GB of RAM and 2 cores are required 
@@ -744,13 +742,13 @@ or a cloud machine. In our class at the Syracuse University,
 we did encounter this situation. We just asked these students (only a small number)
 to submit their code, and we (the TA or instructor) tested the attack 
 code against our own emulator to see the result. Students can 
-still use the nano internet setup to do their preliminary testing. 
+still use the nano Internet setup to do their preliminary testing. 
 
 %Students should not be penalized if their computers are not powerful enough.
 %Instructors can also choose to make this task optional, as it is 
 %not essential; its primary goal is to 
 %provide an enhanced experience (it does make the attack much more 
-%fun than doing it on the nano internet). 
+%fun than doing it on the nano Internet). 
 
 
 
@@ -814,7 +812,7 @@ $ dockps | grep as153
   \begin{center}
     \includegraphics[width=0.5\textwidth]{\wormFigs/mini-internet.jpg}
   \end{center}
-  \caption{The mini internet}
+  \caption{The mini Internet}
   \label{fig:mini-internet}
 \end{figure}
  
@@ -827,8 +825,8 @@ $ dockps | grep as153
 % -------------------------------------------
 \subsection{Launch the Attack} 
 
-The attack code used on the nano internet should be able to 
-work directly in the mini internet, 
+The attack code used on the nano Internet should be able to 
+work directly in the mini Internet, 
 although students may need to change their random number
 generation to cover the IP addresses in a larger range. 
 The following facts can be used: 
