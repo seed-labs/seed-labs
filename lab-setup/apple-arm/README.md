@@ -18,7 +18,9 @@ Other than the cloud approach, we should start looking at
 other approaches. There are two possible virtualization
 products:
 
-- Parallel: this one is not free.
+- Parallels: this one is not free.
+  - If you have a Parallels subscription, you may follow the instructions provided in [src-vm](../ubuntu20.04-vm/src-vm/README.md)
+  - Comment out the virtualbox specific scripts from [`main.sh`](../ubuntu20.04-vm/src-vm/main.sh)(`# Add guest addition`)before use.
 - VMWare Fusion Player: this one is free. We choose to use this software.
 
 
