@@ -9,11 +9,11 @@ notes should be put inside the [Notes folder](./Notes).
 | Lab | Status | Notes |
 | --- | --- | --- |
 | Set-UID                   | :thumbsup: | Fully tested |
-| Buffer-Overflow (setuid)  | :construction_worker:  | Lab needs to be revised for arm64 |
-| Buffer-Overflow (server)  | :construction_worker:  | Lab needs to be revised for arm64 |
-| Return-to-Libc  |      | Lab needs to be revised for arm64 |
-| Format String   |      | Lab needs to be revised for arm64 |
-| Shellcode       |     |  Lab needs to be revised for arm64 |
+| Buffer-Overflow (setuid)  | :construction_worker:  | See [notes](Notes/Software_Security.md) |
+| Buffer-Overflow (server)  | :construction_worker:  | See [notes](Notes/Software_Security.md) |
+| Return-to-Libc  | :construction_worker:   | See [notes](Notes/Software_Security.md)|
+| Format String   | :construction_worker:   | See [notes](Notes/Software_Security.md)|
+| Shellcode       | :construction_worker:   | Design a new one. See [notes](Notes/Shellcode.md) |
 | Dirty Cow       |  x  | Will not port |
 | Race Condition  | :thumbsup: |  Fully tested      |
 | CSRF            | :thumbsup: | Tested the lab setup |
