@@ -283,9 +283,9 @@ sub  x1,  x11, x12   // x1  = x11 - x12 = x19 + 8
 
 ## The complete code 
 
-The complele code can be found from [./mysh.s](mysh.s). Its machine 
-code can be found from [./machine_code.txt](machine_code.txt). 
-There is no zero in the machine. We can compile the code and run it.
+The complele code can be found in [mysh.s](./mysh.s). Its machine 
+code can be found in [machine_code.txt](./machine_code.txt). 
+There is no zero in the machine code. We can compile the code and run it.
 You should be able to get a new shell. 
 
 ```
