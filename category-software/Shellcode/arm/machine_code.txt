@@ -1,0 +1,35 @@
+
+Disassembly of section .text:
+
+0000000000400078 <_start>:
+  400078:	1001036b 	adr	x11, 4020e4 <__end__+0x2004>
+  40007c:	d284040c 	mov	x12, #0x2020                	// #8224
+  400080:	cb0c0173 	sub	x19, x11, x12
+  400084:	4a090129 	eor	w9, w9, w9
+  400088:	d28000e8 	mov	x8, #0x7                   	// #7
+  40008c:	38286a69 	strb	w9, [x19, x8]
+
+0000000000400090 <store_args>:
+  400090:	d2800108 	mov	x8, #0x8                   	// #8
+  400094:	aa1303e9 	mov	x9, x19
+  400098:	f8286a69 	str	x9, [x19, x8]
+  40009c:	d2800208 	mov	x8, #0x10                  	// #16
+  4000a0:	ca090129 	eor	x9, x9, x9
+  4000a4:	f8286a69 	str	x9, [x19, x8]
+
+00000000004000a8 <execve>:
+  4000a8:	aa1303e0 	mov	x0, x19
+  4000ac:	b101626b 	adds	x11, x19, #0x58
+  4000b0:	d2800a0c 	mov	x12, #0x50                  	// #80
+  4000b4:	cb0c0161 	sub	x1, x11, x12
+  4000b8:	aa1f03e2 	mov	x2, xzr
+  4000bc:	d2801ba8 	mov	x8, #0xdd                  	// #221
+  4000c0:	d40266e1 	svc	#0x1337
+
+00000000004000c4 <two>:
+  4000c4:	6e69622f 	.word	0x6e69622f
+  4000c8:	2a68732f 	.word	0x2a68732f
+  4000cc:	aaaaaaaa 	.word	0xaaaaaaaa
+  4000d0:	aaaaaaaa 	.word	0xaaaaaaaa
+  4000d4:	bbbbbbbb 	.word	0xbbbbbbbb
+  4000d8:	bbbbbbbb 	.word	0xbbbbbbbb
