@@ -62,12 +62,8 @@ the C program language. The lab covers the following security-related topics:
 
 
 \paragraph{Readings and videos.}
-Detailed coverage of the public-key cryptography can be found in the following:
-
-\begin{itemize}
-\item Chapter 23 of the SEED Book, \seedbook
-\end{itemize}
-
+Detailed coverage of the public-key cryptography can be found in 
+the SEED books and the SEED videos on Udemy.
 
 \paragraph{Lab environment.} \seedenvironmentC
 
@@ -215,7 +211,9 @@ BN_mod_inverse(b, a, n, ctx);
 
 \subsection{A Complete Example}
 
-We show a complete example in the following. In this example, we
+We show a complete example in the following. The program can be 
+found from the \texttt{Labsetup.zip} file that you can download
+from the lab's webpage. In this example, we
 initialize three BIGNUM variables, \texttt{a}, \texttt{b}, and \texttt{n};
 we then compute $a*b$ and \texttt{($a^b$ mod n)}.
 
@@ -277,11 +275,6 @@ $ gcc bn_sample.c -lcrypto
 
 \section{Lab Tasks}
 
-
-To avoid mistakes, please avoid manually typing the numbers used in the lab tasks. 
-Instead, copy and paste them from this PDF file. 
-
-
 \subsection{Task 1: Deriving the Private Key}
 
 Let \texttt{p}, \texttt{q}, and \texttt{e} be three prime numbers. Let \texttt{n = p*q}.
@@ -309,7 +302,8 @@ to convert a plain ASCII string to a hex string.
 
 SEED Labs 2.0 VM (Ubuntu 20.04.2 LTS):
 \begin{lstlisting}
-$ python -c 'print("A top secret!".encode("utf-8").hex())'
+$ python3 -c 'print("A top secret!".encode("utf-8").hex())'
+
 4120746f702073656372657421
 \end{lstlisting}
 
@@ -354,7 +348,7 @@ a plain ASCII string.
 You can use the following \texttt{python} command to convert
 a hex string back to to a plain ASCII string (works in both VM versions).
 \begin{lstlisting}
-$ python -c 'print(bytearray.fromhex("4120746f702073656372657421").decode())'
+$ python3  -c 'print(bytes.fromhex("4120746f702073656372657421").decode("utf-8"))'
 A top secret!
 \end{lstlisting}
 

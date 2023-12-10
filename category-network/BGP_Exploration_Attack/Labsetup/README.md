@@ -9,5 +9,6 @@ the `output` folder.
 ## Container Files
 
 The container files are stored in the 
-`output` folder. 
+`output` folder. The container images work
+for both AMD and ARM machines. 
 

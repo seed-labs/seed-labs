@@ -1,25 +1,14 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-from seedemu.layers import Base, Routing, Ebgp, Ibgp, Ospf, PeerRelationship, Dnssec
-from seedemu.services import WebService, DomainNameService, DomainNameCachingService
-from seedemu.services import CymruIpOriginService, ReverseDomainNameService, BgpLookingGlassService
-from seedemu.compiler import Docker, Graphviz
-from seedemu.hooks import ResolvConfHook
-from seedemu.core import Emulator, Service, Binding, Filter
-from seedemu.layers import Router
-from seedemu.raps import OpenVpnRemoteAccessProvider
-from seedemu.utilities import Makers
-
+from seedemu import *
 from typing import List, Tuple, Dict
 
 
 ###############################################################################
 emu     = Emulator()
 base    = Base()
-routing = Routing()
 ebgp    = Ebgp()
-ibgp    = Ibgp()
 web     = WebService()
 
 
@@ -161,9 +150,9 @@ ebgp.addPrivatePeerings(105, [3],  [190], PeerRelationship.Provider)
 
 # Add layers to the emulator
 emu.addLayer(base)
-emu.addLayer(routing)
+emu.addLayer(Routing())
 emu.addLayer(ebgp)
-emu.addLayer(ibgp)
+emu.addLayer(Ibgp())
 emu.addLayer(Ospf())
 emu.addLayer(web)
 
@@ -171,7 +160,6 @@ emu.addLayer(web)
 #emu.dump('base-component.bin')
 
 emu.render()
-
-emu.compile(Docker(selfManagedNetwork=True, internetMapEnabled=True ), './output')
-
+docker = Docker(selfManagedNetwork=True, internetMapEnabled=True)
+emu.compile(docker, './output', override = True)
 

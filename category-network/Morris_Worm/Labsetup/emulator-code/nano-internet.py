@@ -22,7 +22,6 @@ def makeStubAs(emu: Emulator, base: Base, asn: int, exchange: int, hosts_total: 
        name = 'host_{}'.format(counter)
        host = stub_as.createHost(name)
        host.joinNetwork(network)
-       host.appendStartCommand('rm -f /root/.bashrc && cd /bof && ./server &')
 
 
 #n = len(sys.argv)
@@ -64,10 +63,18 @@ emu.addLayer(ebgp)
 emu.render()
 
 # Use the "morris-worm-base" custom base image
-docker = Docker()
+docker = Docker(internetMapEnabled=True)
 docker.addImage(DockerImage('morris-worm-base', [], local = True))
-docker.forceImage('morris-worm-base')
-emu.compile(docker, './output', override = True)
+
+# Change the base for all the host nodes 
+for stub_as in [151, 152, 153]:
+   hosts = base.getAutonomousSystem(stub_as).getHosts()
+   for hostname in hosts:
+       host = base.getAutonomousSystem(stub_as).getHost(hostname)
+       docker.setImageOverride(host, 'morris-worm-base')
+       host.appendStartCommand('rm -f /root/.bashrc && cd /bof && ./server &')
+
+emu.compile(docker, './output2', override = True)
 
 # Copy the base container image to the output folder
-os.system('cp -r container_files/morris-worm-base ./output')
+os.system('cp -r container_files/morris-worm-base ./output2')

@@ -246,16 +246,27 @@ We have disabled the countermeasure for this lab, so there is no need to include
 parameters in the forged requests. 
 
 
-\paragraph{Important note:} If you use a cloud VM to do this lab, the Firefox version
-in your VM may be quite recent. Some changes have been made in the browser that makes its
-behavior different from the older versions. In the more recent versions, 
-using the image tag to forge an HTTP GET request will not succeed in the 
-attack.  We have not figured out exactly the reason yet, 
-but we can still make the attack successful. One approach is to 
-use the same approach as the one used in forging the POST request, i.e.,
-using JavaScript to send out a GET request.
-If you are using SEEDUbuntu 20.04 VM, the image tag approach still works, 
-unless you upgrade the Firefox to the more recent version. 
+\paragraph{Important note:} If you use a cloud VM or other non-SEED VMs, 
+the Firefox version in your VM may be quite recent, and some restrictions
+may be placed on cross-site cookies. 
+In the more recent versions, using the image tag to forge an HTTP GET request will not 
+succeed in the attack. This is because the browser blocks the cross-site cookies 
+for this type of request. If you encounter this situation, you can choose
+one of the following methods to make the attack work:
+
+\begin{itemize}
+\item Instead of using the image tag, use another way to generate the GET request.
+For example, in the next task, we use JavaScript to forge a POST request.
+We can use the same method to forge a GET request. 
+
+\item Change the Firefox setting to lift the restriction. Figuring out which
+restriction should be lifted is left to the students as part of the task. 
+The restriction is set in the \texttt{Privacy \& Security} page, which
+can be displayed by typing \texttt{about:preferences\#privacy} in the URL field. 
+\end{itemize}
+ 
+If you are using our provided SEEDUbuntu 20.04 VM, the image tag approach still works, 
+unless you have upgraded the Firefox to the more recent version. 
 
 % -------------------------------------------
 % SUBSECTION
