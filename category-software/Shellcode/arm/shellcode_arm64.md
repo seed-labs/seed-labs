@@ -1,4 +1,5 @@
-# Writing ARM64 Shellcode (in Ubuntu)
+Writing ARM64 Shellcode (in Ubuntu)
+===================================
 Copyright &copy; Wenliang Du.
 
 In this manual, we describe how to write shellcode 
@@ -6,8 +7,18 @@ on the arm64 machine. The code in this manual
 is written for Ubuntu operating system 
 running on an Apple M1/M2 machine. 
 
+*  [The main idea and challenges](#idea)
+*  [Get the addresses of the "/bin/sh" string and argv[]](#getaddress)
+*  [Problem: we have a zero in the shellcode](#problem)
+*  [Rethink about the essence of the "detour" approach](#rethink)
+*  [Finish the rest](#finish)
+   *  [Put a zero byte at the end of the "/bin/sh" string](#endofstring)
+   *  [Construct the argv[] array](#argv)
+   *  [Invoke the execve() system call](#execve)
+*  [The complete code](#completecode)
 
-## The main idea and challenges 
+
+<h2 id="idea">The main idea and challenges</h2> 
 
 To be able to have a direct control over what instructions 
 to use in a shellcode, the best way to write a shellcode
@@ -43,7 +54,7 @@ There are two main challenges in writing a shellcode.
   that an ideal shellcode should not contain any zero. 
 
 
-## Get the addresses of the "/bin/sh" string and argv[]
+<h2 id="getaddress">Get the addresses of the "/bin/sh" string and argv[]</h2>
 
 The main challenge of the shellcode is to get the address of 
 the `"/bin/sh"` string and the `argv[]` array. There are two
@@ -101,7 +112,7 @@ are stored. Mission accomplished: we have obtained the address
 of the data! 
 
 
-## Unfortunately, we have a zero in the shellcode
+<h2 id="problem">Problem: we have a zero in the shellcode</h2>
 
 Things are not that easy. Let's first we compile the code and then use 
 the `objdump` to display the machine code. The commands
@@ -144,7 +155,7 @@ shellcode; it may become to large for the target buffer in attacks. Unless someb
 can think about a better solution, we will abandon this "detour" approach. 
 
 
-## Rethink about the essence of the "detour" approach 
+<h2 id="rethink">Rethink about the essence of the "detour" approach</h2> 
 
 The "detour" approach initially came from the x86 shellcode. The essence of this 
 approach is to get the PC register's value, because our data are stored in the 
@@ -194,14 +205,14 @@ If we show the machine code, we can see that there is no more zeros.
 ```
 
 
-## Finish the rest
+<h2 id="finish">Finish the rest</h2>
 
 At this point, we have solved the most difficult problem in writing 
 a shellcode, but we are not done. The good news is that the rest is 
 relatively easier. 
 
 
-### Put a zero byte at the end of the "/bin/sh" string 
+<h3 id="endofstring">Put a zero byte at the end of the "/bin/sh" string</h3> 
 
 All strings have to be terminated by a zero. However, we cannot 
 directly putting "/bin/sh\0" in our shellcode, because that 
@@ -234,7 +245,7 @@ sub  x8, x9, 2001  // x8 = x9 - 2001 = 7
 ```
 
 
-### Construct the argv[] array
+<h3 id="argv">Construct the argv[] array</h3> 
 
 We also need to construct the `argv[]` array for the `execve()` 
 system call. In our case, the array contains only two elements: 
@@ -259,7 +270,7 @@ mov x8,  16
 str xzr, [x19, x8]   // Save  0 to argv[1] at x19 + 16
 ```
 
-### Invoke the execve() system call 
+<h3 id="execve">Invoke the execve() system call</h3> 
 
 Now everything is set up and we are ready to invoke 
 the `execve()` system call. This involves setting 
@@ -294,7 +305,7 @@ sub  x1,  x11, x12   // x1  = x11 - x12 = x19 + 8
 ```
 
 
-## The complete code 
+<h2 id="completecode">The complete code</h2> 
 
 The complete code can be found in [mysh.s](./mysh.s). Its machine 
 code can be found in [machine_code.txt](./machine_code.txt). 
