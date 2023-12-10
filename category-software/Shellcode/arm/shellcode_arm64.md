@@ -67,8 +67,8 @@ typical approaches.
 - Approach 2: Dynamically construct the string and the `argv[]`
   array on the stack, and then use the stack pointer register to
   get their addresses. Although we will not discuss this approach
-  in this document, a sample code `mysh_stack.s` is provided with 
-  detailed comments. 
+  in this document, a sample code [mysh_stack.s](./mysh_stack.s) 
+  is provided with detailed comments. 
 
 Both approaches are similar in terms of difficulties if 
 we only want to execute the "/bin/sh" program, which does not 
