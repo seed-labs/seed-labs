@@ -14,7 +14,7 @@ is to use an assembly language.
 The main purpose of shellcode is to actually quite simple:
 to run a shell program such as `/bin/sh`. 
 This can be achieved by invoking the `execve() system call. 
-We need to pass three arguments to this system: 
+We need to pass three arguments to this system call: 
 `execve("/bin/sh", argv[], 0)`. 
 In the arm64 architecture, these 3 arguments are 
 passed through the `x0`, `x1`, and `x2` registers. 
