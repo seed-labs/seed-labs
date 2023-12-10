@@ -1,4 +1,5 @@
 # Writing ARM64 Shellcode (in Ubuntu)
+Copyright &copy; Wenliang Du.
 
 In this manual, we describe how to write shellcode 
 on the arm64 machine. The code in this manual
@@ -13,7 +14,7 @@ to use in a shellcode, the best way to write a shellcode
 is to use an assembly language. 
 The main purpose of shellcode is to actually quite simple:
 to run a shell program such as `/bin/sh`. 
-This can be achieved by invoking the `execve() system call. 
+This can be achieved by invoking the `execve()` system call. 
 We need to pass three arguments to this system call: 
 `execve("/bin/sh", argv[], 0)`. 
 In the arm64 architecture, these 3 arguments are 
@@ -48,22 +49,24 @@ The main challenge of the shellcode is to get the address of
 the `"/bin/sh"` string and the `argv[]` array. There are two
 typical approaches. 
 
-- Approach 1: Dynamically construct the string and the `argv[]`
-  array on the stack, and then use the stack pointer register to
-  get their addresses.
-
-- Approach 2: Store the data in the code segment, and then 
+- Approach 1: Store the data in the code segment, and then 
   get their address using the PC pointer, which points to the 
-  code segment. 
+  code segment. This document focuses on this approach. 
+
+- Approach 2: Dynamically construct the string and the `argv[]`
+  array on the stack, and then use the stack pointer register to
+  get their addresses. Although we will not discuss this approach
+  in this document, a sample code `mysh_stack.s` is provided with 
+  detailed comments. 
 
 Both approaches are similar in terms of difficulties if 
 we only want to execute the "/bin/sh" program, which does not 
-take any argument. However, the second approach is easier to 
-implement if the program takes multiple arguments. Therefore, 
-in this document, we will only use the second approach. 
+take any argument. However, the first approach is much easier to 
+implement if the program takes multiple arguments. 
 
 
-The skeleton of the code (called `mysh.s`) is listed below. 
+The skeleton of the code (called `mysh.s`) using the first approach
+is listed below. 
 
 ```
 _start:
@@ -293,7 +296,7 @@ sub  x1,  x11, x12   // x1  = x11 - x12 = x19 + 8
 
 ## The complete code 
 
-The complele code can be found in [mysh.s](./mysh.s). Its machine 
+The complete code can be found in [mysh.s](./mysh.s). Its machine 
 code can be found in [machine_code.txt](./machine_code.txt). 
 There is no zero in the machine code. We can compile the code and run it.
 You should be able to get a new shell. 
