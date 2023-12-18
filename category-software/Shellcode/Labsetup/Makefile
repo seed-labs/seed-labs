@@ -1,19 +1,18 @@
-TARGET = mysh mysh2 mysh_64
-  
-all: $(TARGET)
 
-mysh: mysh.s
-	nasm -f elf32 $@.s -o $@.o
-	ld -m elf_i386 $@.o -o $@
+all: hello mysh64 another_sh64 
 
-mysh2: mysh2.s
-	nasm -f elf32 $@.s -o $@.o
-	ld --omagic -m elf_i386 $@.o -o $@
+hello: hello.s
+	nasm -g -f elf64 -o $@.o $<
+	ld -o $@  $@.o
 
-mysh_64: mysh_64.s
-	nasm -f elf64 $@.s -o $@.o
-	ld $@.o -o $@
+mysh64: mysh64.s
+	nasm -g -f elf64 -o $@.o $<
+	ld --omagic -o $@  $@.o
+
+another_sh64: another_sh64.s
+	nasm -g -f elf64 -o $@.o $<
+	ld --omagic -o $@  $@.o
 
 clean:
-	rm -f *.o *.out $(TARGET)
+	rm -rf *.o mysh64 another_sh64 hello
 
