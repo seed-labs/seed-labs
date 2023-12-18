@@ -13,7 +13,7 @@ notes should be put inside the [Notes folder](./Notes).
 | Buffer-Overflow (server)  | :construction_worker:  | See [notes](Notes/Software_Security.md) |
 | Return-to-Libc  | :construction_worker:   | See [notes](Notes/Software_Security.md)|
 | Format String   | :construction_worker:   | See [notes](Notes/Software_Security.md)|
-| Shellcode       | :construction_worker:   | Design a new one. See [notes](Notes/Shellcode.md) |
+| Shellcode       | :thumbsup:   | Redesigned. See [notes](Notes/Shellcode.md) |
 | Dirty Cow       |  x  | Will not port |
 | Race Condition  | :thumbsup: |  Fully tested      |
 | CSRF            | :thumbsup: | Tested the lab setup |
