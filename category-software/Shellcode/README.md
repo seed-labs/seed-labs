@@ -1,6 +1,23 @@
 # Shellcode Lab
 
-## For Ubuntu 20.04
+## Update on December 2023
+
+We made a significant change to this lab. Here is the summary of the 
+changes:
+
+- Shellcode for arm64 is now supported, so students with Apple silicon
+  machines can also work on this lab.
+
+- Since arm64 does not support the 32-bit code, we decided to remove
+  the 32-bit code for amd64 as well, so the lab is consistent for 
+  both architectures. 
+
+- We also switch the focus: the previous focus was on the stack approach,
+  the new version is on the PC approach, as this approach is easier to 
+  write and more generic. 
+
+
+## For Ubuntu 20.04 (update on May 2020)
 
 Here is the summary of the changes made to the lab description
 and solutions:
