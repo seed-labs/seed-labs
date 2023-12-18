@@ -9,9 +9,9 @@ notes should be put inside the [Notes folder](./Notes).
 | Lab | Status | Notes |
 | --- | --- | --- |
 | Set-UID                   | :thumbsup: | Fully tested |
-| Buffer-Overflow (setuid)  | :construction_worker:  | See [notes](Notes/Software_Security.md) |
+| Buffer-Overflow (setuid)  | x  | Will not port. See [notes](Notes/Software_Security.md) |
 | Buffer-Overflow (server)  | :construction_worker:  | See [notes](Notes/Software_Security.md) |
-| Return-to-Libc  | :construction_worker:   | See [notes](Notes/Software_Security.md)|
+| Return-to-Libc  |  x   | Will not port. See [notes](Notes/Software_Security.md)|
 | Format String   | :construction_worker:   | See [notes](Notes/Software_Security.md)|
 | Shellcode       | :thumbsup:   | Redesigned. See [notes](../../category-software/Shellcode/README.md) |
 | Dirty Cow       |  x  | Will not port |
@@ -63,7 +63,7 @@ notes should be put inside the [Notes folder](./Notes).
 | --- | --- | --- |
 | Blockchain Exploration | :thumbsup: | Fully tested; no issue |
 | Smart Contract Lab | :thumbsup: | Fully tested; no issue |
-| Blockchain: Reentrancy | | | 
+| Blockchain: Reentrancy | :construction_worker: | | 
 
 
 ## Others
