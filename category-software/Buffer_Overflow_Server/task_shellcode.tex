@@ -1,0 +1,64 @@
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 1: Get Familiar with the Shellcode}
+
+The ultimate goal of buffer-overflow attacks is to inject
+malicious code into the target program, so the code can be
+executed using the target program's privilege.
+Shellcode is widely used in most code-injection attacks.
+Let us get familiar with it in this task.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/guidelines/shellcode.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\ifdefined\arm
+You can find the generic shellcode in the \texttt{shellcode} folder.
+Inside, you will see a Python program called \texttt{shellcode\_64.py}. 
+It will write the binary shellcode to \texttt{codefile\_64}.
+You can then use 
+\texttt{call\_shellcode} to execute the shellcode in it. 
+
+\begin{lstlisting}
+// Generate the shellcode binary 
+$ ./shellcode_64.py    (*@\pointright{}@*) generate codefile_64
+
+// Compile call_shellcode.c
+$ make                 (*@\pointright{}@*) generate a64.out 
+
+// Test the shellcode 
+$ a64.out              (*@\pointright{}@*) execute the shellcode in codefile_64
+\end{lstlisting}
+
+\else 
+You can find the generic shellcode in the \texttt{shellcode} folder.
+Inside, you will see two Python programs, 
+\texttt{shellcode\_32.py} and \texttt{shellcode\_64.py}. 
+They are for 32-bit and 64-bit shellcode, respectively. 
+These two Python programs will
+write the binary shellcode to \texttt{codefile\_32}
+and \texttt{codefile\_64}, respectively. You can then use 
+\texttt{call\_shellcode} to execute the shellcode in them. 
+
+\begin{lstlisting}
+// Generate the shellcode binary 
+$ ./shellcode_32.py    (*@\pointright{}@*) generate codefile_32
+$ ./shellcode_64.py    (*@\pointright{}@*) generate codefile_64
+
+// Compile call_shellcode.c
+$ make                 (*@\pointright{}@*) generate a32.out and a64.out 
+
+// Test the shellcode 
+$ a32.out              (*@\pointright{}@*) execute the shellcode in codefile_32
+$ a64.out              (*@\pointright{}@*) execute the shellcode in codefile_64
+\end{lstlisting}
+\fi 
+ 
+
+\paragraph{Task.} Please modify the shellcode, so you can
+use it to delete a file.  Please include your modified shellcode
+in the lab report, as well as your screenshots.
+

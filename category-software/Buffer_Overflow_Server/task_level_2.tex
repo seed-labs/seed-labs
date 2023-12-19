@@ -1,0 +1,78 @@
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 3: Level-2 Attack} 
+
+In this task, we are going to increase the difficulty
+of the attack a little bit by not displaying an essential 
+piece of the information. Our target server is 
+\texttt{10.9.0.6} 
+\ifdefined\arm
+(the port number is still \texttt{9090}).
+\else
+(the port number is still \texttt{9090}, and
+the vulnerable program is still a 32-bit program). 
+\fi
+Let's first send a benign message to this server. 
+We will see the following messages printed out by the target container. 
+
+
+\ifdefined\arm
+
+\begin{lstlisting}
+\end{lstlisting}
+ 
+\else
+
+\begin{lstlisting}
+// On the VM (i.e., the attacker machine)
+$ echo hello | nc 10.9.0.6 9090
+Ctrl+C
+
+// Messages printed out by the container
+server-2-10.9.0.6 | Got a connection from 10.9.0.1
+server-2-10.9.0.6 | Starting stack
+server-2-10.9.0.6 | Input size: 6
+server-2-10.9.0.6 | Buffer's address inside bof():     0xffffda3c
+server-2-10.9.0.6 | ==== Returned Properly ====
+\end{lstlisting}
+
+\fi 
+ 
+As you can see, the server only gives out one hint, the 
+address of the buffer; it does not reveal the value of the 
+frame pointer. This means, the size of the buffer is unknown
+to you. That makes exploiting the vulnerability more 
+difficult than the Level-1 attack. 
+Although the actual buffer size can be found in 
+\texttt{Makefile}, you are not allowed to use that 
+information in the attack, because in the real world, it is 
+unlikely that you will have this file. 
+To simplify the task, we do assume that 
+the range of the buffer size is known.
+Another fact that
+may be useful to you is that, due to the memory alignment,
+the value stored in the
+frame pointer is always multiple of four and eight
+for 32-bit and 64-bit programs, respectively.
+
+
+
+\begin{lstlisting}
+Range of the buffer size (in bytes): [100, 300]
+\end{lstlisting}
+ 
+
+Your job is to construct one payload to exploit the buffer overflow
+vulnerability on the server, and get a root shell on the target server (using
+the reverse shell technique). Please be noted, you are only allowed 
+to construct one payload that works for any buffer size 
+within this range.  You will not get all the credits if you 
+use the brute-force method, i.e., trying one buffer size
+each time. The more you try, the easier it will be detected 
+and defeated by the victim. That's why minimizing the number 
+of trials is important for attacks. 
+In your lab report, you need to describe your method, 
+and provide evidences.
+
+

@@ -14,34 +14,37 @@
 
 \newcommand{\bufFigs}{./Figs}
 
-\lhead{\bfseries SEED Labs -- Buffer Overflow Attack Lab (Server Version)}
+\lhead{\bfseries SEED Labs -- Buffer Overflow Attack (ARM64 Server)}
 
 \def \code#1 {\fbox{\scriptsize{\texttt{#1}}}}
+
+
+\newcommand{\arm}{} % turn on the arm64 switch
 
 \begin{document}
 
 \begin{center}
-{\LARGE Buffer Overflow Attack Lab (Server Version)}
+{\LARGE Buffer Overflow Attack Lab (ARM64 Server Version)}
 \end{center}
 
-\seedlabcopyright{2020}
+\seedlabcopyright{2023}
 
 
 % *******************************************
 % SECTION
-% ******************************************* 
+% *******************************************
 \input{overview}
 
 % *******************************************
 % SECTION
 % *******************************************
-\input{labenv} 
+\input{labenv}
 
 
 % *******************************************
 % SECTION: Task 1
 % *******************************************
-\input{task_shellcode} 
+\input{task_shellcode}
 
 
 % *******************************************
@@ -66,14 +69,14 @@
 
 
 % *******************************************
-% SECTION: Task 4: Level 4
+% SECTION: Task 5: Level 4
 % *******************************************
 \input{task_level_4}
 % *******************************************
 
 
 % *******************************************
-% SECTION: Task 6, 7
+% SECTION: Task 6, 7 
 % *******************************************
 \input{task_countermeasure}
 % *******************************************
@@ -85,9 +88,7 @@
 \section{Guidelines on Reverse Shell} 
 \label{sec:guildelines}
 
-
 \input{\commonfolder/guidelines/reverse_shell.tex}
-
 
 
 % *******************************************

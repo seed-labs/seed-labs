@@ -1,0 +1,24 @@
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 5: Level-4 Attack} 
+
+The server in this task is similar to that in Level 3, 
+except that the buffer size is much smaller. From the 
+following printout, you can see the distance between 
+the frame pointer and the buffer's address is only about 32 bytes (the 
+actual distance in the lab may be different).
+In Level 3, the distance is much larger. Your goal is the same: 
+get the root shell on this server. The server still takes in
+517 byte of input data from the user.
+
+
+\begin{lstlisting}
+server-4-10.9.0.8 | Got a connection from 10.9.0.1
+server-4-10.9.0.8 | Starting stack
+server-4-10.9.0.8 | Input size: 6
+server-4-10.9.0.8 | Frame Pointer (rbp) inside bof():  0x00007fffffffe1b0
+server-4-10.9.0.8 | Buffer's address inside bof():     0x00007fffffffe190
+server-4-10.9.0.8 | ==== Returned Properly ====
+\end{lstlisting}
+ 

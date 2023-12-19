@@ -1,0 +1,61 @@
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Overview}
+
+
+Buffer overflow is defined as the condition in which a program attempts to
+write data beyond the boundary of a buffer. This
+vulnerability can be used by a malicious user to alter the flow control of
+the program, leading to the execution of malicious code.
+The objective of this lab is for students to gain practical
+insights into this type of vulnerability, and learn how to
+exploit the vulnerability in attacks. 
+
+
+In this lab, students will be given four different servers, each
+running a program with a buffer-overflow vulnerability. 
+Their task is to develop a scheme to exploit
+the vulnerability and finally gain the root privilege on these servers.  
+In addition to the attacks, students will also experiment with 
+several countermeasures against buffer-overflow attacks.  
+Students need to evaluate whether the schemes work or not and explain why. 
+This lab covers the following topics:
+
+\begin{itemize}[noitemsep]
+\item Buffer overflow vulnerability and attack
+\item Stack layout in a function invocation
+\item Address randomization, Non-executable stack, and  StackGuard
+\item Shellcode. We have a separate lab on how to write shellcode 
+from scratch.
+\end{itemize}
+
+
+
+\paragraph{Readings and videos.}
+Detailed coverage of the buffer-overflow attack can be found in the following:
+
+\begin{itemize}
+\item Chapter 4 of the SEED Book, \seedbook
+\item Section 4 of the SEED Lecture at Udemy, \seedcsvideo
+\end{itemize}
+
+
+\paragraph{Lab environment.} \seedenvironmentC
+
+
+\paragraph{Note for instructors.}
+Instructors can customize this lab by choosing values
+for \texttt{L1}, ..., \texttt{L4}. See
+Section~\ref{sec:vulnerable_program} for details.
+Depending on the background of students and the time allocated
+for this lab, instructors can also make the
+Level-2, Level-3, and Level-4 tasks (or some of them) optional.
+The Level-1 task is sufficient to cover the basics of
+the buffer-overflow attacks. Levels 2 to 4
+increase the attack difficulties.
+All the countermeasure tasks are based on the Level-1 task,
+so skipping the other levels does not affect those tasks.
+
+

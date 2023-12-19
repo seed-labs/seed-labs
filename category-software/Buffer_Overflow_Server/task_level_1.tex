@@ -1,0 +1,160 @@
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 2: Level-1 Attack} 
+
+
+When we start the containers using the included 
+\texttt{docker-compose.yml} file, four containers will be 
+running, representing four levels of difficulties. 
+We will work on Level 1 in this task. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Server} 
+
+Our first target runs on \texttt{10.9.0.5} (the port 
+number is \texttt{9090}), and the vulnerable program \texttt{stack}
+is a 32-bit program. 
+Let's first send a benign message to this server.
+We will see the following messages printed out by the target container (the
+actual messages you see may be different).
+
+\ifdefined\arm
+\begin{lstlisting}
+ ***
+\end{lstlisting}
+
+\else
+\begin{lstlisting}
+// On the VM (i.e., the attacker machine)
+$ echo hello | nc 10.9.0.5 9090
+Press Ctrl+C
+
+// Messages printed out by the container
+server-1-10.9.0.5 | Got a connection from 10.9.0.1
+server-1-10.9.0.5 | Starting stack
+server-1-10.9.0.5 | Input size: 6
+server-1-10.9.0.5 | Frame Pointer (ebp) inside bof():  0xffffdb88    (*@\ding{80}@*)
+server-1-10.9.0.5 | Buffer's address inside bof():     0xffffdb18    (*@\ding{80}@*)
+server-1-10.9.0.5 | ==== Returned Properly ====
+\end{lstlisting}
+\fi
+
+
+The server will accept up to \texttt{517} bytes of the data from the 
+user, and that will cause a buffer overflow. Your job 
+is to construct your payload to exploit this vulnerability. If 
+you save your payload in a file, you can send the payload
+to the server using the following command.
+
+\begin{lstlisting}
+$ cat <file> | nc 10.9.0.5 9090
+\end{lstlisting}
+
+If the server program returns, it will print out \texttt{"Returned Properly"}.
+If this message is not printed out, the \texttt{stack} program has probably crashed. 
+The server will still keep running, taking new connections.  
+
+For this task, two pieces of information essential for buffer-overflow 
+attacks are printed out as hints to students: 
+the value of the frame pointer and the address
+of the buffer (lines marked by \ding{80}). The frame point register 
+called \texttt{ebp} for the x86 architecture and \texttt{rbp} for the x64 architecture.
+You can use these two pieces of information to construct 
+your payload. 
+
+
+\paragraph{Added randomness.} We have added a little bit of randomness
+in the program, so different students are likely to see different values
+for the buffer address and frame pointer. The values only change 
+when the container restarts, so as long as you keep the 
+container running, you will see the same numbers (the numbers 
+seen by different students are still different). This randomness
+is different from the address-randomization countermeasure. Its sole
+purpose is to make students' work a little bit different. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Writing Exploit Code and Launching Attack} 
+
+To exploit the buffer-overflow vulnerability in the target program,
+we need to prepare a payload, and save it inside a file (we will use 
+\texttt{badfile} as the file name in this document). 
+We will use a Python program to do that.
+We provide a skeleton program called \texttt{exploit.py}, which
+is included in the lab setup file. 
+The code is incomplete, and students need to replace some of the essential 
+values in the code. 
+
+
+\newcommand{\needtochange}{\ding{73} Need to change \ding{73}}
+
+
+\begin{lstlisting}[language=python, caption={The skeleton exploit code (\texttt{exploit.py})}]
+#!/usr/bin/python3
+import sys
+
+# You can copy and paste the shellcode from Task 1
+shellcode = (
+  ""                     # (*@\needtochange@*)
+).encode('latin-1')
+
+# Fill the content with NOP's
+content = bytearray(0x90 for i in range(517))
+
+##################################################################
+# Put the shellcode somewhere in the payload
+start =  0               # (*@\needtochange@*)
+content[start:start + len(shellcode)] = shellcode
+
+# Decide the return address value 
+# and save it somewhere in the payload
+ret    = 0xAABBCCDD      # (*@\needtochange@*)
+offset = 0               # (*@\needtochange@*)
+
+# Use 4 for 32-bit address 
+# Use 8 for 64-bit address
+content[offset:offset + 4] = (ret).to_bytes(4,byteorder='little')
+##################################################################
+
+# Write the content to a file
+with open('badfile', 'wb') as f:
+  f.write(content)
+\end{lstlisting}
+
+
+After you finish the above program, run it. This will generate
+the contents for \texttt{badfile}. Then feed it to
+the vulnerable server. If your exploit is implemented correctly, the 
+command you put inside your shellcode will be executed. If your 
+command generates some outputs, you should be able to see
+them from the container window. Please provide proofs to show that you
+can successfully get the vulnerable server to run 
+your commands.
+
+\begin{lstlisting}
+$./exploit.py   // create the badfile
+$ cat badfile | nc 10.9.0.5 9090
+\end{lstlisting}
+ 
+
+\paragraph{Reverse shell.}
+We are not interested in running some pre-determined commands. We 
+want to get a root shell on the target server, so we can 
+type any command we want. Since we are on a remote machine,
+if we simply get the server to run \texttt{/bin/sh}, we won't be able to
+control the shell program. Reverse shell is a typical
+technique to solve this problem. Section~\ref{sec:guildelines} provides 
+detailed instructions on how to run a reverse shell.
+Please modify the command string in your shellcode, so you can
+get a reverse shell on the target server. 
+Please include screenshots and explanation in your lab report.
+
+
+
