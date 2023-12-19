@@ -44,7 +44,7 @@ so it is slightly different from what you get from the lab setup file.
 
 /* Changing this size will change the layout of the stack.
  * Instructors can change this value each year, so students
- * won't be able to use the solutions from the past.
+ * won't be able to use the solutions from the past. */
 #ifndef BUF_SIZE
 #define BUF_SIZE 100
 #endif
@@ -54,9 +54,19 @@ int bof(char *str)
     char buffer[BUF_SIZE];
 
     /* The following statement has a buffer overflow problem */ 
-    strcpy(buffer, str);          (*@\ding{80}@*)
+(*@\ifdefined\arm
+\ \ \ \ memcpy(buffer, str, 517);       
+\else
+\ \ \ \ strcpy(buffer, str);          
+\fi@*)
 
     return 1;
+}
+
+void foo(char *str)
+{
+    ...
+    bof(str);
 }
 
 int main(int argc, char **argv)
@@ -64,18 +74,23 @@ int main(int argc, char **argv)
     char str[517];
 
     int length = fread(str, sizeof(char), 517, stdin);
-    bof(str);
+    foo(str);
     fprintf(stdout, "==== Returned Properly ====\n");
     return 1;
 }
 \end{lstlisting}
 
 The above program has a buffer overflow vulnerability. It 
-reads data from the standard input, and then passes the data
-to another buffer in the function {\tt bof()}. The 
-original input can have a maximum length of \texttt{517} bytes, but the buffer
+reads data from the standard input, and the data are 
+eventually copied to another buffer in the function {\tt bof()}. 
+The original input can have a maximum length of \texttt{517} bytes, but the buffer
 in {\tt bof()} is only \texttt{BUF\_SIZE} bytes long, which is less than
-\texttt{517}. Because {\tt strcpy()} does not check boundaries, 
+\texttt{517}. 
+\ifdefined\arm
+When \texttt{memcpy()} copies the data to the target buffer,
+\else
+Because {\tt strcpy()} does not check boundaries, 
+\fi
 buffer overflow will occur.
 
 The program will run on a server with the root privilege, and its 
@@ -97,6 +112,8 @@ variable sets the value for the \texttt{BUF\_SIZE} constant inside \texttt{stack
 $ gcc -DBUF_SIZE=$(L1) -o stack -z execstack -fno-stack-protector stack.c
 \end{lstlisting}
 
+\ifdefined\arm
+\else
 We will compile the \texttt{stack} program into both 32-bit and 64-bit 
 binaries. Our pre-built Ubuntu 20.04 VM is a 64-bit VM, but it 
 still supports 32-bit binaries. All we need to do is to 
@@ -105,7 +122,7 @@ For 32-bit compilation, we also use \texttt{-static} to generate
 a statically-linked binary, which is self-contained and not depending
 on any dynamic library, because the 32-bit dynamic libraries 
 are not installed in our containers. 
-
+\fi
 
 The compilation commands are already provided in \texttt{Makefile}. To compile
 the code, you need to type \texttt{make} to execute those commands.

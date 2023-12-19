@@ -3,7 +3,6 @@ LAB    = Buffer_Overflow_Server
 LABPDF = $(LAB).pdf $(LAB)_ARM64.pdf
 CF     = ../../common-files
 DEPEND = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex \
-	 $(CF)/guidelines/shellcode.tex \
 	 part_nonexecutable_stack.tex 
 SHARED = overview.tex labenv.tex task_shellcode.tex \
 	 task_level_1.tex task_level_2.tex \
