@@ -38,6 +38,15 @@ server-1-10.9.0.5  | Frame pointer (x29) inside bof():  0x0000fffffffff080
 server-1-10.9.0.5  | Buffer's address inside bof():     0x0000fffffffff0a0
 \end{lstlisting}
 
+As you can see from the printout, the buffer's address is larger than the 
+\texttt{bof()} function's frame pointer. Since the return
+address is stored at (frame pointer + 8), the buffer is clearly
+placed above the return address. This is different from the x86/amd64
+architecture, where the buffer is stored below the 
+return address. This introduces a challenge that does not exist
+in the x86/amd64 architecture: how to modify the
+return address using the buffer overflow? 
+
 \else
 \begin{lstlisting}
 // On the VM (i.e., the attacker machine)
@@ -69,13 +78,13 @@ If the server program returns, it will print out \texttt{"Returned Properly"}.
 If this message is not printed out, the \texttt{stack} program has probably crashed. 
 The server will still keep running, taking new connections.  
 
-For this task, two pieces of information essential for buffer-overflow 
-attacks are printed out as hints to students: 
+For this task, the information essential for buffer-overflow 
+attacks is printed out as hints to students: 
 the value of the frame pointer and the address
-of the buffer (lines marked by \ding{80}). The frame point register 
-called \texttt{ebp} for the x86 architecture and \texttt{rbp} for the x64 architecture.
-You can use these two pieces of information to construct 
-your payload. 
+of the buffer. 
+The frame point register is called \texttt{ebp}, \texttt{rbp},
+and \texttt{x29} for the x86, amd64, arm64 architectures, respectively. 
+You can use the provided information to construct your payload. 
 
 
 \paragraph{Added randomness.} We have added a little bit of randomness
@@ -174,6 +183,16 @@ content[offset:offset + 4] = (ret).to\_bytes(4,byteorder='little')
 with open('badfile', 'wb') as f:
   f.write(content)
 \end{lstlisting}
+\fi
+
+\ifdefined\arm
+It should be noted that the buffer overflow problem in the 
+vulnerable program is caused by the \texttt{memcpy()} function, 
+which, unlike
+\texttt{strcpy()}, does not terminate at zero. Therefore,
+in your input, you can have zeros.  Actually, as we can
+see from the printout, the two most significant 
+bytes of each address are zeros. 
 \fi
 
 
