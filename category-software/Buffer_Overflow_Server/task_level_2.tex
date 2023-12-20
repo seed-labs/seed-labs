@@ -20,6 +20,16 @@ We will see the following messages printed out by the target container.
 \ifdefined\arm
 
 \begin{lstlisting}
+// On the VM (i.e., the attacker machine)
+$ echo hello | nc 10.9.0.6 9090
+Ctrl+C
+
+// Messages printed out by the container
+server-2-10.9.0.6  | Got a connection from 10.9.0.1
+server-2-10.9.0.6  | Starting stack
+server-2-10.9.0.6  | Input size: 6
+server-2-10.9.0.6  | Buffer's address inside bof():     0x0000fffffffff3d0
+server-2-10.9.0.6  | ==== Returned Properly ====
 \end{lstlisting}
  
 \else
@@ -59,13 +69,17 @@ for 32-bit and 64-bit programs, respectively.
 
 
 \begin{lstlisting}
-Range of the buffer size (in bytes): [100, 300]
+Range of the buffer size (in bytes): [100, 200]
 \end{lstlisting}
  
 
 Your job is to construct one payload to exploit the buffer overflow
 vulnerability on the server, and get a root shell on the target server (using
-the reverse shell technique). Please be noted, you are only allowed 
+the reverse shell technique). 
+\ifdefined\arm
+Similar to the Level-1 task, your payload can contain zeros. 
+\fi
+Please be noted, you are only allowed 
 to construct one payload that works for any buffer size 
 within this range.  You will not get all the credits if you 
 use the brute-force method, i.e., trying one buffer size

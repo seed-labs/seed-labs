@@ -21,7 +21,10 @@ In your report, please report your observation, and explain why
 ASLR makes the buffer-overflow attack more difficult. 
 
 
-\paragraph{Defeating the 32-bit randomization.}
+\ifdefined\arm
+\else
+% The following activity is only for 32-bit server programs.
+\paragraph{Defeating the 32-bit randomization}
 It was reported that on 32-bit Linux machines, only 19 bites can be used 
 for address randomization.
 That is not enough, and we can easily hit the target 
@@ -53,7 +56,7 @@ while true; do
   cat badfile | nc 10.9.0.5 9090
 done
 \end{lstlisting}
-
+\fi
 
 
 % *******************************************

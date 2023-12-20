@@ -6,7 +6,7 @@ DEPEND = $(CF)/header.tex $(CF)/copyright.tex $(CF)/submission.tex \
 	 part_nonexecutable_stack.tex 
 SHARED = overview.tex labenv.tex task_shellcode.tex \
 	 task_level_1.tex task_level_2.tex \
-	 task_level_3.tex task_level_4.tex
+	 task_level_3.tex task_level_4.tex task_countermeasure.tex
 
 all: $(LABPDF)
 

@@ -17,9 +17,14 @@ We will work on Level 1 in this task.
 \subsection{Server} 
 
 Our first target runs on \texttt{10.9.0.5} (the port 
-number is \texttt{9090}), and the vulnerable program \texttt{stack}
-is a 32-bit program. 
-Let's first send a benign message to this server.
+number is \texttt{9090}), 
+and the vulnerable program \texttt{stack} is a 
+\ifdefined\arm
+64-bit
+\else
+32-bit 
+\fi
+program). Let's first send a benign message to this server.
 We will see the following messages printed out by the target container (the
 actual messages you see may be different).
 
