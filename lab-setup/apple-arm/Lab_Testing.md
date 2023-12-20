@@ -10,7 +10,7 @@ notes should be put inside the [Notes folder](./Notes).
 | --- | --- | --- |
 | Set-UID                   | :thumbsup: | Fully tested |
 | Buffer-Overflow (setuid)  | x  | Will not port. See [notes](Notes/Software_Security.md) |
-| Buffer-Overflow (server)  | :construction_worker:  | See [notes](Notes/Software_Security.md) |
+| Buffer-Overflow (server)  | :thumbsup:  | Added a new lab. See [notes](Notes/Software_Security.md) |
 | Return-to-Libc  |  x   | Will not port. See [notes](Notes/Software_Security.md)|
 | Format String   | :construction_worker:   | See [notes](Notes/Software_Security.md)|
 | Shellcode       | :thumbsup:   | Redesigned. See [notes](../../category-software/Shellcode/README.md) |

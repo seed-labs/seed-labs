@@ -2,13 +2,13 @@
 
 ## Buffer Overflow Labs
 
-With our new Shellcode for aarch64 architecture, we can 
-now revise the buffer overflow lab. We have decided not 
-to do the L1 and L2 tasks, as they are based on the 32-bit
-code. Instead, we will focus on L3 and L4 tasks, while adding 
-one similar to L2, but using 64-bit code. 
+We have designed a separate lab for arm64. The arm and amd versions
+are still quite similar. In the amd version, L1 and L2 tasks
+are based on the 32-bit code, while in the arm version,
+all the tasks are based on the 64-bit code. However,
+the tasks between these two versions are quite similar. 
 
-We will only port the server version of the lab, as we
+We only ported the server version of the lab, as we
 plan to gradually phase out the Set-UID version, so we 
 can focus on one version (too time-consuming to maintain
 two similar labs). Both labs can achieve the same educational 
