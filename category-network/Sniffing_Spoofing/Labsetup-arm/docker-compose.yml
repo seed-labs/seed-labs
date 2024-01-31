@@ -1,0 +1,49 @@
+version: "3"
+
+services:
+    attacker:
+        image: handsonsecurity/seed-ubuntu:large-arm
+        container_name: seed-attacker
+        tty: true
+        cap_add:
+                - ALL
+        privileged: true
+        volumes:
+                - ./volumes:/volumes
+        network_mode: host
+
+    hostA:
+        image: handsonsecurity/seed-ubuntu:large-arm
+        container_name: hostA-10.9.0.5
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.5
+        command: bash -c "
+                      /etc/init.d/openbsd-inetd start  &&
+                      tail -f /dev/null
+                 "
+
+    hostB:
+        image: handsonsecurity/seed-ubuntu:large-arm
+        container_name: hostB-10.9.0.6
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.6
+        command: bash -c "
+                      /etc/init.d/openbsd-inetd start  &&
+                      tail -f /dev/null
+                 "
+                  
+networks:
+    net-10.9.0.0:
+        name: net-10.9.0.0
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+
