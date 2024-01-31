@@ -1,5 +1,16 @@
 # Crypto Labs
 
+## Status update
+
+1/31/2024: Added the corresponding setup files to each of the 
+labs. The new setup files are put inside `Labsetup-arm`. All
+the required docker images (arm version) are already pushed 
+to Docker Hub. The lab descriptions do not need to change. 
+
+TODO:  update the lab manual for the MD5 lab. No need to revise
+the manuals for the other labs. 
+
+
 ## Secret-Key Encryption Lab
 
 The openssl library is compiled successfully. 
@@ -8,8 +19,9 @@ Remember to run `openssl.sh` when building the VM.
 
 ## Padding Oracle Attack Lab
 
-The docker image has not been built yet. See the instructions 
-in `seed-labs/category-crypto/Crypto_Padding_Oracle/Container_Building`
+We have pushed the docker image to Docker Hub. 
+We followed the instructions in 
+`seed-labs/category-crypto/Crypto_Padding_Oracle/Container_Building`
 regarding how to create the container. 
 
 

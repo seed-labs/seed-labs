@@ -48,13 +48,13 @@ notes should be put inside the [Notes folder](./Notes).
 | Lab | Status | Notes |
 | --- | --- | --- |
 | Secret-Key Encryption | :thumbsup: | Fully tested; no issue |
-| Padding Oracle | :question: | The docker image needs to be built |
+| Padding Oracle | :thumbsup: | Rebuilt the docker image; fully tested. See [notes](Notes/Crypto.md) |
 | Hash Collision | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
 | Hash Length Extension | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
-| Random Number | :construction_worker: | Lab needs to be modified. See [notes](Notes/Crypto.md) |
 | RSA Public Key | :thumbsup: | Fully tested; no issue |
 | PKI | :thumbsup: | Fully tested; no issue |
 | TLS | :thumbsup: | Tested the client and server; no issue |
+| Random Number | :construction_worker: | Lab needs to be modified. See [notes](Notes/Crypto.md) |
 
 
 ## Blockchain
