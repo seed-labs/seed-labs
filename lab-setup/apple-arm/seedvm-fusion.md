@@ -11,6 +11,25 @@ To install Homebrew, open the terminal and run the following command.
 
 ```/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"```
 
+If you got an error ```xcode-select: error:
+invalid developer directory '/Library/Developer/CommandLineTools'``` during the install Homebrew which is because your Xcode is not installed or not set appropriately.  So far ```/Library/Developer/CommandLineTools``` is not valid directory for ```xcode-select```.
+
+![xcode-select: error](Figs/xcode-select-error.png)
+
+You can run the following command in the terminal to double check there is no active developer directory.
+
+```xcode-select -p```
+
+![error: no-active-directory](Figs/error-no-active-directory.png)
+
+To solve that, you run the following command in the terminal to install xcode-select
+
+```xcode-select --install```
+
+![xcode-select: install](Figs/xcode-select-install.png)
+
+![xcode-select: install GUI](Figs/xcode-select-install-GUI.png)
+
 If after installing homebrew you are not able to access brew, run the following command in the terminal.
 
 ```echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> ~/.zprofile```
@@ -25,6 +44,9 @@ This is required to connect the docker container to the host network. To install
 And then start the service using the following command.
 
 ```sudo brew services start chipmk/tap/docker-mac-net-connect```
+
+![brew services start](Figs/brew-services-start.png)
+
 
 ## VMware Fusion Player Setup for Apple Silicon Machines
 
@@ -88,9 +110,57 @@ If the is giving an error, just remove the ISO image from the VM and restart the
 
 ![Ubuntu Installation](Figs/ubuntu-installation-cd.png)
 
-Now you will be greeted with the home screen. Go to terminal download curl using ```sudo apt-get install curl``` and follow the setup instructions from step 2 in the [README](../../manuals/cloud/seedvm-cloud.md) file.
+Now you will be greeted with the home screen.
 
-### Step 3: Setup Docker and Docker Compose
+## Step 3: Install Software and Configure System
+
+
+Go to terminal download curl using
+```
+sudo apt-get install curl
+```
+
+Download [`src-cloud.zip`](https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip)
+  from the link or using the following command (if copy-and-paste does not work
+  between your host machine and VMware, you can browse this manual inside VM Ubuntu 22.04 using Firefox, then you can copy-and-paste):
+  ```
+  curl -o src-cloud.zip https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip
+  ```
+
+In order to unzip the file, we first need to install the `unzip` program
+  using the following command. After that, unzip the file.
+  ```
+  sudo apt update
+  sudo apt -y install unzip
+  unzip src-cloud.zip
+  ```
+
+After unzipping the file, you will see a `src-cloud` folder.
+  Enter this folder, and run the following command to install software
+  and configure the system.
+  ```
+  ./install.sh
+  ```
+
+- **Note:** This shell script will download and install all the software needed for
+  the SEED labs. The whole process will take a few minutes. Please
+  don't leave, because you will be asked twice to make choices:
+
+  - During the installation of Wireshark, you will be asked
+    whether non-superuser should be able to capture packets.
+    Select `No`.
+
+  - During the installation of `xfce4`, you will be asked to
+    choose a default display manager. Choose `LightDM`.
+
+
+After the script finishes, we can switch to the `seed`
+account using the following command:
+```
+sudo su seed
+```
+
+### Step 4: Setup Docker and Docker Compose
 
 After done with the setup we have to set the docker default platform to linux/arm64. Go to terminal and type the following command.
 
@@ -103,9 +173,3 @@ Docker-compose is not available for arm64 architecture. So we have to install it
 ```sudo chmod +x /usr/local/bin/docker-compose```
 
 Now you can use docker-compose in your VM.
-
-
-
-
-
-
