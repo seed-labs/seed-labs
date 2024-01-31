@@ -1,0 +1,103 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 4100 (0x1004)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=www.modelCA.com, O=Model CA LTD., C=US
+        Validity
+            Not Before: Nov 12 02:17:35 2020 GMT
+            Not After : Nov 10 02:17:35 2030 GMT
+        Subject: C=US, O=Bank32 Inc., CN=www.bank32.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:cd:c7:2d:85:b6:6a:2f:32:3b:5d:a5:17:c0:a1:
+                    f7:76:0c:c5:8d:c0:0a:3e:98:45:68:88:35:05:f4:
+                    63:be:85:05:ac:cd:53:0c:41:0b:29:11:b2:b3:fb:
+                    ef:a1:1f:7b:8b:3a:7a:84:c4:6d:d5:0d:ff:70:ff:
+                    ce:d3:54:8c:0e:37:dd:e7:2b:22:f6:8b:0f:19:8f:
+                    79:66:e8:64:41:c3:c9:1e:42:de:07:b6:70:79:4c:
+                    22:0f:35:dd:2d:d1:ef:bf:04:c7:b5:a0:78:6b:4e:
+                    1b:6a:2e:56:17:19:cd:65:31:0b:9b:36:27:b7:6b:
+                    2e:d8:9f:32:16:47:3f:44:5e:95:85:e1:43:5b:af:
+                    4b:e4:91:af:91:9a:40:52:ea:f0:cd:49:ba:ec:ec:
+                    36:26:69:e3:49:e8:6c:ae:d9:67:c7:5e:e5:57:d7:
+                    b6:f5:67:6e:be:e5:90:91:82:25:23:07:4f:21:62:
+                    17:43:3b:0c:d3:fd:e0:80:91:e4:a1:f4:20:52:5e:
+                    7b:50:ce:12:33:f5:88:22:04:95:58:95:d0:fd:36:
+                    d6:b1:dc:4a:99:72:63:39:d9:9f:83:c3:21:3e:73:
+                    7e:d3:dc:04:44:40:a6:aa:43:16:9d:37:b3:23:1a:
+                    89:5f:0b:72:a6:71:c3:c4:66:e4:fe:7b:a7:e4:be:
+                    92:3d
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Comment: 
+                OpenSSL Generated Certificate
+            X509v3 Subject Key Identifier: 
+                93:94:75:42:5C:ED:BB:05:8C:39:35:8D:F7:D2:60:D8:AC:A8:55:E2
+            X509v3 Authority Key Identifier: 
+                keyid:B5:CE:BA:8A:6F:1C:B9:0E:63:01:AE:65:2E:8E:A6:32:D3:91:38:0F
+
+            X509v3 Subject Alternative Name: 
+                DNS:www.bank32.com, DNS:www.bank32A.com, DNS:www.bank32B.com
+    Signature Algorithm: sha256WithRSAEncryption
+         82:aa:2c:76:aa:70:b6:b8:f3:68:1d:df:54:e0:c2:06:0e:a2:
+         be:f0:ce:7a:df:d6:82:14:05:b6:53:94:6e:a2:b7:46:33:fc:
+         11:43:66:de:da:10:45:b1:41:48:fd:80:a2:70:13:e8:fa:a8:
+         7f:17:c7:c1:2c:69:80:17:0e:e8:5e:08:fb:d6:bf:99:58:08:
+         6c:68:3d:13:59:68:cc:b6:95:59:96:cf:cf:6c:e1:84:72:b2:
+         20:03:0d:06:89:ba:4b:d9:29:06:80:ff:31:29:29:af:a7:92:
+         9c:ec:7f:40:a9:17:5b:e3:74:48:f2:42:7e:dd:19:b8:db:83:
+         74:ff:dd:a7:8c:c7:c9:03:9a:c7:74:ad:18:10:39:3b:3d:dc:
+         99:28:1e:48:96:6c:f3:67:c4:56:bf:bb:20:02:a5:ab:41:fa:
+         bf:ff:90:37:9d:02:58:01:a7:7f:2d:82:fc:85:d4:c2:d8:79:
+         54:08:31:24:a7:fc:3f:65:35:91:31:8c:bc:01:76:ff:75:02:
+         e3:af:78:c1:4c:44:29:1a:c1:fc:1a:06:dc:71:f4:fe:a0:a6:
+         7e:e3:24:12:3e:9e:24:96:61:0e:d2:0c:d8:bc:3e:58:8b:a6:
+         84:b9:ab:c9:b9:b7:fa:06:1c:df:54:22:62:5e:7e:28:e8:f7:
+         e8:90:a7:ee:5d:a6:87:05:5b:76:cc:35:be:70:cb:69:fe:46:
+         cd:b4:10:44:6d:60:85:4a:44:e9:e8:75:6b:3e:87:4f:13:40:
+         ad:46:a3:9e:33:0f:57:44:23:43:0e:7f:2d:b6:d9:c7:56:4a:
+         09:0a:bc:18:43:84:23:5d:e3:d0:63:ff:15:68:93:34:87:fe:
+         3d:eb:dd:07:fe:c9:ba:d1:b3:16:a9:0f:db:de:ec:a8:e3:e5:
+         fa:9a:10:2f:77:7a:c9:34:8d:20:f5:19:28:89:e6:90:bb:1b:
+         5b:17:e2:29:3a:ac:af:09:2e:d2:c2:40:eb:fc:88:9d:22:10:
+         17:9e:ea:78:7b:62:ec:35:67:bb:4e:69:8d:ae:95:d9:89:4c:
+         b3:ac:5f:b3:ac:e9:b0:d0:f7:64:95:a8:0b:d7:f0:68:e7:3a:
+         fe:38:c4:2d:32:47:2c:68:5a:72:35:da:bc:f6:28:d8:28:48:
+         88:4b:bf:61:35:49:01:53:00:fd:de:66:d6:33:cc:97:30:6f:
+         90:e9:b5:77:b5:55:35:60:f2:f7:3c:03:dd:3e:db:c1:de:4a:
+         35:bf:c3:47:3f:1f:8a:55:35:c5:24:0f:29:fa:d0:60:c2:7b:
+         d0:9e:9b:5c:50:44:13:f3:37:7a:09:ec:86:98:9f:bd:fb:d1:
+         d8:2c:08:39:2b:4d:80:af
+-----BEGIN CERTIFICATE-----
+MIIEsTCCApmgAwIBAgICEAQwDQYJKoZIhvcNAQELBQAwPzEYMBYGA1UEAwwPd3d3
+Lm1vZGVsQ0EuY29tMRYwFAYDVQQKDA1Nb2RlbCBDQSBMVEQuMQswCQYDVQQGEwJV
+UzAeFw0yMDExMTIwMjE3MzVaFw0zMDExMTAwMjE3MzVaMDwxCzAJBgNVBAYTAlVT
+MRQwEgYDVQQKDAtCYW5rMzIgSW5jLjEXMBUGA1UEAwwOd3d3LmJhbmszMi5jb20w
+ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDNxy2FtmovMjtdpRfAofd2
+DMWNwAo+mEVoiDUF9GO+hQWszVMMQQspEbKz+++hH3uLOnqExG3VDf9w/87TVIwO
+N93nKyL2iw8Zj3lm6GRBw8keQt4HtnB5TCIPNd0t0e+/BMe1oHhrThtqLlYXGc1l
+MQubNie3ay7YnzIWRz9EXpWF4UNbr0vkka+RmkBS6vDNSbrs7DYmaeNJ6Gyu2WfH
+XuVX17b1Z26+5ZCRgiUjB08hYhdDOwzT/eCAkeSh9CBSXntQzhIz9YgiBJVYldD9
+Ntax3EqZcmM52Z+DwyE+c37T3AREQKaqQxadN7MjGolfC3KmccPEZuT+e6fkvpI9
+AgMBAAGjgbkwgbYwCQYDVR0TBAIwADAsBglghkgBhvhCAQ0EHxYdT3BlblNTTCBH
+ZW5lcmF0ZWQgQ2VydGlmaWNhdGUwHQYDVR0OBBYEFJOUdUJc7bsFjDk1jffSYNis
+qFXiMB8GA1UdIwQYMBaAFLXOuopvHLkOYwGuZS6OpjLTkTgPMDsGA1UdEQQ0MDKC
+Dnd3dy5iYW5rMzIuY29tgg93d3cuYmFuazMyQS5jb22CD3d3dy5iYW5rMzJCLmNv
+bTANBgkqhkiG9w0BAQsFAAOCAgEAgqosdqpwtrjzaB3fVODCBg6ivvDOet/WghQF
+tlOUbqK3RjP8EUNm3toQRbFBSP2AonAT6PqofxfHwSxpgBcO6F4I+9a/mVgIbGg9
+E1lozLaVWZbPz2zhhHKyIAMNBom6S9kpBoD/MSkpr6eSnOx/QKkXW+N0SPJCft0Z
+uNuDdP/dp4zHyQOax3StGBA5Oz3cmSgeSJZs82fEVr+7IAKlq0H6v/+QN50CWAGn
+fy2C/IXUwth5VAgxJKf8P2U1kTGMvAF2/3UC4694wUxEKRrB/BoG3HH0/qCmfuMk
+Ej6eJJZhDtIM2Lw+WIumhLmrybm3+gYc31QiYl5+KOj36JCn7l2mhwVbdsw1vnDL
+af5GzbQQRG1ghUpE6eh1az6HTxNArUajnjMPV0QjQw5/LbbZx1ZKCQq8GEOEI13j
+0GP/FWiTNIf+PevdB/7JutGzFqkP297sqOPl+poQL3d6yTSNIPUZKInmkLsbWxfi
+KTqsrwku0sJA6/yInSIQF57qeHti7DVnu05pja6V2YlMs6xfs6zpsND3ZJWoC9fw
+aOc6/jjELTJHLGhacjXavPYo2ChIiEu/YTVJAVMA/d5m1jPMlzBvkOm1d7VVNWDy
+9zwD3T7bwd5KNb/DRz8filU1xSQPKfrQYMJ70J6bXFBEE/M3egnshpifvfvR2CwI
+OStNgK8=
+-----END CERTIFICATE-----
