@@ -112,7 +112,18 @@ If the is giving an error, just remove the ISO image from the VM and restart the
 
 Now you will be greeted with the home screen.
 
-## Step 3: Install Software and Configure System
+## Step 3: Setup Bidirectional Shared Clipboard
+
+
+As the default setting, the copy-and-paste does not work between your host machine MacOS and VMware Fusion, which is not convenient. You can install ```vmware tools``` to achieve Bidirectional Shared Clipboard by running following commands.
+```
+sudo apt-get upgrade
+sudo apt-get install open-vm-tools-desktop -y
+sudo reboot
+```
+
+
+## Step 4: Install Software and Configure System
 
 
 Go to terminal download curl using
@@ -122,7 +133,7 @@ sudo apt-get install curl
 
 Download [`src-cloud.zip`](https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip)
   from the link or using the following command (if copy-and-paste does not work
-  between your host machine and VMware, you can browse this manual inside VM Ubuntu 22.04 using Firefox, then you can copy-and-paste):
+  between your host machine MacOS and VMware Fusion, you can browse this manual inside VM Ubuntu 22.04 using Firefox, then you can copy-and-paste):
   ```
   curl -o src-cloud.zip https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip
   ```
@@ -160,7 +171,7 @@ account using the following command:
 sudo su seed
 ```
 
-### Step 4: Setup Docker and Docker Compose
+### Step 5: Setup Docker and Docker Compose
 
 After done with the setup we have to set the docker default platform to linux/arm64. Go to terminal and type the following command.
 
