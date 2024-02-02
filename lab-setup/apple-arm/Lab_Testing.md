@@ -47,13 +47,13 @@ notes should be put inside the [Notes folder](./Notes).
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Secret-Key Encryption | :thumbsup: | Fully tested; no issue |
-| Padding Oracle | :thumbsup: | Rebuilt the docker image; fully tested. See [notes](Notes/Crypto.md) |
-| Hash Collision | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
-| Hash Length Extension | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md) |
-| RSA Public Key | :thumbsup: | Fully tested; no issue |
-| PKI | :thumbsup: | Fully tested; no issue |
-| TLS | :thumbsup: | Tested the client and server; no issue |
+| Secret-Key Encryption | :thumbsup: | Fully tested; no issue; published |
+| Padding Oracle | :thumbsup: | Rebuilt the docker image; fully tested. See [notes](Notes/Crypto.md); published |
+| Hash Collision | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md); published |
+| Hash Length Extension | :thumbsup: | Fully tested; no issue: See [notes](Notes/Crypto.md); published |
+| RSA Public Key | :thumbsup: | Fully tested; no issue; published |
+| PKI | :thumbsup: | Fully tested; no issue; published |
+| TLS | :thumbsup: | Tested the client and server; no issue; published |
 | Random Number | :construction_worker: | Lab needs to be modified. See [notes](Notes/Crypto.md) |
 
 
