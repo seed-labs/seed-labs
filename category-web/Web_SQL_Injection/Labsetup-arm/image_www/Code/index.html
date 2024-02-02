@@ -1,0 +1,61 @@
+<!--
+SEED Lab: SQL Injection Education Web plateform
+Author: Kailiang Ying
+Email: kying@syr.edu
+-->
+
+<!--
+SEED Lab: SQL Injection Education Web plateform
+Enhancement Version 1
+Date: 11th April 2018
+Developer: Kuber Kohli
+
+Update: Implemented Bootstrap to redesign the UI of the website.
+-->
+<html lang="en">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link href="css/style_home.css" type="text/css" rel="stylesheet">
+
+  <!-- Browser Tab title -->
+  <title>SQLi Lab</title>
+</head>
+
+<body>
+  <nav class="navbar fixed-top navbar-light" style="background-color: #3EA055;">
+    <a class="navbar-brand" href="#" ><img src="seed_logo.png" style="height: 40px; width: 200px;" alt="SEEDLabs"></a>
+  </nav>
+  <div class="container  col-lg-4 col-lg-offset-4" style="padding-top: 50px; text-align: center;">
+    <h2><b>Employee Profile Login</b></h2><hr><br>
+    <div class="container">
+      <form action="unsafe_home.php" method="get">
+        <div class="input-group mb-3 text-center">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="uname">USERNAME</span>
+          </div>
+          <input type="text" class="form-control" placeholder="Username" name="username" aria-label="Username" aria-describedby="uname">
+        </div>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="pwd">PASSWORD </span>
+          </div>
+          <input type="password" class="form-control" placeholder="Password" name="Password" aria-label="Username" aria-describedby="pwd">
+        </div>
+        <br>
+        <button type="submit" class="button btn-success btn-lg btn-block">Login</button>
+      </form>
+    </div>
+    <br>
+    <div class="text-center">
+      <p>
+        Copyright &copy; SEED LABs
+      </p>
+    </div>
+  </div>
+</body>
+</html>
