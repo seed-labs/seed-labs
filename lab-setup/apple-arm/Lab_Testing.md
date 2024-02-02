@@ -4,6 +4,10 @@ This document shows the progress of lab testing.
 Brief notes can be placed in the table, but detailed
 notes should be put inside the [Notes folder](./Notes).
 
+Status symbols:
+  - :thumbsup:  Ready 
+  - :white_check_mark: : Published
+
 ## Software and Web Security 
 
 | Lab | Status | Notes |
