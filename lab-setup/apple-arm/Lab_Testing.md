@@ -12,14 +12,14 @@ Status symbols:
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Set-UID                   | :thumbsup: | Fully tested |
+| Set-UID                   | :white_check_mark: | Fully tested |
 | Buffer-Overflow (setuid)  | x  | Will not port. See [notes](Notes/Software_Security.md) |
-| Buffer-Overflow (server)  | :thumbsup:  | Added a new lab. See [notes](Notes/Software_Security.md) |
+| Buffer-Overflow (server)  | :white_check_mark:  | Added a new lab. See [notes](Notes/Software_Security.md) |
 | Return-to-Libc  |  x   | Will not port. See [notes](Notes/Software_Security.md)|
 | Format String   | :construction_worker:   | See [notes](Notes/Software_Security.md)|
-| Shellcode       | :thumbsup:   | Redesigned. See [notes](../../category-software/Shellcode/README.md) |
+| Shellcode       | :white_check_mark:   | Redesigned. See [notes](../../category-software/Shellcode/README.md) |
 | Dirty Cow       |  x  | Will not port |
-| Race Condition  | :thumbsup: |  Fully tested      |
+| Race Condition  | :white_check_mark: |  Fully tested      |
 | CSRF            | :white_check_mark: | Tested the lab setup |
 | XSS             | :white_check_mark: | Tested the lab setup |
 | SQL Injection   | :white_check_mark: | Tested the lab setup |
