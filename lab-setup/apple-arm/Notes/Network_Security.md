@@ -2,9 +2,9 @@
 
 ## ICMP Lab
 
-The setup is fine, however, the behaviors of ICMP redirect  
+The setup is fine, however, the behaviors of ICMP redirect
 on Ubuntu 22.04 is slightly different from that on Ubuntu 20.04.
-In both versions, the ICMP redirect packets must include 
+In both versions, the ICMP redirect packets must include
 the original packet that triggers the redirect, and the sender 
 is supposed to verify that the included packet is the same 
 as the original one. However, how strictly the checking is 
