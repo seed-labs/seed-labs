@@ -32,7 +32,7 @@ Status symbols:
 | --- | --- | --- |
 | Sniffing/Spoofing | :white_check_mark: | Fully tested; no issue |
 | ARP               | :white_check_mark: | Fully tested; no issue |
-| ICMP Redirect     | | |
+| ICMP Redirect     | :white_check_mark: | Fully tested; [notes](Notes/Network_Security.md)|
 | TCP               | :white_check_mark: | Fully tested; minor issue: [notes](Notes/Network_Security.md)|
 | Mitnick           | :white_check_mark: | Fully tested; no issue |
 | Firewall Exploration | :white_check_mark: | Fully tested; no issue: [notes](Notes/Network_Security.md) |

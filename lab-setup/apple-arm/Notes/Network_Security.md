@@ -1,5 +1,21 @@
 # For Network Security Labs
 
+## ICMP Lab
+
+The setup is fine, however, the behaviors of ICMP redirect  
+on Ubuntu 22.04 is slightly different from that on Ubuntu 20.04.
+In both versions, the ICMP redirect packets must include 
+the original packet that triggers the redirect, and the sender 
+is supposed to verify that the included packet is the same 
+as the original one. However, how strictly the checking is 
+conducted is different for these two OS versions; 
+Ubuntu 22.04 seems to be more strict. 
+Therefore, on Ubuntu 20.04, we can just directly spoof an
+ICMP redirect packet, but on Ubuntu 22.04, we need to 
+capture the original packet. 
+We can use sniff and spoof technique to do this:
+we can monitor the LAN via packet sniffing. Whenever we see an 
+ICMP echo request, we spoof an ICMP redirect packet.
 
 ## TCP Lab
 
