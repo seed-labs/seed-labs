@@ -5,8 +5,10 @@ Brief notes can be placed in the table, but detailed
 notes should be put inside the [Notes folder](./Notes).
 
 Status symbols:
-  - :thumbsup:  Ready 
-  - :white_check_mark: : Published
+  - :white_check_mark: : Published on the SEED website
+  - :thumbsup: : Ready, but not published yet 
+  - :construction_worker: : Work in progress
+  - x:  Will not port (very difficult to port, or unnecessary)
 
 ## Software and Web Security 
 
