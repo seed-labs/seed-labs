@@ -1,0 +1,86 @@
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 4: Level-3 Attack} 
+
+\ifdefined\arm
+In the previous tasks, our target servers use
+\texttt{memcpy()} to copy data to the target buffer. In this task,
+we switch to \texttt{strcpy()}, which terminates the copying
+when it sees a zero byte. Therefore, our payload can 
+no longer contain any zero. 
+\else
+In the previous tasks, our target servers are 32-bit 
+programs. In this task, we switch to a 64-bit server 
+program.  
+\fi
+Our new target is \texttt{10.9.0.7}, which 
+runs the 64-bit version of the \texttt{stack} program.  
+Let's first send a hello message to this server. 
+We will see the following messages printed out by the target container. 
+
+\ifdefined\arm
+% For arm64
+\begin{lstlisting}
+// On the VM (i.e., the attacker machine)
+$ echo hello | nc 10.9.0.7 9090
+Ctrl+C
+
+server-3-10.9.0.7  | Got a connection from 10.9.0.1
+server-3-10.9.0.7  | Starting stack
+server-3-10.9.0.7  | Input size: 6
+server-3-10.9.0.7  | Frame pointer (x29) inside foo():  0x0000fffffffff120
+server-3-10.9.0.7  | Frame pointer (x29) inside bof():  0x0000ffffffffefc0
+server-3-10.9.0.7  | Buffer's address inside bof():     0x0000ffffffffefe8
+server-3-10.9.0.7  | ==== Returned Properly ====
+\end{lstlisting}
+
+Your job is to construct your payload to exploit the buffer overflow
+vulnerability of the server. 
+You ultimate goal is to get a root shell on 
+the target server. You can use the shellcode from Task 1. 
+
+\else
+% For amd64
+\begin{lstlisting}
+// On the VM (i.e., the attacker machine)
+$ echo hello | nc 10.9.0.7 9090
+Ctrl+C
+
+// Messages printed out by the container
+server-3-10.9.0.7 | Got a connection from 10.9.0.1
+server-3-10.9.0.7 | Starting stack
+server-3-10.9.0.7 | Input size: 6
+server-3-10.9.0.7 | Frame Pointer (rbp) inside bof():  0x00007fffffffe1b0
+server-3-10.9.0.7 | Buffer's address inside bof():     0x00007fffffffe070
+server-3-10.9.0.7 | ==== Returned Properly ====
+\end{lstlisting}
+
+You can see the values of the frame pointer and buffer's address
+become 8 bytes long (instead of 4 bytes in 32-bit programs).
+Your job is to construct your payload to exploit the buffer overflow
+vulnerability of the server. 
+You ultimate goal is to get a root shell on 
+the target server. 
+You can use the shellcode from Task 1, but 
+you need to use the 64-bit version of the shellcode. 
+\fi
+
+
+\paragraph{Challenges.} Compared to buffer-overflow attacks on 32-bit 
+machines, attacks on 64-bit machines is more difficult. The most 
+difficult part is the address. Although the x64 architecture 
+supports 64-bit address space, only the address from 
+\texttt{0x00} through \texttt{0x00007FFFFFFFFFFF} is allowed. That means for 
+every address (8 bytes), the highest two bytes are always zeros. 
+This causes a problem.
+
+In our buffer-overflow attacks, we need to store at least one address 
+in the payload, and the payload will be copied into the stack via
+\texttt{strcpy()}. We know that the \texttt{strcpy()} function
+will stop copying when it sees a zero. Therefore, if a zero 
+appears in the middle of the payload, the content after the 
+zero cannot be copied into the stack. How to solve this 
+problem is the most difficult challenge in this attack. In your 
+report, you need to describe how you solve this problem. 
+

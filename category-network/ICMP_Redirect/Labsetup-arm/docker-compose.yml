@@ -1,0 +1,121 @@
+version: "3"
+
+services:
+    victim:
+        image: handsonsecurity/seed-ubuntu:large-arm
+        container_name: victim-10.9.0.5
+        tty: true
+        cap_add:
+                - ALL
+        sysctls:
+                - net.ipv4.conf.all.accept_redirects=1
+        privileged: true
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.5
+        command: bash -c "
+                      ip route add 192.168.60.0/24 via 10.9.0.11 &&
+                      tail -f /dev/null
+                 "
+
+    attacker:
+        image: handsonsecurity/seed-ubuntu:large-arm
+        container_name: attacker-10.9.0.105
+        tty: true
+        cap_add:
+                - ALL
+        privileged: true
+        volumes:
+                - ./volumes:/volumes
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.105
+        command: bash -c "
+                      ip route add 192.168.60.0/24 via 10.9.0.11 &&
+                      tail -f /dev/null
+                 "
+
+    malicious-router:
+        image: handsonsecurity/seed-ubuntu:large-arm
+        container_name: malicious-router-10.9.0.111
+        tty: true
+        cap_add:
+                - ALL
+        sysctls:
+                - net.ipv4.ip_forward=1
+                - net.ipv4.conf.all.send_redirects=0
+                - net.ipv4.conf.default.send_redirects=0
+                - net.ipv4.conf.eth0.send_redirects=0
+        privileged: true
+        volumes:
+                - ./volumes:/volumes
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.111
+        command: bash -c "
+                      ip route add 192.168.60.0/24 via 10.9.0.11 &&
+                      tail -f /dev/null
+                 "
+
+    HostB1:
+        image: handsonsecurity/seed-ubuntu:large-arm
+        container_name: host-192.168.60.5
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            net-192.168.60.0:
+                ipv4_address: 192.168.60.5
+        command: bash -c "
+                      ip route del default  &&
+                      ip route add 10.9.0.0/24 via 192.168.60.11 &&
+                      tail -f /dev/null
+                 "
+                  
+    HostB2:
+        image: handsonsecurity/seed-ubuntu:large-arm
+        container_name: host-192.168.60.6
+        tty: true
+        cap_add:
+                - ALL
+        networks:
+            net-192.168.60.0:
+                ipv4_address: 192.168.60.6
+        command: bash -c "
+                      ip route del default  &&
+                      ip route add 10.9.0.0/24 via 192.168.60.11 &&
+                      tail -f /dev/null
+                 "
+
+    Router:
+        image: handsonsecurity/seed-ubuntu:large-arm
+        container_name: router
+        tty: true
+        cap_add:
+                - ALL
+        sysctls:
+                - net.ipv4.ip_forward=1
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.11
+            net-192.168.60.0:
+                ipv4_address: 192.168.60.11
+        command: bash -c "
+                      ip route del default  &&
+                      ip route add default via 10.9.0.1 &&
+                      tail -f /dev/null
+                 "
+
+networks:
+    net-192.168.60.0:
+        name: net-192.168.60.0
+        ipam:
+            config:
+                - subnet: 192.168.60.0/24
+
+    net-10.9.0.0:
+        name: net-10.9.0.0
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+

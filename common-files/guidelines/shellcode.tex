@@ -15,8 +15,9 @@ without explaining how it works, because it is non-trivial.
 If you are interested in how exactly shellcode works, and
 want to write a shellcode from scratch, you
 can learn that from a separate SEED lab called \textit{Shellcode Lab}.
-Our generic shellcode is listed in the following (we only list
-the 32-bit version):
+Our generic shellcode is listed in the following. We only list
+the x86 version (32-bit); the amd64 and arm64 versions of shellcode
+are similar. 
 
 \begin{lstlisting}[language=python]
 shellcode = (

@@ -1,28 +1,47 @@
-# Lab Setup for Apple Silicon Machines
+# Lab Environment Setup for Apple Silicon Machines
 
-## Local Setup for Apple Silicon Machines [For Web Security Labs]
 
-Note: This method is only tested for the web security labs with Labsetup for arm version.
+- [Step 1: Set Up the Host Apple Machine](#setup-host)
+- [Step 2: Install VMWare Fusion Player](#install-fusion) 
+- [Step 3: Create Ubuntu 22.04 VM on VMware Fusion Player](#create-vm)
+- [Step 4: Install Software and Configure System](#install-software)
+- [Step 5: Set Up Docker and Docker Compose](#setup-docker)
 
-For this we are assuming that you have docker setup in your machine. If you don't have docker setup in your machine, please follow the instructions from [here](https://docs.docker.com/desktop/mac/install/).
 
-### Step 1: Install Homebrew
+## <a id="setup-host"></a>Step 1: Set Up the Host Apple Machine
+
+We need to install some software packages on the host Apple machine. 
+To do that, we first need to install Homebrew, which
+is a package manager for macOS (and Linux, too).
+We assume that you already have docker 
+install on your Apple machine. If you don't have it, 
+please follow [these instructions](https://docs.docker.com/desktop/mac/install/).
+
+
+
+### Step 1.1: Install Homebrew
+
+
 To install Homebrew, open the terminal and run the following command.
 
 ```/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"```
 
-If you got an error ```xcode-select: error:
-invalid developer directory '/Library/Developer/CommandLineTools'``` during the install Homebrew which is because your Xcode is not installed or not set appropriately.  So far ```/Library/Developer/CommandLineTools``` is not valid directory for ```xcode-select```.
+If you get this error: ```xcode-select: error:
+invalid developer directory '/Library/Developer/CommandLineTools'``` during the installation,
+this is because your `Xcode` is not installed or set up properly,
+so ```/Library/Developer/CommandLineTools``` is not a valid directory for ```xcode-select```.
 
 ![xcode-select: error](Figs/xcode-select-error.png)
 
-You can run the following command in the terminal to double check there is no active developer directory.
+You can run the following command in the terminal to further confirm that
+there is no active developer directory.
 
 ```xcode-select -p```
 
 ![error: no-active-directory](Figs/error-no-active-directory.png)
 
-To solve that, you run the following command in the terminal to install xcode-select
+To solve the problem, you run the following command in the terminal to 
+install `xcode-select`:
 
 ```xcode-select --install```
 
@@ -36,8 +55,11 @@ If after installing homebrew you are not able to access brew, run the following 
 
 ```eval $(/opt/homebrew/bin/brew shellenv)```
 
-### Step 2: Install ```docker-mac-net-connect``` using Homebrew
-This is required to connect the docker container to the host network. To install docker-mac-net-connect, open the terminal and run the following command.
+
+### Step 1.2: Install ```docker-mac-net-connect```
+
+This is required to connect the docker container to the host network. 
+To install `docker-mac-net-connect`, open the terminal and run the following command.
 
 ```brew install chipmk/tap/docker-mac-net-connect```
 
@@ -48,9 +70,14 @@ And then start the service using the following command.
 ![brew services start](Figs/brew-services-start.png)
 
 
-## VMware Fusion Player Setup for Apple Silicon Machines
 
-### Step 1: Install VMware Fusion Player on Apple Silicon Machines
+## <a id="install-fusion"></a>Step 2: Install VMWare Fusion Player
+
+VMWare Fusion Player is a free virtual machine software. 
+It is similar to VirtualBox that we have been using 
+for the SEED labs, but VirtualBox still cannot run 
+reliably on Apple Silicon machines. 
+
 
 Go to [VMware Fusion](https://customerconnect.vmware.com/en/evalcenter?p=fusion-player-personal-13) and register for a free Fusion Player license. Then under License & Download, click on `Manually Download`.
 
@@ -64,19 +91,27 @@ After you have entered the license key, you will be asked to allow the kernel ex
 
 In the Security & Privacy settings, click on `Allow` to allow the kernel extensions.
 
-### Step 2: Install Ubuntu on VMware Fusion Player
 
-Now we have to download the Ubuntu ISO image. Go to [Ubuntu 22.04.3](https://cdimage.ubuntu.com/jammy/daily-live/current/) and download the Ubuntu 22.04.3 LTS (Jammy Jellyfish) Daily Build. Make sure you download the `64-bit ARM (ARMv8/AArch64) desktop image`.
+
+## <a id="create-vm"></a>Step 3: Create Ubuntu 22.04 VM on VMware Fusion Player
+
+We are now ready to install the Ubuntu operating system.
+We could not find the ARM version of Ubuntu 20.04, so we will install
+Ubuntu 22.04 instead. 
+
+We will download the Ubuntu ISO image first. 
+Go to [Ubuntu 22.04.3](https://cdimage.ubuntu.com/jammy/daily-live/current/) and download the Ubuntu 22.04.3 LTS (Jammy Jellyfish) Daily Build. Make sure you download the `64-bit ARM (ARMv8/AArch64) desktop image`.
 
 ![Ubuntu ISO](Figs/ubuntu-iso.png)
 
 After the download is finished, start the VMware Fusion Player. Click on `Create a New Virtual Machine`.
 
-Now in Select the Installation Method, select `Install from disc or image` and click on `Continue`.
+In `Select the Installation Method`, select `Install from disc or image` and click on `Continue`.
 
 ![VMware Fusion Player Create New Virtual Machine](Figs/vmware-fusion-player-create-new-virtual-machine.png)
 
-Select `Use another disc or disc image...` and click on `Continue`. Now select the downloaded Ubuntu ISO image and click on `Open`.
+Select `Use another disc or disc image...`, click on `Continue`, 
+select the downloaded Ubuntu ISO image, and then click on `Open`.
 
 ![VMware Fusion Player Select ISO](Figs/vmware-fusion-player-select-iso.png)
 
@@ -88,11 +123,13 @@ The VM will be created and started. After the VM is started, click on `Try or in
 
 ![VMware Fusion Player Try or Install Ubuntu](Figs/vmware-fusion-player-try-or-install-ubuntu.png)
 
-You will be greeted with Ubuntu home screen. As this is the test environment you will have to click on the `Install Ubuntu` icon on the desktop.
+We will be greeted with the Ubuntu home screen. 
+Since we need a permanent installation for our labs, 
+we will click on the `Install Ubuntu` icon.
 
 ![Ubuntu Home Screen](Figs/ubuntu-home-screen.png)
 
-During Installation select Minimal Installation and click on `Continue`.
+During the installation, select `Minimal Installation` and click on `Continue`.
 
 ![Ubuntu Installation](Figs/ubuntu-installation.png)
 
@@ -100,40 +137,50 @@ In the next screen, select `Erase disk and install Ubuntu` and click on `Install
 
 ![Ubuntu Installation](Figs/ubuntu-installation-erase.png)
 
-Create a user with name `seed` and password `dees` and click on `Continue`.
+Create a user with name `seed` and select a password (you can
+use the standard password `dees` that we use for all SEED VMs).
+Click on `Continue`.
 
 ![Ubuntu Installation](Figs/ubuntu-installation-user.png)
 
 The installation will start. After the installation is finished, click on `Restart Now`.
 
-If the is giving an error, just remove the ISO image from the VM and restart the VM. To do that go to `Virtual Machine` -> `Settings` -> `CD/DVD (SATA)` and uncheck `Connect CD/DVD Drive`. Click on `Apply` and `OK`. Now restart the VM.
+If this gives you an error, just remove the ISO image from the VM and restart
+the VM. To do that, go to `Virtual Machine` -> `Settings` -> `CD/DVD (SATA)` and
+uncheck `Connect CD/DVD Drive`. Click on `Apply` and `OK`. Now restart the VM.
 
 ![Ubuntu Installation](Figs/ubuntu-installation-cd.png)
 
 Now you will be greeted with the home screen.
 
-## Step 3: Setup Bidirectional Shared Clipboard
 
+### Setup Bidirectional Shared Clipboard
 
-As the default setting, the copy-and-paste does not work between your host machine MacOS and VMware Fusion, which is not convenient. You can install ```vmware tools``` to achieve Bidirectional Shared Clipboard by running following commands.
+In the default setting, the copy-and-paste does not work between your host
+Apple machine and the VM running inside VMware Fusion. This is quite inconvenient. 
+You can install ```vmware tools``` to set up a bidirectional shared clipboard.
+Run the following commands.
+
 ```
 sudo apt-get upgrade
 sudo apt-get install open-vm-tools-desktop -y
 sudo reboot
 ```
 
+## <a id="install-software"></a>Step 4: Install Software and Configure System
 
-## Step 4: Install Software and Configure System
+We are now ready to install all the software packages needed for 
+the SEED labs. 
 
+Go to terminal, first download `curl` using
 
-Go to terminal download curl using
 ```
 sudo apt-get install curl
 ```
 
 Download [`src-cloud.zip`](https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip)
-  from the link or using the following command (if copy-and-paste does not work
-  between your host machine MacOS and VMware Fusion, you can browse this manual inside VM Ubuntu 22.04 using Firefox, then you can copy-and-paste):
+from the link or using the following `curl` command.
+
   ```
   curl -o src-cloud.zip https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip
   ```
@@ -171,7 +218,7 @@ account using the following command:
 sudo su seed
 ```
 
-### Step 5: Setup Docker and Docker Compose
+## <a id="setup-docker"></a>Step 5: Set Up Docker and Docker Compose
 
 After done with the setup we have to set the docker default platform to linux/arm64. Go to terminal and type the following command.
 

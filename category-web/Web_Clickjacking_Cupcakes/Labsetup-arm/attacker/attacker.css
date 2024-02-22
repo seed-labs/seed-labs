@@ -1,0 +1,26 @@
+
+
+iframe {
+    /* TODO: add iframe css here (Task 1) */
+
+}
+
+button{
+    /* Given button code for size and shape. You do not need to edit this. */
+    position: absolute;
+    border: none;
+    color: white;
+    padding: 35px 35px;
+    text-align: center;
+    font-size: 40px;
+    border-radius: 15px;
+    /* end of given button code */
+
+
+    /* TODO: edit/add attributes below for the malicious button (Task 2) */
+    /* You will want to change the button's position on the page and 
+       make the button transparent */
+    color: white;  /* font color */
+    background-color: blue;  /* button's background color */
+
+  }

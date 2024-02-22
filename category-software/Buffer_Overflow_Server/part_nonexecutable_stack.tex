@@ -1,1 +1,33 @@
-../Buffer_Overflow_Setuid/part_nonexecutable_stack.tex
+
+Operating systems used to allow executable stacks, but
+this has now changed: In Ubuntu OS, the binary images of programs (and shared libraries)
+must declare whether they require executable stacks or not, i.e., they need to
+mark a field in the program header. Kernel or dynamic linker uses this marking
+to decide whether to make the stack of this running program executable or
+non-executable. This marking is done automatically by the
+\texttt{gcc}, which by default makes stack
+non-executable. We can specifically make it non-executable
+using the \texttt{"-z noexecstack"} flag in the compilation.
+In our previous tasks, we used \texttt{"-z execstack"} to
+make stacks executable.
+
+
+In this task, we will make the stack non-executable. We will do
+this experiment in the \texttt{shellcode} folder.
+The \texttt{call\_shellcode} program puts a copy of shellcode
+on the stack, and then executes the code from the stack.
+Please recompile \texttt{call\_shellcode.c} without
+the \texttt{"-z execstack"} option.
+Run the program and describe and explain your observations.
+
+
+\paragraph{Defeating the non-executable stack countermeasure.}
+It should be noted that non-executable stack only makes it
+impossible to run shellcode
+on the stack, but it does not prevent buffer-overflow attacks,
+because there are other ways to run malicious code after exploiting
+a buffer-overflow vulnerability. The {\em return-to-libc} attack
+is an example. We have designed a separate lab for that
+attack. If you are interested, please see our
+Return-to-Libc Attack Lab for details.
+

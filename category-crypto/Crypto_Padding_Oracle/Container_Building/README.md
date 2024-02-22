@@ -1,16 +1,39 @@
 # Building Container Image
 
 We will build a container image for this lab. 
-The image is hosted on the DockerHub. There is
+The image is hosted on the Docker Hub. There is
 a secret key and message hidden in the image. 
 Students' job is to find out the secret message
 using the padding oracle attack.
 
-Here is the command to build and push this image:
+Here is the command to build and push this image for `amd64`:
+
 ```
 $ docker build -t handsonsecurity/seed-server:padding-oracle .
 $ docker image push handsonsecurity/seed-server:padding-oracle
 ```
+
+Here is the command to build and push this image for `arm64`:
+
+```
+$ docker build -t handsonsecurity/seed-server:padding-oracle-arm .
+$ docker image push handsonsecurity/seed-server:padding-oracle-arm
+
+## Note for ARM
+
+To build the docker image for ARM, we need to make the following changes:
+First, change the base of the `Dockerfile`:
+```
+FROM handsonsecurity/seed-ubuntu:small-arm
+```
+
+Second, add `-static` to the compilation flag. This is because the
+base image does not have the required shared library. 
+
+```
+CXXFLAGS = -O2 -Wall -std=c++11 -static
+```
+
 
 ## Note
 

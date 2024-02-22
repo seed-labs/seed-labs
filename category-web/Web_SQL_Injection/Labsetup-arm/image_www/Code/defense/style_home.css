@@ -1,0 +1,39 @@
+body {
+	margin-top: 100px;
+	background: #B4FDE5;
+	font-family: "Sans-serif", Verdana, serif;
+	font-size: 20px;
+}
+.form-control{
+	font-size: 21px;
+}
+button{
+	border: 0px;
+	border-radius: 5px;
+}
+
+.navbar .navbar-nav .nav-link {
+    color: #2C3539;
+    padding-left: 20px;
+    font-size: 22px;
+}
+/* change the color of active or hovered links */
+.navbar .nav-item.active .nav-link{
+	color: #2C3539;
+	font-size: 24px;
+	font-weight: bold;
+}
+.navbar .nav-item:hover .nav-link {
+    color: white;
+	text-decoration: none;
+}
+.navbar button{
+	background: #2C3539;
+	color: white;
+	border: 1px solid black;
+}
+.navbar button:hover{
+	background: white;
+	color: black;
+	cursor: pointer;
+}

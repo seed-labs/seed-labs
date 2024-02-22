@@ -1,0 +1,103 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
+
+\newcommand{\bufFigs}{./Figs}
+
+\lhead{\bfseries SEED Labs -- Buffer Overflow Attack (ARM64 Server)}
+
+\def \code#1 {\fbox{\scriptsize{\texttt{#1}}}}
+
+
+\newcommand{\arm}{} % turn on the arm64 switch
+
+\begin{document}
+
+\begin{center}
+{\LARGE Buffer Overflow Attack Lab (ARM64 Server Version)}
+\end{center}
+
+\seedlabcopyright{2020, 2023}
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\input{overview}
+
+% *******************************************
+% SECTION
+% *******************************************
+\input{labenv}
+
+
+% *******************************************
+% SECTION: Task 1
+% *******************************************
+\input{task_shellcode}
+
+
+% *******************************************
+% SECTION: Task 2: Level 1
+% *******************************************
+\input{task_level_1}
+% *******************************************
+
+
+% *******************************************
+% SECTION: Task 3: Level 2
+% *******************************************
+\input{task_level_2}
+% *******************************************
+
+
+% *******************************************
+% SECTION: Task 4: Level 3
+% *******************************************
+\input{task_level_3}
+% *******************************************
+
+
+% *******************************************
+% SECTION: Task 5: Level 4
+% *******************************************
+\input{task_level_4}
+% *******************************************
+
+
+% *******************************************
+% SECTION: Task 6, 7 
+% *******************************************
+\input{task_countermeasure}
+% *******************************************
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Guidelines on Reverse Shell} 
+\label{sec:guildelines}
+
+\input{\commonfolder/guidelines/reverse_shell.tex}
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Submission}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

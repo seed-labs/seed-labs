@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+    defender:
+        build: ./image_defender
+        image: seed-image-defender-clickjacking
+        container_name: defender-10.9.0.5
+        tty: true
+        volumes:
+                - ./defender:/var/www/defender
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.5
+
+    attacker:
+        build: ./image_attacker
+        image: seed-image-attacker-clickjacking
+        container_name: attacker-10.9.0.105
+        tty: true
+        volumes:
+                - ./attacker:/var/www/attacker
+        networks:
+            net-10.9.0.0:
+                ipv4_address: 10.9.0.105
+
+networks:
+    net-10.9.0.0:
+        name: net-10.9.0.0
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+

@@ -1,7 +1,7 @@
-Labsetup/**/badfile
-Labsetup/**/*.out
-Labsetup/**/*.o
-Labsetup/**/stack-L*
-Labsetup/**/server
-Labsetup/**/peda-session*
-Labsetup/**/codefile_*
+Labsetup*/**/badfile
+Labsetup*/**/*.out
+Labsetup*/**/*.o
+Labsetup*/**/stack-L*
+Labsetup*/**/server
+Labsetup*/**/peda-session*
+Labsetup*/**/codefile_*
