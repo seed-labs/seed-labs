@@ -205,33 +205,28 @@ is rerouted or not.
 \end{lstlisting}
  
 
-
-
-\paragraph{A strange issue.} While developing this lab, we have observed
-a strange issue in the container environment. The issue does not exist
-if the victim is a VM, instead of a container. 
-If we spoof the redirect packets, but the victim machine is not 
-sending out ICMP packets during the attack, the attack will never be successful. 
-This is not the case for the VM setting. 
-Moreover, the \texttt{ip2} inside the redirect packet must match with the
-type and the destination IP address of the packets 
-that the victim is currently sending (ICMP for ICMP,
-UDP for UDP, etc.). 
-
-
-It seems that the OS kernel conducts some kind of 
+\paragraph{Note:}
+If we spoof redirect packets, but the victim machine has not 
+sent out ICMP packets during the attack, the attack will never be successful. 
+This is because the OS kernel conducts some kind of 
 sanity check before accepting an ICMP redirect packets. 
-We have not figured out what exactly caused this, 
-and why the VM does not have these restrictions. 
-This is an open issue for the SEED labs, and we encourage 
-students to help us resolve this issue. We recommend instructors
-to give students bonus points if they have indeed resolved this issue. 
+It verifies whether the ICMP redirect is triggered by 
+the packet it sent out, i.e., it inspects 
+the \texttt{ip2} inside the redirect packet. 
+How strictly the checking is conducted 
+depends on the OS. 
 
-
-Before we find a way to disable this checking mechanism, 
-when we launch the attack,
-we should \texttt{ping} the \texttt{192.168.60.5} host on the 
-victim machine. 
+For Ubuntu 20.04, the OS simply verifies that
+the \texttt{ip2} inside the redirect packet matches with the
+type and the destination IP address of the original packet 
+that triggers the ICMP redirect. However, 
+if you are doing this lab from an Apple Silicon machine, your VM version is likely 
+Ubuntu 22.04 or above. 
+The checking is more strict. 
+The easiest way to ensure that the \texttt{ip2} in
+the spoofed packet passes the checking is to sniff a packet from the victim. 
+However, this is not necessary. Students are encouraged to 
+use other methods in their attacks. 
 
 
 \paragraph{Questions.} After you have succeeded in the attack, please 
