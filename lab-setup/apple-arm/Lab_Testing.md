@@ -46,7 +46,7 @@ Status symbols:
 | DNS Rebinding     | :thumbsup: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
 | DNS Infrastructure | | |
 | DNSSEC | | |
-| BGP | white_check_mark: | Full tested; no issue |
+| BGP | :white_check_mark: | Full tested; no issue |
 | Morris Worm | :construction_worker: | See [notes](Notes/Network_Security.md) |
 
 ## Crypto Lab 
