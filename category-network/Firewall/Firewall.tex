@@ -19,10 +19,9 @@
 \newcommand{\firewallFigs}{./Figs}
 \lhead{\bfseries SEED Labs -- Firewall Exploration Lab}
 
-\newcommand{\pointleft}[1]{\reflectbox{\ding{217}} \textbf{\texttt{#1}}}
+%\newcommand{\pointleft}[1]{\reflectbox{\ding{217}} \textbf{\texttt{#1}}}
 
 \begin{document}
-
 
 
 \begin{center}
@@ -227,13 +226,22 @@ $ sudo insmod hello.ko     (inserting a module)
 $ lsmod | grep hello       (list modules)
 $ sudo rmmod hello         (remove the module)
 $ dmesg                    (check the messages)
+$ sudo dmesg    (in Ubuntu 22.04, this command requires superuser privilege)
 \end{lstlisting}
-
 
 \paragraph{Task.} Please compile this simple kernel module on 
 your VM, and run it on the VM. For this task, we will not use 
 containers.  Please show your running results in the lab report. 
 
+\paragraph{Note.} If you compile the kernel module 
+on an Apple Silicon machine (inside a Ubuntu 22.04 VM), 
+you may see an error message indicating 
+that \texttt{gcc-12} is not installed. You can install it using
+the following command: 
+\begin{lstlisting}
+$ sudo apt install gcc-12
+\end{lstlisting}
+ 
 
 % -------------------------------------------
 % SUBSECTION
@@ -329,7 +337,8 @@ module_exit(removeFilter);
 \end{lstlisting}
 
 \paragraph{Note for Ubuntu 20.04 VM:}
-The code in the SEED book was developed in Ubuntu 16.04. It needs to be changed slightly 
+The code in the 2nd edition of the SEED book was developed 
+in Ubuntu 16.04. It needs to be changed slightly 
 to work in Ubuntu 20.04. The change is in the hook registration and 
 un-registration APIs. See the difference in the following:
 
