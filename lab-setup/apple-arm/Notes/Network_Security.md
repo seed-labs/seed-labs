@@ -49,7 +49,8 @@ Go to `Setting` -> `Privacy & Security`, and go to `DNS over HTTPS`, and select
 
 ## Firewall Exploration Lab
 
-We need to install gcc-12 to compile a loadable kernel module.
+For the kernel version above 6.5, 
+we need to install gcc-12 to compile a loadable kernel module.
 ```
 sudo apt install gcc-12
 ```
