@@ -2,10 +2,8 @@
 # encoding: utf-8
 
 from seedemu import *
-import os, sys
 
 def makeStubAs(emu: Emulator, base: Base, asn: int, exchange: int, hosts_total: int):
-
     # Create AS and internal network
     network = "net0"
     stub_as = base.createAutonomousSystem(asn)
@@ -22,14 +20,9 @@ def makeStubAs(emu: Emulator, base: Base, asn: int, exchange: int, hosts_total: 
        host = stub_as.createHost(name)
        host.joinNetwork(network)
 
-"""
-n = len(sys.argv)
-if n < 2:
-    print("Please provide the number of hosts per networks")
-    exit(0)
-hosts_total = int(sys.argv[1])
-"""
-hosts_total = 3  # Each AS has 3 hosts.
+
+
+hosts_total = 3
 
 ###############################################################################
 emu     = Emulator()
@@ -37,7 +30,7 @@ base    = Base()
 routing = Routing()
 ebgp    = Ebgp()
 ibgp    = Ibgp()
-ospf    = Ospf()
+web     = WebService()
 
 
 ###############################################################################
@@ -47,37 +40,45 @@ ix101 = base.createInternetExchange(101)
 ix102 = base.createInternetExchange(102)
 ix103 = base.createInternetExchange(103)
 ix104 = base.createInternetExchange(104)
+ix105 = base.createInternetExchange(105)
 
 # Customize names (for visualization purpose)
 ix100.getPeeringLan().setDisplayName('NYC-100')
 ix101.getPeeringLan().setDisplayName('San Jose-101')
 ix102.getPeeringLan().setDisplayName('Chicago-102')
 ix103.getPeeringLan().setDisplayName('Miami-103')
-ix104.getPeeringLan().setDisplayName('Boston-104')
+ix104.getPeeringLan().setDisplayName('Toronto-104')
+ix105.getPeeringLan().setDisplayName('Huston-105')
 
 
 ###############################################################################
 # Create Transit Autonomous Systems 
 
 ## Tier 1 ASes
-Makers.makeTransitAs(base, 2, [100, 101, 102], 
-       [(100, 101), (101, 102)] 
+Makers.makeTransitAs(base, 2, [100, 101, 102, 105], 
+       [(100, 101), (101, 102), (100, 105)] 
 )
 
-Makers.makeTransitAs(base, 3, [100, 103, 104], 
-       [(100, 103), (103, 104)]
+Makers.makeTransitAs(base, 3, [100, 103, 104, 105], 
+       [(100, 103), (100, 105), (103, 105), (103, 104)]
 )
 
 Makers.makeTransitAs(base, 4, [100, 102, 104], 
        [(100, 104), (102, 104)]
 )
 
+# This transit is for lab exercise. Its setup is incomplete
+Makers.makeTransitAs(base, 5, [101, 103, 105], 
+       [(101, 103), (103, 105)]
+)
+
 ## Tier 2 ASes
+Makers.makeTransitAs(base, 11, [102, 105], [(102, 105)])
 Makers.makeTransitAs(base, 12, [101, 104], [(101, 104)])
 
 
 ###############################################################################
-# Create single-homed stub ASes. "None" means create a host only 
+# Create single-homed stub ASes. 
 
 makeStubAs(emu, base, 150, 100, hosts_total)
 makeStubAs(emu, base, 151, 100, hosts_total)
@@ -86,6 +87,8 @@ makeStubAs(emu, base, 152, 101, hosts_total)
 makeStubAs(emu, base, 153, 101, hosts_total)
 
 makeStubAs(emu, base, 154, 102, hosts_total)
+makeStubAs(emu, base, 155, 102, hosts_total)
+makeStubAs(emu, base, 156, 102, hosts_total)
 
 makeStubAs(emu, base, 160, 103, hosts_total)
 makeStubAs(emu, base, 161, 103, hosts_total)
@@ -93,6 +96,9 @@ makeStubAs(emu, base, 162, 103, hosts_total)
 
 makeStubAs(emu, base, 163, 104, hosts_total)
 makeStubAs(emu, base, 164, 104, hosts_total)
+
+makeStubAs(emu, base, 170, 105, hosts_total)
+makeStubAs(emu, base, 171, 105, hosts_total)
 
 
 ###############################################################################
@@ -104,17 +110,22 @@ makeStubAs(emu, base, 164, 104, hosts_total)
 ebgp.addRsPeers(100, [2, 3, 4])
 ebgp.addRsPeers(102, [2, 4])
 ebgp.addRsPeers(104, [3, 4])
+ebgp.addRsPeers(105, [2, 3])
 
 # To buy transit services from another autonomous system, 
 # we will use private peering  
 
 ebgp.addPrivatePeerings(100, [2],  [150, 151], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(100, [3],  [150], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(100, [150], [151], PeerRelationship.Peer)
 
 ebgp.addPrivatePeerings(101, [2],  [12], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(101, [12], [152, 153], PeerRelationship.Provider)
 
-ebgp.addPrivatePeerings(102, [2, 4],  [154], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(102, [2, 4], [11, 154, 155], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(102, [11],   [154], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(102, [4],    [156], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(102, [155],  [156], PeerRelationship.Peer)
 
 ebgp.addPrivatePeerings(103, [3],  [160, 161, 162], PeerRelationship.Provider)
 
@@ -122,54 +133,24 @@ ebgp.addPrivatePeerings(104, [3, 4], [12], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(104, [4],  [163], PeerRelationship.Provider)
 ebgp.addPrivatePeerings(104, [12], [164], PeerRelationship.Provider)
 
+ebgp.addPrivatePeerings(105, [3],  [11, 170], PeerRelationship.Provider)
+ebgp.addPrivatePeerings(105, [11], [171], PeerRelationship.Provider)
 
 
 ###############################################################################
-# Create the Ethereum layer
-
-eth = EthereumService()
-blockchain = eth.createBlockchain(chainName="My blockchain",
-                 consensus=ConsensusMechanism.POA)
-
-asns = [150, 151, 152, 153, 154, 160, 161, 162, 163, 164]
-nodes = []
-i = 0
-for asn in asns:
-    for id in range(hosts_total):
-        vnode = 'eth{}'.format(i)
-        e = blockchain.createNode(vnode)
-        nodes.append(e)
-        e.enableGethHttp()  # Enable HTTP on all nodes
-        displayName = 'Ethereum-POA-{}'.format(i)
-        if i%5 == 0:
-            e.setBootNode(True)
-            e.unlockAccounts()
-            displayName = displayName + '-BootNode'
-        if i%3  == 0:
-            e.startMiner()
-            e.unlockAccounts()
-            displayName = displayName + '-Signer'
-
-        emu.getVirtualNode(vnode).setDisplayName(displayName)
-        emu.addBinding(Binding(vnode, filter=Filter(asn=asn, nodeName='host_{}'.format(id))))
-        i = i+1
-
-# Create prefunded accounts
-nodes[0].createAccount(balance= 99 * pow(10,20), password="admin")
-nodes[0].createAccount(balance= 0, password="admin")
-nodes[1].createAccount(balance = 55*pow(10,20), password="admin")
-nodes[2].createAccount(balance = 55*pow(10,20), password="admin")
-nodes[3].createAccount(balance = 55*pow(10,20), password="admin")
 
 # Add layers to the emulator
 emu.addLayer(base)
 emu.addLayer(routing)
 emu.addLayer(ebgp)
 emu.addLayer(ibgp)
-emu.addLayer(ospf)
-emu.addLayer(eth)
-emu.render()
+emu.addLayer(Ospf())
+emu.addLayer(web)
 
+# Save it to a component file, so it can be used by other emulators
+emu.dump('base-component.bin')
 
-docker = Docker()
-emu.compile(docker, './output', override = True)
+#emu.render()
+#docker = Docker(internetMapEnabled=True)
+#emu.compile(docker, './emulators/mini-internet', override = True)
+

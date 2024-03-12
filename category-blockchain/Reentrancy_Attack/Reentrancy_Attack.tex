@@ -93,58 +93,16 @@ resources~\cite{MasteringEthereum}.
 \subsection{Emulator} 
 
 This lab will be performed inside the SEED Internet Emulator (simply
-called the emulator in this document).
-We provide a pre-built emulator in two different forms: Python code
-and container files. The container files are generated from
-the Python code, but students need to install the SEED Emulator source
-code from the GitHub to run the Python code. The container files
-can be directly used without the emulator source code.
-Instructors who would like to customize the emulator can modify the Python
-code, generate their own container files, and then provide the
-files to students, replacing the ones included in the
-lab setup file.
+called the emulator in this document). If this is the first time you
+use the emulator, it is important that you read this section.
+We recommend instructors to provide a lab session to
+help students get familiar with the emulator.
 
 
-Please download the \texttt{Labsetup.zip} file from the web page, and
-unzip it. The contents inside the \path{Labsetup/emulator/} folder are the 
-files for the emulator. Inside this folder, there is two Python programs 
-that are used to generate the emulation. 
-We have already run the programs and the generated 
-emulation files are inside the \texttt{output/} and \texttt{output-small/} 
-folders. Students do not need to run the Python programs.  Students can pick
-one set of containers based on how much RAM they have given to their 
-underlying virtual machines. 
+\input{../common-files/emulator.tex}
 
-\begin{itemize}[noitemsep]
-\item \texttt{blockchain-poa-small.py} and \texttt{output-small/}: this setup
-has only 10 Ethereum nodes on the blockchain; it only requires 4GB of RAM to run.
-
-\item \texttt{blockchain-poa.py} and \texttt{output/}: this setup has more Ethereum
-nodes, but requires 8GB of RAM to run.
-\end{itemize}
- 
-
-
-\paragraph{Start the emulation.}
-Go to the container folder, and run the following docker commands
-to build and start the containers. We recommend that you run the emulator inside
-the provided SEED Ubuntu 20.04 VM, but doing it in a generic Ubuntu 20.04 operating system
-should not have any problem, as long as the docker software is installed.
-Readers can find the docker manual from
-\href{https://github.com/seed-labs/seed-labs/blob/master/manuals/docker/SEEDManual-Container.md}
-{\underline{this link}}.
-
-\begin{lstlisting}
-$ docker-compose build
-$ docker-compose up
-
-// Aliases for the Compose commands above (only available in the SEED VM)
-$ dcbuild       # Alias for: docker-compose build
-$ dcup          # Alias for: docker-compose up
-$ dcdown        # Alias for: docker-compose down
-\end{lstlisting}
-
-
+\paragraph{EtherView.}
+\input{../common-files/etherview.tex}
 
 
 % -------------------------------------------
