@@ -28,6 +28,10 @@ emu.load('./base-component.bin')
 eth = EthereumService()
 blockchain = eth.createBlockchain(chainName="POA", consensus=ConsensusMechanism.POA)
 
+# Change the default account balance to 1000
+mnemonic, _, _= blockchain.getEmuAccountParameters()
+blockchain.setEmuAccountParameters(mnemonic=mnemonic, balance=1000, total_per_node=2)
+
 # Create 10 accounts, each with 100 Ethers. We will use these accounts to
 # generate background traffic (sending random transactions from them).
 words = "great amazing fun seed lab protect network system security prevent attack future"
