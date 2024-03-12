@@ -69,7 +69,7 @@ Status symbols:
 | --- | --- | --- |
 | Blockchain Exploration | :white_check_mark: | Fully tested; no issue |
 | Smart Contract Lab | :white_check_mark: | Fully tested; no issue |
-| Blockchain: Reentrancy | :construction_worker: | | 
+| Blockchain: Reentrancy | :white_check_mark: | Fully tested; no issue | 
 
 
 ## Others
