@@ -1,0 +1,14 @@
+$TTL 3D
+.       IN      SOA   root-ns1.net. admin.root-ns1.net. (
+                2008111001
+                8H
+                2H
+                4W
+                1D)
+.                       IN      NS	root-ns1.net.
+root-ns1.net.           IN      A       10.9.0.30
+
+
+; Records for TLDs  
+edu                     IN      NS   ns1.edu.
+ns1.edu.                IN      A    10.9.0.60

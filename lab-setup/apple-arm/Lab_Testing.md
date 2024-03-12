@@ -44,9 +44,9 @@ Status symbols:
 | DNS Local         | :white_check_mark: | Fully tested; no issue |
 | DNS Remote        | :question: | See [notes](Notes/Network_Security.md) |
 | DNS Rebinding     | :thumbsup: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
-| DNS Infrastructure | | |
-| DNSSEC | | |
-| BGP | :white_check_mark: | Full tested; no issue |
+| DNS Infrastructure| :white_check_mark: | Tested the emulator; no issue |
+| DNSSEC            | :white_check_mark: | Tested the lab setup; no issue | 
+| BGP         | :white_check_mark: | Full tested; no issue |
 | Morris Worm | :construction_worker: | See [notes](Notes/Network_Security.md) |
 
 ## Crypto Lab 
