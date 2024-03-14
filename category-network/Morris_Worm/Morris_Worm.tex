@@ -86,10 +86,9 @@ so they can focus on the worm part in this lab.
 \seedenvironmentB
 \nodependency
 
-This lab does not work on the Apple silicon machines (M1/M2 chips) yet,
-because the shellcode used in the attack is x86 based. Efforts are being 
-made to support the Apple machines. Meanwhile, students with such
-Apple machines should do that using a cloud machine. 
+This lab works on both AMD and Apple Silicon machines (M1/M2 chips),
+but the lab setup files for these two different types of machines 
+are different. 
 
 % -------------------------------------------
 % SUBSECTION
@@ -172,7 +171,8 @@ Each network has five hosts, with the host IDs ranging from
 \end{figure}
  
 
-Go to the \texttt{Labsetup/internet-nano} folder, 
+Go to the \texttt{Labsetup/internet-nano} folder (or 
+the \texttt{Labsetup-arm/internet-nano} folder for Apple Silicon machines), 
 follow the instruction in Section~\ref{sec:emulator} to 
 start the containers (i.e. use \texttt{dcbuild} to build and 
 \texttt{dcup} to start). This will start the nano Internet
@@ -245,7 +245,7 @@ Attack Lab.
 % -------------------------------------------
 \subsection{The Skeleton Code} 
 
-We provide a skeleton code in the \texttt{Labsetup/worm} 
+We provide a skeleton code in the lab setup's \texttt{worm} 
 folder. We will complete this code gradually, one thing 
 at a time in each task. In this task, we focus 
 on completing the \texttt{createBadfile()} function, 
@@ -314,6 +314,8 @@ while True:
 Let's first send a benign message to our target server.
 We will see the following messages printed out by the 
 target container (the actual messages you see may be different).
+The results are from the AMD machine; the ones for the Apple
+Silicon machines are similar.
 
 \begin{lstlisting}
 // On the host machine 
@@ -758,13 +760,18 @@ still use the nano Internet setup to do their preliminary testing.
 \subsection{Start the Mini-Internet Emulator} 
 
 The container files for this emulator are stored 
-in the \texttt{Labsetup/internet-mini} folder. Go to this folder,
+in the lab setup's \texttt{internet-mini} folder. Go to this folder,
 run the following commands to build containers and start them.
 
 
 \begin{lstlisting}
-$ dcbuild  # alias for "docker-compose build" 
-$ ./z_start.sh
+// For AMD machines
+$ dcbuild        # alias for "docker-compose build" 
+$ ./z_start.sh   # start the container in batches (10 in each batch)
+
+// For Apple Silicon machines
+$ ./z_build.sh   # build images in batches (10 or 20 in each batch)
+$ dcup           # alias for "docker compose up"
 \end{lstlisting}
  
 Due to a bug in the \texttt{docker-compose} program, 
@@ -781,7 +788,20 @@ Once the emulator starts running, we can see its networks
 using the browser (see Figure~\ref{fig:mini-internet}).
 
 
-Using this method, we have to bring up the containers in the detached
+On Apple Silicon machines (which use Ubuntu 22.04 VM), the 
+compose command becomes \texttt{"docker compose"}, instead 
+of \texttt{"docker-compose"}. The bug was fixed, so 
+we can directly use \texttt{"docker compose up"} to 
+start all the containers, but unfortunately, building 
+the images using \texttt{"docker compose build"} has a problem.
+We have to build the images 10 (or 20) at a time to avoid this 
+problem. That is why we use \texttt{z\_build.sh} for the Apple
+Silicon machines.
+
+
+
+Using the \texttt{./z\_start.sh} to start up the containers,
+we have to bring up the containers in the detached
 mode (the purpose of the \texttt{-d} option). Therefore, we will not be able
 see the logs printed out by each container. To see the logs, 
 we can use the following command (use \texttt{Ctrl-c} to
@@ -834,7 +854,7 @@ The following facts can be used:
 \begin{quote}
     The IP addresses of all the hosts in the emulator have the following
     pattern: \texttt{10.X.0.Y}, where \texttt{X} ranges from 
-    \texttt{151} to \texttt{180}, 
+    \texttt{150} to \texttt{180}, 
     and \texttt{Y} ranges from \texttt{70} to \texttt{100}.  
 \end{quote}
 
