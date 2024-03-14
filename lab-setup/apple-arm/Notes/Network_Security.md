@@ -34,7 +34,8 @@ Need to investigate further.
 It seems that the we have trouble running the flask server due to the
 version. We need to upgrade the flask container by running the
 following command. The one used in the original `Dockerfile` is
-version `1.1.1`. Further testing is needed.
+version `1.1.1`. We added the following command to the flask container.
+
 
 ```
 pip3 install flask --upgrade
