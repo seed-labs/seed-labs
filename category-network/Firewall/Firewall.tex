@@ -888,7 +888,7 @@ Now we are ready to set up firewall rules based on connections.
 In the following example, 
 the \texttt{"-m conntrack"} option indicates that we are using the \texttt{conntrack} module,
 which is a very important module for \iptables; it tracks connections, and
-\iptables replies on the tracking information to build stateful firewalls. 
+\iptables relies on the tracking information to build stateful firewalls. 
 The \texttt{--ctsate ESTABLISHED,RELATED} indicates that whether a packet
 belongs to an \texttt{ESTABLISHED} or \texttt{RELATED} connection.
 The rule allows TCP packets belonging to an existing connection to 
