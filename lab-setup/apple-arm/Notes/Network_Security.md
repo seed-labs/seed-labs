@@ -25,8 +25,8 @@ This is a minor issue.
 
 ## DNS Remote Attack
 
-Tried the attack. The program works, but the attack is not successful.
-Need to investigate further.
+To compile the `attack.c` program, we need to use the static 
+binding (`gcc -static`). 
 
 
 ## DNS Rebinding Attack

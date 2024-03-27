@@ -42,7 +42,7 @@ Status symbols:
 | VPN Tunneling     | :white_check_mark: | Fully tested; no issue |
 | Heartbleed        | x          | Will not port          |
 | DNS Local         | :white_check_mark: | Fully tested; no issue |
-| DNS Remote        | :question: | See [notes](Notes/Network_Security.md) |
+| DNS Remote        | :white_check_mark: | Fully tested; no issue |
 | DNS Rebinding     | :white_check_mark: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
 | DNS Infrastructure| :white_check_mark: | Tested the emulator; no issue |
 | DNSSEC            | :white_check_mark: | Tested the lab setup; no issue | 
