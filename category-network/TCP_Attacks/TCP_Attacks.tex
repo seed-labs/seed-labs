@@ -410,6 +410,9 @@ the program on the VM and then launch the attack on the target machine.
 // Compile the code on the host VM
 $ gcc -o synflood synflood.c
 
+// For Apple Silicon machines: use the static binding
+$ gcc -static -o synflood synflood.c
+
 // Launch the attack from the attacker container
 # synflood 10.9.0.5 23
 \end{lstlisting}
