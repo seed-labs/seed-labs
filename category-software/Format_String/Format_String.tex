@@ -160,7 +160,8 @@ If users can exploit this vulnerability, they can cause damages.
 
 \paragraph{Compilation.} 
 We will compile the \texttt{format} program into both 32-bit and 64-bit
-binaries. Our pre-built Ubuntu 20.04 VM is a 64-bit VM, but it
+binaries (for Apple Silicon machines, we only compile the program
+into 64-bit binaries). Our pre-built Ubuntu 20.04 VM is a 64-bit VM, but it
 still supports 32-bit binaries. All we need to do is to
 use the \texttt{-m32} option in the \texttt{gcc} command.
 For 32-bit compilation, we also use \texttt{-static} to generate
@@ -258,6 +259,11 @@ When we start the containers using the included
 started, each running a vulnerable server. 
 For this task, we will use the server running on \texttt{10.9.0.5}, 
 which runs a 32-bit program with a format-string vulnerability. 
+For Apple Silicon machines, both containers are the same, and 
+they both run a 64-bit server program (students can use any one
+in this lab).
+
+
 Let's first send a benign message to this server.
 We will see the following messages printed out by the target container (the
 actual messages you see may be different).
@@ -466,7 +472,8 @@ the argument pointer starts from the location above \ding{202}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Both 32-bit and 64-bit versions of shellcode are included in 
-the \texttt{exploit.py} inside the \texttt{attack-code} folder. 
+the \texttt{exploit.py} inside the \texttt{attack-code} folder (for 
+Apple Silicon machines, only 64-bit shellcode is included). 
 You can use them to build your format strings. 
 
 
@@ -500,6 +507,12 @@ Please include screenshots and explanation in your lab report.
 % SECTION
 % *******************************************
 \section{Task 5: Attacking the 64-bit Server Program}
+
+\textbf{Note:} For Apple Silicon machines, Tasks 1-4 
+are already using the 64-bit server program, so this task
+is the same as Task 4 and there is no need to repeat it. 
+However, students can find useful information about 64-bit 
+machines in this section. 
 
 In the previous tasks, our target servers are 32-bit
 programs. In this task, we switch to a 64-bit server
