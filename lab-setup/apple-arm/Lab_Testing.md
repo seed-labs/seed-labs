@@ -1,16 +1,16 @@
 # Lab Testing on ARM Platform
 
-This document shows the progress of lab testing. 
+This document shows the progress of lab testing.
 Brief notes can be placed in the table, but detailed
 notes should be put inside the [Notes folder](./Notes).
 
 Status symbols:
   - :white_check_mark: : Published on the SEED website
-  - :thumbsup: : Ready, but not published yet 
+  - :thumbsup: : Ready, but not published yet
   - :construction_worker: : Work in progress
   - x:  Will not port (very difficult to port, or unnecessary)
 
-## Software and Web Security 
+## Software and Web Security
 
 | Lab | Status | Notes |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ Status symbols:
 | Shellshock      | :white_check_mark: | Tested the lab setup: [notes](Notes/Shellshock.md) |
 | Clickjacking    | :white_check_mark: | tested the lab setup |
 
-## Network Security 
+## Network Security
 
 | Lab | Status | Notes |
 | --- | --- | --- |
@@ -45,11 +45,11 @@ Status symbols:
 | DNS Remote        | :white_check_mark: | Fully tested; no issue |
 | DNS Rebinding     | :white_check_mark: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
 | DNS Infrastructure| :white_check_mark: | Tested the emulator; no issue |
-| DNSSEC            | :white_check_mark: | Tested the lab setup; no issue | 
-| BGP         | :white_check_mark: | Full tested; no issue |
+| DNSSEC            | :white_check_mark: | Tested the lab setup; no issue |
+| BGP         | :white_check_mark: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
 | Morris Worm | :white_check_mark: | See [notes](Notes/Network_Security.md) |
 
-## Crypto Lab 
+## Crypto Lab
 
 | Lab | Status | Notes |
 | --- | --- | --- |
@@ -69,12 +69,12 @@ Status symbols:
 | --- | --- | --- |
 | Blockchain Exploration | :white_check_mark: | Fully tested; no issue |
 | Smart Contract Lab | :white_check_mark: | Fully tested; no issue |
-| Blockchain: Reentrancy | :white_check_mark: | Fully tested; no issue | 
+| Blockchain: Reentrancy | :white_check_mark: | Fully tested; no issue |
 
 
 ## Others
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Meltdown | x | Will not port | 
-| Spectre  | x | Will not port | 
+| Meltdown | x | Will not port |
+| Spectre  | x | Will not port |
