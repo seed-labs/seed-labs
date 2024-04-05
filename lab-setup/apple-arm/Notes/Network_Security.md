@@ -62,16 +62,20 @@ different from Ubuntu 20.04.
 
 ## BGP Lab
 
-When `dcbuild`, we get error `failed to solve: pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed`
+When we run `dcbuild`, we get this error 
+`failed to solve: pull access denied, repository does not exist or
+may require authorization: server message: insufficient_scope:
+authorization failed`
 
 ![BGP BuildKit issue](../Figs/BGPBuildKitIssue.png)
 
-It is a BuildKit issue. Running following command to change the environment
-variable.
+This is caused by `BuildKit`, which is an improved backend to replace the 
+legacy builder. `BuildKit` is the default builder for users on Docker Desktop, 
+and Docker Engine as of version 23.0. To fix this problem, 
+set the following environment variable to disable `BuildKit`.
 ```
 export DOCKER_BUILDKIT=0
 ```
-This command will disabling the Docker Engine "BuildKit" feature works.
 
 
 ## Morris Worm Lab
