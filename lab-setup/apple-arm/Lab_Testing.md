@@ -18,7 +18,7 @@ Status symbols:
 | Buffer-Overflow (setuid)  | x  | Will not port. See [notes](Notes/Software_Security.md) |
 | Buffer-Overflow (server)  | :white_check_mark:  | Added a new lab. See [notes](Notes/Software_Security.md) |
 | Return-to-Libc  |  x   | Will not port. See [notes](Notes/Software_Security.md)|
-| Format String   | :construction_worker:   | See [notes](Notes/Software_Security.md)|
+| Format String   | :white_check_mark:   | See [notes](Notes/Software_Security.md)|
 | Shellcode       | :white_check_mark:   | Redesigned. See [notes](../../category-software/Shellcode/README.md) |
 | Dirty Cow       |  x  | Will not port |
 | Race Condition  | :white_check_mark: |  Fully tested      |
