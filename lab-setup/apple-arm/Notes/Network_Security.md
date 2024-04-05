@@ -60,6 +60,20 @@ The `dmesg` command in Ubuntu 22.04 requires the root privilege. This is
 different from Ubuntu 20.04.
 
 
+## BGP Lab
+
+When `dcbuild`, we get error `failed to solve: pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed`
+
+![BGP BuildKit issue](../Figs/BGPBuildKitIssue.png)
+
+It is a BuildKit issue. Running following command to change the environment
+variable.
+```
+export DOCKER_BUILDKIT=0
+```
+This command will disabling the Docker Engine "BuildKit" feature works.
+
+
 ## Morris Worm Lab
 
 The Internet emulator works, but since the attack depends on the
