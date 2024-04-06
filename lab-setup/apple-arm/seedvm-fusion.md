@@ -5,7 +5,6 @@
 - [Step 2: Install VMWare Fusion Player](#install-fusion) 
 - [Step 3: Create Ubuntu 22.04 VM on VMware Fusion Player](#create-vm)
 - [Step 4: Install Software and Configure System](#install-software)
-- [Step 5: Set Up Docker and Docker Compose](#setup-docker)
 
 
 ## <a id="setup-host"></a>Step 1: Set Up the Host Apple Machine
@@ -178,11 +177,11 @@ Go to terminal, first download `curl` using
 sudo apt-get install curl
 ```
 
-Download [`src-cloud.zip`](https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip)
+Download [`src-arm.zip`](https://seedsecuritylabs.org/setup/src-arm.zip)
 from the link or using the following `curl` command.
 
   ```
-  curl -o src-cloud.zip https://seed.nyc3.cdn.digitaloceanspaces.com/src-cloud.zip
+  curl -o src-arm.zip https://seedsecuritylabs.org/setup/src-arm.zip
   ```
 
 In order to unzip the file, we first need to install the `unzip` program
@@ -190,10 +189,10 @@ In order to unzip the file, we first need to install the `unzip` program
   ```
   sudo apt update
   sudo apt -y install unzip
-  unzip src-cloud.zip
+  unzip src-arm.zip
   ```
 
-After unzipping the file, you will see a `src-cloud` folder.
+After unzipping the file, you will see a `src-arm` folder.
   Enter this folder, and run the following command to install software
   and configure the system.
   ```
@@ -218,16 +217,3 @@ account using the following command:
 sudo su seed
 ```
 
-## <a id="setup-docker"></a>Step 5: Set Up Docker and Docker Compose
-
-After done with the setup we have to set the docker default platform to linux/arm64. Go to terminal and type the following command.
-
-```export DOCKER_DEFAULT_PLATFORM=linux/arm64```
-
-Docker-compose is not available for arm64 architecture. So we have to install it manually. Go to terminal and type the following commands.
-
-```sudo curl -L "https://github.com/docker/compose/releases/download/v2.11.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose```
-
-```sudo chmod +x /usr/local/bin/docker-compose```
-
-Now you can use docker-compose in your VM.
