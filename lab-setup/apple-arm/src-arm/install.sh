@@ -142,7 +142,7 @@ sudo apt -y install tigervnc-standalone-server tigervnc-xorg-extension
 
 
 #================================================
-echo "Customizatoin ..."
+echo "Customization ..."
 
 HOMEDIR=/home/$USERID
 
