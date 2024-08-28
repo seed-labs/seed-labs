@@ -70,23 +70,44 @@ And then start the service using the following command.
 
 
 
-## <a id="install-fusion"></a>Step 2: Install VMWare Fusion Player
+## <a id="install-fusion"></a>Step 2: Install VMware Fusion Player
 
-VMWare Fusion Player is a free virtual machine software. 
+VMware Fusion Player is a free virtual machine software. 
 It is similar to VirtualBox that we have been using 
 for the SEED labs, but VirtualBox still cannot run 
 reliably on Apple Silicon machines. 
 
 
-Go to [VMware Fusion](https://customerconnect.vmware.com/en/evalcenter?p=fusion-player-personal-13) and register for a free Fusion Player license. Then under License & Download, click on `Manually Download`.
+Go to [VMware Fusion](https://customerconnect.vmware.com/en/evalcenter?p=fusion-player-personal-13) and either log in or register for a basic Broadcom account. 
 
-![VMware Fusion Player](Figs/vmware-fusion-player-web.png)
+![VMware Fusion Player](Figs/Broadcom_Homepage.png)
 
-Installation is straight forward. Download the dmg file manually from the link provided in the installation page. Double click on the dmg file and follow the instructions.
+You will get this page when you registered successfully. You can skip `Build my Profile` for now.
 
-After the installation is finished, you can start the VMware Fusion Player. You will be asked to enter your license key which will be there on the installation page.
+![VMware Fusion Player](Figs/register_success.png)
 
-After you have entered the license key, you will be asked to allow the kernel extensions. Click on `Open Security Preferences`.
+Once logged in Broadcom account, we come back to [Broadcom Support Portal](https://support.broadcom.com/web/ecx/home) if we're not redirected there. We click the `Software` dropdown to choose the `VMware Cloud Foundation division` to select `My Downloads`.
+![VMware Fusion Player](Figs/Broadcom_VMWare_cloud.png)
+
+Find `VMware Fusion` in `My Downloads` page.
+
+![VMware Fusion Player](Figs/vmware_fusion_download.png)
+
+click `VMware Fusion 13 Pro for Personal Use` dropdown to choose `13.5.2` version.
+![VMware Fusion Player](Figs/vmware_download_select_version.png)
+
+In Primary Downloads page, find `.dmg` file and click download button to download the dmg file manually.
+![VMware Fusion Player](Figs/vmware_download_web.png)
+
+Installation is straight forward. Double click on the downloaded dmg file and follow the instructions.
+
+![VMware Fusion Player](Figs/vmware_install.png)
+
+After the installation is finished, you can start the VMware Fusion Player. 
+
+You will be asked to enter license key. Select `VMware Fusion Pro for Personal Use`.
+
+You will be asked to allow the kernel extensions. Click on `Open Security Preferences`.
 
 In the Security & Privacy settings, click on `Allow` to allow the kernel extensions.
 
