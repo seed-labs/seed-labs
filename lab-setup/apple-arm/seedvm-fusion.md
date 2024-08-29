@@ -55,20 +55,6 @@ If after installing homebrew you are not able to access brew, run the following 
 ```eval $(/opt/homebrew/bin/brew shellenv)```
 
 
-### Step 1.2: Install ```docker-mac-net-connect```
-
-This is required to connect the docker container to the host network. 
-To install `docker-mac-net-connect`, open the terminal and run the following command.
-
-```brew install chipmk/tap/docker-mac-net-connect```
-
-And then start the service using the following command.
-
-```sudo brew services start chipmk/tap/docker-mac-net-connect```
-
-![brew services start](Figs/brew-services-start.png)
-
-
 
 ## <a id="install-fusion"></a>Step 2: Install VMware Fusion Player
 
