@@ -237,16 +237,16 @@ execve("/bin/sh", argv[], 0)
 \end{lstlisting}
 
 We need to pass three arguments to this system call:
-In the amd64 architecture, they are are 
+In the amd64 architecture, they are
 passed through the \texttt{rdi}, \texttt{rsi},
 and \texttt{rdx} registers.  
 In the arm64 architecture, they are
 passed through the \texttt{x0}, \texttt{x1}, 
 and \texttt{x2} registers. 
-The pseudo code is listed below: 
- 
+The pseudo-code is listed below: 
+
 \begin{lstlisting}
-// For amd64 architrecture
+// For amd64 architecture
  Let rdi = address of the "/bin/sh" string
  Let rsi = address of the argv[] array
  Let rdx = 0
@@ -254,7 +254,7 @@ The pseudo code is listed below:
  Let rax = 59    // 59 is execve's system call number
  syscall         // Invoke execve()
 
-// For the arm64 architrecture
+// For the arm64 architecture
  Let x0  = address of the "/bin/sh" string
  Let x1  = address of the argv[] array
  Let x2  = 0
@@ -290,7 +290,7 @@ architecture. The code can also be found in the \texttt{Labsetup} folder.
 If you are working on this lab on an Apple silicon machine, you can
 find the sample arm64 code in the \texttt{arm} sub-folder.
 
-\begin{lstlisting}[caption=A smaple 64-bit shellcode (\texttt{mysh64.s})] 
+\begin{lstlisting}[caption=A sample 64-bit shellcode (\texttt{mysh64.s})] 
 section .text
   global _start
     _start:
