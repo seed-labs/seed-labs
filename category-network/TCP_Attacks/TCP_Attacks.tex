@@ -215,8 +215,8 @@ net.ipv4.tcp_max_syn_backlog = 128
 
 We can use command \texttt{"netstat -nat"} to check the usage of the queue, 
 i.e., the number of half-opened connection associated with a listening port. 
-The state for such connections is \texttt {SYN-RECV}. If the 3-way handshake
-is finished, the state of the connections will be {\tt ESTABLISHED}. 
+The state for such connections is \texttt{SYN-RECV}. If the 3-way handshake
+is finished, the state of the connections will be \texttt{ESTABLISHED}. 
 
 \paragraph{SYN Cookie Countermeasure:}
 By default, Ubuntu's SYN flooding countermeasure is turned on. This 
