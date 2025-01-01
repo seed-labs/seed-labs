@@ -9,7 +9,7 @@ We need to install some software packages on the host Apple machine.
 To do that, we first need to install Homebrew, which
 is a package manager for macOS (and Linux, too).
 We assume that you already have docker 
-install on your Apple machine. If you don't have it, 
+installed on your Apple machine. If you don't have it, 
 please follow [these instructions](https://docs.docker.com/desktop/mac/install/).
 
 ### Step 1.1: Install Homebrew

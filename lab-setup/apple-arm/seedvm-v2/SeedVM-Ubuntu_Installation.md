@@ -1,15 +1,20 @@
 # Ubuntu Installation for Apple Silicon Machines
 
-- [Step 1: Download Ubuntu server version](#download)
-- [Step 2: Install Ubuntu Desktop](#install)
+- [Step 1: Download Ubuntu 22.04 server](#download)
+- [Step 2: Create VM on VMWare Fusion](#createvm)
+- [Step 3: Install Ubuntu server](#installserver)
+- [Step 4: Install Ubuntu Desktop](#installdesktop)
 
-## <a id="download"></a>Step 1: Download Ubuntu server version
+## <a id="download"></a>Step 1: Download Ubuntu 22.04 server
 
-Since the desktop versions of all Ubuntu VM are removed, we can no longer use the pre-built desktop versions but install the server version instead. We recommend downloading Ubuntu 22.04 version.
+Since the desktop versions of all Ubuntu VM are removed, we can no longer use the pre-built desktop versions; we will install the server version instead. We recommend downloading Ubuntu 22.04 version.
 
 We will download the Ubuntu ISO image first. Go to [Ubuntu 22.04.5](https://cdimage.ubuntu.com/ubuntu/releases/22.04/release/) and download the Ubuntu 22.04.5 LTS (Jammy Jellyfish) . Make sure you download the `64-bit ARM (ARMv8/AArch64) server install image`.
 
 ![Ubuntu-ISO.png](./Figs/ubuntu-iso.png)
+
+***
+## <a id="createvm"></a>Step 2: Create VM on VMWare Fusion
 
 After the download is finished, start the VMware Fusion Player. Click on `Create a New Virtual Machine`.
 
@@ -21,11 +26,15 @@ Select the downloaded Ubuntu ISO image, and then click on `Continue`.
 
 ![VMware Fusion Player Select ISO](./Figs/vmware-fusion-player-select-iso.png)
 
-In the next screen, make sure that 2 CPUs and 4 GB of RAM are selected. Click on `Finish`.
+In the next screen, make sure that 2 CPUs and 4 GB of RAM are selected. Click on `Finish`. 
+The VM will be created and started. 
 
 ![VMware Fusion Player Finish](./Figs/vmware-fusion-player-finish.png)
 
-The VM will be created and started. After the VM is started, click on `Try or install Ubuntu Server`.
+***
+## <a id="installserver"></a>Step 3: Install Ubuntu server
+
+After the VM is started, click on `Try or install Ubuntu Server`.
 
 ![VMware Fusion Player Try Or Install Ubuntu Server](./Figs/vmware-fusion-player-try-or-install-ubuntu-server.png)
 
@@ -84,21 +93,22 @@ We will be greeted with the installation interface. Following the instructions b
 
 	![Featured Server Snaps](./Figs/featured-server-snaps.png)
 	
-- Wait until it finish the installation and select `Reboot Now`
+- Wait until it finishes the installation and select `Reboot Now`
 
 	![Reboot Now](./Figs/reboot-now.png)
 	
 - Maybe you will encounter the situation like `Failed unmounting /cdrom`, press enter directly.
 
 	![Failed Unmounting](./Figs/failed-unmounting.png)
-After the cloud-init operation, press enter and login your account:
 
-![Login](./Figs/login.png)
+- After the cloud-init operation, press enter and login to your account:
+
+    ![Login](./Figs/login.png)
 
 ***
-## <a id="install"></a>Step 2: Install Ubuntu Desktop
+## <a id="installdesktop"></a>Step 3: Install Ubuntu Desktop
 
-In some of our labs, we are required to have a GUI to check the result. We will install ubuntu-desktop in the VM to get it. Use `sudo apt update` first and `sudo apt install ubuntu-desktop`
+In most SEED labs, we need to have a GUI to check the result. We will install ubuntu-desktop in the VM to get it. Use `sudo apt update` first and `sudo apt install ubuntu-desktop`
 
 ![Install Ubuntu Desktop](./Figs/install-ubuntu-desktop.png)
 
