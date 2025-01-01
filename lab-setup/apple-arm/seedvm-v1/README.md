@@ -13,19 +13,38 @@ issues in this project.
 ## Choosing the Virtual Machine Software 
 
 It does not seem that VirtualBox will allow us to run
-Linux on top of Apple Silicon machines any time soon.
+Linux on top of Apple Silicon machines (M1/M2) any time soon.
 Other than the cloud approach, we should start looking at
 other approaches. There are two possible virtualization
 products:
 
-- VMWare Fusion Player: this one is free. We choose to use this software.
-  Here is the [instructions](./seedvm-fusion.md).
-
 - Parallels: this one is not free.
   - If you have a Parallels subscription, you may follow the instructions provided in [src-vm](../ubuntu20.04-vm/src-vm/README.md)
   - Comment out the virtualbox specific scripts from [`main.sh`](../ubuntu20.04-vm/src-vm/main.sh)(`# Add guest addition`)before use.
+- VMWare Fusion Player: this one is free. We choose to use this software.
 
 
+## Building the SEED VM on Fusion
+
+
+Step 1: Build an Ubuntu VM on VMWare Fusion. 
+We could not find the ARM version of Ubuntu 20.04, so we will install
+Ubuntu 22.04 instead. A detailed instruction is provided 
+in [seedvm-fusion.md](./seedvm-fusion.md).
+
+
+Step 2: Install software inside the VM. This step is the same 
+as the Step 2 in the 
+[cloud VM manual](https://github.com/seed-labs/seed-labs/blob/master/manuals/cloud/seedvm-cloud.md).
+Here are some notes: 
+
+ - During the setup of VM we need to run a script in ```/src-cloud``` to install
+   the necessary software. The script will throw an error 
+   ```E: Package 'gcc-multilib' has no installation candidate```
+   as the package is not available for ARM architecture. 
+   This package is required for the compilation of 32-bit so it will cause
+   problem in the compilation of some labs. We will need to find a way to 
+   install this package.
 
 
 
