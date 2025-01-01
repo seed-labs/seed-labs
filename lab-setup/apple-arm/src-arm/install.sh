@@ -131,14 +131,15 @@ sudo setcap cap_net_raw,cap_net_admin+eip /usr/bin/dumpcap
 
 
 #================================================
-echo "Installing software for the cloud VM ..."
+# echo "Installing software for the cloud VM ..."
+# These steps are not needed for ARM VM
 
-# Instal a light-weighted window manager.
+# Install a light-weighted window manager.
 # It will ask us to choose a default display manager, chose LightDM. 
-sudo apt -y install xfce4 xfce4-goodies
+# sudo apt -y install xfce4 xfce4-goodies
 
 # Install TigerVNC server
-sudo apt -y install tigervnc-standalone-server tigervnc-xorg-extension
+# sudo apt -y install tigervnc-standalone-server tigervnc-xorg-extension
 
 
 #================================================
@@ -172,12 +173,14 @@ sudo -u $USERID mkdir -p $HOMEDIR/.local/icons
 sudo -u $USERID cp Files/System/Icons/*  $HOMEDIR/.local/icons
 
 # Copy the desktop image files
-sudo cp -f Files/System/Background/* /usr/share/backgrounds/xfce/
+# sudo cp -f Files/System/Background/* /usr/share/backgrounds/xfce/
 
+
+# These steps are not needed 
 # Configure the VNC server 
-sudo -u $USERID mkdir -p $HOMEDIR/.vnc
-sudo -u $USERID cp Files/System/vnc_xstartup $HOMEDIR/.vnc/xstartup
-sudo -u $USERID chmod u+x $HOMEDIR/.vnc/xstartup
+#sudo -u $USERID mkdir -p $HOMEDIR/.vnc
+#sudo -u $USERID cp Files/System/vnc_xstartup $HOMEDIR/.vnc/xstartup
+#sudo -u $USERID chmod u+x $HOMEDIR/.vnc/xstartup
 
 #================================================
 echo "Cleaning up ..."
