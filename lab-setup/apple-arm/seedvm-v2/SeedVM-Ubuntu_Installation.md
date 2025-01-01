@@ -106,7 +106,7 @@ We will be greeted with the installation interface. Following the instructions b
     ![Login](./Figs/login.png)
 
 ***
-## <a id="installdesktop"></a>Step 3: Install Ubuntu Desktop
+## <a id="installdesktop"></a>Step 4: Install Ubuntu Desktop
 
 In most SEED labs, we need to have a GUI to check the result. We will install ubuntu-desktop in the VM to get it. Use `sudo apt update` first and `sudo apt install ubuntu-desktop`
 
