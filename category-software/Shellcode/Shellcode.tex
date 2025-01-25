@@ -402,9 +402,9 @@ break one     -- Set a break point at section "one"
 run           -- Start debugged program.
 step          -- Step program until it reaches a different source line.
 print  $rbx   -- Print out the value of the rbx register
-x/40bx <addr> -- Print out the memory at address <addr>
+x/40bx <addr> -- Print out 40 bytes of memory at address <addr>
 x/40bx $rsp   -- Print out the top 40 bytes of the stack
-x/5gx  $rsp   -- Print out the top 4 double-word (8 bytes) of the stack
+x/5gx  $rsp   -- Print out the top 5 double-word (8 bytes) of the stack
 quit          -- Exit from gdb 
 \end{lstlisting}
 
@@ -466,7 +466,7 @@ command.
 
 In this new command, the \texttt{argv} array should have 
 the following four elements, all of which need to be 
-constructed on the stack. Please modify \texttt{mysh64.s} and 
+constructed inside the shellcode. Please modify \texttt{mysh64.s} and 
 demonstrate your execution result. As usual, you cannot have 
 any zero in your shellcode.
 
@@ -511,7 +511,7 @@ To write such a shellcode, we need to construct an
 environment variable array on the stack, 
 and store the address of this array to the \texttt{rdx} register,  
 before invoking \texttt{execve()}.  
-The way to construct this array on the stack is exactly the same
+The way to construct this array is exactly the same
 as the way how we construct the \texttt{argv[]} array. 
 See the following: 
 
