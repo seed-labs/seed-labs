@@ -356,12 +356,13 @@ def createBadfile():
 
 To test the attack, simply run the attack program \texttt{worm.py}.
 It will generate the badfile, and then send its content to
-the target server. If you see a smiley face printed out on the 
+the target machine (docker container). If you see a smiley face printed out on the 
 target machine, that means that you are attack has succeeded, and your 
 injected code has been executed. 
 
 
 \begin{lstlisting}
+// python3 worm.py 
 $ chmod +x worm.py
 $ ./worm.py
 \end{lstlisting}
@@ -478,7 +479,7 @@ for the worm; once this central place is shut down, the
 worm will stop crawling. A worm typically downloads the needed files from
 its direct predecessor. Namely, if a worm crawls from A to B, 
 and then from B to C, once it arrives at C, it should
-copy the files only from C. 
+copy the files only from B. 
 
 
 To get files from another computer, we need to have a client 
@@ -583,7 +584,7 @@ The following code gives an example: it generates a random
 integer number from 100 to 200.
 
 \begin{lstlisting}[language=Python]
-from random import random
+from random import randint
 
 number = randint(100, 200)
 \end{lstlisting}
