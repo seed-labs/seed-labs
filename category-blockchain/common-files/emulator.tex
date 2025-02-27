@@ -94,19 +94,16 @@ for potential solutions.
 
 
 \paragraph{Stop the emulator.} 
-To stop the emulator, we just need to stop all the containers. 
-We can go to the terminal where we run the 
-\texttt{"docker-compose up"} command, type \texttt{Ctrl-C}.
-That will stop all the containers, but without removing them, i.e., all the data 
-in the containers are still preserved, and they can be resumed by 
-running \texttt{"docker-compose up"} again. 
-If we want to remove them, we can run the \texttt{"docker-compose down"}
-command. Another way to do this is to go to a different terminal (but still in the
-same \texttt{emulator} folder) and directly run this command.  
-That will stop and removing all the containers.
+To stop the emulator, we just need to stop all the containers. We can go to the ter
+minal where we run \texttt{"docker-compose up"} command, and press on the keyboard 
+\texttt{Ctrl-C}. That will stop all the containers, but without removing them, i.e., 
+all the data in the containers are still preserved, and they can be resumed by 
+running \texttt{"docker-compose up"} again. If we want to remove all the stopped
+containers we can run \texttt{"docker system prune"} command.
 
 \begin{lstlisting}
-$ dcdown        # Alias for: docker-compose down
+$ dcdown               # Alias for: docker-compose down 
+$ docker system prune  # This will remove all the stopped containers
 \end{lstlisting}
 
 
