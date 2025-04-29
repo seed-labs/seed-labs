@@ -9,6 +9,12 @@
 
 ### [Build SEED Ubuntu 20.04 VM from Scratch](./seedvm-from-scratch.md)
 
-### [Common Problems](./vm-problems.md)
+
+
+## Common Problems
+
+- [Problems with shared folder](./problem-shared-folder.md)
+- [DNS Problems](./problem-dns.md)
+
 
 

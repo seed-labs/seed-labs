@@ -1,8 +1,6 @@
 # Common Problems
 
-In this document, we record some of the common problems encountered. 
-
-## Problem 1: Web security labs
+## Problem 1: Problem with the Shared Folder 
 
 **Problem Description:** In the web security labs, students failed to 
 browse the web server created for the lab. For example, when
