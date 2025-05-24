@@ -1,11 +1,11 @@
-version: "3"
-
 services:
     www:
         build: ./image_www
         image: seed-image-www-sqli
         container_name: www-10.9.0.5
         tty: true
+        volumes:
+            -   ./image_www/Code:/var/www/SQL_Injection # might need :Z for SELinux
         networks:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.5
@@ -18,9 +18,9 @@ services:
         tty: true
         restart: always
         cap_add:
-                - SYS_NICE  # CAP_SYS_NICE (surprise an error message)
+            - SYS_NICE  # CAP_SYS_NICE (surprise an error message)
         volumes:
-                - ./mysql_data:/var/lib/mysql
+            - ./mysql_data:/var/lib/mysql # might need :Z for SELinux
         networks:
             net-10.9.0.0:
                 ipv4_address: 10.9.0.6
