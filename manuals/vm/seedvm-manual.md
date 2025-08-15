@@ -59,7 +59,7 @@ in the `vdi` file.
 
 After the previous step, your VM will be created, and you will
 see it on VirtualBox's VM panel. We need to do some further
-configuration. Right-click the M, click
+configuration. Right-click the VM, click
 the `Settings` option, and we will see the Settings window.
 
 ![finished](./Figs/vm-setting.png)
@@ -85,8 +85,8 @@ by selecting the `Devices` menu item, and you will see the
 ### Step 5.b: CPUs
 
 Go to the `System` category, and select the `Processor` tab.
-Assign number of CPUs to this VM if you prefer. Although may be sufficient,
-if the performance seems to be an issue, increase the number.
+Assign number of CPUs to this VM if you prefer. Although 1 CPU
+may be sufficient, if the performance seems to be an issue, increase the number.
 
 ![CPU cores](./Figs/vm-setting-system.png)
 
@@ -175,17 +175,25 @@ $ mkdir -p ~/Share
 $ sudo mount -t vboxsf VM_Shared ~/Share
 ```
 
-Nowadays, an issue -- On some latest version VirtualBox, the folder `VM_Shared` doesn't mount on `~/Share` anymore after restart the VM --  is reported. To solve this issue, we can create an auto-mount script under `/etc/profile.d` folder.
-![Shared Folder](./Figs/vm-create-script.png)
+On some latest version VirtualBox, the folder `VM_Shared` doesn't mount on
+automatically after the VM is restarted 
+even if we have selected the auto-mount option.
+To solve this issue, we can create an
+auto-mount script inside the `/etc/profile.d/` folder.
 
-Inside the script file, input the mount command we want to run when system initialized and save the file.
+```
+sudo vim /etc/profile.d/seedshare.sh
+```
+
+Inside the script file, add the mount command that we want to run when the system
+is initialized.
 ```
 sudo mount -t vboxsf VM_Shared ~/Share
 ```
 
-![Shared Folder](./Figs/vm-mount-command.png)
-
-Once VM is started, all scripts under `/etc/profile.d` folder will be executed. So system automatically mount the shared folder `VM_Shared` to this `Share` folder.
+After the VM is started, during the login phase, all scripts under
+`/etc/profile.d` folder will be executed. This way, system automatically will
+mount the shared folder `VM_Shared` to the `Share` folder.
 
 
 **Important Note.** Please only use the shared folder to copy files

@@ -237,16 +237,16 @@ execve("/bin/sh", argv[], 0)
 \end{lstlisting}
 
 We need to pass three arguments to this system call:
-In the amd64 architecture, they are are 
+In the amd64 architecture, they are
 passed through the \texttt{rdi}, \texttt{rsi},
 and \texttt{rdx} registers.  
 In the arm64 architecture, they are
 passed through the \texttt{x0}, \texttt{x1}, 
 and \texttt{x2} registers. 
-The pseudo code is listed below: 
- 
+The pseudo-code is listed below: 
+
 \begin{lstlisting}
-// For amd64 architrecture
+// For amd64 architecture
  Let rdi = address of the "/bin/sh" string
  Let rsi = address of the argv[] array
  Let rdx = 0
@@ -254,7 +254,7 @@ The pseudo code is listed below:
  Let rax = 59    // 59 is execve's system call number
  syscall         // Invoke execve()
 
-// For the arm64 architrecture
+// For the arm64 architecture
  Let x0  = address of the "/bin/sh" string
  Let x1  = address of the argv[] array
  Let x2  = 0
@@ -290,7 +290,7 @@ architecture. The code can also be found in the \texttt{Labsetup} folder.
 If you are working on this lab on an Apple silicon machine, you can
 find the sample arm64 code in the \texttt{arm} sub-folder.
 
-\begin{lstlisting}[caption=A smaple 64-bit shellcode (\texttt{mysh64.s})] 
+\begin{lstlisting}[caption=A sample 64-bit shellcode (\texttt{mysh64.s})] 
 section .text
   global _start
     _start:
@@ -402,9 +402,9 @@ break one     -- Set a break point at section "one"
 run           -- Start debugged program.
 step          -- Step program until it reaches a different source line.
 print  $rbx   -- Print out the value of the rbx register
-x/40bx <addr> -- Print out the memory at address <addr>
+x/40bx <addr> -- Print out 40 bytes of memory at address <addr>
 x/40bx $rsp   -- Print out the top 40 bytes of the stack
-x/5gx  $rsp   -- Print out the top 4 double-word (8 bytes) of the stack
+x/5gx  $rsp   -- Print out the top 5 double-word (8 bytes) of the stack
 quit          -- Exit from gdb 
 \end{lstlisting}
 
@@ -466,7 +466,7 @@ command.
 
 In this new command, the \texttt{argv} array should have 
 the following four elements, all of which need to be 
-constructed on the stack. Please modify \texttt{mysh64.s} and 
+constructed inside the shellcode. Please modify \texttt{mysh64.s} and 
 demonstrate your execution result. As usual, you cannot have 
 any zero in your shellcode.
 
@@ -511,7 +511,7 @@ To write such a shellcode, we need to construct an
 environment variable array on the stack, 
 and store the address of this array to the \texttt{rdx} register,  
 before invoking \texttt{execve()}.  
-The way to construct this array on the stack is exactly the same
+The way to construct this array is exactly the same
 as the way how we construct the \texttt{argv[]} array. 
 See the following: 
 
