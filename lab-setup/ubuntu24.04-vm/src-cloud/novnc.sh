@@ -42,7 +42,7 @@ echo -e "$passwd\n$passwd\nn" | vncpasswd
 echo "配置 vncservcer 服务..."
 sudo bash -c 'cat > /etc/systemd/system/vncserver@.service << EOF
 [Unit]
-Description=Systemd VNC server startup script for Ubuntu 20.04
+Description=Systemd VNC server startup script for Ubuntu 24.04
 After=syslog.target network.target
 
 [Service]
