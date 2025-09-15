@@ -18,7 +18,7 @@ echo "========================================"
 echo "Installing TigerVNC Server..."
 echo "========================================"
 
-sudo apt -y install tigervnc-standalone-server tigervnc-xorg-extension dbus-x11 xauth
+sudo apt -y install tigervnc-standalone-server tigervnc-xorg-extension dbus-x11 xauth xterm
 
 
 echo "=== 配置 LightDM 自动登录 seed 用户 ==="

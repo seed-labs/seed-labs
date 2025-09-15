@@ -71,13 +71,13 @@ sudo snap install --classic code
 # sudo apt -y install tcpdump (already in the system)
 
 #================================================
-# Python3.8 is already in the OS
-echo "Installing Python and modules ..."
+# # Python3.8 is already in the OS
+# echo "Installing Python and modules ..."
 
-# Install pip3 and Python3 modules 
-sudo apt -y install python3-pip
-sudo pip3 install scapy
-sudo pip3 install pycryptodome
+# # Install pip3 and Python3 modules 
+# sudo apt -y install python3-pip
+# sudo pip3 install scapy
+# sudo pip3 install pycryptodome
 
 
 #================================================
@@ -121,12 +121,12 @@ sudo setcap cap_net_raw,cap_net_admin+eip /usr/bin/dumpcap
 #================================================
 echo "Installing software for the cloud VM ..."
 
-# Instal a light-weighted window manager.
-# It will ask us to choose a default display manager, chose LightDM. 
-sudo apt -y install xfce4 xfce4-goodies
+# # Instal a light-weighted window manager.
+# # It will ask us to choose a default display manager, chose LightDM. 
+# sudo apt -y install xfce4 xfce4-goodies dbus-x11 xauth
 
-# Install TigerVNC server
-sudo apt -y install tigervnc-standalone-server tigervnc-xorg-extension
+# # Install TigerVNC server
+# sudo apt -y install tigervnc-standalone-server tigervnc-xorg-extension
 
 
 #================================================

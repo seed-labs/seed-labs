@@ -58,7 +58,7 @@ EOF'
 echo "配置 novnc 服务..."
 sudo bash -c 'cat > /etc/systemd/system/novnc.service << EOF
 [Unit]
-Description=Systemd noVNC for Ubuntu 20.04
+Description=Systemd noVNC for Ubuntu 24.04
 After=syslog.target network.target
 
 [Service]
