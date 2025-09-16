@@ -48,7 +48,7 @@ After=syslog.target network.target
 [Service]
 Type=forking
 User=seed
-ExecStart=/usr/bin/vncserver -depth 24 -geometry 1920x1080 :%i -localhost no
+ExecStart=/usr/bin/tigervncserver :1 -localhost no -geometry 1920x1080 -depth 24
 ExecStop=/usr/bin/vncserver -kill :%i
 
 [Install]
