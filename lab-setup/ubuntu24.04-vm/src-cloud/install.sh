@@ -82,9 +82,10 @@ sudo snap install --classic code
 echo "Installing Python and modules ..."
 
 # Install pip3 and Python3 modules 
-sudo apt install -y python3-venv python3-pip build-essential python3-scapy python3-pycryptodome
-
-
+sudo apt install -y pipx python3-venv python3-pip build-essential python3-scapy python3-pycryptodome
+# sudo apt install -y jupyter-notebook  ## old-version not suggest
+pipx ensurepath
+pipx install jupyterlab
 #================================================
 echo "Installing miscellaneous tools ..."
 
@@ -95,20 +96,6 @@ rm -rf /tmp/gdbpeda
 
 # #================================================
 # echo "Installing docker utilities ..."
-  
-# # Install docker
-# sudo apt -y install docker.io
-
-# # Start docker and enable it to start after the system reboot:
-# sudo systemctl enable --now docker
-
-# # Optionally give any user administrative privileges to docker:
-# sudo usermod -aG docker $USERID
-
-# # Install docker-compose. Check whether 1.27.4 is the newest version
-# sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-
-# sudo chmod +x /usr/local/bin/docker-compose
 
 
 #================================================
