@@ -46,7 +46,11 @@ sudo apt -y install conntrack
 sudo apt -y install resolvconf
 
 # Install browser
-sudo apt -y install firefox
+# sudo apt -y install firefox
+sudo add-apt-repository ppa:mozillateam/ppa
+sudo apt update
+sudo apt install firefox -y
+
 
 #------------------------------------------------
 # Utilities
