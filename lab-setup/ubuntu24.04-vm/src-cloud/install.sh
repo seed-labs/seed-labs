@@ -27,7 +27,7 @@ USERID=seed
 #================================================
 echo "Installing various tools ..."
 
-sudo apt update
+sudo apt update -y
 
 #------------------------------------------------
 # Networking Tools
