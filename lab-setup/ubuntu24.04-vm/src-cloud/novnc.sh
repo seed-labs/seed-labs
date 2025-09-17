@@ -40,7 +40,7 @@ echo -e "$passwd\n$passwd\nn" | vncpasswd
 
 
 echo "配置 vncservcer 服务..."
-sudo bash -c 'cat > /etc/systemd/system/vncserver@.service << EOF
+sudo bash -c 'cat > /etc/systemd/system/vncserver.service<< EOF
 [Unit]
 Description=Systemd VNC server startup script for Ubuntu 24.04
 After=syslog.target network.target
@@ -48,7 +48,7 @@ After=syslog.target network.target
 [Service]
 Type=forking
 User=seed
-ExecStart=/usr/bin/tigervncserver :1 -localhost no -geometry 1920x1080 -depth 24
+ExecStart=/usr/bin/tigervncserver :1 -localhost no -geometry 1920x1080 -depth 24 -xstartup /usr/bin/startxfce4
 ExecStop=/usr/bin/vncserver -kill :%i
 
 [Install]
@@ -56,21 +56,21 @@ WantedBy=multi-user.target
 EOF'
 
 echo "配置 novnc 服务..."
-sudo bash -c 'cat > /etc/systemd/system/novnc.service << EOF
+sudo bash -c 'cat > /etc/systemd/system/novnc.service<< EOF
 [Unit]
 Description=Systemd noVNC for Ubuntu 24.04
 After=syslog.target network.target
 
 [Service]
 User=seed
-ExecStart=/home/seed/noVNC/utils/novnc_proxy --vnc localhost:5901 --listen 8443
+ExecStart=/home/seed/noVNC/utils/novnc_proxy --vnc localhost:5901 --listen 6080
 
 [Install]
 WantedBy=multi-user.target
 EOF'
 
 # 重载服务、设置开启自启并立即启动，启动后可能服务并没有立即生效，等待2s后再重新服务，确保服务正常启动
-sudo systemctl daemon-reload && sudo systemctl enable --now novnc vncserver@1 && sleep 2 && sudo systemctl restart novnc vncserver@1
+sudo systemctl daemon-reload && sudo systemctl enable --now novnc vncserver.service && sleep 2 && sudo systemctl restart novnc vncserver.service
 
 # 检查是否成功
 if [ $? -eq 0 ]; then

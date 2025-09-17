@@ -1,4 +1,11 @@
 #!/bin/sh
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
-exec startxfce4 &
+
+xrdb $HOME/.Xresources
+
+# 启动剪贴板同步代理
+vncconfig -nowin &
+
+# 启动 XFCE
+dbus-launch --exit-with-session startxfce4

@@ -86,6 +86,8 @@ sudo apt install -y pipx python3-venv python3-pip build-essential python3-scapy 
 # sudo apt install -y jupyter-notebook  ## old-version not suggest
 pipx ensurepath
 pipx install jupyterlab
+pipx install numpy    #for novnc
+
 #================================================
 echo "Installing miscellaneous tools ..."
 
