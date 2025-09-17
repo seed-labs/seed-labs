@@ -18,6 +18,9 @@ sudo useradd -m -s /bin/bash seed
 sudo cp Files/System/seed_sudoers  /etc/sudoers.d/
 sudo chmod 440 /etc/sudoers.d/seed_sudoers
 
+echo "Set password for seed user account"
+sudo passwd seed
+
 # Set the USERID shell variable.
 USERID=seed
 
@@ -48,7 +51,7 @@ sudo apt -y install firefox
 #------------------------------------------------
 # Utilities
 
-sudo apt -y install bless
+# sudo apt -y install bless
 sudo apt -y install ent
 sudo apt -y install eog
 sudo apt -y install execstack
@@ -71,13 +74,7 @@ sudo snap install --classic code
 # sudo apt -y install tcpdump (already in the system)
 
 #================================================
-# # Python3.8 is already in the OS
-# echo "Installing Python and modules ..."
 
-# # Install pip3 and Python3 modules 
-# sudo apt -y install python3-pip
-# sudo pip3 install scapy
-# sudo pip3 install pycryptodome
 # Python3.12 is already in the OS
 echo "Installing Python and modules ..."
 
@@ -86,7 +83,7 @@ sudo apt install -y pipx python3-venv python3-pip build-essential python3-scapy 
 # sudo apt install -y jupyter-notebook  ## old-version not suggest
 pipx ensurepath
 pipx install jupyterlab
-pipx install numpy    #for novnc
+# pipx install numpy    #for novnc
 
 #================================================
 echo "Installing miscellaneous tools ..."
@@ -112,15 +109,6 @@ sudo chmod 750 /usr/bin/dumpcap
 sudo setcap cap_net_raw,cap_net_admin+eip /usr/bin/dumpcap
 
 
-#================================================
-echo "Installing software for the cloud VM ..."
-
-# Instal a light-weighted window manager.
-# It will ask us to choose a default display manager, chose LightDM. 
-sudo apt -y install xfce4 xfce4-goodies dbus-x11 xauth
-
-# Install TigerVNC server
-sudo apt -y install tigervnc-standalone-server tigervnc-xorg-extension
 
 
 #================================================
@@ -147,19 +135,19 @@ sudo -u $USERID cp Files/Wireshark/recent $HOMEDIR/.config/wireshark/recent
 
 
 # Create launcher icons on the desktop
-sudo -u $USERID mkdir -p $HOMEDIR/Desktop
-sudo -u $USERID cp Files/System/Desktop/*  $HOMEDIR/Desktop
-sudo -u $USERID chmod u+x $HOMEDIR/Desktop/*.desktop
-sudo -u $USERID mkdir -p $HOMEDIR/.local/icons
-sudo -u $USERID cp Files/System/Icons/*  $HOMEDIR/.local/icons
+# sudo -u $USERID mkdir -p $HOMEDIR/Desktop
+# sudo -u $USERID cp Files/System/Desktop/*  $HOMEDIR/Desktop
+# sudo -u $USERID chmod u+x $HOMEDIR/Desktop/*.desktop
+# sudo -u $USERID mkdir -p $HOMEDIR/.local/share/icons
+# sudo -u $USERID cp Files/System/Icons/*  $HOMEDIR/.local/share/icons
 
 # Copy the desktop image files
 sudo cp -f Files/System/Background/* /usr/share/backgrounds/xfce/
 
-# Configure the VNC server 
-sudo -u $USERID mkdir -p $HOMEDIR/.vnc
-sudo -u $USERID cp Files/System/vnc_xstartup $HOMEDIR/.vnc/xstartup
-sudo -u $USERID chmod u+x $HOMEDIR/.vnc/xstartup
+# # Configure the VNC server 
+# sudo -u $USERID mkdir -p $HOMEDIR/.vnc
+# sudo -u $USERID cp Files/System/vnc_xstartup $HOMEDIR/.vnc/xstartup
+# sudo -u $USERID chmod u+x $HOMEDIR/.vnc/xstartup
 
 #================================================
 echo "Cleaning up ..."
