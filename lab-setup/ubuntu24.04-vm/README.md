@@ -149,3 +149,15 @@ suspend your VMs if you are not working on them. Although a
 suspended VM still incurs storage cost (usually very small), it
 does not incur any computing costs. You can easily resume them
 when you are ready to continue your work.
+
+
+
+## install chinese input method
+
+
+```
+sudo su   seed
+./install_chn_input.sh
+```
+![](2025-09-19-18-16-03.png)
+![](2025-09-19-18-16-39.png)

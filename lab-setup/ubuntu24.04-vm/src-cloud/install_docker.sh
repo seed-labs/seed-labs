@@ -32,4 +32,4 @@ sudo groupadd docker
 
 sudo gpasswd -a $USERID docker
 
-sudo newgrp docker
+# sudo newgrp docker

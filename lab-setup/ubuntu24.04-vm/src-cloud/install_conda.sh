@@ -55,6 +55,8 @@ if [ ! -d "$INSTALL_PREFIX/envs/seedpy310" ]; then
 else
     echo "✅ 公共环境 seedpy310 已存在，跳过创建。"
 fi
+# 禁止 conda 自动进入 base 环境
+sudo "$INSTALL_PREFIX/bin/conda" config --system --set auto_activate_base false
 
 echo "==================================="
 echo "所有 sudo 组用户可使用以下命令进入环境："

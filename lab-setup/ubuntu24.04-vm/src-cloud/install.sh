@@ -47,9 +47,22 @@ sudo apt -y install resolvconf
 
 # Install browser
 # sudo apt -y install firefox
-sudo add-apt-repository ppa:mozillateam/ppa
-sudo apt update
-sudo apt install firefox -y
+echo "=== 处理 Firefox (卸载 snap 版，安装 deb 版) ==="
+
+# 如果存在 snap 的 Firefox，先卸载
+if snap list | grep -q firefox; then
+    echo "⚠️ 检测到 snap 版 Firefox，正在卸载..."
+    sudo snap remove firefox
+fi
+echo "=== 安装 Firefox (deb 版) ==="
+# 添加官方 PPA（非交互）
+sudo add-apt-repository -y ppa:mozillateam/ppa
+sudo apt-get update
+# 强制使用 deb 包，避免 snap 版本
+echo 'Package: firefox*' | sudo tee /etc/apt/preferences.d/firefox.pref
+echo 'Pin: release o=LP-PPA-mozillateam' | sudo tee -a /etc/apt/preferences.d/firefox.pref
+echo 'Pin-Priority: 1001' | sudo tee -a /etc/apt/preferences.d/firefox.pref
+sudo apt-get install -y firefox
 
 
 #------------------------------------------------
@@ -70,7 +83,12 @@ sudo apt -y install zip
 sudo apt -y install zsh
 
 # Install vscode 
-sudo snap install --classic code
+# sudo snap install --classic code
+echo "=== 安装 VSCode (deb 版) ==="
+wget -qO /tmp/code.deb "https://update.code.visualstudio.com/latest/linux-deb-x64/stable"
+sudo dpkg -i /tmp/code.deb || sudo apt-get install -f -y
+rm -f /tmp/code.deb
+
 
 # sudo apt -y install vim  (already in the system)
 # sudo apt -y install git  (already in the system)
@@ -203,18 +221,18 @@ sudo -u $USERID cp Files/Wireshark/preferences $HOMEDIR/.config/wireshark/prefer
 sudo -u $USERID cp Files/Wireshark/recent $HOMEDIR/.config/wireshark/recent
 
 
-Create launcher icons on the desktop
-sudo -u $USERID mkdir -p $HOMEDIR/Desktop
-sudo -u $USERID cp Files/System/Desktop/*  $HOMEDIR/Desktop
-sudo -u $USERID chmod u+x $HOMEDIR/Desktop/*.desktop
-sudo -u $USERID mkdir -p $HOMEDIR/.local/share/icons
-sudo -u $USERID cp Files/System/Icons/*  $HOMEDIR/.local/share/icons
+# Create launcher icons on the desktop
+# sudo -u $USERID mkdir -p $HOMEDIR/Desktop
+# sudo -u $USERID cp Files/System/Desktop/*  $HOMEDIR/Desktop
+# sudo -u $USERID chmod u+x $HOMEDIR/Desktop/*.desktop
+# sudo -u $USERID mkdir -p $HOMEDIR/.local/share/icons
+# sudo -u $USERID cp Files/System/Icons/*  $HOMEDIR/.local/share/icons
 
 
-# 设置 trusted 标记
-for file in $DESKTOP_DIR/*.desktop; do
-    sudo -u $USERID gio set "$file" "metadata::trusted" true
-done
+# # 设置 trusted 标记
+# for file in $DESKTOP_DIR/*.desktop; do
+#     sudo -u $USERID gio set "$file" "metadata::trusted" true
+# done
 
 # Copy the desktop image files
 sudo cp -f Files/System/Background/* /usr/share/backgrounds/xfce/
