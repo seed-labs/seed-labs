@@ -8,5 +8,6 @@ sudo useradd -m -s /bin/bash seed
 sudo cp Files/System/seed_sudoers /etc/sudoers.d
 sudo chmod 440 /etc/sudoers.d/seed_sudoers
 echo "Set password for seed user account"
-echo "seed:dees" | sudo chpasswd
+# echo "seed:dees" | sudo chpasswd
+sudo  passwd seed
 # sudo su seed

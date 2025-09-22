@@ -1,12 +1,16 @@
+
 #!/bin/bash
 # =====================================
 # 安装 Miniconda 到公共目录 /opt/miniconda3
-# 允许 sudo 组成员读写
+# 并为 seed 用户配置自动加载 conda 环境
+# 在 base 环境安装 scapy 等工具
 # =====================================
 
 INSTALL_PREFIX="/opt/miniconda3"
 MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
+SEED_USER="seed"
+SEED_HOME="/home/$SEED_USER"
 
 # 如果已经有安装目录就不再安装
 if [ -d "$INSTALL_PREFIX" ]; then
@@ -40,24 +44,39 @@ else
 fi
 
 # 初始化 conda 到所有 shell
-sudo "$INSTALL_PREFIX/bin/conda" init --all
-
+sudo -u $SEED_USER $INSTALL_PREFIX/bin/conda init bash zsh
 # 接受 TOS
 sudo "$INSTALL_PREFIX/bin/conda" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
 sudo "$INSTALL_PREFIX/bin/conda" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
+# 禁止 conda 自动进入 base 环境
+# sudo $INSTALL_PREFIX/bin/conda config --system --set auto_activate_base false
+
+# 在 base 环境安装工具
+echo "📦 在 base 环境安装 scapy ipython docker ..."
+sudo $INSTALL_PREFIX/bin/conda install -n base -y scapy ipython jupyterlab pycryptodome
+# docker 没有 conda 包，用 pip 安装
+sudo $INSTALL_PREFIX/bin/pip install docker
+
 # 如果公共环境不存在就创建
 if [ ! -d "$INSTALL_PREFIX/envs/seedpy310" ]; then
     echo "📦 创建公共环境 seedpy310..."
-    sudo "$INSTALL_PREFIX/bin/conda" create -p "$INSTALL_PREFIX/envs/seedpy310" python=3.10 -y
-    sudo "$INSTALL_PREFIX/bin/conda" install -p "$INSTALL_PREFIX/envs/seedpy310" -y scapy jupyterlab pycryptodome ipython
+    sudo $INSTALL_PREFIX/bin/conda create -p "$INSTALL_PREFIX/envs/seedpy310" python=3.10 -y
     echo "✅ 公共 Conda 环境 seedpy310 已创建"
 else
     echo "✅ 公共环境 seedpy310 已存在，跳过创建。"
 fi
-# 禁止 conda 自动进入 base 环境
-sudo "$INSTALL_PREFIX/bin/conda" config --system --set auto_activate_base false
+
+# 给 seed 用户配置默认进入 seedpy310 环境
+SEED_BASHRC="$SEED_HOME/.bashrc"
+if ! grep -q "conda activate $INSTALL_PREFIX/envs/seedpy310" "$SEED_BASHRC"; then
+    echo "source /opt/miniconda3/etc/profile.d/conda.sh" | sudo tee -a "$SEED_BASHRC" >/dev/null
+    # echo "conda activate /opt/miniconda3/envs/seedpy310" | sudo tee -a "$SEED_BASHRC" >/dev/null
+    sudo chown $SEED_USER:$SEED_USER "$SEED_BASHRC"
+    echo "✅ 已配置 seed 用户自动进入 seedpy310 环境"
+fi
 
 echo "==================================="
-echo "所有 sudo 组用户可使用以下命令进入环境："
-echo "  conda activate /opt/miniconda3/envs/seedpy310"
+echo "安装完成！"
+echo "🔑 base 环境里已安装: scapy, ipython, docker(pip)"
+# echo "🔑 seed 用户登录后会自动进入 seedpy310 环境"
