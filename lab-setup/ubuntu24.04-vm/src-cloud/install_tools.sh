@@ -131,7 +131,8 @@ sudo -u $USERID cp Files/System/seed_bash_aliases $HOMEDIR/.bash_aliases
 sudo -u $USERID mkdir -p $HOMEDIR/.config/wireshark/
 sudo -u $USERID cp Files/Wireshark/preferences $HOMEDIR/.config/wireshark/preferences
 sudo -u $USERID cp Files/Wireshark/recent $HOMEDIR/.config/wireshark/recent
-
+# Copy the desktop image files
+sudo cp -f Files/System/Background/* /usr/share/backgrounds/xfce/
 
 
 
