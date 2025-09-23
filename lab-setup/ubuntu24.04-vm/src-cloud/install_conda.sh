@@ -44,7 +44,7 @@ else
 fi
 
 # 初始化 conda 到所有 shell
-sudo -u $SEED_USER $INSTALL_PREFIX/bin/conda init bash zsh
+sudo -u $SEED_USER $INSTALL_PREFIX/bin/conda init --all
 # 接受 TOS
 sudo "$INSTALL_PREFIX/bin/conda" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
 sudo "$INSTALL_PREFIX/bin/conda" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r

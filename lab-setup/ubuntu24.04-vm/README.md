@@ -1,32 +1,12 @@
 # About This Folder
-
-There are two main subfolders inside this folder.
-The manuals can be found in the `manuals` folder 
-of this repo:
-
-- `src-vm`: contain the scripts to build SEED VM on a local computer.
-
-- `src-cloud`: contain the scripts to build a SEED VM on the cloud.
-
-# Creating a SEED VM on the Cloud
+this floder is to help install our seed evnvironment
+on your machine cloud/desktop
 
 
-## Step 1: Create a VM Instance
 
-First we need to create a VM instance on the cloud, and install the Ubuntu 24.04 LTS
-operating system on the VM. The minimal machine configuration
-is 2 CPU core, 4GB of memory, and 20GB of disk space. If you feel that the
-performance is not good enough, you can always change the machine
-configuration later.
+## Step 1: Install Software and Configure System
 
-There are many cloud platforms to choose from, you can read [seedvm-cloud.md](../../manuals/cloud/seedvm-cloud.md) 
-for more information, if you have installed the
-Ubuntu 24.04 LTS on cloud, you can do the next step.
-
-
-## Step 2: Install Software and Configure System
-
-
+If you have already installed the Ubuntu 24.04 VM on your machine,you can follow the steps below .
 When the Ubuntu 24.04 VM is built, a default username with the root privilege   
 will be created in the system. The actual name of the user is typically
 chosen by the cloud operator. Most cloud platforms will provide
@@ -36,12 +16,16 @@ Download or git clone this project, and `cd` into `ubuntu24.04-vm/src-cloud` fol
 following command to install software
 and configure the system.
   ```
+  chmod +x install.sh
   ./install.sh
   ```
-
 - **Note:** This shell script will download and install all the software needed for
   the SEED labs. The whole process will take a few minutes. Please
-  don't leave, because you will be asked twice to make choices:
+  don't leave, because you will be asked to make choices:
+
+  - During the installation of vscode, you will be asked
+    whether Add Microsoft apt repository for Visual Studio Code?
+    Select `YES`.
 
   - During the installation of Wireshark, you will be asked
     whether non-superuser should be able to capture packets.
@@ -50,9 +34,15 @@ and configure the system.
   - During the installation of `xfce4`, you will be asked to
     choose a default display manager. Choose `LightDM`.
 
+**If you want to use the Chinese input method, please follow the steps below:**
+run the follow command after install    
+```
+ibus-daemon -drx
+ibus-setup
+```
+change your `input source` add `Chinese` -> `intellgient PPinyin`
 
-After the script finishes, a new account called `seed` is created, and we have help you set 
-the default password for this account to `dees`.
+After the script finishes, a new account called `seed` is created,
 We will use this account for all the SEED labs, instead of the default one
 created by the cloud. We intentionally did not set a password for this account,
 so nobody can directly log into this account. We can switch to the `seed`

@@ -133,26 +133,7 @@ sudo -u $USERID cp Files/Wireshark/preferences $HOMEDIR/.config/wireshark/prefer
 sudo -u $USERID cp Files/Wireshark/recent $HOMEDIR/.config/wireshark/recent
 
 
-# Create launcher icons on the desktop
-# sudo -u $USERID mkdir -p $HOMEDIR/Desktop
-# sudo -u $USERID cp Files/System/Desktop/*  $HOMEDIR/Desktop
-# sudo -u $USERID chmod u+x $HOMEDIR/Desktop/*.desktop
-# sudo -u $USERID mkdir -p $HOMEDIR/.local/share/icons
-# sudo -u $USERID cp Files/System/Icons/*  $HOMEDIR/.local/share/icons
 
-
-# # 设置 trusted 标记
-# for file in $DESKTOP_DIR/*.desktop; do
-#     sudo -u $USERID gio set "$file" "metadata::trusted" true
-# done
-
-# # Copy the desktop image files
-# sudo cp -f Files/System/Background/* /usr/share/backgrounds/xfce/
-
-# # Configure the VNC server 
-# sudo -u $USERID mkdir -p $HOMEDIR/.vnc
-# sudo -u $USERID cp Files/System/vnc_xstartup $HOMEDIR/.vnc/xstartup
-# sudo -u $USERID chmod u+x $HOMEDIR/.vnc/xstartup
 
 #================================================
 echo "Cleaning up ..."
