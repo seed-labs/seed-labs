@@ -28,9 +28,9 @@ sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plug
 # Start docker and enable it to start after the system reboot:
 sudo systemctl enable --now docker
 
-sudo groupadd docker
+sudo groupadd -f docker
 
-sudo gpasswd -a $USERID docker
+# sudo gpasswd -a $USERID docker
 sudo usermod -aG docker $USERID
 
 # sudo newgrp docker
