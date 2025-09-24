@@ -31,5 +31,6 @@ sudo systemctl enable --now docker
 sudo groupadd docker
 
 sudo gpasswd -a $USERID docker
+sudo usermod -aG docker $USERID
 
 # sudo newgrp docker
