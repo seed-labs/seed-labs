@@ -55,6 +55,8 @@ sudo apt -y install whois
 sudo apt -y install zip
 sudo apt -y install zsh
 
+sudo apt install -y make
+sudo apt install -y build-essential
 # Install vscode 
 
 # Install vscode 
@@ -107,6 +109,7 @@ sudo apt -y install wireshark
 sudo chgrp $USERID /usr/bin/dumpcap
 sudo chmod 750 /usr/bin/dumpcap
 sudo setcap cap_net_raw,cap_net_admin+eip /usr/bin/dumpcap
+
 
 
 

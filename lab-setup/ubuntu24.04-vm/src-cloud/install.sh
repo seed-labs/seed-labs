@@ -269,7 +269,8 @@ sudo apt -y install conntrack
 # For DNS
 sudo apt -y install resolvconf
 
-
+sudo apt install -y make
+sudo apt install -y build-essential
 
 #------------------------------------------------
 # Utilities
