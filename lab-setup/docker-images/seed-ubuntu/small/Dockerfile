@@ -23,5 +23,5 @@ RUN  useradd -m -s /bin/bash seed \
 COPY bashrc /home/seed/.bashrc
 COPY bashrc /root/.bashrc
 
-CMD /bin/bash
+CMD ["/bin/bash"]
 
