@@ -30,8 +30,12 @@ FROM ubuntu:24.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # 安装依赖 + 添加 deadsnakes 源
-RUN apt-get update && apt-get install -y \
-    software-properties-common \
+# 安装基础工具 + PPA
+RUN apt-get update \
+    && apt-get install -y software-properties-common curl wget gnupg2 \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get -y install \
     binutils \
     curl \
     iproute2 \
@@ -39,11 +43,9 @@ RUN apt-get update && apt-get install -y \
     nano \
     net-tools \
     unzip \
- && add-apt-repository ppa:deadsnakes/ppa -y \
- && apt-get update && apt-get install -y \
-    python3.8 \
-    python3.8-distutils \
- && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y python3.8 python3.8-venv python3.8-dev python3.8-distutils \
+    && ln -sf /usr/bin/python3.8 /usr/bin/python3 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 创建 seed 用户并设置密码
 RUN useradd -m -s /bin/bash seed \
