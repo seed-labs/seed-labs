@@ -26,35 +26,32 @@
 
 # CMD /bin/bash
 FROM ubuntu:24.04
-
 ARG DEBIAN_FRONTEND=noninteractive
 
-# 安装依赖 + 添加 deadsnakes 源
-# 安装基础工具 + PPA
+# 安装常用工具 + 最新 Python3 + pip
 RUN apt-get update \
-    && apt-get install -y software-properties-common curl wget gnupg2 \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update \
     && apt-get -y install \
-    binutils \
-    curl \
-    iproute2 \
-    iputils-ping \
-    nano \
-    net-tools \
-    unzip \
-    && apt-get install -y python3.8 python3.8-venv python3.8-dev python3.8-distutils \
-    && ln -sf /usr/bin/python3.8 /usr/bin/python3 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+        binutils \
+        curl \
+        iproute2 \
+        iputils-ping \
+        nano \
+        net-tools \
+        unzip \
+        python3 \
+        python3-pip \
+        python3-setuptools \
+    && rm -rf /var/lib/apt/lists/*
 
 # 创建 seed 用户并设置密码
 RUN useradd -m -s /bin/bash seed \
     && echo "root:dees" | chpasswd \
     && echo "seed:dees" | chpasswd
 
-# 复制 bashrc
+# 拷贝自定义 bashrc
 COPY bashrc /home/seed/.bashrc
 COPY bashrc /root/.bashrc
+
 
 # 默认启动 bash
 CMD ["/bin/bash"]

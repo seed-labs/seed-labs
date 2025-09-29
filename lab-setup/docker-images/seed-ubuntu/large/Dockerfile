@@ -46,11 +46,8 @@
 FROM ubuntu:24.04
 ARG DEBIAN_FRONTEND=noninteractive
 
-# 安装基础工具 + PPA
+# 安装常用工具 + Python3 + pip
 RUN apt-get update \
-    && apt-get install -y software-properties-common curl wget gnupg2 \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update \
     && apt-get -y install \
         binutils \
         curl \
@@ -70,26 +67,21 @@ RUN apt-get update \
         tcpdump \
         telnet \
         telnetd \
-        python3.8 \
-        python3.8-venv \
-        python3.8-dev \
-        python3.8-distutils \
-    && ln -sf /usr/bin/python3.8 /usr/bin/python3 \
+        python3 \
+        python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制 get-pip 并安装 pip + scapy
-COPY get-pip3.py /tmp
-RUN python3 /tmp/get-pip3.py \
-    && pip3 install scapy \
-    && rm /tmp/get-pip3.py
+# 安装 scapy（Ubuntu 24.04 pip 需加 --break-system-packages）
+RUN pip3 install scapy --break-system-packages
 
-# 创建用户 seed，设置密码
+# 创建 seed 用户并设置密码
 RUN useradd -m -s /bin/bash seed \
     && echo "root:dees" | chpasswd \
     && echo "seed:dees" | chpasswd
 
-# 配置 bashrc
+# 拷贝自定义 bashrc
 COPY bashrc /home/seed/.bashrc
 COPY bashrc /root/.bashrc
+
 
 CMD ["/bin/bash"]
