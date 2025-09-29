@@ -25,7 +25,7 @@ and configure the system.
 
   - During the installation of vscode, you will be asked
     whether Add Microsoft apt repository for Visual Studio Code?
-    Select `YES`.
+    Select `No`.
 
   - During the installation of Wireshark, you will be asked
     whether non-superuser should be able to capture packets.

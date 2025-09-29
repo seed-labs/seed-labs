@@ -13,7 +13,6 @@
 #   so nobody can ssh directly into this account. You need to 
 #   set up public keys to ssh directly into this account.
 
-set -e
 # Interactive prompt
 echo "Please choose installation type:"
 echo "  1) Cloud mode (install XFCE desktop + TigerVNC)"
