@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update  \
@@ -10,5 +10,5 @@ RUN apt-get update  \
     && a2enmod cgi \
     && a2enmod headers
 
-CMD service apache2 start && tail -f /dev/null
+CMD ["apachectl", "-D", "FOREGROUND"]
 

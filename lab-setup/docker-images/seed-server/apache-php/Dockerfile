@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update  \
@@ -11,19 +11,17 @@ RUN apt-get update  \
         nano   \
         net-tools \
         unzip \
-        # PHP
-        libapache2-mod-php7.4 \
-        php7.4-cli \
-        php7.4-gd \
-        php7.4-pdo \
-        php7.4-json \
-        php7.4-xml \
-        php7.4-mbstring \
-        php7.4-mysql \
+        # PHP 8.3 (24.04 默认版本)
+        libapache2-mod-php8.3 \
+        php8.3-cli \
+        php8.3-gd \
+        php8.3-mysql \
+        php8.3-xml \
+        php8.3-mbstring \
     && a2enmod rewrite \
     && a2enmod ssl \
     && a2enmod cgi \
     && a2enmod headers
 
-CMD service apache2 start && tail -f /dev/null
-
+# 让 Apache 以前台模式运行，日志直接输出到 docker logs
+CMD ["apachectl", "-D", "FOREGROUND"]
