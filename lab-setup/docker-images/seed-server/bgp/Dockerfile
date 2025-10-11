@@ -1,4 +1,4 @@
-FROM handsonsecurity/seed-ubuntu:small
+FROM handsonsecurity/seed-ubuntu24.04:small
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Instrall the Bird server (for BGP)
