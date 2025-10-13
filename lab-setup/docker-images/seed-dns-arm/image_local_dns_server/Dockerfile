@@ -4,4 +4,4 @@ FROM handsonsecurity/seed-server24.04:bind
 COPY named.conf           /etc/bind/
 COPY named.conf.options   /etc/bind/
 
-CMD service named start && tail -f /dev/null 
+CMD ["named", "-g"]
