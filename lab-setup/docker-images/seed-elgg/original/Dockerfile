@@ -1,4 +1,4 @@
-FROM handsonsecurity/seed-server:apache-php
+FROM handsonsecurity/seed-server24.04:apache-php
 
 ARG DOWNLOAD=/tmp/download
 ARG WWWDir=/var/www/elgg
@@ -24,5 +24,5 @@ RUN  a2ensite server_name.conf \
      && a2ensite apache_elgg.conf 
 
 # Start the Apache server
-CMD service apache2 start && tail -f /dev/null
+CMD ["apache2", "-D", "FOREGROUND"]
 
