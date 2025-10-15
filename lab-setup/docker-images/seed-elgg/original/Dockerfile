@@ -24,5 +24,5 @@ RUN  a2ensite server_name.conf \
      && a2ensite apache_elgg.conf 
 
 # Start the Apache server
-CMD ["apache2", "-D", "FOREGROUND"]
+CMD ["apache2ctl", "-D", "FOREGROUND"]
 
