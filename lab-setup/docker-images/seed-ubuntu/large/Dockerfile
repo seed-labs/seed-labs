@@ -1,42 +1,45 @@
-FROM ubuntu:24.04
+FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
-# 安装常用工具 + Python3 + pip
-RUN apt-get update \
-    && apt-get -y install \
+RUN apt-get update  \
+    && apt-get -y install  \
         binutils \
-        curl \
-        iproute2 \
+        curl   \
+        iproute2  \
         iputils-ping \
-        nano \
+        nano   \
         net-tools \
         unzip \
+        # 
         arping \
         conntrack \
-        dnsutils \
+        curl   \
+        dnsutils  \
         iptables \
-        mtr-tiny \
-        netcat-openbsd \
-        openbsd-inetd \
+        mtr-tiny  \
+        netcat \
+        openbsd-inetd  \
         procps \
-        tcpdump \
+        tcpdump   \
         telnet \
         telnetd \
-        python3 \
-        python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+        python3.8-distutils \
+     && rm -rf /var/lib/apt/lists/*
 
-# 安装 scapy（Ubuntu 24.04 pip 需加 --break-system-packages）
-RUN pip3 install scapy --break-system-packages
+COPY get-pip3.py /tmp
 
-# 创建 seed 用户并设置密码
-RUN useradd -m -s /bin/bash seed \
-    && echo "root:dees" | chpasswd \
-    && echo "seed:dees" | chpasswd
+RUN  python3 /tmp/get-pip3.py \
+     && pip3 install scapy \
+     && rm /tmp/get-pip3.py
 
-# 拷贝自定义 bashrc
+# Create the "seed" user account
+# Change seed's and root's passwords to "dees"
+RUN  useradd -m -s /bin/bash seed \
+     && echo "root:dees" | chpasswd \
+     && echo "seed:dees" | chpasswd
+
 COPY bashrc /home/seed/.bashrc
 COPY bashrc /root/.bashrc
 
+CMD /bin/bash
 
-CMD ["/bin/bash"]

@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update  \
@@ -23,5 +23,5 @@ RUN  useradd -m -s /bin/bash seed \
 COPY bashrc /home/seed/.bashrc
 COPY bashrc /root/.bashrc
 
-CMD ["/bin/bash"]
+CMD /bin/bash
 
