@@ -62,29 +62,29 @@ sudo apt install -y build-essential
 # Install vscode 
 # sudo snap install --classic code
 if [ "$MODE" = "cloud" ]; then
-    echo "=== 安装 VSCode (deb 版) ==="
+    echo "=== Installing VSCode (deb version) ==="
     wget -qO /tmp/code.deb "https://update.code.visualstudio.com/latest/linux-deb-x64/stable"
     sudo dpkg -i /tmp/code.deb || sudo apt-get install -f -y
     rm -f /tmp/code.deb
 
-    echo "=== 处理 Firefox (卸载 snap 版，安装 deb 版) ==="
+    echo "=== Handling Firefox (uninstall snap version, install deb version) ==="
 
-    # 如果存在 snap 的 Firefox，先卸载
+    # If snap version of Firefox exists, uninstall it
     if snap list | grep -q firefox; then
-        echo "⚠️ 检测到 snap 版 Firefox，正在卸载..."
+        echo "⚠️ Detected snap version of Firefox, uninstalling..."
         sudo snap remove firefox
     fi
-    echo "=== 安装 Firefox (deb 版) ==="
-    # 添加官方 PPA（非交互）
+    echo "=== Installing Firefox (deb version) ==="
+    # Add official PPA (non-interactive)
     sudo add-apt-repository -y ppa:mozillateam/ppa
     sudo apt-get update
-    # 强制使用 deb 包，避免 snap 版本
+    # Force use deb package, avoid snap version
     echo 'Package: firefox*' | sudo tee /etc/apt/preferences.d/firefox.pref
     echo 'Pin: release o=LP-PPA-mozillateam' | sudo tee -a /etc/apt/preferences.d/firefox.pref
     echo 'Pin-Priority: 1001' | sudo tee -a /etc/apt/preferences.d/firefox.pref
     sudo apt-get install -y firefox
 else
-    echo "=== 安装 VSCode (snap 版) ==="
+    echo "=== Installing VSCode (snap version) ===" 
     sudo snap install --classic code
 fi
 
