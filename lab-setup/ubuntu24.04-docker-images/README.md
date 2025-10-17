@@ -62,17 +62,17 @@ already have the base layer cached.
 
 - **Consistency:** Students may need to run commands or do simple coding inside container for
   some tasks. I would like provide them with a similar environment, which should also 
-  be similar to the VM environment (Ubuntu 20.04). I have observed
+  be similar to the VM environment (Ubuntu 24.04). I have observed
   differences when I was using Debian-based images, compared to Ubuntu-based images, 
   and had to modify my code to make it work (didn't have an issue in the Ubuntu-based 
   image, because the code was tested in the Ubuntu-based VM). 
 
 - **Minimizing dependency:** We should reduce the dependence on others. 
 Using too many base images increase the dependency. This may cause issues in the long term.
-Currently, all the images we build are based on `Ubuntu 20.04`. If an image does not
+Currently, all the images we build are based on `Ubuntu 24.04`. If an image does not
 use this base, it needs to have a very strong reason. Here are a few examples of 
 reasons for making an exception: the size difference is too significant; it is too
-difficult to build our own image based on Ubuntu 20.04. 
+difficult to build our own image based on Ubuntu 24.04.
 
 
 

@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 ARG DEBIAN_FRONTEND=noninteractive
 
-# 安装常用工具 + 最新 Python3 + pip
+# install common tools + latest Python3 + pip
 RUN apt-get update \
     && apt-get -y install \
         binutils \
@@ -16,15 +16,15 @@ RUN apt-get update \
         python3-setuptools \
     && rm -rf /var/lib/apt/lists/*
 
-# 创建 seed 用户并设置密码
+# Create seed user and set password
 RUN useradd -m -s /bin/bash seed \
     && echo "root:dees" | chpasswd \
     && echo "seed:dees" | chpasswd
 
-# 拷贝自定义 bashrc
+# Copy custom bashrc
 COPY bashrc /home/seed/.bashrc
 COPY bashrc /root/.bashrc
 
 
-# 默认启动 bash
+# Default command to start bash
 CMD ["/bin/bash"]

@@ -15,5 +15,5 @@ RUN apt-get update \
         bind9-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# 让 bind9 直接以前台模式运行
+# Run bind9 in foreground mode, output logs directly to docker logs
 CMD ["/usr/sbin/named", "-f", "-g"]

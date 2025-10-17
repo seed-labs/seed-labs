@@ -109,5 +109,3 @@ cloud VM:
 ## Notes on Cost
 
 Unless you have a special deal with cloud company, you will be charged for using the cloud VM. Please keep an eye on your bill, because sometimes, there are costs that you may not be aware of, such as bandwidth cost, storage cost, etc. Understanding where your expense is can help you reduce it. Moreover, to avoid wasting money, remember to suspend your VMs if you are not working on them. Although a suspended VM still incurs storage cost (usually very small), it does not incur any computing costs. You can easily resume them when you are ready to continue your work.
-
-
