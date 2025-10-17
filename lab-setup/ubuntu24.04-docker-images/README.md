@@ -15,9 +15,9 @@ when they set up the lab; it does not take much time.
 
 ## Convention
 
-Each image's name has the following format `handsonsecurity/image:tag`. We 
+Each image's name has the following format `handsonsecurity/image24.04:tag`. We 
 use tag for different variation of a image. For example,
-we have `seed-server` image with many different tags, each representing
+we have `seed-server24.04` image with many different tags, each representing
 a different server image, such as `bind`, `apache`, `bgp`, etc.
 
 
@@ -25,8 +25,8 @@ a different server image, such as `bind`, `apache`, `bgp`, etc.
 
 We use the following commands to publish the image to DockerHub.
 ```
-docker build -t handsonsecurity/image:tag .
-docker push handsonsecurity/image:tag
+docker build -t handsonsecurity/image24.04:tag .
+docker push handsonsecurity/image24.04:tag
 ```
 
 ## Lab Setup for Labs
