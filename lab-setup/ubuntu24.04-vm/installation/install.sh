@@ -7,6 +7,12 @@
 # to run "sudo" commands. 
 #=================================================================
 
+#================================================
+# Create a user account called "seed" if it does not exist. 
+# For security, we will not set the password for this account, 
+# so nobody can ssh directly into this account. You need to 
+# set up public keys to ssh directly into this account if you use ECS.
+
 # Interactive prompt
 echo "Please choose installation type:"
 echo "  1) Cloud mode (install XFCE desktop + TigerVNC)"
@@ -27,7 +33,7 @@ sudo useradd -m -s /bin/bash seed
 sudo cp Files/System/seed_sudoers  /etc/sudoers.d/
 sudo chmod 440 /etc/sudoers.d/seed_sudoers
 if [ "$MODE" = "desktop" ]; then
-    echo "!!! Please set password for seed user account"
+    echo "!!! Please et password for seed user account"
     sudo passwd seed
 fi
 
@@ -39,13 +45,19 @@ sudo bash ./install_docker.sh
 if [ "$MODE" == "cloud" ]; then
     echo "🔧 Installing XFCE4 Desktop and TigerVNC..."
     sudo bash ./install_xfce.sh
-    echo "🔧 Installing software for the cloud VM..."
-    sudo bash ./install_tools.sh --mode cloud
-else
-    echo "🔧 Installing software for the desktop VM..."
-    sudo bash ./install_tools.sh --mode desktop
 fi
 
+echo "========================================"
+echo "Installing conda env "
+echo "========================================"
+sudo bash ./install_conda.sh
 
 
+if [ "$MODE" == "cloud" ]; then
+    echo "🔧 Installing software tools for the cloud VM..."
+    sudo bash ./install_tools.sh --mode cloud
+else
+    echo "🔧 Installing software tools for the desktop VM..."
+    sudo bash ./install_tools.sh --mode desktop
+fi
 sudo reboot
