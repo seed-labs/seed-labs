@@ -33,4 +33,4 @@ sudo groupadd -f docker
 # sudo gpasswd -a $USERID docker
 sudo usermod -aG docker $USERID
 
-# sudo newgrp docker
+sudo newgrp docker
