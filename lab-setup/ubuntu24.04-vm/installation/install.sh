@@ -12,6 +12,8 @@
 # For security, we will not set the password for this account, 
 # so nobody can ssh directly into this account. You need to 
 # set up public keys to ssh directly into this account if you use ECS.
+# if you use ubuntu24.04 desktop version,you will be asked to set a password 
+# for seed user account.
 
 # Interactive prompt
 echo "Please choose installation type:"
