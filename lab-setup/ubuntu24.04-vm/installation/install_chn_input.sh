@@ -35,4 +35,4 @@ export XMODIFIERS=@im=ibus
 EOF
 
 echo "=== All done! ==="
-echo "📌 After first login, run: ibus-daemon -drx -> ibus-setup → Add → Chinese → Pinyin"
+echo "📌 reboot machine, after first login, run: ibus-daemon -drx -> ibus-setup → Add → Chinese → intelligent Pinyin"

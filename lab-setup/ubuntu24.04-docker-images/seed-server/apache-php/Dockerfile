@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 ARG DEBIAN_FRONTEND=noninteractive
 
-# 安装基础工具和 PPA 管理工具
+# install common tools add PPA tools
 RUN apt-get update && apt-get install -y \
     software-properties-common \
     lsb-release \
@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     && add-apt-repository ppa:ondrej/php -y \
     && apt-get update
 
-# 安装 Apache 和 PHP 7.4 及常用扩展
+# install Apache and PHP 7.4 with common extensions
 RUN apt-get install -y \
     apache2 \
     binutils \
@@ -34,5 +34,5 @@ RUN apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 让 Apache 以前台模式运行，日志直接输出到 docker logs
+# Run Apache in foreground mode, output logs directly to docker logs
 CMD ["apache2ctl", "-D", "FOREGROUND"]

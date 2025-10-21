@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 ARG DEBIAN_FRONTEND=noninteractive
 
-# 安装常用工具 + Python3 + pip
+# install common tools + Python3 + pip
 RUN apt-get update \
     && apt-get -y install \
         binutils \
@@ -26,15 +26,15 @@ RUN apt-get update \
         python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 scapy（Ubuntu 24.04 pip 需加 --break-system-packages）
+# Install scapy (Ubuntu 24.04 pip requires --break-system-packages flag due to system package protection)
 RUN pip3 install scapy --break-system-packages
 
-# 创建 seed 用户并设置密码
+# Create seed user and set password
 RUN useradd -m -s /bin/bash seed \
     && echo "root:dees" | chpasswd \
     && echo "seed:dees" | chpasswd
 
-# 拷贝自定义 bashrc
+# Copy custom bashrc
 COPY bashrc /home/seed/.bashrc
 COPY bashrc /root/.bashrc
 

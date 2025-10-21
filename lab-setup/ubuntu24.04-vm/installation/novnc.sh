@@ -27,14 +27,21 @@ HOMEDIR=/home/$USERID
 
 echo "=== 开始部署 noVNC 和 TigerVNC ==="
 
+
+
 # -------------------------------
-# 安装 noVNC/websockify 到 /opt
+# 克隆 noVNC 和 websockify 到 /opt
 # -------------------------------
 sudo mkdir -p /opt/noVNC
-sudo cp -r Files/VNC/noVNC/* /opt/noVNC/
-sudo cp -r Files/VNC/websockify /opt/noVNC/utils/
+cd /opt/noVNC
 
+# 克隆 noVNC 和 websockify 仓库
+sudo git clone https://github.com/novnc/noVNC.git .
+sudo git clone https://github.com/novnc/websockify.git utils/
+
+# -------------------------------
 # 修改权限：root 拥有，但任何用户可读执行
+# -------------------------------
 sudo chown -R root:root /opt/noVNC
 sudo chmod -R a+rx /opt/noVNC
 
