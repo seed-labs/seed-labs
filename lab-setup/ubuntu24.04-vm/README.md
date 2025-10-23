@@ -19,7 +19,6 @@ After creating the Ubuntu 24.04 VM, we need to install all the necessary softwar
 Download or git clone this project into your VM, and `cd` into `labsetup/ubuntu24.04-vm/installation` folder, run the following command to install software and configure the system.
 
 ```
-chmod +x install.sh
 ./install.sh
 ```
 
@@ -89,8 +88,23 @@ desktop.
   vncserver -list       # List the VNC server sessions
   vncserver -kill :1    # Kill the session for :1 display
   ```
+## Step 3 (Option B): Access the VM Using Web VNC
+You can use the web novnc proxy to access the VM using a web browser,
+here are how to deploy the novnc proxy:
 
-## Step 3 (Option B): Access the VM Using SSH
+```
+sudo su root
+./deploy_novnc.sh -p vncpassword
+```
+The web noVNC proxy has been installed on the VM and listens on port `6080`. 
+You can customize the vncpassword and access the web noVNC proxy through the following URL:
+```
+http://<VM_IP>:6080/vnc.html
+```
+**Note:** To install the web noVNC proxy, you must use Ubuntu 24.04 Server Edition. 
+The Ubuntu 24.04 Desktop Edition is currently not compatible with this setup.
+
+## Step 3 (Option C): Access the VM Using SSH
 
 To run VNC, you need to have reasonable bandwidth. If your VNC performance
 is bad, you should switch to SSH. You can get by with many of the
