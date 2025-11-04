@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 #=================================================================
 # Most cloud platforms create a default account in the system.
 # We will not use this account for SEED labs. Instead, we will
