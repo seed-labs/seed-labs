@@ -5,7 +5,7 @@ This folder contains the instructions on how to build the SEED Ubuntu 24.04 VM.
 
 ## Step 1: Create a VM Instance
 
-First we need to create an VM instance, and install the Ubuntu 24.04 LTS operating system on the VM. The minimal machine configuration is 2 CPU cores, 4GB of RAM, and 10GB of disk space. If you feel that the performance is not good enough, you can always change the machine configuration later.
+First we need to create a VM instance, and install the Ubuntu 24.04 LTS operating system on the VM. The minimal machine configuration is 2 CPU cores, 4GB of RAM, and 10GB of disk space. If you feel that the performance is not good enough, you can always change the machine configuration later.
 
 - For desktop, we suggest users to use VirtualBox to create VM. We also suggest users to allocate more disk spaces (the 10GB minimal disk space is meant for cloud VM to reduce the cloud expense). 
 
@@ -14,15 +14,22 @@ First we need to create an VM instance, and install the Ubuntu 24.04 LTS operati
 
 ## Step 2: Install Software and Configure System
 
-After creating the Ubuntu 24.04 VM, we need to install all the necessary software on the VM. When the Ubuntu 24.04 VM is built, a default username with the root privilege will be created in the system. The actual name of the user is typically chosen by the cloud operator. Most cloud platforms will provide a method for you to SSH into this account. 
+After creating the Ubuntu 24.04 VM, we need to install all the necessary software on the VM. When the Ubuntu 24.04 VM is built on the cloud, a default username with the root privilege will be created in the system. The actual name of the user is typically chosen by the cloud operator. Most cloud platforms will provide a method for you to SSH into this account. 
 
-Download or git clone this project into your VM, and `cd` into `labsetup/ubuntu24.04-vm/installation` folder, run the following command to install software and configure the system.
+Download or git clone this project into your VM, and `cd` into the `labsetup/ubuntu24.04-vm/installation` folder, run the following command to install software and configure the system.
 
 ```
-./install.sh
+./install.sh 
 ```
 
-- **Note:** This shell script will download and install all the software needed for the SEED labs. The whole process will take a few minutes. Please don't leave, because you will be asked to make choices:
+You will be asked to choose the installation type:  
+ 1) Cloud mode (will install `xface` desktop + `TigerVNC`), 
+ 2) Desktop mode (will not install `xface` or `TigerVNC`)
+
+
+**Note:** This shell script will download and install all the software needed for the SEED labs. The whole process will take a few minutes. Please don't leave, because you will be asked to make choices:
+
+  - For the destktop mode, users need to set the password for the `seed` account.
 
   - During the installation of `vscode`, you will be asked
     whether to add Microsoft apt repository for Visual Studio Code?
@@ -32,14 +39,12 @@ Download or git clone this project into your VM, and `cd` into `labsetup/ubuntu2
     whether non-superuser should be able to capture packets.
     Select `No`.
 
-  - During the installation of `xfce4`, you will be asked to
-    choose a default display manager. Choose `LightDM`.
-
+  - For the cloud installation, during the installation of `xfce4`, you will be asked to choose a default display manager. Choose `LightDM`.
 
 
 After the script finishes, a new account called `seed` will be created, We will use this account for all the SEED labs, instead of the default one
-created by the cloud. We intentionally did not set a password for this account, so nobody can directly log into this account. We can switch to the `seed` account using the following command (if you do not use `sudo`, the OS
-will ask you to type the password, making it impossible to log in):
+created by the cloud. For the cloud version, we intentionally did not set a password for this account, so nobody can directly log into this account over the network. We can switch to the `seed` account using the following command (if you do not use `sudo`, the OS will ask you to type the password, making it impossible to log in):
+
 ```
 sudo su seed
 ```
@@ -61,15 +66,14 @@ desktop.
   sudo su seed
   ```
 
-  Our installation script has already installed
-  the TigerVNC server program on the VM. You need to start the
-  server.
+  Our installation script has already installed the TigerVNC server program on the VM. You need to start the server using the following command:
+
   ```
   tigervncserver :1 -localhost no -geometry 1920x1080 -depth 24 -xstartup /usr/bin/startxfce4
   ```  
 
-  By default, TigerVNC server only listens to localhost/127.0.0.1. The
-  purpose of the `-localhost no` option means accepting access from the
+  By default, TigerVNC server only listens to `localhost/127.0.0.1`. The
+  purpose of the `"-localhost no"` option means accepting access from the
   outside. When we first start the `tigervncserver`, we will be asked to provide a password. Make sure this password is strong enough. Moreover, VNC
   communication itself is not encrypted, so you should not send anything
   personal. If you do want to secure it, you can run an SSH tunnel or VPN
@@ -93,11 +97,11 @@ You can use the web novnc proxy to access the VM using a web browser,
 here are how to deploy the novnc proxy:
 
 ```
-sudo su root
-./deploy_novnc.sh -p vncpassword
+sudo ./deploy_novnc.sh -p <vncpassword>
 ```
 The web noVNC proxy has been installed on the VM and listens on port `6080`. 
-You can customize the vncpassword and access the web noVNC proxy through the following URL:
+You can customize the `vncpassword` and access the web noVNC proxy through the following URL:
+
 ```
 http://<VM_IP>:6080/vnc.html
 ```
