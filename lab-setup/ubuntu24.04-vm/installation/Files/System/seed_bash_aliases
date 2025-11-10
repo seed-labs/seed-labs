@@ -1,0 +1,11 @@
+
+# For docker
+#alias dcbuild='docker compose build'
+alias dcbuild='DOCKER_BUILDKIT=0 docker compose build'
+alias dcup='docker compose up'
+alias dcdown='docker compose down'
+alias dockps='docker ps --format "{{.ID}}  {{.Names}}" | sort -k 2'
+docksh() { docker exec -it $1 /bin/bash; }
+
+# Misc.
+alias ll='ls -l'
