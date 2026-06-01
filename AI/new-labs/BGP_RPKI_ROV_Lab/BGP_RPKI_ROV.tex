@@ -1,0 +1,557 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du and SEED Lab contributors.             %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+\hypersetup{pdfborder = {0 0 0}}
+
+\lhead{\bfseries SEED Labs -- BGP RPKI and ROV Lab}
+
+\begin{document}
+
+\begin{center}
+{\LARGE BGP RPKI and Route Origin Validation Lab}
+\end{center}
+
+\seedlabcopyright{2026}
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Overview}
+
+Border Gateway Protocol (BGP) allows autonomous systems (ASes) to announce
+which IP prefixes they can reach. This design gives the Internet its global
+connectivity, but it also creates a serious security problem: BGP speakers
+traditionally trust route announcements from their neighbors. If an AS announces
+a prefix that it does not own, other networks may route traffic to the wrong
+place. Such incidents can be caused by attacks, operator mistakes, or route
+leaks.
+
+The Resource Public Key Infrastructure (RPKI) helps address this problem. In
+RPKI, a prefix holder can create a Route Origin Authorization (ROA), which says
+which AS is authorized to originate a prefix and what maximum prefix length is
+allowed. Routers can then perform Route Origin Validation (ROV) on received BGP
+routes. A route can be classified as \textit{Valid}, \textit{Invalid}, or
+\textit{NotFound}. Operators can reject Invalid routes to reduce the impact of
+origin hijacking.
+
+The objective of this lab is to help students understand how RPKI and ROV work
+and what they do not protect against. Students will use the SEED Internet
+Emulator to launch a prefix hijacking attack, create a small educational ROA
+table, install a BIRD import filter that models ROV, and show that the
+unauthorized route is rejected. Students will also test a more-specific prefix
+attack and discuss the limitations of origin validation.
+
+This lab covers the following topics:
+
+\begin{itemize}[noitemsep]
+\item BGP prefix announcements and origin ASes
+\item Prefix hijacking and more-specific prefix attacks
+\item RPKI, ROA, maxLength, and Route Origin Validation
+\item BIRD route filters in the SEED Internet Emulator
+\item Security limitations of ROV
+\end{itemize}
+
+\paragraph{Readings.}
+Students should read the SEED BGP tutorial and the existing BGP Exploration and
+Attack Lab before working on this lab. The following public standards are also
+useful:
+
+\begin{itemize}
+\item RFC 6480, An Infrastructure to Support Secure Internet Routing:
+      \url{https://www.rfc-editor.org/rfc/rfc6480}
+\item RFC 6811, BGP Prefix Origin Validation:
+      \url{https://www.rfc-editor.org/rfc/rfc6811}
+\item RFC 8210, The RPKI to Router Protocol:
+      \url{https://www.rfc-editor.org/rfc/rfc8210}
+\item NIST NCCoE RPKI project page:
+      \url{https://www.nccoe.nist.gov/projects/routing-security}
+\end{itemize}
+
+\paragraph{Lab environment.}
+\seedenvironmentB
+\nodependency
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Environment}
+
+This lab is conducted inside the SEED Internet Emulator. We use the same
+emulator conventions as the BGP Exploration and Attack Lab:
+
+\begin{itemize}[noitemsep]
+\item AS numbers \texttt{150}--\texttt{199} are stub ASes.
+\item The first network prefix for AS-\texttt{N} is \texttt{10.N.0.0/24}.
+\item BGP routers run BIRD, and their configuration file is
+      \path{/etc/bird/bird.conf}.
+\item The emulator map can be accessed at \url{http://localhost:8080/map.html}
+      after the emulator starts.
+\end{itemize}
+
+\paragraph{Starting the emulator.}
+Download the BGP emulator lab setup file, unzip it, and go to the generated
+\texttt{output} folder. Then build and start the containers:
+
+\begin{lstlisting}
+$ docker-compose build
+$ docker-compose up
+
+// Aliases in the SEED VM
+$ dcbuild
+$ dcup
+$ dcdown
+\end{lstlisting}
+
+\paragraph{Useful commands.}
+The following commands are used throughout the lab:
+
+\begin{lstlisting}
+// List containers
+$ dockps
+
+// Get a shell inside a container
+$ docksh <container-id>
+
+// Show BIRD protocols
+# birdc show protocols
+
+// Show all BGP routes
+# birdc show route all
+
+// Reload BIRD configuration after editing /etc/bird/bird.conf
+# birdc configure
+\end{lstlisting}
+
+\paragraph{Helper files.}
+This lab folder contains a \texttt{Labsetup} folder with an educational ROA
+table and a helper script:
+
+\begin{lstlisting}
+Labsetup/
+|-- roa-table.txt
+|-- generate_bird_rov_filter.py
+\end{lstlisting}
+
+The helper script generates a BIRD filter function from the ROA table. This is
+not a full RPKI validator and it does not use the RTR protocol. It is a small
+model that lets students learn the policy logic behind ROV inside the emulator.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{How RPKI and Route Origin Validation Work}
+
+Before working on the lab tasks, we first describe the theory behind RPKI and
+Route Origin Validation. BGP routers exchange reachability information, but
+traditional BGP does not include a built-in way to prove that an AS is allowed
+to originate a prefix. If AS-161 announces \texttt{10.154.0.0/24}, a normal
+BGP router can evaluate path attributes and policies, but it cannot know from
+BGP alone whether AS-161 is authorized to originate that prefix.
+
+\subsection{Resource Certificates}
+
+RPKI is based on the same general idea as public-key infrastructure, but the
+certificates bind Internet number resources to public keys. These resources
+include IP address blocks and AS numbers. Regional Internet Registries (RIRs)
+are trust anchors for the resources they allocate. A resource holder can receive
+a certificate proving that it controls a particular prefix.
+
+For this lab, we do not build the full certificate hierarchy. Instead, we model
+the result of the hierarchy: a trusted database telling routers which ASes are
+authorized to originate which prefixes.
+
+\subsection{Route Origin Authorization}
+
+A Route Origin Authorization (ROA) is a signed object created by a prefix
+holder. It authorizes one AS to originate a prefix, optionally allowing more
+specific prefixes up to a specified maximum length. A ROA contains three
+important fields:
+
+\begin{itemize}[noitemsep]
+\item Prefix: the address block covered by the ROA.
+\item Origin AS: the AS authorized to originate the prefix.
+\item maxLength: the longest prefix length that is still authorized.
+\end{itemize}
+
+For example, the following educational ROA entry says that AS-154 can originate
+\texttt{10.154.0.0/24}, but not a more-specific route such as
+\texttt{10.154.0.0/25}.
+
+\begin{lstlisting}
+10.154.0.0/24,24,154,AS-154 customer prefix
+\end{lstlisting}
+
+If the maxLength were changed to \texttt{25}, then AS-154 would be authorized
+to originate both \texttt{10.154.0.0/24} and covered \texttt{/25} prefixes.
+Choosing maxLength is therefore a security decision. A loose maxLength can make
+some accidental or malicious more-specific announcements look valid.
+
+\subsection{Validation States}
+
+When a router receives a BGP route, it can compare the route's prefix and origin
+AS with the validated ROA database. The result is one of three states:
+
+\begin{itemize}[noitemsep]
+\item \textbf{Valid:} A covering ROA exists, the origin AS matches, and the
+      prefix length is no longer than maxLength.
+\item \textbf{Invalid:} A covering ROA exists, but the origin AS is wrong or
+      the prefix length is longer than maxLength.
+\item \textbf{NotFound:} No covering ROA exists for the prefix.
+\end{itemize}
+
+The origin AS is the last AS in the AS path. For example, if the path is
+\texttt{3 161}, the origin AS is AS-161. Route Origin Validation checks this
+origin AS. It does not validate every AS hop in the path.
+
+\subsection{Router Policy}
+
+ROV does not automatically force a router to reject a route. It gives the router
+a validation result, and the operator decides the policy. A common security
+policy is to reject Invalid routes while continuing to accept Valid and NotFound
+routes. Operators often accept NotFound routes because not every legitimate
+prefix on the Internet has a ROA.
+
+In a real deployment, an RPKI validator downloads and validates signed RPKI
+objects from repositories. It then sends validated prefix-origin information to
+routers, commonly using the RPKI-to-Router (RTR) protocol. In this lab, we use a
+small ROA table and a generated BIRD filter to model the same decision:
+
+\begin{center}
+BGP route + ROA table $\rightarrow$ validation state $\rightarrow$ routing policy
+\end{center}
+
+\subsection{What ROV Can and Cannot Protect}
+
+ROV is effective against many origin hijacks. If AS-161 announces
+\texttt{10.154.0.0/24} while the ROA says only AS-154 is authorized, the route
+is Invalid and can be rejected.
+
+However, ROV does not protect the entire AS path. If the origin AS is valid but
+the path contains false or manipulated intermediate ASes, origin validation
+alone may still mark the route as Valid. ROV is therefore an important defense,
+but it is not a complete solution to all BGP security problems.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Tasks}
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1: Getting Familiar with Route Origins}
+
+The objective of this task is to identify the origin AS for routes inside the
+emulator. Pick a BGP router outside AS-154, such as a transit AS connected to
+AS-154's part of the topology. Get a shell on the router and inspect the route
+to AS-154's prefix:
+
+\begin{lstlisting}
+# birdc show route all for 10.154.0.0/24
+\end{lstlisting}
+
+Please identify the following:
+
+\begin{itemize}[noitemsep]
+\item Which AS originates \texttt{10.154.0.0/24}?
+\item What is the AS path?
+\item Which BGP neighbor provided the route?
+\item Can the router tell whether the origin AS is authorized?
+\end{itemize}
+
+In your report, explain why ordinary BGP route selection does not by itself
+prove that the origin AS is legitimate.
+
+\paragraph{Connection to theory.}
+Relate your observation to the definition of the origin AS. Identify the last
+AS in the AS path, and explain why this is the value checked by Route Origin
+Validation.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2: Launching a Prefix Hijacking Attack}
+
+In this task, students will reproduce a basic origin hijack. AS-154 owns the
+prefix \texttt{10.154.0.0/24}. We will make AS-161 announce the same prefix.
+This simulates a malicious or misconfigured AS claiming reachability for a
+prefix that it does not own.
+
+On AS-161's BGP router, add the following static route to
+\path{/etc/bird/bird.conf}. The exact location of this block depends on the
+generated BIRD configuration, but it should be placed with the other static
+routes.
+
+\begin{lstlisting}
+protocol static {
+    ipv4 {
+        table t_bgp;
+    };
+    route 10.154.0.0/24 blackhole {
+        bgp_large_community.add(LOCAL_COMM);
+    };
+}
+\end{lstlisting}
+
+Reload BIRD:
+
+\begin{lstlisting}
+# birdc configure
+\end{lstlisting}
+
+From a different AS, such as AS-155 or AS-156, observe the route to
+\texttt{10.154.0.0/24}. Use at least two of the following:
+
+\begin{lstlisting}
+# birdc show route all for 10.154.0.0/24
+$ traceroute 10.154.0.71
+$ ping 10.154.0.71
+\end{lstlisting}
+
+Please provide screenshots showing that AS-161's announcement changes the
+selected route or disrupts reachability to AS-154. Explain whether this is an
+origin hijack, a path manipulation attack, or both.
+
+\paragraph{Connection to theory.}
+Using the ROA model from the theory section, explain why AS-161's route for
+\texttt{10.154.0.0/24} should be classified as Invalid.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 3: Creating a Small ROA Table}
+
+The objective of this task is to understand what information a ROA contains. In
+real RPKI, ROAs are signed objects published by prefix holders. In this lab, we
+use a small text file to model the ROA database.
+
+The provided \texttt{Labsetup/roa-table.txt} file contains entries like this:
+
+\begin{lstlisting}
+# prefix,maxLength,originAS,description
+10.154.0.0/24,24,154,AS-154 customer prefix
+10.155.0.0/24,24,155,AS-155 customer prefix
+10.156.0.0/24,24,156,AS-156 customer prefix
+10.161.0.0/24,24,161,AS-161 customer prefix
+\end{lstlisting}
+
+For each route below, decide whether the route is Valid, Invalid, or NotFound:
+
+\begin{itemize}[noitemsep]
+\item AS-154 announces \texttt{10.154.0.0/24}.
+\item AS-161 announces \texttt{10.154.0.0/24}.
+\item AS-154 announces \texttt{10.154.0.0/25}.
+\item AS-170 announces \texttt{10.170.0.0/24}.
+\end{itemize}
+
+Please explain the role of \texttt{maxLength}. Why is
+\texttt{10.154.0.0/25} not valid when the ROA says maxLength \texttt{24}?
+
+\paragraph{Connection to theory.}
+For each route, explicitly state which rule produced the validation result:
+wrong origin AS, prefix length longer than maxLength, no covering ROA, or a
+matching ROA.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 4: Installing an Educational ROV Filter}
+
+In this task, students will configure a BGP router to reject invalid origins.
+We will model ROV using a BIRD import filter. In a real deployment, the router
+would normally receive validated prefix-origin data from an RPKI validator over
+the RTR protocol. In this lab, we use a generated filter so students can focus
+on the decision logic.
+
+Generate the filter:
+
+\begin{lstlisting}
+$ cd Labsetup
+$ python3 generate_bird_rov_filter.py roa-table.txt > seed_rov_filter.conf
+\end{lstlisting}
+
+Open \texttt{seed\_rov\_filter.conf}. It defines a function named
+\texttt{seed\_rov\_invalid()}. Copy this function into the BIRD configuration
+of AS-3's BGP router, or another provider router selected by the instructor.
+Then call it from the import filter for the BGP session that receives routes
+from AS-161:
+
+\begin{lstlisting}
+import filter {
+    if seed_rov_invalid() then {
+        print "ROV rejected invalid route: ", net, " origin ", bgp_path.last;
+        reject;
+    }
+    accept;
+};
+\end{lstlisting}
+
+Reload the BIRD configuration:
+
+\begin{lstlisting}
+# birdc configure
+\end{lstlisting}
+
+Now repeat the prefix hijacking attack from Task 2. Please answer the
+following:
+
+\begin{itemize}[noitemsep]
+\item Does AS-3 still accept the fake route from AS-161?
+\item Does the fake route propagate to other ASes?
+\item What message or route-table evidence shows that the route was rejected?
+\item Does AS-161 still have normal Internet connectivity after the filter is
+      installed?
+\end{itemize}
+
+In your report, explain why this filter protects AS-154's prefix without
+disconnecting AS-161 from the emulator.
+
+\paragraph{Connection to theory.}
+Map the generated BIRD filter to the theoretical ROV pipeline. Which part of
+the filter models the ROA lookup? Which part models the Invalid decision? Which
+part models the operator's policy to reject Invalid routes?
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 5: Testing a More-Specific Prefix Attack}
+
+Attackers often announce a more-specific prefix because routers prefer
+longest-prefix matches during forwarding. In this task, AS-161 will announce
+\texttt{10.154.0.0/25} instead of \texttt{10.154.0.0/24}.
+
+On AS-161's BGP router, modify the malicious static route:
+
+\begin{lstlisting}
+protocol static {
+    ipv4 {
+        table t_bgp;
+    };
+    route 10.154.0.0/25 blackhole {
+        bgp_large_community.add(LOCAL_COMM);
+    };
+}
+\end{lstlisting}
+
+Run the experiment twice:
+
+\begin{itemize}[noitemsep]
+\item First, run it without the ROV filter.
+\item Second, run it with the ROV filter installed.
+\end{itemize}
+
+Please describe the difference. Explain why the ROA entry
+\texttt{10.154.0.0/24,24,154} makes the \texttt{/25} announcement invalid,
+even if AS-154 had originated it.
+
+\paragraph{Connection to theory.}
+Explain how longest-prefix forwarding makes more-specific hijacks powerful, and
+how the ROA maxLength field limits which more-specific announcements can be
+treated as Valid.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 6: Understanding the Limitations of ROV}
+
+ROV checks whether the origin AS is authorized to originate a prefix. It does
+not verify the entire AS path. This distinction is important.
+
+Please answer the following questions:
+
+\begin{itemize}[noitemsep]
+\item What kind of hijack can ROV stop?
+\item What kind of route manipulation can ROV fail to stop?
+\item Why does a Valid origin not prove that the whole AS path is true?
+\item Why might some operators choose to reject Invalid routes but still accept
+      NotFound routes?
+\end{itemize}
+
+As an optional experiment, create a route announcement whose origin is valid but
+whose path is less preferred or suspicious due to policy. Observe whether the
+ROV filter rejects it. Explain the result.
+
+\paragraph{Connection to theory.}
+Use this task to separate origin validation from path validation. State exactly
+which part of the BGP route ROV checks and which parts it leaves unchecked.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Guidelines}
+
+\paragraph{Finding the correct BGP session.}
+Use \texttt{birdc show protocols} on the provider router to identify the BGP
+session connected to AS-161. The protocol name often indicates the neighbor.
+The emulator GUI can also help identify which ASes are connected.
+
+\paragraph{Editing BIRD configuration.}
+One way to edit the configuration is to copy it from the container to the host,
+edit it, and copy it back:
+
+\begin{lstlisting}
+$ docker cp <container-id>:/etc/bird/bird.conf ./bird.conf
+
+... edit bird.conf ...
+
+$ docker cp ./bird.conf <container-id>:/etc/bird/bird.conf
+$ docker exec <container-id> birdc configure
+\end{lstlisting}
+
+\paragraph{Valid, Invalid, and NotFound.}
+Use the following rule in this lab:
+
+\begin{itemize}[noitemsep]
+\item Valid: a covering ROA exists, the origin AS matches, and the prefix
+      length is no longer than maxLength.
+\item Invalid: a covering ROA exists, but the origin AS or maxLength check
+      fails.
+\item NotFound: no covering ROA exists.
+\end{itemize}
+
+\paragraph{Instructor customization.}
+Instructors can change the victim AS, attacker AS, provider AS, ROA table, and
+maxLength values. A useful variation is to give students different victim
+prefixes or to intentionally omit one ROA and ask students to explain why the
+route becomes NotFound instead of Invalid.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Submission}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In addition, your report should include:
+
+\begin{itemize}[noitemsep]
+\item Screenshots of route tables before and after the hijack.
+\item The ROA table used in your experiment.
+\item The BIRD ROV filter installed on the provider router.
+\item Evidence that invalid routes are rejected.
+\item An explanation of the limitations of Route Origin Validation.
+\end{itemize}
+
+\end{document}

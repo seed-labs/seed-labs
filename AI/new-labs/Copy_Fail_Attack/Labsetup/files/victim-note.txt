@@ -1,0 +1,4 @@
+This file is part of the Copy Fail simulator.
+
+The lab never modifies the real /etc/passwd file. The protected account
+database used by the simulator is files/passwd.template.
