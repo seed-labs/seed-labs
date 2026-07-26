@@ -1,0 +1,36 @@
+flowchart LR
+    attacker["Attacker<br/>AS-150<br/>10.150.0.71"]
+    victim["Victim<br/>AS-151<br/>10.151.0.71"]
+
+    subgraph amp["Amplifier LAN: AS-152 / 10.152.0.0/24"]
+        router["Router<br/>directed broadcast enabled<br/>10.152.0.254"]
+        broadcast["Broadcast address<br/>10.152.0.255"]
+        h1["Host 0<br/>10.152.0.71"]
+        h2["Host 1<br/>10.152.0.72"]
+        h3["Host 2<br/>10.152.0.73"]
+        hn["More hosts<br/>..."]
+    end
+
+    attacker -- "1. ICMP echo request<br/>src = 10.151.0.71<br/>dst = 10.152.0.255" --> router
+    router -- "2. forward as LAN broadcast" --> broadcast
+    broadcast --> h1
+    broadcast --> h2
+    broadcast --> h3
+    broadcast --> hn
+
+    h1 -- "3. ICMP echo reply" --> victim
+    h2 -- "3. ICMP echo reply" --> victim
+    h3 -- "3. ICMP echo reply" --> victim
+    hn -- "3. ICMP echo replies" --> victim
+
+    classDef attacker fill:#f9d6d5,stroke:#9d2f2f,stroke-width:2px,color:#111;
+    classDef victim fill:#d9ebff,stroke:#2f5f9d,stroke-width:2px,color:#111;
+    classDef router fill:#fff0c2,stroke:#8a6d1d,stroke-width:2px,color:#111;
+    classDef host fill:#ddf4dd,stroke:#387a38,stroke-width:1.5px,color:#111;
+    classDef broadcast fill:#f5f5f5,stroke:#555,stroke-dasharray:5 5,color:#111;
+
+    class attacker attacker;
+    class victim victim;
+    class router router;
+    class h1,h2,h3,hn host;
+    class broadcast broadcast;
