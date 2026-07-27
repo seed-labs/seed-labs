@@ -1,0 +1,597 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du and SEED Lab contributors.             %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+\hypersetup{pdfborder = {0 0 0}}
+
+\lhead{\bfseries SEED Labs -- BGP Prefix Hijacking Lab}
+
+\begin{document}
+
+\begin{center}
+{\LARGE BGP Prefix Hijacking Lab}
+\end{center}
+
+\seedlabcopyright{2026}
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Overview}
+
+Border Gateway Protocol (BGP) is the routing protocol used to exchange
+reachability information among autonomous systems (ASes) on the Internet. It is
+essential to global connectivity, but its trust model is weak: a BGP router can
+announce reachability to an IP prefix, and other routers may accept and
+propagate that route based on policy rather than cryptographic proof of
+ownership.
+
+BGP prefix hijacking happens when an AS announces a prefix that it does not
+own. If other networks select the false route, traffic for the victim prefix can
+be blackholed, intercepted, or redirected. Many real incidents are caused by
+mistakes rather than malicious intent, but the technical effect is the same:
+traffic follows an unauthorized route.
+
+This lab is a standalone BGP security lab based on the SEED Internet Emulator.
+Students will first study normal route origination, then launch an equal-prefix
+hijack and a more-specific prefix hijack from an attacker AS. They will observe
+the effect using BIRD route tables, traceroute, ping, and the emulator map.
+Finally, students will implement defensive filtering at an upstream provider
+and discuss how prefix filters, monitoring, and RPKI/ROV help reduce the risk.
+
+This lab covers the following topics:
+
+\begin{itemize}[noitemsep]
+\item BGP route origination and AS paths
+\item BGP route selection and longest-prefix matching
+\item Equal-prefix and more-specific prefix hijacking
+\item Blackholing, redirection, and interception
+\item BIRD static routes and import/export filters
+\item Defensive filtering and incident response
+\end{itemize}
+
+\paragraph{Readings.}
+Students should read the SEED BGP tutorial before working on this lab. The
+following standards are useful background references:
+
+\begin{itemize}
+\item RFC 4271, A Border Gateway Protocol 4 (BGP-4):
+      \url{https://www.rfc-editor.org/rfc/rfc4271}
+\item RFC 6480, An Infrastructure to Support Secure Internet Routing:
+      \url{https://www.rfc-editor.org/rfc/rfc6480}
+\item RFC 6811, BGP Prefix Origin Validation:
+      \url{https://www.rfc-editor.org/rfc/rfc6811}
+\end{itemize}
+
+\paragraph{Lab environment.}
+\seedenvironmentB
+\nodependency
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Environment}
+
+This lab is conducted inside the SEED Internet Emulator. The emulator creates a
+miniature Internet using Docker containers. Each host and router is a container,
+and BGP routers run BIRD.
+
+\paragraph{Starting the emulator.}
+Download the BGP emulator lab setup file from the lab website and unzip it. The
+actual container files are in the generated \texttt{output} folder. Start the
+emulator using Docker Compose:
+
+\begin{lstlisting}
+$ cd output
+$ docker-compose build
+$ docker-compose up
+
+// Aliases in the SEED VM
+$ dcbuild
+$ dcup
+$ dcdown
+\end{lstlisting}
+
+After the emulator starts, the network map can be accessed from:
+
+\begin{lstlisting}
+http://localhost:8080/map.html
+\end{lstlisting}
+
+\paragraph{Emulator conventions.}
+The emulator uses several naming and addressing conventions:
+
+\begin{itemize}[noitemsep]
+\item AS numbers \texttt{2}--\texttt{9}: large transit ASes.
+\item AS numbers \texttt{10}--\texttt{19}: smaller transit ASes.
+\item AS numbers \texttt{100}--\texttt{149}: Internet Exchanges.
+\item AS numbers \texttt{150}--\texttt{199}: stub ASes.
+\item The first prefix for AS-\texttt{N} is \texttt{10.N.0.0/24}.
+\item In each AS, host addresses often start at \texttt{71}; router addresses
+      are usually near the end of the subnet.
+\end{itemize}
+
+In this lab, AS-154 is the victim, and AS-161 is the attacker. The victim
+prefix is \texttt{10.154.0.0/24}. A typical victim host is
+\texttt{10.154.0.71}.
+
+\paragraph{Useful commands.}
+The following commands are used throughout the lab:
+
+\begin{lstlisting}
+// List containers
+$ dockps
+
+// Get a shell inside a container
+$ docksh <container-id>
+
+// Show BGP sessions
+# birdc show protocols
+
+// Show a route
+# birdc show route all for 10.154.0.0/24
+
+// Reload BIRD configuration
+# birdc configure
+
+// Test reachability and path
+$ ping 10.154.0.71
+$ traceroute 10.154.0.71
+\end{lstlisting}
+
+\paragraph{Modifying BIRD configuration.}
+Students can edit \path{/etc/bird/bird.conf} directly inside a container, or
+copy it to the host, edit it, and copy it back:
+
+\begin{lstlisting}
+$ docker cp <container-id>:/etc/bird/bird.conf ./bird.conf
+
+... edit bird.conf ...
+
+$ docker cp ./bird.conf <container-id>:/etc/bird/bird.conf
+$ docker exec <container-id> birdc configure
+\end{lstlisting}
+
+\paragraph{Helper snippets.}
+This lab folder contains a \texttt{Labsetup} folder with small BIRD snippets:
+
+\begin{lstlisting}
+Labsetup/
+|-- as161-hijack-10.154.0.0-24.conf
+|-- as161-hijack-10.154.0.0-25.conf
+|-- as3-filter-as154-prefix.conf
+\end{lstlisting}
+
+These snippets are not complete configuration files. They are examples to paste
+into the appropriate part of the existing BIRD configuration.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Theory: How BGP Prefix Hijacking Works}
+
+\subsection{Route Origination}
+
+An AS originates a route when it announces that it can reach a prefix. For
+example, AS-154 normally originates \texttt{10.154.0.0/24}. When other BGP
+routers receive this announcement, they store the route together with path
+attributes, including the AS path.
+
+The AS path records the sequence of ASes that the announcement has traversed.
+The last AS in the path is the origin AS. If a router sees a path such as
+\texttt{3 154}, the origin AS is AS-154. If it sees \texttt{3 161}, the origin
+AS is AS-161.
+
+Traditional BGP does not prove that the origin AS owns the prefix. This is the
+root of prefix hijacking.
+
+\subsection{Route Selection}
+
+When a router learns multiple routes to the same prefix, it runs the BGP route
+selection process. The complete process has many steps, but common factors
+include:
+
+\begin{itemize}[noitemsep]
+\item Local preference
+\item AS path length
+\item Origin type
+\item MED
+\item eBGP over iBGP
+\item IGP cost to the next hop
+\end{itemize}
+
+The most important point for this lab is that BGP may select an unauthorized
+route if that route is more preferred by policy. Shorter AS paths often help an
+attacker, but local policy can override path length.
+
+\subsection{Longest-Prefix Matching}
+
+BGP route selection chooses the best route for a given prefix. Packet forwarding
+uses another rule: longest-prefix matching. If a router has routes for both
+\texttt{10.154.0.0/24} and \texttt{10.154.0.0/25}, a packet to
+\texttt{10.154.0.71} matches both, but the \texttt{/25} route is more specific
+and will be used.
+
+This makes more-specific hijacking powerful. Even if the victim's
+\texttt{/24} route remains visible, an attacker who successfully announces a
+covered \texttt{/25} may capture traffic for half of the victim's address
+space.
+
+\subsection{Types of Prefix Hijacking}
+
+This lab studies two common forms:
+
+\begin{itemize}[noitemsep]
+\item \textbf{Equal-prefix hijack:} the attacker announces the same prefix as
+      the victim, such as \texttt{10.154.0.0/24}.
+\item \textbf{More-specific hijack:} the attacker announces a more-specific
+      prefix, such as \texttt{10.154.0.0/25}.
+\end{itemize}
+
+Equal-prefix hijacking depends heavily on BGP route selection. More-specific
+hijacking depends heavily on longest-prefix matching and can be more disruptive.
+
+\subsection{Attack Outcomes}
+
+A prefix hijack can have several outcomes:
+
+\begin{itemize}[noitemsep]
+\item \textbf{Blackholing:} traffic is routed to the attacker and dropped.
+\item \textbf{Interception:} traffic is routed through the attacker and then
+      forwarded to the victim, making the attack harder to notice.
+\item \textbf{Impersonation:} the attacker hosts a fake service for the victim
+      prefix.
+\item \textbf{Partial outage:} only some ASes select the false route.
+\end{itemize}
+
+In this lab, the basic attack uses blackhole routes because they are simple and
+safe to demonstrate inside the emulator. Instructors can extend the lab to
+interception by making the attacker forward traffic onward to the victim.
+
+\subsection{Defenses}
+
+Several defenses can reduce prefix hijacking:
+
+\begin{itemize}[noitemsep]
+\item Prefix filters at customer/provider boundaries.
+\item Monitoring for unexpected origin ASes or sudden path changes.
+\item RPKI and Route Origin Validation (ROV), which can reject routes whose
+      origin AS is not authorized by a ROA.
+\item Incident response procedures, including contacting upstream providers.
+\end{itemize}
+
+This lab focuses on prefix filters because they are easy to implement directly
+in BIRD. RPKI/ROV is discussed as a stronger ecosystem-level defense and can be
+studied in a separate lab.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Tasks}
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1: Observe Normal Routing to the Victim Prefix}
+
+The objective of this task is to establish a baseline before the attack.
+Choose a host outside AS-154, such as a host in AS-155 or AS-156, and test
+connectivity to the victim host:
+
+\begin{lstlisting}
+$ ping 10.154.0.71
+$ traceroute 10.154.0.71
+\end{lstlisting}
+
+Then inspect the route to AS-154's prefix on a nearby BGP router:
+
+\begin{lstlisting}
+# birdc show route all for 10.154.0.0/24
+\end{lstlisting}
+
+Please answer the following questions:
+
+\begin{itemize}[noitemsep]
+\item Which AS originates \texttt{10.154.0.0/24}?
+\item What AS path do you observe?
+\item Which next hop is used?
+\item Does traffic reach \texttt{10.154.0.71} successfully?
+\end{itemize}
+
+\paragraph{Connection to theory.}
+Identify the origin AS using the last AS in the AS path. Explain why this
+baseline route is expected to be legitimate.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2: Launch an Equal-Prefix Hijack from AS-161}
+
+In this task, AS-161 announces the victim's prefix
+\texttt{10.154.0.0/24}. This is an equal-prefix hijack.
+
+Get a shell on AS-161's BGP router and add the following block to
+\path{/etc/bird/bird.conf}:
+
+\begin{lstlisting}
+protocol static {
+    ipv4 {
+        table t_bgp;
+    };
+    route 10.154.0.0/24 blackhole {
+        bgp_large_community.add(LOCAL_COMM);
+    };
+}
+\end{lstlisting}
+
+Reload BIRD:
+
+\begin{lstlisting}
+# birdc configure
+\end{lstlisting}
+
+Wait for the route to propagate. From at least two ASes outside AS-154, inspect
+the route and test connectivity:
+
+\begin{lstlisting}
+# birdc show route all for 10.154.0.0/24
+$ traceroute 10.154.0.71
+$ ping 10.154.0.71
+\end{lstlisting}
+
+Please provide screenshots of the route table and traffic tests. If some ASes
+select the false route and others do not, record the difference.
+
+\paragraph{Connection to theory.}
+Explain how BGP route selection decides between the legitimate route from
+AS-154 and the false route from AS-161. Do not simply say that the attacker
+"wins"; identify the observed AS path and next hop.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 3: Visualize and Capture the Hijack}
+
+The objective of this task is to collect evidence of the hijack. Use the
+emulator map and packet capture facilities to visualize traffic to AS-154.
+Set a filter such as:
+
+\begin{lstlisting}
+icmp
+\end{lstlisting}
+
+Generate traffic from a host outside AS-154:
+
+\begin{lstlisting}
+$ ping 10.154.0.71
+\end{lstlisting}
+
+Please describe where the packets go before and after the hijack. If you use
+\texttt{tcpdump}, save a short packet capture and identify which routers see
+the traffic.
+
+\paragraph{Connection to theory.}
+Connect the packet path to the selected BGP route. Explain why packet
+forwarding changes after the control-plane route changes.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 4: Launch a More-Specific Prefix Hijack}
+
+In this task, AS-161 announces \texttt{10.154.0.0/25}. This is a
+more-specific prefix contained inside AS-154's \texttt{/24}.
+
+On AS-161's BGP router, replace the previous malicious static route with:
+
+\begin{lstlisting}
+protocol static {
+    ipv4 {
+        table t_bgp;
+    };
+    route 10.154.0.0/25 blackhole {
+        bgp_large_community.add(LOCAL_COMM);
+    };
+}
+\end{lstlisting}
+
+Reload BIRD and observe the routes:
+
+\begin{lstlisting}
+# birdc configure
+# birdc show route all for 10.154.0.0/24
+# birdc show route all for 10.154.0.0/25
+\end{lstlisting}
+
+Test two addresses:
+
+\begin{lstlisting}
+$ traceroute 10.154.0.71
+$ traceroute 10.154.0.171
+\end{lstlisting}
+
+The address \texttt{10.154.0.71} is inside \texttt{10.154.0.0/25}, while
+\texttt{10.154.0.171} is outside that \texttt{/25} but still inside the
+\texttt{/24}. If the emulator does not have a host at one of these addresses,
+use route-table evidence and choose another address that demonstrates the same
+prefix-match property.
+
+\paragraph{Connection to theory.}
+Explain why a more-specific \texttt{/25} can affect forwarding even when the
+legitimate \texttt{/24} route still exists. Your answer should explicitly use
+the term longest-prefix matching.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 5: Victim Response}
+
+AS-154 detects that its traffic is being diverted. Assume the operators of
+AS-154 cannot immediately reach AS-161's provider. They decide to try to
+restore traffic by changing their own announcements.
+
+Design and test one response from AS-154. Examples include:
+
+\begin{itemize}[noitemsep]
+\item Announce a more-specific prefix that covers the affected address range.
+\item Change export policy so the victim route is propagated through another
+      provider if one exists.
+\item Use the emulator map to identify which ASes still select the legitimate
+      route and which select the attack route.
+\end{itemize}
+
+Please describe what you changed, what improved, and what did not improve.
+
+\paragraph{Connection to theory.}
+Explain why announcing more-specific prefixes can help the victim recover
+traffic, and explain why this is not a good long-term defense for the Internet.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 6: Provider-Side Filtering Defense}
+
+Eventually, AS-3, the upstream provider for AS-161, is contacted. AS-3 does not
+want to disconnect AS-161 completely, but it wants to stop AS-161 from
+announcing AS-154's prefix.
+
+On AS-3's BGP router, identify the BGP session with AS-161:
+
+\begin{lstlisting}
+# birdc show protocols
+\end{lstlisting}
+
+Add a filter condition to the import filter for AS-161's session:
+
+\begin{lstlisting}
+if net ~ [ 10.154.0.0/24{24,32} ] then {
+    print "Rejecting unauthorized AS-154 prefix from AS-161: ", net;
+    reject;
+}
+\end{lstlisting}
+
+Reload BIRD:
+
+\begin{lstlisting}
+# birdc configure
+\end{lstlisting}
+
+Repeat the attacks from Tasks 2 and 4. Please answer the following:
+
+\begin{itemize}[noitemsep]
+\item Does AS-3 reject the false route?
+\item Does AS-161 still have connectivity for its own prefix
+      \texttt{10.161.0.0/24}?
+\item Does traffic to AS-154 return to the legitimate route?
+\item What evidence from \texttt{birdc} or traffic tests supports your answer?
+\end{itemize}
+
+\paragraph{Connection to theory.}
+Explain why the filter is a policy defense at the provider boundary. Which
+announcements are blocked, and which legitimate routes are still allowed?
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 7: Monitoring and Incident Report}
+
+In this task, students act as network operators. Create a short incident report
+for the hijack. The report should include:
+
+\begin{itemize}[noitemsep]
+\item The victim prefix.
+\item The legitimate origin AS.
+\item The unauthorized origin AS.
+\item The time or sequence of observations.
+\item Evidence from route tables, traceroute, ping, packet capture, or the map.
+\item The mitigation applied.
+\item Residual risks or limitations.
+\end{itemize}
+
+\paragraph{Connection to theory.}
+Explain how the evidence distinguishes a BGP control-plane problem from a host
+failure or ordinary packet loss.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Guidelines}
+
+\paragraph{Removing the attack route.}
+After finishing an attack task, remove or comment out the malicious
+\texttt{protocol static} block and reload BIRD:
+
+\begin{lstlisting}
+# birdc configure
+\end{lstlisting}
+
+You can also restart the emulator to return to a clean state.
+
+\paragraph{Finding the right router.}
+Use \texttt{dockps} and the emulator map to identify the router container for
+an AS. Router container names usually contain the AS number and the word
+\texttt{router}.
+
+\paragraph{Understanding \texttt{LOCAL\_COMM}.}
+In the SEED emulator, some export filters use large communities to decide which
+routes should be exported. If a static route is not added to
+\texttt{LOCAL\_COMM}, it may stay local and may not be exported to BGP peers.
+This is why the malicious static route includes:
+
+\begin{lstlisting}
+bgp_large_community.add(LOCAL_COMM);
+\end{lstlisting}
+
+\paragraph{Equal-prefix versus more-specific hijacking.}
+If your equal-prefix hijack does not affect every AS, this is not necessarily a
+mistake. Different ASes may select different routes depending on policy and AS
+path. A more-specific hijack usually has broader forwarding impact because of
+longest-prefix matching.
+
+\paragraph{Instructor customization.}
+Instructors can change the victim AS, attacker AS, provider AS, and prefixes.
+For example, AS-155 can be used as the victim and AS-162 as the attacker. If
+the AS numbers change, update the prefix values using the emulator convention:
+AS-\texttt{N}'s first prefix is \texttt{10.N.0.0/24}.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Submission}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In addition, your report should include:
+
+\begin{itemize}[noitemsep]
+\item Baseline route and traffic evidence before the attack.
+\item Evidence for the equal-prefix hijack.
+\item Evidence for the more-specific hijack.
+\item The BIRD configuration changes you made.
+\item Evidence that provider-side filtering stops the false announcement.
+\item A short incident report for the attack.
+\end{itemize}
+
+\end{document}

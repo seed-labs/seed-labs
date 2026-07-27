@@ -1,0 +1,416 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du and SEED Lab contributors.             %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
+\lhead{\bfseries SEED Labs -- Copy Fail Attack Lab}
+
+\begin{document}
+
+\begin{center}
+{\LARGE Copy Fail Attack Lab}
+\end{center}
+
+\seedlabcopyright{2026}
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Overview}
+
+The Linux kernel provides a number of mechanisms for moving data between
+user space and kernel space. These mechanisms are security critical, because
+the kernel must treat user-provided memory as untrusted. A copy operation from
+user space can fail after it has already copied part of the data. If kernel
+code does not handle such a partial copy correctly, stale or attacker-controlled
+data may be used in a privileged context.
+
+The Copy Fail attack, associated with CVE-2026-31431, abuses this class of
+mistake in the Linux kernel's AF\_ALG AEAD interface, especially the
+\texttt{algif\_aead} path. Public descriptions of the vulnerability report
+that an incorrect transfer between user-controlled data and kernel-managed
+state can be abused to modify the page cache of files that should be read-only
+to the attacker. The attack belongs to the same general family of page-cache
+corruption ideas as Dirty COW and Dirty Pipe: the attacker does not write
+directly to the target file through normal file permissions, but instead
+reaches a privileged kernel state where cached file data can be changed.
+
+The objective of this lab is for students to understand the core idea behind
+copy-failure vulnerabilities and why partial-copy handling is important. To keep
+the lab safe and reproducible, students will not run a real kernel exploit.
+Instead, they will use a user-space model that simulates the important states:
+user memory, a kernel buffer, a page-cache-like object, and a privileged
+program that trusts the cached data. Students will trigger a simulated copy
+failure, observe how stale data is reused, and then implement and evaluate
+countermeasures.
+
+This lab covers the following topics:
+
+\begin{itemize}[noitemsep]
+\item User-kernel copy operations and partial-copy failures
+\item Page cache and permission checks
+\item Time-of-check/time-of-use style reasoning in kernel paths
+\item Vulnerability modeling using a safe user-space simulator
+\item Defense mechanisms: zeroing buffers, rejecting partial copies, and
+      validating copy results
+\end{itemize}
+
+\paragraph{Readings.}
+Students should read public advisories and technical writeups about Copy Fail
+and CVE-2026-31431 before starting the lab. Instructors should update the links
+below if newer or more authoritative references become available.
+
+\begin{itemize}
+\item Copy Fail project page: \url{https://copy.fail/}
+\item NVD entry for CVE-2026-31431:
+      \url{https://nvd.nist.gov/vuln/detail/CVE-2026-31431}
+\item CVE record for CVE-2026-31431: \url{https://www.cve.org/CVERecord?id=CVE-2026-31431}
+\item Linux kernel stable patch referenced by public advisories:
+      \url{https://git.kernel.org/stable/c/a664bf3d603dc3bdcf9ae47cc21e0daec706d7a5}
+\item Linux kernel AF\_ALG documentation:
+      \url{https://docs.kernel.org/crypto/userspace-if.html}
+\item Related background: Dirty COW, CVE-2016-5195, and Dirty Pipe,
+      CVE-2022-0847
+\end{itemize}
+
+\paragraph{Lab environment.}
+This lab can be conducted on the SEED Ubuntu VM or on a generic Linux machine
+with a C compiler and Python 3 installed. The lab does not require students to
+run a vulnerable kernel. All attack activities are conducted against the
+provided user-space simulator.
+
+\paragraph{Important safety note.}
+This lab is designed to teach the mechanism behind the vulnerability, not to
+provide a working exploit for a real kernel. Students should not run public
+proof-of-concept code against machines that they do not own or administer.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Environment}
+
+The lab setup folder contains a simulator and a few small files. The simulator
+models the vulnerable kernel logic using ordinary user-space files and memory
+buffers. The important files are shown below:
+
+\begin{lstlisting}
+Labsetup/
+|-- Makefile
+|-- simulator/
+|   |-- copyfail_sim.c
+|   |-- exploit_skeleton.py
+|   |-- fixed_copy.c
+|-- files/
+|   |-- passwd.template
+|   |-- victim-note.txt
+|-- tests/
+    |-- run-basic-tests.sh
+\end{lstlisting}
+
+In the simulator, the file \texttt{files/passwd.template} plays the role of a
+protected file. Students do not modify a real \texttt{/etc/passwd} file. The
+simulator loads this file into a page-cache-like object and prints the cached
+content after each experiment.
+
+\paragraph{Building the simulator.}
+After downloading and unzipping the lab setup file, enter the
+\texttt{Labsetup} folder and run the following commands:
+
+\begin{lstlisting}
+$ make
+$ ./simulator/copyfail_sim --help
+\end{lstlisting}
+
+\paragraph{Threat model.}
+The attacker is an unprivileged user. The attacker cannot open the protected
+file for writing, but can interact with a simulated kernel service that accepts
+data from user memory. The service has a bug: when the copy from user memory
+fails partway through, it still reuses the destination buffer in a later
+operation.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Lab Tasks}
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 1: Getting Familiar with Copy Operations}
+
+The objective of this task is to understand why copying from user memory is
+different from copying from ordinary trusted memory. User memory can be invalid,
+unmapped, or changed by another thread. A kernel copy routine therefore returns
+a status value, and kernel code must check that value before trusting the
+destination buffer.
+
+Run the simulator in normal mode:
+
+\begin{lstlisting}
+$ ./simulator/copyfail_sim --mode normal --input hello
+\end{lstlisting}
+
+Please answer the following questions in your report:
+
+\begin{itemize}[noitemsep]
+\item What data is copied into the simulated kernel buffer?
+\item Does the simulated page cache change?
+\item Which return value indicates that the copy succeeded?
+\end{itemize}
+
+Next, run the simulator with a forced copy failure:
+
+\begin{lstlisting}
+$ ./simulator/copyfail_sim --mode fail --input hello --fail-after 2
+\end{lstlisting}
+
+Please describe what happens to the destination buffer. Is it empty, partially
+updated, or unchanged? Explain why this behavior is dangerous if the caller
+continues to use the buffer.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 2: Observing the Vulnerable Logic}
+
+In this task, students will inspect a simplified vulnerable code path. The
+following pseudocode shows the intended pattern:
+
+\begin{lstlisting}[language=C]
+char kbuf[BUF_SIZE];
+
+ret = copy_from_user(kbuf, user_ptr, len);
+if (ret != 0) {
+    return -EFAULT;
+}
+
+use_kernel_buffer(kbuf, len);
+\end{lstlisting}
+
+The vulnerable simulator intentionally uses a different pattern:
+
+\begin{lstlisting}[language=C]
+static char kbuf[BUF_SIZE];
+
+ret = simulated_copy_from_user(kbuf, user_ptr, len);
+if (ret != 0) {
+    log_warning("copy failed");
+}
+
+use_kernel_buffer(kbuf, len);
+\end{lstlisting}
+
+The second pattern is dangerous because the copy result is logged but not
+enforced. The buffer may contain a mixture of new data and stale data from an
+earlier operation.
+
+Run the following commands:
+
+\begin{lstlisting}
+$ ./simulator/copyfail_sim --mode normal --input AAAAAAAA
+$ ./simulator/copyfail_sim --mode fail --input BBBBBBBB --fail-after 3
+\end{lstlisting}
+
+Please provide screenshots of the buffer state after both commands. Explain how
+the failed copy can preserve attacker-controlled data from the previous
+operation.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 3: Simulating Page-Cache Corruption}
+
+The objective of this task is to connect the copy-failure bug to page-cache
+corruption. In real systems, the page cache stores file data in memory. If a
+kernel bug allows an attacker to modify cached data for a read-only file, a
+privileged program may later consume the modified cached data even though the
+attacker did not have permission to write the file.
+
+In the simulator, the protected file is loaded into a page-cache-like buffer.
+Students will use the vulnerable service to alter this cached copy. The
+following command shows the initial cache:
+
+\begin{lstlisting}
+$ ./simulator/copyfail_sim --show-cache
+\end{lstlisting}
+
+The file contains a disabled account named \texttt{student}. Your goal is to
+change the cached account line so that the simulator's login check treats the
+account as enabled. Use the provided skeleton script:
+
+\begin{lstlisting}
+$ cd simulator
+$ python3 exploit_skeleton.py
+\end{lstlisting}
+
+The skeleton intentionally leaves several values blank. Students need to inspect
+the simulator output and decide:
+
+\begin{itemize}[noitemsep]
+\item Which offset in the cached file should be targeted?
+\item Which bytes should be placed in the stale kernel buffer?
+\item Where should the simulated copy fail?
+\end{itemize}
+
+After completing the skeleton, run the simulator's login check:
+
+\begin{lstlisting}
+$ ./copyfail_sim --check-login student
+\end{lstlisting}
+
+Please provide screenshots showing the cache before the attack, after the
+attack, and during the login check. Explain why the file permission check did
+not prevent this simulated attack.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 4: Comparing Copy Fail with Dirty COW and Dirty Pipe}
+
+The Copy Fail attack is not identical to Dirty COW or Dirty Pipe, but all three
+attacks teach an important lesson: file permissions are not the only boundary
+that matters. Kernel code must also protect internal cached representations of
+file data.
+
+Please compare the three vulnerabilities at a high level. Your comparison
+should include:
+
+\begin{itemize}[noitemsep]
+\item What object is corrupted or raced?
+\item Does the attacker write through the normal file-write interface?
+\item What kind of privileged outcome can result?
+\item What assumption made by the kernel or privileged program is violated?
+\end{itemize}
+
+This is a conceptual task. Students should not download or run real exploits.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 5: Implementing Countermeasures}
+
+In this task, students will fix the vulnerable simulator. The file
+\texttt{simulator/fixed\_copy.c} contains three incomplete defense strategies.
+
+\paragraph{Defense 1: Reject partial copies.}
+The safest rule is simple: if the copy operation fails, do not use the
+destination buffer. Modify the simulator so that it returns an error before any
+page-cache operation occurs.
+
+\paragraph{Defense 2: Zero the destination buffer before copying.}
+Before copying user data into a reusable kernel buffer, clear the whole buffer.
+This defense reduces stale-data reuse, but students should evaluate whether it
+is sufficient by itself.
+
+\paragraph{Defense 3: Use an exact valid length.}
+The caller should track how many bytes were actually copied and should not pass
+the original requested length to later operations after a failure.
+
+After implementing each defense, rebuild the simulator and rerun the attack
+from Task 3:
+
+\begin{lstlisting}
+$ make clean
+$ make
+$ python3 simulator/exploit_skeleton.py
+\end{lstlisting}
+
+Please report which defenses stop the simulated attack. If a defense does not
+fully stop the attack, explain why.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 6: Kernel Hardening Discussion}
+
+The previous task fixed a user-space model. In this task, students will reason
+about real kernel hardening. Please answer the following questions:
+
+\begin{itemize}[noitemsep]
+\item Why should kernel code treat a failed user-memory copy as a security
+      event rather than a minor warning?
+\item Why is it dangerous to reuse static or long-lived buffers for untrusted
+      user input?
+\item What should regression tests check after this class of bug is fixed?
+\item Why are least privilege, timely patching, and reducing unused kernel
+      attack surfaces important defenses even when the exact exploit is not
+      known?
+\end{itemize}
+
+Instructors may optionally ask students to inspect the patched Linux kernel
+commit for CVE-2026-31431 and identify which checks were added or changed. This
+optional task should be limited to code reading and should not require students
+to run vulnerable kernels.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Guidelines}
+
+\paragraph{How to reason about partial copies.}
+When analyzing a copy operation, do not only ask whether the copy started. Ask
+whether the copy completed, how many bytes were copied, and what the destination
+buffer contains after failure. The destination buffer may contain old bytes,
+new bytes, zeros, or a mixture.
+
+\paragraph{How to reason about page cache.}
+The page cache is an in-memory representation of file contents. If a privileged
+program reads a file and the kernel serves the data from a corrupted cache, the
+program may consume attacker-influenced data even if the file on disk was not
+modified through an authorized write.
+
+\paragraph{Debugging the simulator.}
+The simulator prints the buffer before and after each copy operation. When your
+attack does not work, compare the following values:
+
+\begin{itemize}[noitemsep]
+\item The offset selected in the cached file
+\item The bytes placed in the reusable kernel buffer
+\item The failure point used by the simulated copy
+\item The final cached content used by the login check
+\end{itemize}
+
+\paragraph{Instructor customization.}
+Instructors can change the protected file template, the target account name,
+the cache offset, the buffer size, or the required byte sequence. These changes
+make the lab different each semester while preserving the same learning
+objective.
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Submission}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In addition, your report should include:
+
+\begin{itemize}[noitemsep]
+\item The completed exploit skeleton for the simulator
+\item Screenshots showing the normal copy, failed copy, cache corruption, and
+      fixed behavior
+\item A comparison of Copy Fail, Dirty COW, and Dirty Pipe
+\item A discussion of which countermeasures worked and why
+\end{itemize}
+
+\end{document}

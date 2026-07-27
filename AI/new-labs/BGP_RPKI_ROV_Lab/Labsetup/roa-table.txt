@@ -1,0 +1,5 @@
+# prefix,maxLength,originAS,description
+10.154.0.0/24,24,154,AS-154 customer prefix
+10.155.0.0/24,24,155,AS-155 customer prefix
+10.156.0.0/24,24,156,AS-156 customer prefix
+10.161.0.0/24,24,161,AS-161 customer prefix

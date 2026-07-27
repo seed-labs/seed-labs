@@ -1,0 +1,4 @@
+root:enabled:0
+daemon:enabled:1
+student:disabled:1001
+guest:disabled:1002
