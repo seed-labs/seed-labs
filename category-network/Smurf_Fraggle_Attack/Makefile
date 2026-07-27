@@ -1,5 +1,5 @@
 
-LAB    = Smurf_Attack
+LAB    = Smurf_Fraggle_Attack
 LABPDF = $(LAB).pdf
 
 CF      = ../../common-files

@@ -60,7 +60,7 @@ Detailed coverage of the IP protocol, ICMP, packet spoofing, and denial-of-servi
 attacks can be found in the following:
 
 \begin{itemize}
-\item Chapter 15 of the SEED Book, \seedbook
+\item Chapter 3 of the SEED Book, \seedisbook
 \item Section 4 of the SEED Lecture, \seedisvideo
 \end{itemize}
 
@@ -129,7 +129,7 @@ In another terminal, use the following commands to find and enter the relevant
 containers:
 
 \begin{lstlisting}
-$ dockps | grep as150      # Attacker
+$ dockps | grep Attacker      # Attacker
 $ dockps | grep as151      # Victim
 $ dockps | grep as152      # Amplifier router and hosts
 
@@ -145,8 +145,9 @@ The attacker host already has \texttt{python3}, \texttt{Scapy}, and
 \subsection{Changing the Emulator Parameters}
 
 Instructors can customize the lab by regenerating the container files from
-\texttt{Labsetup/emulator.py}. The script intentionally keeps only a few command
-line options:
+\texttt{Labsetup/emulator.py}. The script has a few command
+line options. Changing \texttt{--amplifier-hosts} is a convenient way to change the
+amplification factor. 
 
 \begin{lstlisting}
 $ python3 emulator.py --platform amd
@@ -156,14 +157,13 @@ $ python3 emulator.py --amplifier-hosts 20
 $ python3 emulator.py --fraggle-port 7000
 \end{lstlisting}
 
-Changing \texttt{--amplifier-hosts} is a convenient way to change the
-amplification factor, so old lab reports cannot simply reuse one fixed value.
 
 
 % *******************************************
 % SECTION
 % *******************************************
 \section{Theory}
+\label{sec:theory}
 
 \subsection{Directed Broadcast}
 
@@ -193,6 +193,15 @@ receives many replies. If there are \(N\) responding hosts, one request can
 produce approximately \(N\) replies.
 
 
+
+
+\subsection{The Smurf Attack}
+
+The Smurf attack uses ICMP. The attacker sends an ICMP echo request to the
+directed broadcast address and spoofs the source IP address to be the victim's
+address. Each amplifier host receives the echo request and sends an ICMP echo
+reply to the victim. Figure~\ref{fig:smurf-attack} illustrates the attack.
+
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.95\textwidth]{Figs/smurf_attack.pdf}
@@ -202,18 +211,6 @@ produce approximately \(N\) replies.
 \label{fig:smurf-attack}
 \end{figure}
  
-
-\subsection{The Smurf Attack}
-
-The Smurf attack uses ICMP. The attacker sends an ICMP echo request to the
-directed broadcast address and spoofs the source IP address to be the victim's
-address. Each amplifier host receives the echo request and sends an ICMP echo
-reply to the victim.
-
-\begin{lstlisting}
-Attacker  --spoofed ICMP echo request-->  AS-152 broadcast address
-Amplifier hosts  --ICMP echo replies-->  Victim
-\end{lstlisting}
 
 The attacker does not need to receive the replies. The main observable effect is
 on the victim, which receives a burst of ICMP echo replies from many amplifier
@@ -255,18 +252,24 @@ emulator.
 % *******************************************
 \section{Lab Tasks}
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
 \subsection{Task 1: Inspecting the Lab Environment}
 
 The objective of this task is to become familiar with the emulator topology and
-connect it to the theory of directed broadcast.
+connect it to the theory of directed broadcast. 
 
 Start the emulator and find the attacker, victim, amplifier router, and several
-amplifier hosts. On each of these nodes, run suitable commands to inspect their
-IP addresses and routing tables.
+amplifier hosts. Use the following commands to find and enter the relevant containers:
 
 \begin{lstlisting}
-# ip addr
-# ip route
+$ dockps | grep -i attacker   # Attacker
+$ dockps | grep -i victim     # Victim
+$ dockps | grep -i as152      # Amplifier router and hosts
+
+$ docksh <container-id>       # Enter the container
 \end{lstlisting}
 
 On the victim, start a packet capture for ICMP traffic:
@@ -285,9 +288,13 @@ Then try to ping the AS-152 broadcast address:
 \end{lstlisting}
 
 Please report your observations. How many replies do you see when the
-broadcast address is used? Which theory from Section 3 explains this behavior?
+broadcast address is used? Which theory from Section~\ref{sec:theory}
+explains this behavior?
 
 
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
 \subsection{Task 2: Writing a Smurf Attack Program}
 
 The objective of this task is to implement the Smurf attack by constructing a
@@ -306,13 +313,18 @@ from scapy.all import *
 victim_ip = "..."
 broadcast_ip = "..."
 
-ip = IP(src=victim_ip, dst=broadcast_ip)
+ip = IP(src=..., dst=...)
 icmp = ICMP(type=...)
 payload = b"..."
 
 packet = ip/icmp/payload
 send(packet, verbose=0)
 \end{lstlisting}
+
+You can edit the program on the host machine using an editor, such as 
+vi, gedit, or vscode, and then using \texttt{"docker copy"} to 
+copy the program from the host to the container. 
+
 
 Run \texttt{tcpdump} on the victim before launching the attack:
 
@@ -325,6 +337,10 @@ victim receives ICMP echo replies from multiple amplifier hosts. In your lab
 report, explain why the replies go to the victim instead of the attacker.
 
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
 \subsection{Task 3: Measuring the Smurf Amplification Effect}
 
 The objective of this task is to connect the attack result back to the theory of
@@ -353,6 +369,10 @@ Please include the following in your report:
 \end{itemize}
 
 
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
 \subsection{Task 4: Writing a Fraggle Attack Program}
 
 The objective of this task is to show that the same reflection pattern can be
@@ -378,7 +398,7 @@ victim_ip = "..."
 broadcast_ip = "..."
 port = ...
 
-ip = IP(src=victim_ip, dst=broadcast_ip)
+ip = IP(src=..., dst=...)
 udp = UDP(sport=port, dport=port)
 payload = b"..."
 
@@ -390,32 +410,11 @@ Please demonstrate that the victim receives UDP payloads from the amplifier
 hosts. Explain why the UDP source port matters in this task.
 
 
-\subsection{Task 5: Comparing Smurf and Fraggle}
 
-The objective of this task is to identify the common attack pattern and the
-protocol-specific differences.
-
-Use \texttt{tcpdump} on the victim and on one amplifier host while running both
-attacks. For the Fraggle attack, students can also run \texttt{tcpdump} on an
-amplifier host to observe the incoming spoofed UDP request:
-
-\begin{lstlisting}
-# tcpdump -n -i any udp port 7000
-\end{lstlisting}
-
-Compare the two attacks using the following questions:
-
-\begin{itemize}[noitemsep]
-\item Which fields are spoofed in the packets sent by the attacker?
-\item Which packets are sent to the broadcast address?
-\item Which packets are sent to the victim?
-\item What role does the amplifier LAN play?
-\item Which parts of the attack are the same for Smurf and Fraggle?
-\item Which parts are protocol-specific?
-\end{itemize}
-
-
-\subsection{Task 6: Defense 1 -- Disabling Directed Broadcast}
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 5: Defense 1 -- Disabling Directed Broadcast}
 
 The objective of this task is to test the most direct defense against the attack
 pattern described in Section 3.
