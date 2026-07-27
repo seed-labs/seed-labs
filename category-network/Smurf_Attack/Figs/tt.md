@@ -1,5 +1,5 @@
 ```mermaid
-%%{init: {"themeVariables": {"fontSize": "28px", "edgeLabelBackground": "transparent"}}}%%
+%%{init: {"flowchart": {"htmlLabels": false}, "themeVariables": {"fontSize": "28px", "edgeLabelBackground": "transparent"}}}%%
 flowchart LR
     subgraph whole["Smurf Attack Packet Flow"]
         direction LR
