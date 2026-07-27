@@ -1,4 +1,4 @@
-%%{init: {"themeVariables": {"fontSize": "20px", "edgeLabelBackground": "transparent"}}}%%
+%%{init: {"themeVariables": {"fontSize": "28px", "edgeLabelBackground": "transparent"}}}%%
 flowchart LR
     subgraph whole["Smurf Attack Packet Flow"]
         direction LR
@@ -28,7 +28,8 @@ flowchart LR
         hn -- "3. Replies" --> victim
     end
 
-    style whole fill:#ffffff,stroke:#222,stroke-width:2px
+    style whole fill:transparent,stroke:#222,stroke-width:2px
+    style amp fill:transparent,stroke:#8a8a20,stroke-width:1.5px
     classDef attacker fill:#f9d6d5,stroke:#9d2f2f,stroke-width:2px,color:#111;
     classDef victim fill:#d9ebff,stroke:#2f5f9d,stroke-width:2px,color:#111;
     classDef router fill:#fff0c2,stroke:#8a6d1d,stroke-width:2px,color:#111;
