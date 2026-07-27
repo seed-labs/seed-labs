@@ -435,13 +435,28 @@ victim still receives reflected traffic. Explain why this defense works or does
 not work, using the directed broadcast theory.
 
 
-\subsection{Task 7: Defense 2 -- Disabling ICMP Broadcast Replies}
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 6: Defense 2 -- Disabling ICMP Broadcast Replies}
 
 The objective of this task is to test a host-side defense and compare it with
 the router-side defense.
 
+
 On each amplifier host, configure Linux to ignore ICMP echo requests sent to a
-broadcast address:
+broadcast address. Since the emulator may contain many amplifier hosts, we
+provide a script in the \texttt{Labsetup} folder to apply the configuration to
+all AS-152 host containers:
+
+\begin{lstlisting}
+$ cd Labsetup
+$ ./bcast-reply.sh off     # Turn off the broadcast reply 
+$ ./bcast-reply.sh on      # Turn on the broadcast reply 
+$ ./bcast-reply.sh status  # Show the status
+\end{lstlisting}
+
+The script runs the following command inside each amplifier host container:
 
 \begin{lstlisting}
 # sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1
