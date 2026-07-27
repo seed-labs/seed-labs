@@ -56,3 +56,11 @@ nc -ul 7000
 The UDP responder installed on amplifier hosts is:
 
 - `/opt/smurf-lab/fraggle_amplifier.py`
+
+To disable ICMP replies to broadcast echo requests on all AS-152 amplifier
+hosts, run:
+
+```bash
+chmod +x disable_icmp_broadcast_replies.sh
+./disable_icmp_broadcast_replies.sh
+```
