@@ -1,4 +1,5 @@
-%%{init: {"themeVariables": {"fontSize": "20px", "edgeLabelBackground": "transparent"}}}%%
+```mermaid
+%%{init: {"themeVariables": {"fontSize": "28px", "edgeLabelBackground": "transparent"}}}%%
 flowchart LR
     subgraph whole["Smurf Attack Packet Flow"]
         direction LR
@@ -28,7 +29,7 @@ flowchart LR
         hn -- "3. Replies" --> victim
     end
 
-    style whole fill:#ffffff,stroke:#222,stroke-width:2px
+    style whole stroke:#222,stroke-width:2px
     classDef attacker fill:#f9d6d5,stroke:#9d2f2f,stroke-width:2px,color:#111;
     classDef victim fill:#d9ebff,stroke:#2f5f9d,stroke-width:2px,color:#111;
     classDef router fill:#fff0c2,stroke:#8a6d1d,stroke-width:2px,color:#111;
@@ -40,3 +41,4 @@ flowchart LR
     class router router;
     class h1,h2,h3,hn host;
     class broadcast broadcast;
+```
