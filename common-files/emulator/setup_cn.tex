@@ -1,0 +1,81 @@
+我们以两种形式提供预先构建好的模拟器：Python 代码和容器文件。
+容器文件由 Python 代码生成；如果学生要运行 Python 代码，则需要从 GitHub
+安装 SEED Emulator 源代码。容器文件可以直接使用，不需要安装模拟器源代码。
+如果教师希望定制模拟器，可以修改 Python 代码，生成自己的容器文件，然后把
+这些文件提供给学生，用来替换实验设置文件中包含的文件。具体说明见
+\texttt{README.md} 文件。
+
+
+\paragraph{下载模拟器文件。}
+请从本实验网页下载 \texttt{Labsetup.zip} 文件并解压。容器文件夹中的文件是
+实际使用的模拟文件；它们由 Python 代码生成。对于大多数实验，容器文件夹名为
+\texttt{output/}；如果某个实验包含多个模拟器，则会使用不同的文件夹名。实际
+名称会在实验任务中给出。
+
+
+\paragraph{启动模拟器。}
+我们将直接使用容器文件夹中的文件。进入该文件夹，运行 Docker 命令来构建并
+启动容器。我们建议在提供的 SEED Ubuntu 20.04 VM 中运行模拟器；只要安装了
+Docker 软件，在普通 Ubuntu 20.04 操作系统中运行通常也没有问题。读者可以从
+\href{https://github.com/seed-labs/seed-labs/blob/master/manuals/docker/SEEDManual-Container.md}
+{\underline{这个链接}}查看 Docker 使用手册。如果这是你第一次使用容器搭建
+SEED 实验环境，请务必阅读用户手册。
+
+
+下面列出了一些常用的 Docker 和 Compose 命令。由于这些命令会被频繁使用，
+我们已经在提供的 SEED Ubuntu 20.04 VM 的 \texttt{.bashrc} 文件中为它们
+创建了别名。
+
+\begin{lstlisting}
+$ docker-compose build  # Build the container images
+$ docker-compose up     # Start the containers
+$ docker-compose down   # Shut down the containers
+
+
+// Aliases for the Compose commands above
+$ dcbuild       # Alias for: docker-compose build
+$ dcup          # Alias for: docker-compose up
+$ dcdown        # Alias for: docker-compose down
+\end{lstlisting}
+
+
+所有容器都会在后台运行。要在某个容器中运行命令，我们通常需要进入该容器的
+shell。首先使用 \texttt{"docker ps"} 命令找出容器 ID，然后使用
+\texttt{"docker exec"} 在该容器中启动一个 shell。我们也已经在
+\texttt{.bashrc} 文件中为这些命令创建了别名。
+
+\begin{lstlisting}
+$ dockps        // Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
+$ docksh <id>   // Alias for: docker exec -it <id> /bin/bash
+
+// The following example shows how to get a shell inside hostC
+$ dockps
+b1004832e275  hostA-10.9.0.5
+0af4ea7a3e2e  hostB-10.9.0.6
+9652715c8e0a  hostC-10.9.0.7
+
+$ docksh 96
+root@9652715c8e0a:/#  
+
+// Note: If a docker command requires a container ID, you do not need to 
+//       type the entire ID string. Typing the first few characters will 
+//       be sufficient, as long as they are unique among all the containers. 
+\end{lstlisting}
+
+
+如果在搭建实验环境时遇到问题，请阅读手册中的 ``Common Problems'' 部分，
+寻找可能的解决办法。
+
+
+\begin{comment}
+\paragraph{设置终端标题。}
+我们可能需要进入多个容器，并打开多个终端标签页，在它们之间来回切换。这样
+很容易混淆哪个标签页对应哪个容器。为了解决这个问题，进入容器后可以使用
+下面的命令设置终端标题；命令会把标题设置为 \texttt{"New Title"}。
+
+\begin{lstlisting}
+# set_title New Title
+# st New Title       (*@\pointleft{st} is an alias of set\_title@*)
+\end{lstlisting}
+\end{comment}
+
