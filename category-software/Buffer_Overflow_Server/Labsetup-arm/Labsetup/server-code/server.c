@@ -14,7 +14,7 @@
 
 int socket_bind(int port);
 int server_accept(int listen_fd, struct sockaddr_in *client);
-char **generate_random_env();
+char **generate_random_env(int length);
 
 void main()
 {
