@@ -166,24 +166,24 @@ delete them, and manually type those symbols.
 In this lab, we need to construct HTTP requests. To figure out 
 what an acceptable HTTP request in Elgg looks like, we need to 
 be able to capture and analyze HTTP requests. 
-We can use a Firefox add-on called \texttt{"HTTP Header Live"} for this
-purpose. Before you start working on this lab, you should 
-get familiar with this tool.
-Instructions on how to use this tool is given in the Guideline
-section~(\S~\ref{web:sec:httpheaderlive}).
+We can use Firefox add-ons such as \texttt{"HTTP Header Live"} for this
+purpose. We have installed this add-on in the provided VM, but it does not seem to 
+work properly anymore due to the verification/signing compatibility issues. 
+The problem can be resolved by reinstalling a newer version of this add-on.
+
+However, we recommend using Firefox's built-in
+\texttt{Developer Tools} as the primary method for
+capturing and analyzing HTTP traffic. After opening this tool, open the \texttt{Network} tool, 
+you should be able to see the captured HTTP requests. See further instructions provided 
+in the Guideline section~(\S~\ref{web:sec:web_dev_tools}). 
+
+
+%Before you start working on this lab, you should 
+%get familiar with this tool.
+%Instructions on how to use this tool is given in the Guideline
+%section~(\S~\ref{web:sec:httpheaderlive}).
 
 \paragraph{Recommended tool.}
-For this lab, we recommend using Firefox's built-in
-\texttt{Developer Tools} $\rightarrow$ \texttt{Network} tool as the primary method for
-capturing and analyzing HTTP traffic. After opening the Network tool, select a request to
-inspect HTTP GET and POST requests, the request URL and method, request and response headers
-(including CSP response headers), cookies, query parameters, and POST parameters or the
-request body. Instructions are provided in the Guideline
-section~(\S~\ref{web:sec:web_dev_tools}). Because the \texttt{"HTTP Header Live"} add-on
-may be unavailable on legacy Firefox environments due to add-on verification/signing
-compatibility issues, it is not required to complete this lab.
-
-
 
 % -------------------------------------------
 % SUBSECTION
