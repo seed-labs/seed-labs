@@ -28,6 +28,7 @@ services:
                 ipv4_address: 10.9.0.5
 
         command: bash -c "
+                      iptables -I OUTPUT 1 -o eth0 ! -d 10.9.0.0/24 -p tcp --tcp-flags SYN,ACK SYN,ACK -j DROP &&
                       /etc/init.d/openbsd-inetd start  &&
                       tail -f /dev/null
                  "
@@ -43,6 +44,7 @@ services:
                 ipv4_address: 10.9.0.6
 
         command: bash -c "
+                      iptables -I OUTPUT 1 -o eth0 ! -d 10.9.0.0/24 -p tcp --tcp-flags SYN,ACK SYN,ACK -j DROP &&
                       /etc/init.d/openbsd-inetd start  &&
                       tail -f /dev/null
                  "
@@ -58,6 +60,7 @@ services:
                 ipv4_address: 10.9.0.7
 
         command: bash -c "
+                      iptables -I OUTPUT 1 -o eth0 ! -d 10.9.0.0/24 -p tcp --tcp-flags SYN,ACK SYN,ACK -j DROP &&
                       /etc/init.d/openbsd-inetd start  &&
                       tail -f /dev/null
                  "
