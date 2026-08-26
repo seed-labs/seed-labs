@@ -1,0 +1,17 @@
+$TTL 3D
+@       IN      SOA   ns.smith2022.edu. admin.smith2022.edu. (
+                2008111001
+                8H
+                2H
+                4W
+                1D)
+
+; Records for this nameserver (you need to make changes)
+@                  IN   NS    ns.smith2022.edu.
+ns.smith2022.edu.  IN   A     1.2.3.4
+
+
+; IP addresses for the hostnames in the smith2022.edu domain
+@       IN      A     3.2.3.5
+www     IN      A     3.2.3.5
+*       IN      A     3.2.3.7

@@ -1,0 +1,4 @@
+zone "smith2022.edu" {
+        type master;
+        file "/etc/bind/smith2022.edu.db";
+};

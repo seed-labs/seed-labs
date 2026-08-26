@@ -13,9 +13,9 @@ services:
                 - ./volumes:/volumes
         network_mode: host
 
-    x-terminal:
+    X-terminal:
         image: seed-image-ubuntu-mitnick
-        container_name: x-terminal-10.9.0.5
+        container_name: X-terminal-10.9.0.5
         tty: true
         cap_add:
                 - ALL

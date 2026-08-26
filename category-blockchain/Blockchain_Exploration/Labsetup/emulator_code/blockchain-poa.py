@@ -4,6 +4,17 @@
 from seedemu import *
 import os, sys
 
+if len(sys.argv) < 2:
+    print ("Usage: blockchain-poa.py <option>")
+    print ("       <option>: -s for small size, -l for large size") 
+    exit()
+
+if sys.argv[1]=='-s': 
+   emulator_size = 10
+else:
+   emulator_size = 20
+
+
 ###############################################################################
 emu = Emulator()
 
@@ -16,6 +27,10 @@ emu.load('./base-component.bin')
 
 eth = EthereumService()
 blockchain = eth.createBlockchain(chainName="POA", consensus=ConsensusMechanism.POA)
+
+# Change the default account balance to 1000
+mnemonic, _, _= blockchain.getEmuAccountParameters()
+blockchain.setEmuAccountParameters(mnemonic=mnemonic, balance=1000, total_per_node=2)
 
 # Create 10 accounts, each with 100 Ethers. We will use these accounts to
 # generate background traffic (sending random transactions from them).
@@ -35,7 +50,11 @@ blockchain.addLocalAccount(address='0xCBF1e330F0abD5c1ac979CF2B2B874cfD4902E24',
 
 # Create the Ethereum servers. 
 asns  = [150, 151, 152, 153, 154, 160, 161, 162, 163, 164]
-hosts_total = 2    # The number of servers per AS
+if emulator_size == 10:
+   hosts_total = 1    # The number of servers per AS
+else:
+   hosts_total = 2    # The number of servers per AS
+
 signers  = []
 i = 0
 for asn in asns:
@@ -70,17 +89,30 @@ emu.addLayer(eth)
 newhost = emu.getLayer('Base').getAutonomousSystem(150).createHost('new_eth_node')
 newhost.joinNetwork('net0')
 
-# Add a pre-built image, and use it for New_Eth_Node
-docker = Docker(internetMapEnabled=True, etherViewEnabled=True, platform=Platform.AMD64)
-#docker = Docker(internetMapEnabled=True, etherViewEnabled=True, platform=Platform.ARM64)
-image  = DockerImage(name='new_ethereum_node', dirName='./new_eth_node', local=True, software=[])
-docker.addImage(image)
-docker.setImageOverride(newhost, 'new_ethereum_node')
-
-# Render and compile 
-OUTPUTDIR = '../emulator'
+# Render 
 emu.render()
-emu.compile(docker, OUTPUTDIR, override = True)
 
-# Copy the pre-build image to the output folder 
-os.system('cp -r new_eth_node/ ' + OUTPUTDIR) 
+# Generate output folders for ARM and AMD
+for platform in ('arm', 'amd'):
+    if platform=='arm':
+        OUTPUTDIR = '../emulator_arm_{}'.format(emulator_size)
+        emulator_platform = Platform.ARM64
+        NEW_NODE_NAME = './new_eth_node_arm'
+    else:
+        OUTPUTDIR = '../emulator_{}'.format(emulator_size)
+        NEW_NODE_NAME = './new_eth_node'
+        emulator_platform = Platform.AMD64
+
+    # Add a pre-built image, and use it for New_Eth_Node
+    image  = DockerImage(name='new_ethereum_node', dirName=NEW_NODE_NAME,
+                         local=True, software=[])
+    docker = Docker(internetMapEnabled=True, etherViewEnabled=True, 
+                         platform=emulator_platform)
+    docker.addImage(image)
+    docker.setImageOverride(newhost, 'new_ethereum_node')
+
+    # Render and compile 
+    emu.compile(docker, OUTPUTDIR, override = True)
+
+    # Copy the pre-build image to the output folder 
+    os.system('cp -r {} {}'.format(NEW_NODE_NAME, OUTPUTDIR)) 

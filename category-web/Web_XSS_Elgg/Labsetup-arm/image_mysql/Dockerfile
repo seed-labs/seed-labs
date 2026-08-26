@@ -1,4 +1,4 @@
-FROM mysql
+FROM mysql:8.0.37
 ARG DEBIAN_FRONTEND=noninteractive
 
 ENV MYSQL_ROOT_PASSWORD=dees

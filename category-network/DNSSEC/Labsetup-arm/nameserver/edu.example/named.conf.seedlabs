@@ -1,0 +1,4 @@
+zone "example.edu" {
+        type master;
+        file "/etc/bind/example.edu.db";
+};

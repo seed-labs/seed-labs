@@ -467,8 +467,8 @@ We have included a skeleton C code
 in \path{Labsetup/Files/attack.c}. 
 Students can make changes
 in the marked areas. Detailed explanation
-of the code is given in the 
-guideline section.
+of the code is given in the guideline section. 
+
 
 
 \paragraph{Check the DNS cache.}
@@ -635,6 +635,16 @@ for (int k=0; k<5; k++)
 \end{lstlisting}
  
 
+\paragraph{Compile the program.}
+To compile the program, we can use the following command:
+
+\begin{lstlisting}
+$ gcc -o attack attack.c
+
+// For Apple Silicon machines: use static binding 
+$ gcc -static -o attack attack.c
+\end{lstlisting}
+ 
 
 
 % *******************************************

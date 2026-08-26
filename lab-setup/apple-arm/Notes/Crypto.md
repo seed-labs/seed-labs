@@ -62,3 +62,9 @@ pip3 install flask==1.1.1
 The way how `/dev/random` works on Apple silicon machines is quite different.
 I believe that most of the tasks can be made to work, but we need to modify the 
 lab description. 
+
+Updated on 3/27/2024: It seems that the behavior of the `/dev/random` has 
+changed in the recent Linux kernel. The behaviors for Ubuntu 20.04 and 22.04 
+are different (the ARM VM uses 22.04). We filed an issue (#141) regarding 
+this. The lab needs to be redesigned. This is not an issue with the ARM 
+machines, but an issue with the Linux version.  

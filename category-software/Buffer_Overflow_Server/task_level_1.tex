@@ -70,7 +70,7 @@ server-1-10.9.0.5 | ==== Returned Properly ====
 
 
 The server will accept up to \texttt{517} bytes of the data from the 
-user, and that will cause a buffer overflow. Your job 
+user, but the buffer is smaller than that; that will cause a buffer overflow. Your job 
 is to construct your payload to exploit this vulnerability. If 
 you save your payload in a file, you can send the payload
 to the server using the following command.

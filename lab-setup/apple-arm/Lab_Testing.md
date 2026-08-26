@@ -5,21 +5,23 @@ Brief notes can be placed in the table, but detailed
 notes should be put inside the [Notes folder](./Notes).
 
 Status symbols:
-  - :thumbsup:  Ready 
-  - :white_check_mark: : Published
+  - :white_check_mark: : Published on the SEED website
+  - :thumbsup: : Ready, but not published yet 
+  - :construction_worker: : Work in progress
+  - x:  Will not port (very difficult to port, or unnecessary)
 
 ## Software and Web Security 
 
 | Lab | Status | Notes |
 | --- | --- | --- |
-| Set-UID                   | :thumbsup: | Fully tested |
+| Set-UID                   | :white_check_mark: | Fully tested |
 | Buffer-Overflow (setuid)  | x  | Will not port. See [notes](Notes/Software_Security.md) |
-| Buffer-Overflow (server)  | :thumbsup:  | Added a new lab. See [notes](Notes/Software_Security.md) |
+| Buffer-Overflow (server)  | :white_check_mark:  | Added a new lab. See [notes](Notes/Software_Security.md) |
 | Return-to-Libc  |  x   | Will not port. See [notes](Notes/Software_Security.md)|
-| Format String   | :construction_worker:   | See [notes](Notes/Software_Security.md)|
-| Shellcode       | :thumbsup:   | Redesigned. See [notes](../../category-software/Shellcode/README.md) |
+| Format String   | :white_check_mark:   | See [notes](Notes/Software_Security.md)|
+| Shellcode       | :white_check_mark:   | Redesigned. See [notes](../../category-software/Shellcode/README.md) |
 | Dirty Cow       |  x  | Will not port |
-| Race Condition  | :thumbsup: |  Fully tested      |
+| Race Condition  | :white_check_mark: |  Fully tested      |
 | CSRF            | :white_check_mark: | Tested the lab setup |
 | XSS             | :white_check_mark: | Tested the lab setup |
 | SQL Injection   | :white_check_mark: | Tested the lab setup |
@@ -32,7 +34,7 @@ Status symbols:
 | --- | --- | --- |
 | Sniffing/Spoofing | :white_check_mark: | Fully tested; no issue |
 | ARP               | :white_check_mark: | Fully tested; no issue |
-| ICMP Redirect     | | |
+| ICMP Redirect     | :white_check_mark: | Fully tested; [notes](Notes/Network_Security.md)|
 | TCP               | :white_check_mark: | Fully tested; minor issue: [notes](Notes/Network_Security.md)|
 | Mitnick           | :white_check_mark: | Fully tested; no issue |
 | Firewall Exploration | :white_check_mark: | Fully tested; no issue: [notes](Notes/Network_Security.md) |
@@ -40,12 +42,12 @@ Status symbols:
 | VPN Tunneling     | :white_check_mark: | Fully tested; no issue |
 | Heartbleed        | x          | Will not port          |
 | DNS Local         | :white_check_mark: | Fully tested; no issue |
-| DNS Remote        | :question: | See [notes](Notes/Network_Security.md) |
-| DNS Rebinding     | :thumbsup: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
-| DNS Infrastructure | | |
-| DNSSEC | | |
-| BGP | :thumbsup: | Full tested; no issue |
-| Morris Worm | :construction_worker: | See [notes](Notes/Network_Security.md) |
+| DNS Remote        | :white_check_mark: | Fully tested; no issue |
+| DNS Rebinding     | :white_check_mark: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
+| DNS Infrastructure| :white_check_mark: | Tested the emulator; no issue |
+| DNSSEC            | :white_check_mark: | Tested the lab setup; no issue | 
+| BGP         | :white_check_mark: | Fully tested; minor issues: [notes](Notes/Network_Security.md) |
+| Morris Worm | :white_check_mark: | See [notes](Notes/Network_Security.md) |
 
 ## Crypto Lab 
 
@@ -67,7 +69,7 @@ Status symbols:
 | --- | --- | --- |
 | Blockchain Exploration | :white_check_mark: | Fully tested; no issue |
 | Smart Contract Lab | :white_check_mark: | Fully tested; no issue |
-| Blockchain: Reentrancy | :construction_worker: | | 
+| Blockchain: Reentrancy | :white_check_mark: | Fully tested; no issue | 
 
 
 ## Others

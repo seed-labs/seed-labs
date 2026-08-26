@@ -211,6 +211,14 @@ attack.
 
 We need to provide further configuration on the user VM.
 
+\paragraph{Step 0. Disable Firefox's DNS over HTTPS.}
+Newer versions of Firefox enable the \texttt{"DNS over HTTPS"} by default. 
+In this mode, the DNS resolution may not go through the local DNS server 
+or the \texttt{/etc/hosts} file. This will create issues for this lab. 
+We need to disable it. Go to \texttt{Setting}, click the 
+\texttt{"Privacy \& Security"} tab; 
+find the \texttt{"DNS over HTTPS"} option, and select \texttt{off}.
+
 
 \paragraph{Step 1. Reduce Firefox's DNS caching time.}
 To reduce load on DNS servers and to speed up response time, Firefox browser caches DNS

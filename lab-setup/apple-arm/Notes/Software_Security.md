@@ -26,5 +26,7 @@ to get this project started.
 
 ## Format String Lab
 
-Still under construction.
+The ARM64 platform does not support 32-bit, so all the tasks 
+are now using 64-bit server program. Once we have updated the 
+lab setup file (including the shellcode), everything works fine. 
 
