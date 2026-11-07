@@ -1,0 +1,417 @@
+id: network.bgp_basic_transit
+category: network
+description: Initial environment acceptance for BGP_Basic; no attacks or student solutions.
+requirements:
+  topology:
+    source: category-network/BGP_Basic/BGP_Basic.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/BGP_Basic/BGP_Basic.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  configuration:
+    source: category-network/BGP_Basic/BGP_Basic.tex
+    section: Lab environment / initial configuration
+    description: Initial countermeasure and firewall settings preserve the conditions
+      described by the manual.
+variants:
+  amd64:
+    setup: category-network/BGP_Basic/Labsetup/Task3_Transit
+    architecture: amd64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    seed_base_router:
+      role: build-only
+    seed_base_host:
+      role: build-only
+    as150_router_ix100:
+      role: daemon
+    as150_host:
+      role: daemon
+    as151_router_ix100:
+      role: daemon
+    as151_host:
+      role: daemon
+    as152_router_ix101:
+      role: daemon
+    as152_host:
+      role: daemon
+    as2_router_ix100:
+      role: daemon
+    as2_router_ix101:
+      role: daemon
+    ix100_rs:
+      role: daemon
+  readiness:
+  - id: as150_router_ix100-running
+    type: service-state
+    requirement: services
+    service: as150_router_ix100
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as150_host-running
+    type: service-state
+    requirement: services
+    service: as150_host
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as151_router_ix100-running
+    type: service-state
+    requirement: services
+    service: as151_router_ix100
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as151_host-running
+    type: service-state
+    requirement: services
+    service: as151_host
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as152_router_ix101-running
+    type: service-state
+    requirement: services
+    service: as152_router_ix101
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as152_host-running
+    type: service-state
+    requirement: services
+    service: as152_host
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as2_router_ix100-running
+    type: service-state
+    requirement: services
+    service: as2_router_ix100
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as2_router_ix101-running
+    type: service-state
+    requirement: services
+    service: as2_router_ix101
+    expected: running
+    retries: 20
+    interval: 2
+  - id: ix100_rs-running
+    type: service-state
+    requirement: services
+    service: ix100_rs
+    expected: running
+    retries: 20
+    interval: 2
+checks:
+- id: as150_router_ix100-ip-0
+  type: container-ip
+  requirement: topology
+  service: as150_router_ix100
+  expected: 10.150.0.254
+- id: as150_router_ix100-ip-1
+  type: container-ip
+  requirement: topology
+  service: as150_router_ix100
+  expected: 10.100.0.150
+- id: as150_host-ip-0
+  type: container-ip
+  requirement: topology
+  service: as150_host
+  expected: 10.150.0.71
+- id: as151_router_ix100-ip-0
+  type: container-ip
+  requirement: topology
+  service: as151_router_ix100
+  expected: 10.151.0.254
+- id: as151_router_ix100-ip-1
+  type: container-ip
+  requirement: topology
+  service: as151_router_ix100
+  expected: 10.100.0.151
+- id: as151_host-ip-0
+  type: container-ip
+  requirement: topology
+  service: as151_host
+  expected: 10.151.0.71
+- id: as152_router_ix101-ip-0
+  type: container-ip
+  requirement: topology
+  service: as152_router_ix101
+  expected: 10.152.0.254
+- id: as152_router_ix101-ip-1
+  type: container-ip
+  requirement: topology
+  service: as152_router_ix101
+  expected: 10.101.0.152
+- id: as152_host-ip-0
+  type: container-ip
+  requirement: topology
+  service: as152_host
+  expected: 10.152.0.71
+- id: as2_router_ix100-ip-0
+  type: container-ip
+  requirement: topology
+  service: as2_router_ix100
+  expected: 10.2.0.254
+- id: as2_router_ix100-ip-1
+  type: container-ip
+  requirement: topology
+  service: as2_router_ix100
+  expected: 10.100.0.2
+- id: as2_router_ix101-ip-0
+  type: container-ip
+  requirement: topology
+  service: as2_router_ix101
+  expected: 10.2.0.253
+- id: as2_router_ix101-ip-1
+  type: container-ip
+  requirement: topology
+  service: as2_router_ix101
+  expected: 10.101.0.2
+- id: ix100_rs-ip-0
+  type: container-ip
+  requirement: topology
+  service: ix100_rs
+  expected: 10.100.0.100
+- id: as150_router_ix100-bird-config
+  type: exec
+  requirement: configuration
+  service: as150_router_ix100
+  argv:
+  - bird
+  - -p
+- id: as150_router_ix100-control-socket
+  type: exec
+  requirement: services
+  service: as150_router_ix100
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: as150_host-gateway
+  type: exec
+  requirement: topology
+  service: as150_host
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 10.150.0.254
+- id: as150_host-web-service
+  type: exec
+  requirement: services
+  service: as150_host
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+- id: as151_router_ix100-bird-config
+  type: exec
+  requirement: configuration
+  service: as151_router_ix100
+  argv:
+  - bird
+  - -p
+- id: as151_router_ix100-control-socket
+  type: exec
+  requirement: services
+  service: as151_router_ix100
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: as151_host-gateway
+  type: exec
+  requirement: topology
+  service: as151_host
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 10.151.0.254
+- id: as151_host-web-service
+  type: exec
+  requirement: services
+  service: as151_host
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+- id: as152_router_ix101-bird-config
+  type: exec
+  requirement: configuration
+  service: as152_router_ix101
+  argv:
+  - bird
+  - -p
+- id: as152_router_ix101-control-socket
+  type: exec
+  requirement: services
+  service: as152_router_ix101
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: as152_host-gateway
+  type: exec
+  requirement: topology
+  service: as152_host
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 10.152.0.254
+- id: as152_host-web-service
+  type: exec
+  requirement: services
+  service: as152_host
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+- id: as2_router_ix100-bird-config
+  type: exec
+  requirement: configuration
+  service: as2_router_ix100
+  argv:
+  - bird
+  - -p
+- id: as2_router_ix100-control-socket
+  type: exec
+  requirement: services
+  service: as2_router_ix100
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: as2_router_ix101-bird-config
+  type: exec
+  requirement: configuration
+  service: as2_router_ix101
+  argv:
+  - bird
+  - -p
+- id: as2_router_ix101-control-socket
+  type: exec
+  requirement: services
+  service: as2_router_ix101
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: ix100_rs-bird-config
+  type: exec
+  requirement: configuration
+  service: ix100_rs
+  argv:
+  - bird
+  - -p
+- id: ix100_rs-control-socket
+  type: exec
+  requirement: services
+  service: ix100_rs
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: as150_router_ix100-provided-bgp-session
+  type: exec
+  requirement: configuration
+  service: as150_router_ix100
+  argv:
+  - birdc
+  - show
+  - protocols
+  stdout_contains: Established
+  retries: 30
+  interval: 2
+- id: as151_router_ix100-provided-bgp-session
+  type: exec
+  requirement: configuration
+  service: as151_router_ix100
+  argv:
+  - birdc
+  - show
+  - protocols
+  stdout_contains: Established
+  retries: 30
+  interval: 2
+- id: as2_router_ix100-provided-bgp-session
+  type: exec
+  requirement: configuration
+  service: as2_router_ix100
+  argv:
+  - birdc
+  - show
+  - protocols
+  stdout_contains: Established
+  retries: 30
+  interval: 2
+- id: as152_router_ix101-provided-bgp-session
+  type: exec
+  requirement: configuration
+  service: as152_router_ix101
+  argv:
+  - birdc
+  - show
+  - protocols
+  stdout_contains: Established
+  retries: 30
+  interval: 2
+- id: as2_router_ix101-provided-bgp-session
+  type: exec
+  requirement: configuration
+  service: as2_router_ix101
+  argv:
+  - birdc
+  - show
+  - protocols
+  stdout_contains: Established
+  retries: 30
+  interval: 2
+- id: ix100_rs-provided-bgp-session
+  type: exec
+  requirement: configuration
+  service: ix100_rs
+  argv:
+  - birdc
+  - show
+  - protocols
+  stdout_contains: Established
+  retries: 30
+  interval: 2
+dependencies:
+- category-network/BGP_Basic/Labsetup/Base_Images

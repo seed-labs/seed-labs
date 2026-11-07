@@ -1,0 +1,146 @@
+id: software.race_condition
+category: software
+description: Environment acceptance for Race_Condition; no exploitation, payload generation,
+  or student solutions.
+requirements:
+  compilation:
+    source: category-software/Race_Condition/Race_Condition.tex
+    section: Environment setup / compilation
+    description: Supplied starter programs build using the public commands and retain
+      the required architecture and ELF properties.
+  environment:
+    source: category-software/Race_Condition/Race_Condition.tex
+    section: Lab environment / tools and permissions
+    description: The existing host supplies native execution, required tools and ordinary-user
+      permissions.
+variants:
+  amd64:
+    setup: category-software/Race_Condition/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-software/Race_Condition/Labsetup
+    architecture: arm64
+prepare:
+- id: compile-vulp
+  argv:
+  - gcc
+  - vulp.c
+  - -o
+  - vulp
+  cwd: .
+  expected:
+  - vulp
+- id: setuid-vulp
+  argv:
+  - sh
+  - -c
+  - chown root:root vulp && chmod 4755 vulp
+  cwd: .
+  expected:
+  - vulp
+  privileged: true
+- id: compile-uid-capability
+  argv:
+  - gcc
+  - .seedtest/uid_check.c
+  - -o
+  - .seedtest/uid-check
+  cwd: .
+  expected:
+  - .seedtest/uid-check
+- id: setuid-capability-permissions
+  argv:
+  - sh
+  - -c
+  - chown root:root .seedtest/uid-check && chmod 4755 .seedtest/uid-check
+  cwd: .
+  expected:
+  - .seedtest/uid-check
+  privileged: true
+runtime:
+  backend: host
+  readiness:
+  - id: host-ready
+    type: host-exec
+    requirement: environment
+    argv:
+    - 'true'
+checks:
+- id: ordinary-user
+  type: host-exec
+  requirement: environment
+  argv:
+  - id
+  - -u
+  stdout_equals: '{uid}'
+- id: setuid-filesystem-capability
+  type: host-exec
+  requirement: environment
+  argv:
+  - ./.seedtest/uid-check
+  stdout_equals: '{uid} 0'
+- id: zsh-available
+  type: host-exec
+  requirement: environment
+  argv:
+  - zsh
+  - --version
+  stdout_contains: zsh
+- id: target-elf-amd64
+  type: elf
+  requirement: compilation
+  source: vulp
+  elf_class: 64
+  machine: x86_64
+  variants:
+  - amd64
+- id: target-elf-arm64
+  type: elf
+  requirement: compilation
+  source: vulp
+  elf_class: 64
+  machine: aarch64
+  variants:
+  - arm64
+- id: target-permissions
+  type: host-exec
+  requirement: environment
+  argv:
+  - stat
+  - -c
+  - '%u %a'
+  - ./vulp
+  stdout_equals: 0 4755
+- id: sticky-temp-directory
+  type: host-exec
+  requirement: environment
+  argv:
+  - stat
+  - -c
+  - '%a'
+  - /tmp
+  stdout_equals: '1777'
+- id: renameat2-library-symbol
+  type: host-exec
+  requirement: environment
+  argv:
+  - sh
+  - -c
+  - nm -D /lib/*-linux-gnu/libc.so.6 | grep renameat2
+  stdout_contains: renameat2
+tools:
+- source: lab-setup/testing/tools/uid_check.c
+  destination: .seedtest/uid_check.c
+host:
+  commands:
+  - gcc
+  - sudo
+  - zsh
+  - nm
+  sudo: true
+  non_root: true
+  packages:
+  - gcc
+  - libc6-dev
+  - zsh
+  - binutils

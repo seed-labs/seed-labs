@@ -1,0 +1,114 @@
+id: web.clickjacking_cupcakes
+category: web
+description: Initial environment acceptance for Web_Clickjacking_Cupcakes, without
+  carrying out the attack tasks.
+requirements:
+  deployment:
+    source: category-web/Web_Clickjacking_Cupcakes/Web_Clickjacking_Cupcakes.tex
+    section: Lab Environment Setup
+    description: Initial services, supplied customizations and host addresses are
+      correctly deployed.
+  normal-use:
+    source: category-web/Web_Clickjacking_Cupcakes/Web_Clickjacking_Cupcakes.tex
+    section: Lab Environment / normal use
+    description: Ordinary pages and local assets are served with the expected virtual
+      hosts.
+  policy:
+    source: category-web/Web_Clickjacking_Cupcakes/Web_Clickjacking_Cupcakes.tex
+    section: Lab tasks / initial defense configuration
+    description: Provided CSP, framing or SameSite demonstration settings are present
+      before students modify them.
+variants:
+  amd64:
+    setup: category-web/Web_Clickjacking_Cupcakes/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-web/Web_Clickjacking_Cupcakes/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    defender:
+      role: daemon
+    attacker:
+      role: daemon
+  readiness:
+  - id: defender-running
+    type: service-state
+    requirement: deployment
+    service: defender
+    expected: running
+    retries: 20
+    interval: 2
+  - id: attacker-running
+    type: service-state
+    requirement: deployment
+    service: attacker
+    expected: running
+    retries: 20
+    interval: 2
+  - id: defender-page
+    type: http
+    requirement: normal-use
+    url: http://www.cjlab.com/
+    connect_address: 10.9.0.5
+    expect_status: 200
+    body_contains: Alice's Cupcakes
+    retries: 30
+    interval: 2
+    timeout: 5
+  - id: attacker-page
+    type: http
+    requirement: normal-use
+    url: http://www.cjlab-attacker.com/
+    connect_address: 10.9.0.105
+    expect_status: 200
+    body_contains: Attacker
+    retries: 30
+    interval: 2
+    timeout: 5
+checks:
+- id: defender-ip
+  type: container-ip
+  requirement: deployment
+  service: defender
+  expected: 10.9.0.5
+- id: attacker-ip
+  type: container-ip
+  requirement: deployment
+  service: attacker
+  expected: 10.9.0.105
+- id: initial-framing-policy
+  type: http
+  requirement: policy
+  url: http://www.cjlab.com/
+  connect_address: 10.9.0.5
+  expect_status: 200
+  absent_headers:
+  - X-Frame-Options
+  - Content-Security-Policy
+- id: defender-css
+  type: http
+  requirement: normal-use
+  url: http://www.cjlab.com/defender.css
+  connect_address: 10.9.0.5
+  expect_status: 200
+- id: attacker-css
+  type: http
+  requirement: normal-use
+  url: http://www.cjlab-attacker.com/attacker.css
+  connect_address: 10.9.0.105
+  expect_status: 200
+- id: defender-mount
+  type: file
+  requirement: deployment
+  service: defender
+  source: defender/index.html
+  path: /var/www/defender/index.html
+- id: attacker-mount
+  type: file
+  requirement: deployment
+  service: attacker
+  source: attacker/attacker.html
+  path: /var/www/attacker/attacker.html

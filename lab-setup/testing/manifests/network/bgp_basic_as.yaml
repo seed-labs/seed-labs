@@ -1,0 +1,165 @@
+id: network.bgp_basic_as
+category: network
+description: Initial environment acceptance for BGP_Basic; no attacks or student solutions.
+requirements:
+  topology:
+    source: category-network/BGP_Basic/BGP_Basic.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/BGP_Basic/BGP_Basic.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  configuration:
+    source: category-network/BGP_Basic/BGP_Basic.tex
+    section: Lab environment / initial configuration
+    description: Initial countermeasure and firewall settings preserve the conditions
+      described by the manual.
+variants:
+  amd64:
+    setup: category-network/BGP_Basic/Labsetup/Task1_AS
+    architecture: amd64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    seed_base_router:
+      role: build-only
+    seed_base_host:
+      role: build-only
+    as150_router:
+      role: daemon
+    as150_host:
+      role: daemon
+    as151_router:
+      role: daemon
+    as151_host:
+      role: daemon
+  readiness:
+  - id: as150_router-running
+    type: service-state
+    requirement: services
+    service: as150_router
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as150_host-running
+    type: service-state
+    requirement: services
+    service: as150_host
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as151_router-running
+    type: service-state
+    requirement: services
+    service: as151_router
+    expected: running
+    retries: 20
+    interval: 2
+  - id: as151_host-running
+    type: service-state
+    requirement: services
+    service: as151_host
+    expected: running
+    retries: 20
+    interval: 2
+checks:
+- id: as150_router-ip-0
+  type: container-ip
+  requirement: topology
+  service: as150_router
+  expected: 10.150.0.254
+- id: as150_host-ip-0
+  type: container-ip
+  requirement: topology
+  service: as150_host
+  expected: 10.150.0.71
+- id: as151_router-ip-0
+  type: container-ip
+  requirement: topology
+  service: as151_router
+  expected: 10.151.0.254
+- id: as151_host-ip-0
+  type: container-ip
+  requirement: topology
+  service: as151_host
+  expected: 10.151.0.71
+- id: as150_router-bird-config
+  type: exec
+  requirement: configuration
+  service: as150_router
+  argv:
+  - bird
+  - -p
+- id: as150_router-control-socket
+  type: exec
+  requirement: services
+  service: as150_router
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: as150_host-gateway
+  type: exec
+  requirement: topology
+  service: as150_host
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 10.150.0.254
+- id: as150_host-web-service
+  type: exec
+  requirement: services
+  service: as150_host
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+- id: as151_router-bird-config
+  type: exec
+  requirement: configuration
+  service: as151_router
+  argv:
+  - bird
+  - -p
+- id: as151_router-control-socket
+  type: exec
+  requirement: services
+  service: as151_router
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: as151_host-gateway
+  type: exec
+  requirement: topology
+  service: as151_host
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 10.151.0.254
+- id: as151_host-web-service
+  type: exec
+  requirement: services
+  service: as151_host
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+dependencies:
+- category-network/BGP_Basic/Labsetup/Base_Images

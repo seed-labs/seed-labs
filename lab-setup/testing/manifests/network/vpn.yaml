@@ -1,0 +1,90 @@
+id: network.vpn
+category: network
+description: Prerequisite acceptance for the student-built comprehensive VPN lab;
+  no student tunnel or VPN implementation is supplied or completed.
+requirements:
+  prerequisites:
+    source: category-network/VPN/VPN.tex
+    section: Lab Tasks / Guidelines
+    description: A native userspace provides a C compiler, OpenSSL development libraries,
+      root administration and TUN/TAP capability; students implement and configure
+      the VPN themselves.
+variants:
+  amd64:
+    setup: category-network/VPN
+    architecture: amd64
+  arm64:
+    setup: category-network/VPN
+    architecture: arm64
+prepare:
+- id: compile-tls-capability
+  argv:
+  - gcc
+  - .seedtest/tls_check.c
+  - -lssl
+  - -lcrypto
+  - -o
+  - .seedtest/tls-check
+  expected:
+  - .seedtest/tls-check
+runtime:
+  backend: host
+  readiness:
+  - id: host-ready
+    type: host-exec
+    requirement: prerequisites
+    argv:
+    - 'true'
+checks:
+- id: normal-user
+  type: host-exec
+  requirement: prerequisites
+  argv:
+  - id
+  - -u
+  stdout_equals: '{uid}'
+- id: root-administration
+  type: host-exec
+  requirement: prerequisites
+  argv:
+  - sudo
+  - -n
+  - 'true'
+- id: tls-context-library
+  type: host-exec
+  requirement: prerequisites
+  argv:
+  - ./.seedtest/tls-check
+  stdout_equals: TLS context available
+- id: openssl-tools
+  type: host-exec
+  requirement: prerequisites
+  argv:
+  - openssl
+  - version
+  stdout_contains: OpenSSL
+- id: tun-interface
+  type: host-exec
+  requirement: prerequisites
+  argv:
+  - '{python}'
+  - -c
+  - import os,fcntl,struct,sys; fd=os.open(sys.argv[1],os.O_RDWR); fcntl.ioctl(fd,0x400454ca,struct.pack('16sH',b'seedtest%d',0x1001));
+    os.close(fd)
+  - '{tun_device}'
+  privileged: true
+tools:
+- source: lab-setup/testing/tools/tls_check.c
+  destination: .seedtest/tls_check.c
+host:
+  commands:
+  - gcc
+  - openssl
+  - sudo
+  sudo: true
+  non_root: true
+  packages:
+  - gcc
+  - libc6-dev
+  - libssl-dev
+  - openssl

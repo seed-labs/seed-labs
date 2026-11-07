@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  framework:
+  plan:
     runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
@@ -26,11 +26,9 @@ jobs:
         with:
           python-version: '3.10'
           cache: pip
-          cache-dependency-path: lab-setup/testing/requirements*.txt
-      - name: Install framework dependencies
-        run: python -m pip install -r lab-setup/testing/requirements-dev.txt
-      - name: Test framework behavior and manifest inputs
-        run: python -m pytest -q lab-setup/testing/tests
+          cache-dependency-path: lab-setup/testing/requirements.txt
+      - name: Install test dependencies
+        run: python -m pip install -r lab-setup/testing/requirements.txt
       - name: Generate matrix from validated manifests
         id: plan
         run: |
@@ -44,25 +42,50 @@ jobs:
           PY
 
   environment:
-    needs: framework
-    name: Environment (${{ matrix.variant }})
+    needs: plan
+    name: ${{ matrix.lab }} (${{ matrix.variant }})
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 35
+    timeout-minutes: 90
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.framework.outputs.matrix) }}
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        if: matrix.emulator
+        with:
+          repository: seed-labs/seed-emulator
+          ref: ${{ matrix.emulator_revision }}
+          path: .seed-emulator
       - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
           cache: pip
           cache-dependency-path: lab-setup/testing/requirements.txt
-      - run: python -m pip install -r lab-setup/testing/requirements.txt
+      - name: Install test dependencies
+        run: python -m pip install -r lab-setup/testing/requirements.txt
+      - name: Prepare host prerequisites
+        env:
+          HOST_PACKAGES: ${{ toJSON(matrix.host_packages) }}
+        run: |
+          python - <<'PYTHON'
+          import json
+          import os
+          import re
+          import subprocess
+          packages = json.loads(os.environ['HOST_PACKAGES'])
+          if any(not re.fullmatch(r'[a-z0-9][a-z0-9+.-]*', item) for item in packages):
+              raise SystemExit('Invalid host package name')
+          if packages:
+              subprocess.run(['sudo', '-n', 'apt-get', 'update'], check=True)
+              subprocess.run(['sudo', '-n', 'apt-get', 'install', '-y', '--no-install-recommends', *packages], check=True)
+          PYTHON
       - name: Run the same lifecycle as local testing
         env:
           MANIFEST: ${{ matrix.manifest }}
           VARIANT: ${{ matrix.variant }}
+          SEED_EMULATOR_SOURCE: ${{ github.workspace }}/.seed-emulator
         run: >-
           python lab-setup/testing/run.py all "$MANIFEST"
           --variant "$VARIANT" --run-dir ci-artifacts
@@ -85,5 +108,11 @@ jobs:
         if: always()
         with:
           name: labsetup-${{ strategy.job-index }}-${{ matrix.variant }}
-          path: ci-artifacts/
+          path: |
+            ci-artifacts/*.json
+            ci-artifacts/*.yaml
+            ci-artifacts/*.xml
+            ci-artifacts/*.md
+            ci-artifacts/*.txt
+            ci-artifacts/logs/
           retention-days: 7

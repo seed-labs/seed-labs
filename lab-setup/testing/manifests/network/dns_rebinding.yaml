@@ -1,0 +1,165 @@
+id: network.dns_rebinding
+category: network
+description: Initial environment acceptance for DNS_Rebinding; no attacks or student
+  solutions.
+requirements:
+  topology:
+    source: category-network/DNS_Rebinding/DNS_Rebinding.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/DNS_Rebinding/DNS_Rebinding.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  configuration:
+    source: category-network/DNS_Rebinding/DNS_Rebinding.tex
+    section: Lab environment / initial configuration
+    description: Initial countermeasure and firewall settings preserve the conditions
+      described by the manual.
+variants:
+  amd64:
+    setup: category-network/DNS_Rebinding/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-network/DNS_Rebinding/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    iot:
+      role: daemon
+    Router:
+      role: daemon
+    attacker-ns:
+      role: daemon
+    attacker-www:
+      role: daemon
+    local-dns-server:
+      role: daemon
+  readiness:
+  - id: iot-running
+    type: service-state
+    requirement: services
+    service: iot
+    expected: running
+    retries: 20
+    interval: 2
+  - id: router-running
+    type: service-state
+    requirement: services
+    service: Router
+    expected: running
+    retries: 20
+    interval: 2
+  - id: attacker-ns-running
+    type: service-state
+    requirement: services
+    service: attacker-ns
+    expected: running
+    retries: 20
+    interval: 2
+  - id: attacker-www-running
+    type: service-state
+    requirement: services
+    service: attacker-www
+    expected: running
+    retries: 20
+    interval: 2
+  - id: local-dns-server-running
+    type: service-state
+    requirement: services
+    service: local-dns-server
+    expected: running
+    retries: 20
+    interval: 2
+  - id: iot-http
+    type: http
+    requirement: services
+    url: http://www.seedIoT32.com/temperature
+    connect_address: 192.168.60.80
+    expect_status: 200
+    body_contains: temperature
+    retries: 20
+    interval: 2
+  - id: attacker-site-http
+    type: http
+    requirement: services
+    url: http://www.attacker32.com/password
+    connect_address: 10.9.0.180
+    expect_status: 200
+    body_contains: StillMe
+    retries: 20
+    interval: 2
+checks:
+- id: iot-ip-0
+  type: container-ip
+  requirement: topology
+  service: iot
+  expected: 192.168.60.80
+- id: router-ip-0
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 10.9.0.11
+- id: router-ip-1
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 192.168.60.11
+- id: attacker-ns-ip-0
+  type: container-ip
+  requirement: topology
+  service: attacker-ns
+  expected: 10.9.0.153
+- id: attacker-www-ip-0
+  type: container-ip
+  requirement: topology
+  service: attacker-www
+  expected: 10.9.0.180
+- id: local-dns-server-ip-0
+  type: container-ip
+  requirement: topology
+  service: local-dns-server
+  expected: 10.9.0.53
+- id: attacker-ns-bind-config
+  type: exec
+  requirement: configuration
+  service: attacker-ns
+  argv:
+  - named-checkconf
+- id: local-dns-server-bind-config
+  type: exec
+  requirement: configuration
+  service: local-dns-server
+  argv:
+  - named-checkconf
+- id: initial-iot-forward-block
+  type: exec
+  requirement: configuration
+  service: Router
+  argv:
+  - iptables
+  - -C
+  - FORWARD
+  - -d
+  - 192.168.60.80
+  - -j
+  - DROP
+- id: initial-attacker-zone
+  type: exec
+  requirement: services
+  service: Router
+  argv:
+  - dig
+  - '@10.9.0.153'
+  - www.attacker32.com
+  - A
+  - +short
+  - +time=2
+  - +tries=1
+  stdout_equals: 10.9.0.180
+  retries: 15
+  interval: 2

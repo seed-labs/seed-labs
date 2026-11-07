@@ -1,0 +1,197 @@
+id: network.icmp_redirect
+category: network
+description: Initial environment acceptance for ICMP_Redirect; no attacks or student
+  solutions.
+requirements:
+  topology:
+    source: category-network/ICMP_Redirect/ICMP_Redirect.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/ICMP_Redirect/ICMP_Redirect.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  configuration:
+    source: category-network/ICMP_Redirect/ICMP_Redirect.tex
+    section: Lab environment / initial configuration
+    description: Initial countermeasure and firewall settings preserve the conditions
+      described by the manual.
+variants:
+  amd64:
+    setup: category-network/ICMP_Redirect/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-network/ICMP_Redirect/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    victim:
+      role: daemon
+    attacker:
+      role: daemon
+    malicious-router:
+      role: daemon
+    Router:
+      role: daemon
+    HostB1:
+      role: daemon
+    HostB2:
+      role: daemon
+  readiness:
+  - id: victim-running
+    type: service-state
+    requirement: services
+    service: victim
+    expected: running
+    retries: 20
+    interval: 2
+  - id: attacker-running
+    type: service-state
+    requirement: services
+    service: attacker
+    expected: running
+    retries: 20
+    interval: 2
+  - id: malicious-router-running
+    type: service-state
+    requirement: services
+    service: malicious-router
+    expected: running
+    retries: 20
+    interval: 2
+  - id: router-running
+    type: service-state
+    requirement: services
+    service: Router
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hostb1-running
+    type: service-state
+    requirement: services
+    service: HostB1
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hostb2-running
+    type: service-state
+    requirement: services
+    service: HostB2
+    expected: running
+    retries: 20
+    interval: 2
+checks:
+- id: victim-ip-0
+  type: container-ip
+  requirement: topology
+  service: victim
+  expected: 10.9.0.5
+- id: attacker-ip-0
+  type: container-ip
+  requirement: topology
+  service: attacker
+  expected: 10.9.0.105
+- id: malicious-router-ip-0
+  type: container-ip
+  requirement: topology
+  service: malicious-router
+  expected: 10.9.0.111
+- id: router-ip-0
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 10.9.0.11
+- id: router-ip-1
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 192.168.60.11
+- id: hostb1-ip-0
+  type: container-ip
+  requirement: topology
+  service: HostB1
+  expected: 192.168.60.5
+- id: hostb2-ip-0
+  type: container-ip
+  requirement: topology
+  service: HostB2
+  expected: 192.168.60.6
+- id: victim-accepts-redirects
+  type: exec
+  requirement: configuration
+  service: victim
+  argv:
+  - sysctl
+  - -n
+  - net.ipv4.conf.all.accept_redirects
+  stdout_equals: '1'
+- id: router-forwarding
+  type: exec
+  requirement: configuration
+  service: Router
+  argv:
+  - sysctl
+  - -n
+  - net.ipv4.ip_forward
+  stdout_equals: '1'
+- id: malicious-router-forwarding
+  type: exec
+  requirement: configuration
+  service: malicious-router
+  argv:
+  - sysctl
+  - -n
+  - net.ipv4.ip_forward
+  stdout_equals: '1'
+- id: malicious-router-no-all-redirects
+  type: exec
+  requirement: configuration
+  service: malicious-router
+  argv:
+  - sysctl
+  - -n
+  - net.ipv4.conf.all.send_redirects
+  stdout_equals: '0'
+- id: malicious-router-no-default-redirects
+  type: exec
+  requirement: configuration
+  service: malicious-router
+  argv:
+  - sysctl
+  - -n
+  - net.ipv4.conf.default.send_redirects
+  stdout_equals: '0'
+- id: malicious-router-no-eth0-redirects
+  type: exec
+  requirement: configuration
+  service: malicious-router
+  argv:
+  - sysctl
+  - -n
+  - net.ipv4.conf.eth0.send_redirects
+  stdout_equals: '0'
+- id: victim-initial-route
+  type: exec
+  requirement: topology
+  service: victim
+  argv:
+  - ip
+  - route
+  - get
+  - 192.168.60.5
+  stdout_contains: via 10.9.0.11
+- id: victim-reaches-private-host
+  type: exec
+  requirement: topology
+  service: victim
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 192.168.60.5

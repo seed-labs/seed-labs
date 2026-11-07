@@ -1,0 +1,153 @@
+id: software.environment_variable_and_setuid
+category: software
+description: Environment acceptance for Environment_Variable_and_SetUID; no exploitation,
+  payload generation, or student solutions.
+requirements:
+  compilation:
+    source: category-software/Environment_Variable_and_SetUID/Environment_Variable_and_SetUID.tex
+    section: Environment setup / compilation
+    description: Supplied starter programs build using the public commands and retain
+      the required architecture and ELF properties.
+  environment:
+    source: category-software/Environment_Variable_and_SetUID/Environment_Variable_and_SetUID.tex
+    section: Lab environment / tools and permissions
+    description: The existing host supplies native execution, required tools and ordinary-user
+      permissions.
+variants:
+  amd64:
+    setup: category-software/Environment_Variable_and_SetUID/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-software/Environment_Variable_and_SetUID/Labsetup
+    architecture: arm64
+prepare:
+- id: compile-myprintenv
+  argv:
+  - gcc
+  - myprintenv.c
+  - -o
+  - myprintenv
+  cwd: .
+  expected:
+  - myprintenv
+- id: compile-myenv
+  argv:
+  - gcc
+  - myenv.c
+  - -o
+  - myenv
+  cwd: .
+  expected:
+  - myenv
+- id: compile-catall
+  argv:
+  - gcc
+  - catall.c
+  - -o
+  - catall
+  cwd: .
+  expected:
+  - catall
+- id: compile-cap_leak
+  argv:
+  - gcc
+  - cap_leak.c
+  - -o
+  - cap_leak
+  cwd: .
+  expected:
+  - cap_leak
+- id: compile-uid-capability
+  argv:
+  - gcc
+  - .seedtest/uid_check.c
+  - -o
+  - .seedtest/uid-check
+  cwd: .
+  expected:
+  - .seedtest/uid-check
+- id: setuid-capability-permissions
+  argv:
+  - sh
+  - -c
+  - chown root:root .seedtest/uid-check && chmod 4755 .seedtest/uid-check
+  cwd: .
+  expected:
+  - .seedtest/uid-check
+  privileged: true
+runtime:
+  backend: host
+  readiness:
+  - id: host-ready
+    type: host-exec
+    requirement: environment
+    argv:
+    - 'true'
+checks:
+- id: ordinary-user
+  type: host-exec
+  requirement: environment
+  argv:
+  - id
+  - -u
+  stdout_equals: '{uid}'
+- id: setuid-filesystem-capability
+  type: host-exec
+  requirement: environment
+  argv:
+  - ./.seedtest/uid-check
+  stdout_equals: '{uid} 0'
+- id: zsh-available
+  type: host-exec
+  requirement: environment
+  argv:
+  - zsh
+  - --version
+  stdout_contains: zsh
+- id: starter-elf-amd64
+  type: elf
+  requirement: compilation
+  source: myprintenv
+  elf_class: 64
+  machine: x86_64
+  variants:
+  - amd64
+- id: starter-elf-arm64
+  type: elf
+  requirement: compilation
+  source: myprintenv
+  elf_class: 64
+  machine: aarch64
+  variants:
+  - arm64
+- id: dynamic-loader-tool
+  type: host-exec
+  requirement: environment
+  argv:
+  - ldd
+  - ./myenv
+  stdout_contains: libc.so
+- id: bash-environment-builtins
+  type: host-exec
+  requirement: environment
+  argv:
+  - bash
+  - -c
+  - type export && type unset
+  stdout_contains: shell builtin
+tools:
+- source: lab-setup/testing/tools/uid_check.c
+  destination: .seedtest/uid_check.c
+host:
+  commands:
+  - gcc
+  - sudo
+  - zsh
+  - ldd
+  - bash
+  sudo: true
+  non_root: true
+  packages:
+  - gcc
+  - libc6-dev
+  - zsh

@@ -1,2 +1,5 @@
 PyYAML>=6.0,<7
-jsonschema>=4.18,<5
+geopy>=2.5.0
+networkx>=3.4.2
+requests>=2.34.2
+scapy>=2.8.0

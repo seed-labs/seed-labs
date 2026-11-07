@@ -1,0 +1,123 @@
+id: web.sql_injection
+category: web
+description: Initial environment acceptance for Web_SQL_Injection, without carrying
+  out the attack tasks.
+requirements:
+  deployment:
+    source: category-web/Web_SQL_Injection/Web_SQL_Injection.tex
+    section: Lab Environment Setup
+    description: Initial services, supplied customizations and host addresses are
+      correctly deployed.
+  database:
+    source: category-web/Web_SQL_Injection/Web_SQL_Injection.tex
+    section: Lab Environment Setup / supplied accounts
+    description: Database schema, seed accounts and application-to-database connectivity
+      are ready.
+  normal-use:
+    source: category-web/Web_SQL_Injection/Web_SQL_Injection.tex
+    section: Lab Environment / normal use
+    description: Ordinary page requests and authorized login work without injection
+      or cross-site requests.
+variants:
+  amd64:
+    setup: category-web/Web_SQL_Injection/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-web/Web_SQL_Injection/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    www:
+      role: daemon
+    mysql:
+      role: daemon
+  readiness:
+  - id: www-running
+    type: service-state
+    requirement: deployment
+    service: www
+    expected: running
+    retries: 20
+    interval: 2
+  - id: mysql-running
+    type: service-state
+    requirement: deployment
+    service: mysql
+    expected: running
+    retries: 20
+    interval: 2
+  - id: database-initial-data
+    type: exec
+    requirement: database
+    service: mysql
+    argv:
+    - mysql
+    - -uroot
+    - -pdees
+    - --batch
+    - --skip-column-names
+    - sqllab_users
+    - -e
+    - SELECT COUNT(*) FROM credential;
+    stdout_equals: '6'
+    retries: 40
+    interval: 2
+    timeout: 5
+  - id: login-page
+    type: http
+    requirement: normal-use
+    url: http://www.seed-server.com/
+    connect_address: 10.9.0.5
+    expect_status: 200
+    body_contains: SQL
+    retries: 30
+    interval: 2
+    timeout: 5
+checks:
+- id: www-ip
+  type: container-ip
+  requirement: deployment
+  service: www
+  expected: 10.9.0.5
+- id: mysql-ip
+  type: container-ip
+  requirement: deployment
+  service: mysql
+  expected: 10.9.0.6
+- id: normal-alice-login
+  type: http
+  requirement: normal-use
+  url: http://www.seed-server.com/unsafe_home.php?username=Alice&Password=seedalice
+  connect_address: 10.9.0.5
+  expect_status: 200
+  body_contains: '10211002'
+- id: normal-stylesheet
+  type: http
+  requirement: normal-use
+  url: http://www.seed-server.com/css/bootstrap.min.css
+  connect_address: 10.9.0.5
+  expect_status: 200
+- id: login-program
+  type: file
+  requirement: deployment
+  service: www
+  source: image_www/Code/unsafe_home.php
+  path: /var/www/SQL_Injection/unsafe_home.php
+- id: prepared-statement-exercise
+  type: file
+  requirement: deployment
+  service: www
+  source: image_www/Code/defense/unsafe.php
+  path: /var/www/SQL_Injection/defense/unsafe.php
+- id: normal-db-connection
+  type: exec
+  requirement: database
+  service: www
+  argv:
+  - php
+  - -r
+  - $d=new mysqli("10.9.0.6","seed","dees","sqllab_users"); if($d->connect_errno)exit(1);
+    $r=$d->query("SELECT COUNT(*) FROM credential"); echo $r->fetch_row()[0];
+  stdout_equals: '6'
