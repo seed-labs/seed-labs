@@ -1,0 +1,216 @@
+id: network.firewall_evasion
+category: network
+description: Initial environment acceptance for Firewall_Evasion; no attacks or student
+  solutions.
+requirements:
+  topology:
+    source: category-network/Firewall_Evasion/Firewall_Evasion.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/Firewall_Evasion/Firewall_Evasion.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  capabilities:
+    source: category-network/Firewall_Evasion/Firewall_Evasion.tex
+    section: Lab environment / required tools
+    description: Packet capture, protocol libraries and required kernel interfaces
+      are usable.
+  configuration:
+    source: category-network/Firewall_Evasion/Firewall_Evasion.tex
+    section: Lab environment / initial configuration
+    description: Initial countermeasure and firewall settings preserve the conditions
+      described by the manual.
+variants:
+  amd64:
+    setup: category-network/Firewall_Evasion/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-network/Firewall_Evasion/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    hostA:
+      role: daemon
+    hostA1:
+      role: daemon
+    hostA2:
+      role: daemon
+    hostB:
+      role: daemon
+    hostB1:
+      role: daemon
+    hostB2:
+      role: daemon
+    Router:
+      role: daemon
+  readiness:
+  - id: hosta-running
+    type: service-state
+    requirement: services
+    service: hostA
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hosta1-running
+    type: service-state
+    requirement: services
+    service: hostA1
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hosta2-running
+    type: service-state
+    requirement: services
+    service: hostA2
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hostb-running
+    type: service-state
+    requirement: services
+    service: hostB
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hostb1-running
+    type: service-state
+    requirement: services
+    service: hostB1
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hostb2-running
+    type: service-state
+    requirement: services
+    service: hostB2
+    expected: running
+    retries: 20
+    interval: 2
+  - id: router-running
+    type: service-state
+    requirement: services
+    service: Router
+    expected: running
+    retries: 20
+    interval: 2
+checks:
+- id: hosta-ip-0
+  type: container-ip
+  requirement: topology
+  service: hostA
+  expected: 10.8.0.99
+- id: hosta1-ip-0
+  type: container-ip
+  requirement: topology
+  service: hostA1
+  expected: 10.8.0.5
+- id: hosta2-ip-0
+  type: container-ip
+  requirement: topology
+  service: hostA2
+  expected: 10.8.0.6
+- id: hostb-ip-0
+  type: container-ip
+  requirement: topology
+  service: hostB
+  expected: 192.168.20.99
+- id: hostb1-ip-0
+  type: container-ip
+  requirement: topology
+  service: hostB1
+  expected: 192.168.20.5
+- id: hostb2-ip-0
+  type: container-ip
+  requirement: topology
+  service: hostB2
+  expected: 192.168.20.6
+- id: router-ip-0
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 10.8.0.11
+- id: router-ip-1
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 192.168.20.11
+- id: hosta-tun-interface
+  type: exec
+  requirement: capabilities
+  service: hostA
+  argv:
+  - python3
+  - -c
+  - import os,fcntl,struct; fd=os.open('/dev/net/tun',os.O_RDWR); fcntl.ioctl(fd,0x400454ca,struct.pack('16sH',b'seedtest%d',0x1001));
+    os.close(fd)
+- id: hostb-tun-interface
+  type: exec
+  requirement: capabilities
+  service: hostB
+  argv:
+  - python3
+  - -c
+  - import os,fcntl,struct; fd=os.open('/dev/net/tun',os.O_RDWR); fcntl.ioctl(fd,0x400454ca,struct.pack('16sH',b'seedtest%d',0x1001));
+    os.close(fd)
+- id: initial-ssh-allowed-rule
+  type: exec
+  requirement: configuration
+  service: Router
+  argv:
+  - iptables
+  - -C
+  - FORWARD
+  - -i
+  - eth0
+  - -p
+  - tcp
+  - --dport
+  - '22'
+  - -j
+  - ACCEPT
+- id: initial-tcp-denied-rule
+  type: exec
+  requirement: configuration
+  service: Router
+  argv:
+  - iptables
+  - -C
+  - FORWARD
+  - -i
+  - eth0
+  - -p
+  - tcp
+  - -j
+  - DROP
+- id: normal-ssh-banner
+  type: exec
+  requirement: services
+  service: hostA
+  argv:
+  - sh
+  - -c
+  - timeout 5 bash -c "exec 3<>/dev/tcp/192.168.20.99/22; head -n1 <&3"
+  stdout_contains: SSH-
+- id: private-telnet-service-present
+  type: exec
+  requirement: services
+  service: hostB
+  argv:
+  - sh
+  - -c
+  - timeout 3 bash -c "exec 3<>/dev/tcp/127.0.0.1/23"
+- id: initial-telnet-forwarding-blocked
+  type: exec
+  requirement: configuration
+  service: hostA
+  argv:
+  - sh
+  - -c
+  - timeout 3 bash -c "exec 3<>/dev/tcp/192.168.20.99/23"
+  expect_exit: 124
+  timeout: 6

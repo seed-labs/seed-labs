@@ -1,0 +1,1021 @@
+id: network.bgp_exploration_attack
+category: network
+description: Complete BGP_Exploration_Attack mini-internet.py environment acceptance;
+  no student tasks or attacks are run.
+requirements:
+  generation:
+    source: category-network/BGP_Exploration_Attack/BGP_Exploration_Attack.tex
+    section: Lab Setup and the SEED Internet Emulator
+    description: The unmodified provided generators produce the complete initial topology
+      with the declared Emulator revision.
+  topology:
+    source: category-network/BGP_Exploration_Attack/BGP_Exploration_Attack.tex
+    section: Lab Setup / initial topology
+    description: All initial nodes run and have their specified Linux interface addresses,
+      including self-managed/anycast addresses.
+  services:
+    source: category-network/BGP_Exploration_Attack/BGP_Exploration_Attack.tex
+    section: Lab Setup / initial services
+    description: Initial routing, name services, web services and target programs
+      work without carrying out student attacks.
+variants:
+  amd64:
+    setup: category-network/BGP_Exploration_Attack/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-network/BGP_Exploration_Attack/Labsetup
+    architecture: arm64
+emulator:
+  revision: e03a1ac9f579d26dd09cff6ea1b282459ee11d86
+prepare:
+- id: generate-containers
+  cwd: .
+  argv:
+  - python3
+  - mini-internet.py
+  expected:
+  - output/docker-compose.yml
+  timeout: 900
+build:
+  timeout: 1800
+  batch_size: 4
+runtime:
+  backend: compose
+  start_timeout: 600
+  stop_timeout: 300
+  compose: output/docker-compose.yml
+  allowed_host_binds:
+  - /var/run/docker.sock
+  services:
+    ad739b7b201eccafa592110d2bf214a7:
+      role: build-only
+    072d7840db6a44d06e5c5fd4d7ea8a7d:
+      role: build-only
+    brdnode_2_r100:
+      role: daemon
+    brdnode_2_r101:
+      role: daemon
+    brdnode_2_r102:
+      role: daemon
+    brdnode_2_r105:
+      role: daemon
+    brdnode_3_r100:
+      role: daemon
+    brdnode_3_r103:
+      role: daemon
+    brdnode_3_r104:
+      role: daemon
+    brdnode_3_r105:
+      role: daemon
+    brdnode_4_r100:
+      role: daemon
+    brdnode_4_r102:
+      role: daemon
+    brdnode_4_r104:
+      role: daemon
+    brdnode_5_r101:
+      role: daemon
+    brdnode_5_r103:
+      role: daemon
+    brdnode_5_r105:
+      role: daemon
+    brdnode_11_r102:
+      role: daemon
+    brdnode_11_r105:
+      role: daemon
+    brdnode_12_r101:
+      role: daemon
+    brdnode_12_r104:
+      role: daemon
+    hnode_150_webservice_0:
+      role: daemon
+    hnode_150_host_1:
+      role: daemon
+    brdnode_150_router0:
+      role: daemon
+    hnode_151_webservice_0:
+      role: daemon
+    hnode_151_host_1:
+      role: daemon
+    brdnode_151_router0:
+      role: daemon
+    hnode_152_host_0:
+      role: daemon
+    hnode_152_host_1:
+      role: daemon
+    brdnode_152_router0:
+      role: daemon
+    hnode_153_webservice_0:
+      role: daemon
+    hnode_153_host_1:
+      role: daemon
+    hnode_153_host_2:
+      role: daemon
+    brdnode_153_router0:
+      role: daemon
+    hnode_154_host_0:
+      role: daemon
+    hnode_154_webservice_1:
+      role: daemon
+    brdnode_154_router0:
+      role: daemon
+    hnode_155_host_0:
+      role: daemon
+    hnode_155_webservice_1:
+      role: daemon
+    brdnode_155_router0:
+      role: daemon
+    hnode_156_host_0:
+      role: daemon
+    hnode_156_webservice_1:
+      role: daemon
+    brdnode_156_router0:
+      role: daemon
+    hnode_160_webservice_0:
+      role: daemon
+    hnode_160_host_1:
+      role: daemon
+    brdnode_160_router0:
+      role: daemon
+    hnode_161_webservice_0:
+      role: daemon
+    hnode_161_host_1:
+      role: daemon
+    brdnode_161_router0:
+      role: daemon
+    hnode_162_webservice_0:
+      role: daemon
+    hnode_162_host_1:
+      role: daemon
+    brdnode_162_router0:
+      role: daemon
+    hnode_163_webservice_0:
+      role: daemon
+    hnode_163_host_1:
+      role: daemon
+    brdnode_163_router0:
+      role: daemon
+    hnode_164_host_0:
+      role: daemon
+    hnode_164_host_1:
+      role: daemon
+    brdnode_164_router0:
+      role: daemon
+    hnode_170_webservice_0:
+      role: daemon
+    hnode_170_host_1:
+      role: daemon
+    brdnode_170_router0:
+      role: daemon
+    hnode_171_host_0:
+      role: daemon
+    brdnode_171_router0:
+      role: daemon
+    hnode_180_webservice_0:
+      role: daemon
+    hnode_180_host_1:
+      role: daemon
+    brdnode_180_router0:
+      role: daemon
+    hnode_190_host-0:
+      role: daemon
+    hnode_190_host-1:
+      role: daemon
+    brdnode_190_router0:
+      role: daemon
+    brdnode_190_router1:
+      role: daemon
+    rs_ix_ix100:
+      role: daemon
+    rs_ix_ix101:
+      role: daemon
+    rs_ix_ix102:
+      role: daemon
+    rs_ix_ix103:
+      role: daemon
+    rs_ix_ix104:
+      role: daemon
+    rs_ix_ix105:
+      role: daemon
+    seedemu_internet_map:
+      role: daemon
+  readiness:
+  - id: all-provided-nodes-running
+    type: service-group
+    requirement: topology
+    services:
+    - brdnode_2_r100
+    - brdnode_2_r101
+    - brdnode_2_r102
+    - brdnode_2_r105
+    - brdnode_3_r100
+    - brdnode_3_r103
+    - brdnode_3_r104
+    - brdnode_3_r105
+    - brdnode_4_r100
+    - brdnode_4_r102
+    - brdnode_4_r104
+    - brdnode_5_r101
+    - brdnode_5_r103
+    - brdnode_5_r105
+    - brdnode_11_r102
+    - brdnode_11_r105
+    - brdnode_12_r101
+    - brdnode_12_r104
+    - hnode_150_webservice_0
+    - hnode_150_host_1
+    - brdnode_150_router0
+    - hnode_151_webservice_0
+    - hnode_151_host_1
+    - brdnode_151_router0
+    - hnode_152_host_0
+    - hnode_152_host_1
+    - brdnode_152_router0
+    - hnode_153_webservice_0
+    - hnode_153_host_1
+    - hnode_153_host_2
+    - brdnode_153_router0
+    - hnode_154_host_0
+    - hnode_154_webservice_1
+    - brdnode_154_router0
+    - hnode_155_host_0
+    - hnode_155_webservice_1
+    - brdnode_155_router0
+    - hnode_156_host_0
+    - hnode_156_webservice_1
+    - brdnode_156_router0
+    - hnode_160_webservice_0
+    - hnode_160_host_1
+    - brdnode_160_router0
+    - hnode_161_webservice_0
+    - hnode_161_host_1
+    - brdnode_161_router0
+    - hnode_162_webservice_0
+    - hnode_162_host_1
+    - brdnode_162_router0
+    - hnode_163_webservice_0
+    - hnode_163_host_1
+    - brdnode_163_router0
+    - hnode_164_host_0
+    - hnode_164_host_1
+    - brdnode_164_router0
+    - hnode_170_webservice_0
+    - hnode_170_host_1
+    - brdnode_170_router0
+    - hnode_171_host_0
+    - brdnode_171_router0
+    - hnode_180_webservice_0
+    - hnode_180_host_1
+    - brdnode_180_router0
+    - hnode_190_host-0
+    - hnode_190_host-1
+    - brdnode_190_router0
+    - brdnode_190_router1
+    - rs_ix_ix100
+    - rs_ix_ix101
+    - rs_ix_ix102
+    - rs_ix_ix103
+    - rs_ix_ix104
+    - rs_ix_ix105
+    - seedemu_internet_map
+    expected: running
+    retries: 30
+    interval: 3
+    timeout: 60
+checks:
+- id: all-linux-interface-addresses
+  type: interface-addresses
+  requirement: topology
+  addresses:
+    brdnode_2_r100:
+    - 10.100.0.2
+    - 10.2.0.254
+    - 10.2.2.254
+    brdnode_2_r101:
+    - 10.101.0.2
+    - 10.2.0.253
+    - 10.2.1.254
+    brdnode_2_r102:
+    - 10.102.0.2
+    - 10.2.1.253
+    brdnode_2_r105:
+    - 10.105.0.2
+    - 10.2.2.253
+    brdnode_3_r100:
+    - 10.100.0.3
+    - 10.3.0.254
+    - 10.3.1.254
+    brdnode_3_r103:
+    - 10.103.0.3
+    - 10.3.0.253
+    - 10.3.2.254
+    - 10.3.3.254
+    brdnode_3_r104:
+    - 10.104.0.3
+    - 10.3.3.253
+    brdnode_3_r105:
+    - 10.105.0.3
+    - 10.3.1.253
+    - 10.3.2.253
+    brdnode_4_r100:
+    - 10.100.0.4
+    - 10.4.0.254
+    brdnode_4_r102:
+    - 10.102.0.4
+    - 10.4.1.254
+    brdnode_4_r104:
+    - 10.104.0.4
+    - 10.4.0.253
+    - 10.4.1.253
+    brdnode_5_r101:
+    - 10.101.0.5
+    - 10.5.0.254
+    brdnode_5_r103:
+    - 10.103.0.5
+    - 10.5.0.253
+    - 10.5.1.254
+    brdnode_5_r105:
+    - 10.105.0.5
+    - 10.5.1.253
+    brdnode_11_r102:
+    - 10.102.0.11
+    - 10.11.0.254
+    brdnode_11_r105:
+    - 10.105.0.11
+    - 10.11.0.253
+    brdnode_12_r101:
+    - 10.101.0.12
+    - 10.12.0.254
+    brdnode_12_r104:
+    - 10.104.0.12
+    - 10.12.0.253
+    hnode_150_webservice_0:
+    - 10.150.0.71
+    hnode_150_host_1:
+    - 10.150.0.72
+    brdnode_150_router0:
+    - 10.150.0.254
+    - 10.100.0.150
+    hnode_151_webservice_0:
+    - 10.151.0.71
+    hnode_151_host_1:
+    - 10.151.0.72
+    brdnode_151_router0:
+    - 10.151.0.254
+    - 10.100.0.151
+    hnode_152_host_0:
+    - 10.152.0.71
+    hnode_152_host_1:
+    - 10.152.0.72
+    brdnode_152_router0:
+    - 10.152.0.254
+    - 10.101.0.152
+    hnode_153_webservice_0:
+    - 10.153.0.71
+    hnode_153_host_1:
+    - 10.153.0.72
+    hnode_153_host_2:
+    - 10.153.0.73
+    brdnode_153_router0:
+    - 10.153.0.254
+    - 10.101.0.153
+    hnode_154_host_0:
+    - 10.154.0.71
+    hnode_154_webservice_1:
+    - 10.154.0.72
+    brdnode_154_router0:
+    - 10.154.0.254
+    - 10.102.0.154
+    hnode_155_host_0:
+    - 10.155.0.71
+    hnode_155_webservice_1:
+    - 10.155.0.72
+    brdnode_155_router0:
+    - 10.155.0.254
+    - 10.102.0.155
+    hnode_156_host_0:
+    - 10.156.0.71
+    hnode_156_webservice_1:
+    - 10.156.0.72
+    brdnode_156_router0:
+    - 10.156.0.254
+    - 10.102.0.156
+    hnode_160_webservice_0:
+    - 10.160.0.71
+    hnode_160_host_1:
+    - 10.160.0.72
+    brdnode_160_router0:
+    - 10.160.0.254
+    - 10.103.0.160
+    hnode_161_webservice_0:
+    - 10.161.0.71
+    hnode_161_host_1:
+    - 10.161.0.72
+    brdnode_161_router0:
+    - 10.161.0.254
+    - 10.103.0.161
+    hnode_162_webservice_0:
+    - 10.162.0.71
+    hnode_162_host_1:
+    - 10.162.0.72
+    brdnode_162_router0:
+    - 10.162.0.254
+    - 10.103.0.162
+    hnode_163_webservice_0:
+    - 10.163.0.71
+    hnode_163_host_1:
+    - 10.163.0.72
+    brdnode_163_router0:
+    - 10.163.0.254
+    - 10.104.0.163
+    hnode_164_host_0:
+    - 10.164.0.71
+    hnode_164_host_1:
+    - 10.164.0.72
+    brdnode_164_router0:
+    - 10.164.0.254
+    - 10.104.0.164
+    hnode_170_webservice_0:
+    - 10.170.0.71
+    hnode_170_host_1:
+    - 10.170.0.72
+    brdnode_170_router0:
+    - 10.170.0.254
+    - 10.105.0.170
+    hnode_171_host_0:
+    - 10.171.0.71
+    brdnode_171_router0:
+    - 10.171.0.254
+    - 10.105.0.171
+    hnode_180_webservice_0:
+    - 10.180.0.71
+    hnode_180_host_1:
+    - 10.180.0.72
+    brdnode_180_router0:
+    - 10.180.0.254
+    - 10.105.0.180
+    hnode_190_host-0:
+    - 10.190.0.100
+    hnode_190_host-1:
+    - 10.190.0.100
+    brdnode_190_router0:
+    - 10.190.0.254
+    - 10.100.0.190
+    brdnode_190_router1:
+    - 10.190.0.254
+    - 10.105.0.190
+    rs_ix_ix100:
+    - 10.100.0.100
+    rs_ix_ix101:
+    - 10.101.0.101
+    rs_ix_ix102:
+    - 10.102.0.102
+    rs_ix_ix103:
+    - 10.103.0.103
+    rs_ix_ix104:
+    - 10.104.0.104
+    rs_ix_ix105:
+    - 10.105.0.105
+  timeout: 15
+- id: brdnode_2_r100-bird
+  type: exec
+  requirement: services
+  service: brdnode_2_r100
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_2_r101-bird
+  type: exec
+  requirement: services
+  service: brdnode_2_r101
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_2_r102-bird
+  type: exec
+  requirement: services
+  service: brdnode_2_r102
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_2_r105-bird
+  type: exec
+  requirement: services
+  service: brdnode_2_r105
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_3_r100-bird
+  type: exec
+  requirement: services
+  service: brdnode_3_r100
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_3_r103-bird
+  type: exec
+  requirement: services
+  service: brdnode_3_r103
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_3_r104-bird
+  type: exec
+  requirement: services
+  service: brdnode_3_r104
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_3_r105-bird
+  type: exec
+  requirement: services
+  service: brdnode_3_r105
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_4_r100-bird
+  type: exec
+  requirement: services
+  service: brdnode_4_r100
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_4_r102-bird
+  type: exec
+  requirement: services
+  service: brdnode_4_r102
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_4_r104-bird
+  type: exec
+  requirement: services
+  service: brdnode_4_r104
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_5_r101-bird
+  type: exec
+  requirement: services
+  service: brdnode_5_r101
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_5_r103-bird
+  type: exec
+  requirement: services
+  service: brdnode_5_r103
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_5_r105-bird
+  type: exec
+  requirement: services
+  service: brdnode_5_r105
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_11_r102-bird
+  type: exec
+  requirement: services
+  service: brdnode_11_r102
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_11_r105-bird
+  type: exec
+  requirement: services
+  service: brdnode_11_r105
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_12_r101-bird
+  type: exec
+  requirement: services
+  service: brdnode_12_r101
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_12_r104-bird
+  type: exec
+  requirement: services
+  service: brdnode_12_r104
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_150_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_150_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_151_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_151_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_152_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_152_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_153_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_153_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_154_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_154_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_155_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_155_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_156_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_156_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_160_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_160_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_161_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_161_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_162_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_162_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_163_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_163_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_164_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_164_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_170_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_170_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_171_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_171_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_180_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_180_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_190_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_190_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_190_router1-bird
+  type: exec
+  requirement: services
+  service: brdnode_190_router1
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: hnode_150_webservice_0-http
+  type: exec
+  requirement: services
+  service: hnode_150_webservice_0
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_151_webservice_0-http
+  type: exec
+  requirement: services
+  service: hnode_151_webservice_0
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_153_webservice_0-http
+  type: exec
+  requirement: services
+  service: hnode_153_webservice_0
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_154_webservice_1-http
+  type: exec
+  requirement: services
+  service: hnode_154_webservice_1
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_155_webservice_1-http
+  type: exec
+  requirement: services
+  service: hnode_155_webservice_1
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_156_webservice_1-http
+  type: exec
+  requirement: services
+  service: hnode_156_webservice_1
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_160_webservice_0-http
+  type: exec
+  requirement: services
+  service: hnode_160_webservice_0
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_161_webservice_0-http
+  type: exec
+  requirement: services
+  service: hnode_161_webservice_0
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_162_webservice_0-http
+  type: exec
+  requirement: services
+  service: hnode_162_webservice_0
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_163_webservice_0-http
+  type: exec
+  requirement: services
+  service: hnode_163_webservice_0
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_170_webservice_0-http
+  type: exec
+  requirement: services
+  service: hnode_170_webservice_0
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: hnode_180_webservice_0-http
+  type: exec
+  requirement: services
+  service: hnode_180_webservice_0
+  argv:
+  - curl
+  - -fsS
+  - http://127.0.0.1/
+  retries: 20
+  interval: 2
+- id: normal-cross-as-web
+  type: exec
+  requirement: services
+  service: hnode_150_host_1
+  argv:
+  - curl
+  - -fsS
+  - --max-time
+  - '5'
+  - http://10.151.0.71/
+  retries: 30
+  interval: 2
+- id: map-http
+  type: http
+  requirement: services
+  url: http://127.0.0.1:8080/pro/home
+  expect_status: 200
+  retries: 20
+  interval: 2
+- id: map-exposes-complete-topology
+  type: exec
+  requirement: services
+  service: seedemu_internet_map
+  argv:
+  - node
+  - -e
+  - 'const http=require("http");const expected=["brdnode_2_r100","brdnode_2_r101","brdnode_2_r102","brdnode_2_r105","brdnode_3_r100","brdnode_3_r103","brdnode_3_r104","brdnode_3_r105","brdnode_4_r100","brdnode_4_r102","brdnode_4_r104","brdnode_5_r101","brdnode_5_r103","brdnode_5_r105","brdnode_11_r102","brdnode_11_r105","brdnode_12_r101","brdnode_12_r104","hnode_150_webservice_0","hnode_150_host_1","brdnode_150_router0","hnode_151_webservice_0","hnode_151_host_1","brdnode_151_router0","hnode_152_host_0","hnode_152_host_1","brdnode_152_router0","hnode_153_webservice_0","hnode_153_host_1","hnode_153_host_2","brdnode_153_router0","hnode_154_host_0","hnode_154_webservice_1","brdnode_154_router0","hnode_155_host_0","hnode_155_webservice_1","brdnode_155_router0","hnode_156_host_0","hnode_156_webservice_1","brdnode_156_router0","hnode_160_webservice_0","hnode_160_host_1","brdnode_160_router0","hnode_161_webservice_0","hnode_161_host_1","brdnode_161_router0","hnode_162_webservice_0","hnode_162_host_1","brdnode_162_router0","hnode_163_webservice_0","hnode_163_host_1","brdnode_163_router0","hnode_164_host_0","hnode_164_host_1","brdnode_164_router0","hnode_170_webservice_0","hnode_170_host_1","brdnode_170_router0","hnode_171_host_0","brdnode_171_router0","hnode_180_webservice_0","hnode_180_host_1","brdnode_180_router0","hnode_190_host-0","hnode_190_host-1","brdnode_190_router0","brdnode_190_router1","rs_ix_ix100","rs_ix_ix101","rs_ix_ix102","rs_ix_ix103","rs_ix_ix104","rs_ix_ix105"];const
+    req=http.get("http://127.0.0.1:8080/api/v1/container",r=>{let body="";r.on("data",x=>body+=x);r.on("end",()=>{try{const
+    d=JSON.parse(body);if(!d.ok||!Array.isArray(d.result))throw Error(body);const
+    services=new Set(d.result.map(x=>(x.Labels||{})["com.docker.compose.service"]));const
+    missing=expected.filter(x=>!services.has(x));if(missing.length)throw Error("Map
+    missing nodes: "+missing.join(","));console.log("Map exposes all expected nodes");}catch(e){console.error(String(e));process.exitCode=1;}});});req.on("error",e=>{console.error(String(e));process.exitCode=1;});req.setTimeout(10000,()=>req.destroy(Error("map
+    API timeout")));'
+  stdout_equals: Map exposes all expected nodes
+  timeout: 15
+  retries: 20
+  interval: 2

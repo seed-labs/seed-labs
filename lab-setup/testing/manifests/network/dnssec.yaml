@@ -1,0 +1,229 @@
+id: network.dnssec
+category: network
+description: Initial environment acceptance for DNSSEC; no attacks or student solutions.
+requirements:
+  topology:
+    source: category-network/DNSSEC/DNSSEC.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/DNSSEC/DNSSEC.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  capabilities:
+    source: category-network/DNSSEC/DNSSEC.tex
+    section: Lab environment / required tools
+    description: Packet capture, protocol libraries and required kernel interfaces
+      are usable.
+  configuration:
+    source: category-network/DNSSEC/DNSSEC.tex
+    section: Lab environment / initial configuration
+    description: Initial countermeasure and firewall settings preserve the conditions
+      described by the manual.
+variants:
+  amd64:
+    setup: category-network/DNSSEC/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-network/DNSSEC/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    seed_base_bind:
+      role: build-only
+    example_edu_server:
+      role: daemon
+    edu_server:
+      role: daemon
+    root_server:
+      role: daemon
+    local_dns_server:
+      role: daemon
+    spare_nameserver:
+      role: daemon
+    user:
+      role: daemon
+  readiness:
+  - id: example_edu_server-running
+    type: service-state
+    requirement: services
+    service: example_edu_server
+    expected: running
+    retries: 20
+    interval: 2
+  - id: edu_server-running
+    type: service-state
+    requirement: services
+    service: edu_server
+    expected: running
+    retries: 20
+    interval: 2
+  - id: root_server-running
+    type: service-state
+    requirement: services
+    service: root_server
+    expected: running
+    retries: 20
+    interval: 2
+  - id: local_dns_server-running
+    type: service-state
+    requirement: services
+    service: local_dns_server
+    expected: running
+    retries: 20
+    interval: 2
+  - id: spare_nameserver-running
+    type: service-state
+    requirement: services
+    service: spare_nameserver
+    expected: running
+    retries: 20
+    interval: 2
+  - id: user-running
+    type: service-state
+    requirement: services
+    service: user
+    expected: running
+    retries: 20
+    interval: 2
+checks:
+- id: example_edu_server-ip-0
+  type: container-ip
+  requirement: topology
+  service: example_edu_server
+  expected: 10.9.0.65
+- id: edu_server-ip-0
+  type: container-ip
+  requirement: topology
+  service: edu_server
+  expected: 10.9.0.60
+- id: root_server-ip-0
+  type: container-ip
+  requirement: topology
+  service: root_server
+  expected: 10.9.0.30
+- id: local_dns_server-ip-0
+  type: container-ip
+  requirement: topology
+  service: local_dns_server
+  expected: 10.9.0.53
+- id: spare_nameserver-ip-0
+  type: container-ip
+  requirement: topology
+  service: spare_nameserver
+  expected: 10.9.0.66
+- id: user-ip-0
+  type: container-ip
+  requirement: topology
+  service: user
+  expected: 10.9.0.5
+- id: example_edu_server-bind-config
+  type: exec
+  requirement: configuration
+  service: example_edu_server
+  argv:
+  - named-checkconf
+- id: example_edu_server-named-running
+  type: exec
+  requirement: services
+  service: example_edu_server
+  argv:
+  - pgrep
+  - named
+  retries: 15
+  interval: 2
+- id: edu_server-bind-config
+  type: exec
+  requirement: configuration
+  service: edu_server
+  argv:
+  - named-checkconf
+- id: edu_server-named-running
+  type: exec
+  requirement: services
+  service: edu_server
+  argv:
+  - pgrep
+  - named
+  retries: 15
+  interval: 2
+- id: root_server-bind-config
+  type: exec
+  requirement: configuration
+  service: root_server
+  argv:
+  - named-checkconf
+- id: root_server-named-running
+  type: exec
+  requirement: services
+  service: root_server
+  argv:
+  - pgrep
+  - named
+  retries: 15
+  interval: 2
+- id: local_dns_server-bind-config
+  type: exec
+  requirement: configuration
+  service: local_dns_server
+  argv:
+  - named-checkconf
+- id: local_dns_server-named-running
+  type: exec
+  requirement: services
+  service: local_dns_server
+  argv:
+  - pgrep
+  - named
+  retries: 15
+  interval: 2
+- id: spare_nameserver-bind-config
+  type: exec
+  requirement: configuration
+  service: spare_nameserver
+  argv:
+  - named-checkconf
+- id: spare_nameserver-named-running
+  type: exec
+  requirement: services
+  service: spare_nameserver
+  argv:
+  - pgrep
+  - named
+  retries: 15
+  interval: 2
+- id: initial-authoritative-record
+  type: exec
+  requirement: services
+  service: local_dns_server
+  argv:
+  - dig
+  - '@10.9.0.65'
+  - www.example.edu
+  - A
+  - +short
+  - +time=2
+  - +tries=1
+  stdout_equals: 1.2.3.5
+  retries: 15
+  interval: 2
+- id: dnssec-keygen-tool
+  type: exec
+  requirement: capabilities
+  service: example_edu_server
+  argv:
+  - sh
+  - -c
+  - command -v dnssec-keygen && command -v dnssec-signzone
+- id: initial-validation-disabled
+  type: exec
+  requirement: configuration
+  service: local_dns_server
+  argv:
+  - sh
+  - -c
+  - named-checkconf -p | grep -E "dnssec-validation[[:space:]]+no;"

@@ -1,0 +1,118 @@
+id: network.mitnick_attack_arm64
+category: network
+description: Initial environment acceptance for Mitnick_Attack; no attacks or student
+  solutions.
+requirements:
+  topology:
+    source: category-network/Mitnick_Attack/Mitnick_Attack.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/Mitnick_Attack/Mitnick_Attack.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  capabilities:
+    source: category-network/Mitnick_Attack/Mitnick_Attack.tex
+    section: Lab environment / required tools
+    description: Packet capture, protocol libraries and required kernel interfaces
+      are usable.
+variants:
+  arm64:
+    setup: category-network/Mitnick_Attack/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    attacker:
+      role: daemon
+    trusted-server:
+      role: daemon
+    X-terminal:
+      role: daemon
+  readiness:
+  - id: attacker-running
+    type: service-state
+    requirement: services
+    service: attacker
+    expected: running
+    retries: 20
+    interval: 2
+  - id: x-terminal-running
+    type: service-state
+    requirement: services
+    service: X-terminal
+    expected: running
+    retries: 20
+    interval: 2
+  - id: trusted-server-running
+    type: service-state
+    requirement: services
+    service: trusted-server
+    expected: running
+    retries: 20
+    interval: 2
+  - id: rsh-listening
+    type: tcp
+    requirement: services
+    host: 10.9.0.5
+    port: 514
+    retries: 15
+    interval: 2
+checks:
+- id: x-terminal-ip-0
+  type: container-ip
+  requirement: topology
+  service: X-terminal
+  expected: 10.9.0.5
+- id: trusted-server-ip-0
+  type: container-ip
+  requirement: topology
+  service: trusted-server
+  expected: 10.9.0.6
+- id: attacker-host-network
+  type: container-network-mode
+  requirement: capabilities
+  service: attacker
+  expected: host
+- id: attacker-capture-normal-icmp
+  type: exec
+  requirement: capabilities
+  service: attacker
+  argv:
+  - python3
+  - -c
+  - from scapy.all import AsyncSniffer,conf; import subprocess,time; s=AsyncSniffer(iface=conf.route.route('10.9.0.5')[0],filter='icmp',count=1,store=True);
+    s.start(); time.sleep(.5); subprocess.run(['ping','-c','1','-W','2','10.9.0.5'],check=True,timeout=4);
+    s.join(4); assert s.results and len(s.results)>0
+  timeout: 15
+- id: trusted-host-connectivity
+  type: exec
+  requirement: topology
+  service: trusted-server
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 10.9.0.5
+- id: rsh-programs
+  type: exec
+  requirement: capabilities
+  service: X-terminal
+  argv:
+  - sh
+  - -c
+  - command -v rsh && test -x /usr/sbin/in.rshd
+- id: seed-account
+  type: exec
+  requirement: capabilities
+  service: X-terminal
+  argv:
+  - getent
+  - passwd
+  - seed
+  stdout_contains: 'seed:'

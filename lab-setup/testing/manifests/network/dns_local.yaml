@@ -1,0 +1,211 @@
+id: network.dns_local
+category: network
+description: Initial environment acceptance for DNS_Local; no attacks or student solutions.
+requirements:
+  topology:
+    source: category-network/DNS_Local/DNS_Local.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/DNS_Local/DNS_Local.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  capabilities:
+    source: category-network/DNS_Local/DNS_Local.tex
+    section: Lab environment / required tools
+    description: Packet capture, protocol libraries and required kernel interfaces
+      are usable.
+  configuration:
+    source: category-network/DNS_Local/DNS_Local.tex
+    section: Lab environment / initial configuration
+    description: Initial countermeasure and firewall settings preserve the conditions
+      described by the manual.
+variants:
+  amd64:
+    setup: category-network/DNS_Local/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-network/DNS_Local/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    local-server:
+      role: daemon
+    user:
+      role: daemon
+    attacker:
+      role: daemon
+    attacker-ns:
+      role: daemon
+    Router:
+      role: daemon
+  readiness:
+  - id: local-server-running
+    type: service-state
+    requirement: services
+    service: local-server
+    expected: running
+    retries: 20
+    interval: 2
+  - id: user-running
+    type: service-state
+    requirement: services
+    service: user
+    expected: running
+    retries: 20
+    interval: 2
+  - id: attacker-running
+    type: service-state
+    requirement: services
+    service: attacker
+    expected: running
+    retries: 20
+    interval: 2
+  - id: attacker-ns-running
+    type: service-state
+    requirement: services
+    service: attacker-ns
+    expected: running
+    retries: 20
+    interval: 2
+  - id: router-running
+    type: service-state
+    requirement: services
+    service: Router
+    expected: running
+    retries: 20
+    interval: 2
+checks:
+- id: local-server-ip-0
+  type: container-ip
+  requirement: topology
+  service: local-server
+  expected: 10.9.0.53
+- id: user-ip-0
+  type: container-ip
+  requirement: topology
+  service: user
+  expected: 10.9.0.5
+- id: attacker-ns-ip-0
+  type: container-ip
+  requirement: topology
+  service: attacker-ns
+  expected: 10.9.0.153
+- id: router-ip-0
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 10.9.0.11
+- id: router-ip-1
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 10.8.0.11
+- id: attacker-host-network
+  type: container-network-mode
+  requirement: capabilities
+  service: attacker
+  expected: host
+- id: local-server-bind-config
+  type: exec
+  requirement: configuration
+  service: local-server
+  argv:
+  - named-checkconf
+- id: local-server-named-running
+  type: exec
+  requirement: services
+  service: local-server
+  argv:
+  - pgrep
+  - named
+- id: attacker-ns-bind-config
+  type: exec
+  requirement: configuration
+  service: attacker-ns
+  argv:
+  - named-checkconf
+- id: attacker-ns-named-running
+  type: exec
+  requirement: services
+  service: attacker-ns
+  argv:
+  - pgrep
+  - named
+- id: dnssec-initially-disabled
+  type: exec
+  requirement: configuration
+  service: local-server
+  argv:
+  - sh
+  - -c
+  - named-checkconf -p | grep -E "dnssec-validation[[:space:]]+no;"
+- id: controlled-forward-zone
+  type: exec
+  requirement: services
+  service: user
+  argv:
+  - dig
+  - '@10.9.0.53'
+  - ns.attacker32.com
+  - A
+  - +short
+  - +time=2
+  - +tries=1
+  stdout_equals: 10.9.0.153
+  retries: 15
+  interval: 2
+- id: attacker-authority-zone
+  type: exec
+  requirement: services
+  service: user
+  argv:
+  - dig
+  - '@10.9.0.153'
+  - www.attacker32.com
+  - A
+  - +short
+  - +time=2
+  - +tries=1
+  stdout_equals: 10.9.0.180
+  retries: 15
+  interval: 2
+- id: query-source-port
+  type: exec
+  requirement: configuration
+  service: local-server
+  argv:
+  - sh
+  - -c
+  - named-checkconf -p | grep -E "query-source.*33333"
+- id: router-forwarding
+  type: exec
+  requirement: configuration
+  service: Router
+  argv:
+  - sysctl
+  - -n
+  - net.ipv4.ip_forward
+  stdout_equals: '1'
+- id: resolver-route
+  type: exec
+  requirement: topology
+  service: local-server
+  argv:
+  - ip
+  - route
+  - show
+  - default
+  stdout_contains: via 10.9.0.11
+- id: traffic-control-tool
+  type: exec
+  requirement: capabilities
+  service: attacker
+  argv:
+  - tc
+  - qdisc
+  - show

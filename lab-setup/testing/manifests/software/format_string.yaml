@@ -1,0 +1,241 @@
+id: software.format_string
+category: software
+description: Verify the supplied Format String servers using compiled ELF metadata
+  and ordinary TCP input; no format specifiers or exploits.
+requirements:
+  compilation:
+    source: category-software/Format_String/Format_String.tex
+    section: Environment Setup / The Vulnerable Program / Compilation
+    description: Build and install the provided programs with the original Makefile;
+      x86 32-bit programs and all ARM programs use static linking.
+  executable-stack:
+    source: category-software/Format_String/Format_String.tex
+    section: Environment Setup / The Vulnerable Program / Compilation
+    description: The format programs are compiled with -z execstack.
+  deployment:
+    source: category-software/Format_String/Format_String.tex
+    section: Environment Setup / Container Setup and Commands
+    description: Both containers run the server and the intended format binary built
+      from the supplied sources.
+  addressing:
+    source: category-software/Format_String/Format_String.tex
+    section: Task 1 / Crashing the Program
+    description: Servers at 10.9.0.5 and 10.9.0.6 listen on TCP port 9090; amd64 uses
+      32/64-bit format programs and ARM uses 64-bit programs.
+  privilege:
+    source: category-software/Format_String/Format_String.tex
+    section: Environment Setup / The Vulnerable Program
+    description: The server process runs with root privilege.
+  normal-input:
+    source: category-software/Format_String/Format_String.tex
+    section: Task 1 / Benign message example
+    description: Ordinary input is read and printed, target remains unchanged, and
+      the format program returns properly; the server accepts subsequent connections.
+variants:
+  amd64:
+    setup: category-software/Format_String/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-software/Format_String/Labsetup-arm
+    architecture: arm64
+prepare:
+- id: compile-amd64
+  variants:
+  - amd64
+  cwd: server-code
+  argv:
+  - make
+  expected:
+  - server-code/server
+  - server-code/format-32
+  - server-code/format-64
+- id: install-amd64
+  variants:
+  - amd64
+  cwd: server-code
+  argv:
+  - make
+  - install
+  expected:
+  - fmt-containers/server
+  - fmt-containers/format-32
+  - fmt-containers/format-64
+- id: compile-arm64
+  variants:
+  - arm64
+  cwd: server-code
+  argv:
+  - make
+  expected:
+  - server-code/server
+  - server-code/format-64
+- id: install-arm64
+  variants:
+  - arm64
+  cwd: server-code
+  argv:
+  - make
+  - install
+  expected:
+  - fmt-containers/server
+  - fmt-containers/format-64
+build:
+  timeout: 1200
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    fmt-server-1:
+      role: daemon
+    fmt-server-2:
+      role: daemon
+  readiness:
+  - id: server-1-running
+    requirement: deployment
+    type: service-state
+    service: fmt-server-1
+    expected: running
+    retries: 15
+    interval: 2
+  - id: server-2-running
+    requirement: deployment
+    type: service-state
+    service: fmt-server-2
+    expected: running
+    retries: 15
+    interval: 2
+checks:
+- id: server-1-ip
+  requirement: addressing
+  type: container-ip
+  service: fmt-server-1
+  expected: 10.9.0.5
+- id: server-2-ip
+  requirement: addressing
+  type: container-ip
+  service: fmt-server-2
+  expected: 10.9.0.6
+- id: server-1-binary
+  requirement: deployment
+  type: file
+  service: fmt-server-1
+  path: /fmt/server
+  source: server-code/server
+  executable: true
+- id: server-2-binary
+  requirement: deployment
+  type: file
+  service: fmt-server-2
+  path: /fmt/server
+  source: server-code/server
+  executable: true
+- id: server-1-format-amd64
+  variants:
+  - amd64
+  requirement: deployment
+  type: file
+  service: fmt-server-1
+  path: /fmt/format
+  source: server-code/format-32
+  executable: true
+- id: server-1-format-arm64
+  variants:
+  - arm64
+  requirement: deployment
+  type: file
+  service: fmt-server-1
+  path: /fmt/format
+  source: server-code/format-64
+  executable: true
+- id: server-2-format
+  requirement: deployment
+  type: file
+  service: fmt-server-2
+  path: /fmt/format
+  source: server-code/format-64
+  executable: true
+- id: server-elf-amd64
+  variants:
+  - amd64
+  requirement: compilation
+  type: elf
+  source: server-code/server
+  elf_class: 64
+  machine: x86_64
+- id: server-elf-arm64
+  variants:
+  - arm64
+  requirement: compilation
+  type: elf
+  source: server-code/server
+  elf_class: 64
+  machine: aarch64
+  static: true
+- id: format-32-elf
+  variants:
+  - amd64
+  requirement: executable-stack
+  type: elf
+  source: server-code/format-32
+  elf_class: 32
+  machine: i386
+  static: true
+  executable_stack: true
+- id: format-64-elf-amd64
+  variants:
+  - amd64
+  requirement: executable-stack
+  type: elf
+  source: server-code/format-64
+  elf_class: 64
+  machine: x86_64
+  executable_stack: true
+- id: format-64-elf-arm64
+  variants:
+  - arm64
+  requirement: executable-stack
+  type: elf
+  source: server-code/format-64
+  elf_class: 64
+  machine: aarch64
+  static: true
+  executable_stack: true
+- id: server-1-root
+  requirement: privilege
+  type: process-uid
+  service: fmt-server-1
+  path: /fmt/server
+  expected_euid: 0
+- id: server-2-root
+  requirement: privilege
+  type: process-uid
+  service: fmt-server-2
+  path: /fmt/server
+  expected_euid: 0
+- id: server-1-normal-input
+  requirement: normal-input
+  type: format-input
+  service: fmt-server-1
+  host: 10.9.0.5
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: server-2-normal-input
+  requirement: normal-input
+  type: format-input
+  service: fmt-server-2
+  host: 10.9.0.6
+  port: 9090
+  requests: 2
+  timeout: 20
+host:
+  commands:
+  - gcc
+  - make
+  packages:
+  - gcc
+  - make
+  - libc6-dev
+  architecture_packages:
+    amd64:
+    - gcc-multilib

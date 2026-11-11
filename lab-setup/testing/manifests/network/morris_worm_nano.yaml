@@ -1,0 +1,408 @@
+id: network.morris_worm_nano
+category: network
+description: Complete Morris_Worm nano-internet.py environment acceptance; no student
+  tasks or attacks are run.
+requirements:
+  generation:
+    source: category-network/Morris_Worm/Morris_Worm.tex
+    section: Lab Setup and the SEED Internet Emulator
+    description: The unmodified provided generators produce the complete initial topology
+      with the declared Emulator revision.
+  topology:
+    source: category-network/Morris_Worm/Morris_Worm.tex
+    section: Lab Setup / initial topology
+    description: All initial nodes run and have their specified Linux interface addresses,
+      including self-managed/anycast addresses.
+  services:
+    source: category-network/Morris_Worm/Morris_Worm.tex
+    section: Lab Setup / initial services
+    description: Initial routing, name services, web services and target programs
+      work without carrying out student attacks.
+variants:
+  amd64:
+    setup: category-network/Morris_Worm/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-network/Morris_Worm/Labsetup-arm
+    architecture: arm64
+emulator:
+  revision: e03a1ac9f579d26dd09cff6ea1b282459ee11d86
+prepare:
+- id: generate-containers
+  cwd: emulator-code
+  argv:
+  - python3
+  - nano-internet.py
+  expected:
+  - emulator-code/output2/docker-compose.yml
+  timeout: 900
+build:
+  timeout: 1800
+  batch_size: 4
+runtime:
+  backend: compose
+  start_timeout: 600
+  stop_timeout: 300
+  compose: emulator-code/output2/docker-compose.yml
+  allowed_host_binds:
+  - /var/run/docker.sock
+  services:
+    morris-worm-base:
+      role: build-only
+    072d7840db6a44d06e5c5fd4d7ea8a7d:
+      role: build-only
+    ee6b6326cce7e5be4913cbfc86f3c820:
+      role: build-only
+    hnode_151_host_0:
+      role: daemon
+    hnode_151_host_1:
+      role: daemon
+    hnode_151_host_2:
+      role: daemon
+    hnode_151_host_3:
+      role: daemon
+    hnode_151_host_4:
+      role: daemon
+    brdnode_151_router0:
+      role: daemon
+    hnode_152_host_0:
+      role: daemon
+    hnode_152_host_1:
+      role: daemon
+    hnode_152_host_2:
+      role: daemon
+    hnode_152_host_3:
+      role: daemon
+    hnode_152_host_4:
+      role: daemon
+    brdnode_152_router0:
+      role: daemon
+    hnode_153_host_0:
+      role: daemon
+    hnode_153_host_1:
+      role: daemon
+    hnode_153_host_2:
+      role: daemon
+    hnode_153_host_3:
+      role: daemon
+    hnode_153_host_4:
+      role: daemon
+    brdnode_153_router0:
+      role: daemon
+    rs_ix_ix100:
+      role: daemon
+    seedemu_internet_map:
+      role: daemon
+  readiness:
+  - id: all-provided-nodes-running
+    type: service-group
+    requirement: topology
+    services:
+    - hnode_151_host_0
+    - hnode_151_host_1
+    - hnode_151_host_2
+    - hnode_151_host_3
+    - hnode_151_host_4
+    - brdnode_151_router0
+    - hnode_152_host_0
+    - hnode_152_host_1
+    - hnode_152_host_2
+    - hnode_152_host_3
+    - hnode_152_host_4
+    - brdnode_152_router0
+    - hnode_153_host_0
+    - hnode_153_host_1
+    - hnode_153_host_2
+    - hnode_153_host_3
+    - hnode_153_host_4
+    - brdnode_153_router0
+    - rs_ix_ix100
+    - seedemu_internet_map
+    expected: running
+    retries: 30
+    interval: 3
+    timeout: 60
+checks:
+- id: all-linux-interface-addresses
+  type: interface-addresses
+  requirement: topology
+  addresses:
+    hnode_151_host_0:
+    - 10.151.0.71
+    hnode_151_host_1:
+    - 10.151.0.72
+    hnode_151_host_2:
+    - 10.151.0.73
+    hnode_151_host_3:
+    - 10.151.0.74
+    hnode_151_host_4:
+    - 10.151.0.75
+    brdnode_151_router0:
+    - 10.151.0.254
+    - 10.100.0.151
+    hnode_152_host_0:
+    - 10.152.0.71
+    hnode_152_host_1:
+    - 10.152.0.72
+    hnode_152_host_2:
+    - 10.152.0.73
+    hnode_152_host_3:
+    - 10.152.0.74
+    hnode_152_host_4:
+    - 10.152.0.75
+    brdnode_152_router0:
+    - 10.152.0.254
+    - 10.100.0.152
+    hnode_153_host_0:
+    - 10.153.0.71
+    hnode_153_host_1:
+    - 10.153.0.72
+    hnode_153_host_2:
+    - 10.153.0.73
+    hnode_153_host_3:
+    - 10.153.0.74
+    hnode_153_host_4:
+    - 10.153.0.75
+    brdnode_153_router0:
+    - 10.153.0.254
+    - 10.100.0.153
+    rs_ix_ix100:
+    - 10.100.0.100
+  timeout: 15
+- id: brdnode_151_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_151_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_152_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_152_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: brdnode_153_router0-bird
+  type: exec
+  requirement: services
+  service: brdnode_153_router0
+  argv:
+  - birdc
+  - show
+  - status
+  stdout_contains: BIRD
+  retries: 20
+  interval: 2
+- id: provided-target-elf-amd64
+  type: elf
+  requirement: services
+  variants:
+  - amd64
+  source: emulator-code/container_files/morris-worm-base/stack
+  elf_class: 32
+  machine: i386
+  static: true
+  executable_stack: true
+- id: provided-target-elf-arm64
+  type: elf
+  requirement: services
+  variants:
+  - arm64
+  source: emulator-code/container_files/morris-worm-base/stack
+  elf_class: 64
+  machine: aarch64
+  static: true
+  executable_stack: true
+- id: hnode_151_host_0-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_151_host_0
+  host: 10.151.0.71
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_151_host_1-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_151_host_1
+  host: 10.151.0.72
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_151_host_2-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_151_host_2
+  host: 10.151.0.73
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_151_host_3-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_151_host_3
+  host: 10.151.0.74
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_151_host_4-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_151_host_4
+  host: 10.151.0.75
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_152_host_0-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_152_host_0
+  host: 10.152.0.71
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_152_host_1-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_152_host_1
+  host: 10.152.0.72
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_152_host_2-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_152_host_2
+  host: 10.152.0.73
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_152_host_3-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_152_host_3
+  host: 10.152.0.74
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_152_host_4-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_152_host_4
+  host: 10.152.0.75
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_153_host_0-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_153_host_0
+  host: 10.153.0.71
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_153_host_1-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_153_host_1
+  host: 10.153.0.72
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_153_host_2-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_153_host_2
+  host: 10.153.0.73
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_153_host_3-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_153_host_3
+  host: 10.153.0.74
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: hnode_153_host_4-normal-input
+  type: buffer-input
+  requirement: services
+  service: hnode_153_host_4
+  host: 10.153.0.75
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: as151-normal-cross-as-routing
+  type: exec
+  requirement: services
+  service: hnode_151_host_0
+  argv:
+  - ping
+  - -c
+  - '1'
+  - -W
+  - '2'
+  - 10.152.0.71
+  retries: 30
+  interval: 2
+- id: as152-normal-cross-as-routing
+  type: exec
+  requirement: services
+  service: hnode_152_host_0
+  argv:
+  - ping
+  - -c
+  - '1'
+  - -W
+  - '2'
+  - 10.153.0.71
+  retries: 30
+  interval: 2
+- id: as153-normal-cross-as-routing
+  type: exec
+  requirement: services
+  service: hnode_153_host_0
+  argv:
+  - ping
+  - -c
+  - '1'
+  - -W
+  - '2'
+  - 10.151.0.71
+  retries: 30
+  interval: 2
+- id: map-http
+  type: http
+  requirement: services
+  url: http://127.0.0.1:8080/pro/home
+  expect_status: 200
+  retries: 20
+  interval: 2
+- id: map-exposes-complete-topology
+  type: exec
+  requirement: services
+  service: seedemu_internet_map
+  argv:
+  - node
+  - -e
+  - 'const http=require("http");const expected=["hnode_151_host_0","hnode_151_host_1","hnode_151_host_2","hnode_151_host_3","hnode_151_host_4","brdnode_151_router0","hnode_152_host_0","hnode_152_host_1","hnode_152_host_2","hnode_152_host_3","hnode_152_host_4","brdnode_152_router0","hnode_153_host_0","hnode_153_host_1","hnode_153_host_2","hnode_153_host_3","hnode_153_host_4","brdnode_153_router0","rs_ix_ix100"];const
+    req=http.get("http://127.0.0.1:8080/api/v1/container",r=>{let body="";r.on("data",x=>body+=x);r.on("end",()=>{try{const
+    d=JSON.parse(body);if(!d.ok||!Array.isArray(d.result))throw Error(body);const
+    services=new Set(d.result.map(x=>(x.Labels||{})["com.docker.compose.service"]));const
+    missing=expected.filter(x=>!services.has(x));if(missing.length)throw Error("Map
+    missing nodes: "+missing.join(","));console.log("Map exposes all expected nodes");}catch(e){console.error(String(e));process.exitCode=1;}});});req.on("error",e=>{console.error(String(e));process.exitCode=1;});req.setTimeout(10000,()=>req.destroy(Error("map
+    API timeout")));'
+  stdout_equals: Map exposes all expected nodes
+  timeout: 15
+  retries: 20
+  interval: 2

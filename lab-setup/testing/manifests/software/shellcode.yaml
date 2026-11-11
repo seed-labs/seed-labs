@@ -1,0 +1,132 @@
+id: software.shellcode
+category: software
+description: Environment acceptance for Shellcode; no exploitation, payload generation,
+  or student solutions.
+requirements:
+  compilation:
+    source: category-software/Shellcode/Shellcode.tex
+    section: Environment setup / compilation
+    description: Supplied starter programs build using the public commands and retain
+      the required architecture and ELF properties.
+  environment:
+    source: category-software/Shellcode/Shellcode.tex
+    section: Lab environment / tools and permissions
+    description: The existing host supplies native execution, required tools and ordinary-user
+      permissions.
+variants:
+  amd64:
+    setup: category-software/Shellcode/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-software/Shellcode/Labsetup/arm
+    architecture: arm64
+prepare:
+- id: assemble-provided-samples
+  argv:
+  - make
+  cwd: .
+  expected:
+  - hello
+  - mysh64
+  - another_sh64
+runtime:
+  backend: host
+  readiness:
+  - id: host-ready
+    type: host-exec
+    requirement: environment
+    argv:
+    - 'true'
+checks:
+- id: hello-elf-amd64
+  type: elf
+  requirement: compilation
+  source: hello
+  elf_class: 64
+  machine: x86_64
+  static: true
+  variants:
+  - amd64
+- id: mysh64-elf-amd64
+  type: elf
+  requirement: compilation
+  source: mysh64
+  elf_class: 64
+  machine: x86_64
+  static: true
+  variants:
+  - amd64
+- id: another_sh64-elf-amd64
+  type: elf
+  requirement: compilation
+  source: another_sh64
+  elf_class: 64
+  machine: x86_64
+  static: true
+  variants:
+  - amd64
+- id: hello-elf-arm64
+  type: elf
+  requirement: compilation
+  source: hello
+  elf_class: 64
+  machine: aarch64
+  static: true
+  variants:
+  - arm64
+- id: mysh64-elf-arm64
+  type: elf
+  requirement: compilation
+  source: mysh64
+  elf_class: 64
+  machine: aarch64
+  static: true
+  variants:
+  - arm64
+- id: another_sh64-elf-arm64
+  type: elf
+  requirement: compilation
+  source: another_sh64
+  elf_class: 64
+  machine: aarch64
+  static: true
+  variants:
+  - arm64
+- id: hello-amd64
+  type: host-exec
+  requirement: compilation
+  argv:
+  - ./hello
+  variants:
+  - amd64
+  stdout_contains: Hello, world!
+- id: hello-arm64
+  type: host-exec
+  requirement: compilation
+  argv:
+  - ./hello
+  variants:
+  - arm64
+  stdout_contains: Hello, World!
+  expect_exit: 14
+- id: self-modifying-text-flags
+  type: host-exec
+  requirement: compilation
+  argv:
+  - sh
+  - -c
+  - readelf -W -l ./mysh64 | grep -E "LOAD.*RWE"
+host:
+  commands:
+  - make
+  - ld
+  - readelf
+  packages:
+  - make
+  - binutils
+  architecture_commands:
+    amd64:
+    - nasm
+  architecture_packages:
+    amd64:
+    - nasm

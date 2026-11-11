@@ -1,0 +1,118 @@
+id: software.return_to_libc
+category: software
+description: Environment acceptance for Return_to_Libc; no exploitation, payload generation,
+  or student solutions.
+requirements:
+  compilation:
+    source: category-software/Return_to_Libc/Return_to_Libc.tex
+    section: Environment setup / compilation
+    description: Supplied starter programs build using the public commands and retain
+      the required architecture and ELF properties.
+  environment:
+    source: category-software/Return_to_Libc/Return_to_Libc.tex
+    section: Lab environment / tools and permissions
+    description: The existing host supplies native execution, required tools and ordinary-user
+      permissions.
+variants:
+  amd64:
+    setup: category-software/Return_to_Libc/Labsetup
+    architecture: amd64
+prepare:
+- id: compile-retlib
+  argv:
+  - make
+  cwd: .
+  expected:
+  - retlib
+- id: compile-uid-capability
+  argv:
+  - gcc
+  - -m32
+  - .seedtest/uid_check.c
+  - -o
+  - .seedtest/uid-check
+  cwd: .
+  expected:
+  - .seedtest/uid-check
+- id: setuid-capability-permissions
+  argv:
+  - sh
+  - -c
+  - chown root:root .seedtest/uid-check && chmod 4755 .seedtest/uid-check
+  cwd: .
+  expected:
+  - .seedtest/uid-check
+  privileged: true
+runtime:
+  backend: host
+  readiness:
+  - id: host-ready
+    type: host-exec
+    requirement: environment
+    argv:
+    - 'true'
+checks:
+- id: ordinary-user
+  type: host-exec
+  requirement: environment
+  argv:
+  - id
+  - -u
+  stdout_equals: '{uid}'
+- id: setuid-filesystem-capability
+  type: host-exec
+  requirement: environment
+  argv:
+  - ./.seedtest/uid-check
+  stdout_equals: '{uid} 0'
+- id: zsh-available
+  type: host-exec
+  requirement: environment
+  argv:
+  - zsh
+  - --version
+  stdout_contains: zsh
+- id: retlib-elf
+  type: elf
+  requirement: compilation
+  source: retlib
+  elf_class: 32
+  machine: i386
+  executable_stack: false
+- id: retlib-setuid-permissions
+  type: host-exec
+  requirement: environment
+  argv:
+  - stat
+  - -c
+  - '%u %a'
+  - ./retlib
+  stdout_equals: 0 4755
+- id: debugger-available
+  type: host-exec
+  requirement: environment
+  argv:
+  - gdb
+  - --version
+  stdout_contains: GNU gdb
+tools:
+- source: lab-setup/testing/tools/uid_check.c
+  destination: .seedtest/uid_check.c
+host:
+  commands:
+  - gcc
+  - make
+  - gdb
+  - zsh
+  - sudo
+  sudo: true
+  non_root: true
+  packages:
+  - gcc
+  - make
+  - libc6-dev
+  - gdb
+  - zsh
+  architecture_packages:
+    amd64:
+    - gcc-multilib

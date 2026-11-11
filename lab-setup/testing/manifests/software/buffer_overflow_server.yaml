@@ -1,0 +1,312 @@
+id: software.buffer_overflow_server
+category: software
+description: Environment acceptance for Buffer_Overflow_Server; no exploitation, payload
+  generation, or student solutions.
+requirements:
+  compilation:
+    source: category-software/Buffer_Overflow_Server/Buffer_Overflow_Server.tex
+    section: Environment setup / compilation
+    description: Supplied starter programs build using the public commands and retain
+      the required architecture and ELF properties.
+  environment:
+    source: category-software/Buffer_Overflow_Server/Buffer_Overflow_Server.tex
+    section: Lab environment / tools and permissions
+    description: A declared Ubuntu 20.04 userspace supplies native execution, required
+      tools and ordinary-user permissions.
+  files:
+    source: category-software/Buffer_Overflow_Server/Buffer_Overflow_Server.tex
+    section: Lab setup / supplied files
+    description: Exercise sources and binaries are available in the test environment
+      without completing student tasks.
+variants:
+  amd64:
+    setup: category-software/Buffer_Overflow_Server/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-software/Buffer_Overflow_Server/Labsetup-arm
+    architecture: arm64
+prepare:
+- id: compile-server-levels
+  argv:
+  - make
+  cwd: server-code
+  expected:
+  - server-code/server
+  - server-code/stack-L1
+  - server-code/stack-L2
+  - server-code/stack-L3
+  - server-code/stack-L4
+- id: install-server-levels
+  argv:
+  - make
+  - install
+  cwd: server-code
+  expected:
+  - bof-containers/server
+  - bof-containers/stack-L1
+  - bof-containers/stack-L2
+  - bof-containers/stack-L3
+  - bof-containers/stack-L4
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    bof-server-L1:
+      role: daemon
+    bof-server-L2:
+      role: daemon
+    bof-server-L3:
+      role: daemon
+    bof-server-L4:
+      role: daemon
+  readiness:
+  - id: level-1-running
+    type: service-state
+    requirement: environment
+    service: bof-server-L1
+    expected: running
+    retries: 15
+    interval: 2
+  - id: level-2-running
+    type: service-state
+    requirement: environment
+    service: bof-server-L2
+    expected: running
+    retries: 15
+    interval: 2
+  - id: level-3-running
+    type: service-state
+    requirement: environment
+    service: bof-server-L3
+    expected: running
+    retries: 15
+    interval: 2
+  - id: level-4-running
+    type: service-state
+    requirement: environment
+    service: bof-server-L4
+    expected: running
+    retries: 15
+    interval: 2
+checks:
+- id: level-1-ip
+  type: container-ip
+  requirement: environment
+  service: bof-server-L1
+  expected: 10.9.0.5
+- id: level-1-server-identity
+  type: file
+  requirement: files
+  service: bof-server-L1
+  path: /bof/server
+  source: server-code/server
+  executable: true
+- id: level-1-stack-identity
+  type: file
+  requirement: files
+  service: bof-server-L1
+  path: /bof/stack
+  source: server-code/stack-L1
+  executable: true
+- id: level-1-root
+  type: process-uid
+  requirement: environment
+  service: bof-server-L1
+  path: /bof/server
+  expected_euid: 0
+- id: level-1-normal-input
+  type: buffer-input
+  requirement: environment
+  service: bof-server-L1
+  host: 10.9.0.5
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: level-1-elf-amd64
+  type: elf
+  requirement: compilation
+  source: server-code/stack-L1
+  elf_class: 32
+  machine: i386
+  executable_stack: true
+  static: true
+  variants:
+  - amd64
+- id: level-1-elf-arm64
+  type: elf
+  requirement: compilation
+  source: server-code/stack-L1
+  elf_class: 64
+  machine: aarch64
+  executable_stack: true
+  static: true
+  variants:
+  - arm64
+- id: level-2-ip
+  type: container-ip
+  requirement: environment
+  service: bof-server-L2
+  expected: 10.9.0.6
+- id: level-2-server-identity
+  type: file
+  requirement: files
+  service: bof-server-L2
+  path: /bof/server
+  source: server-code/server
+  executable: true
+- id: level-2-stack-identity
+  type: file
+  requirement: files
+  service: bof-server-L2
+  path: /bof/stack
+  source: server-code/stack-L2
+  executable: true
+- id: level-2-root
+  type: process-uid
+  requirement: environment
+  service: bof-server-L2
+  path: /bof/server
+  expected_euid: 0
+- id: level-2-normal-input
+  type: buffer-input
+  requirement: environment
+  service: bof-server-L2
+  host: 10.9.0.6
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: level-2-elf-amd64
+  type: elf
+  requirement: compilation
+  source: server-code/stack-L2
+  elf_class: 32
+  machine: i386
+  executable_stack: true
+  static: true
+  variants:
+  - amd64
+- id: level-2-elf-arm64
+  type: elf
+  requirement: compilation
+  source: server-code/stack-L2
+  elf_class: 64
+  machine: aarch64
+  executable_stack: true
+  static: true
+  variants:
+  - arm64
+- id: level-3-ip
+  type: container-ip
+  requirement: environment
+  service: bof-server-L3
+  expected: 10.9.0.7
+- id: level-3-server-identity
+  type: file
+  requirement: files
+  service: bof-server-L3
+  path: /bof/server
+  source: server-code/server
+  executable: true
+- id: level-3-stack-identity
+  type: file
+  requirement: files
+  service: bof-server-L3
+  path: /bof/stack
+  source: server-code/stack-L3
+  executable: true
+- id: level-3-root
+  type: process-uid
+  requirement: environment
+  service: bof-server-L3
+  path: /bof/server
+  expected_euid: 0
+- id: level-3-normal-input
+  type: buffer-input
+  requirement: environment
+  service: bof-server-L3
+  host: 10.9.0.7
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: level-3-elf-amd64
+  type: elf
+  requirement: compilation
+  source: server-code/stack-L3
+  elf_class: 64
+  machine: x86_64
+  executable_stack: true
+  variants:
+  - amd64
+- id: level-3-elf-arm64
+  type: elf
+  requirement: compilation
+  source: server-code/stack-L3
+  elf_class: 64
+  machine: aarch64
+  executable_stack: true
+  static: true
+  variants:
+  - arm64
+- id: level-4-ip
+  type: container-ip
+  requirement: environment
+  service: bof-server-L4
+  expected: 10.9.0.8
+- id: level-4-server-identity
+  type: file
+  requirement: files
+  service: bof-server-L4
+  path: /bof/server
+  source: server-code/server
+  executable: true
+- id: level-4-stack-identity
+  type: file
+  requirement: files
+  service: bof-server-L4
+  path: /bof/stack
+  source: server-code/stack-L4
+  executable: true
+- id: level-4-root
+  type: process-uid
+  requirement: environment
+  service: bof-server-L4
+  path: /bof/server
+  expected_euid: 0
+- id: level-4-normal-input
+  type: buffer-input
+  requirement: environment
+  service: bof-server-L4
+  host: 10.9.0.8
+  port: 9090
+  requests: 2
+  timeout: 20
+- id: level-4-elf-amd64
+  type: elf
+  requirement: compilation
+  source: server-code/stack-L4
+  elf_class: 64
+  machine: x86_64
+  executable_stack: true
+  variants:
+  - amd64
+- id: level-4-elf-arm64
+  type: elf
+  requirement: compilation
+  source: server-code/stack-L4
+  elf_class: 64
+  machine: aarch64
+  executable_stack: true
+  static: true
+  variants:
+  - arm64
+host:
+  commands:
+  - gcc
+  - make
+  packages:
+  - gcc
+  - make
+  - libc6-dev
+  architecture_packages:
+    amd64:
+    - gcc-multilib

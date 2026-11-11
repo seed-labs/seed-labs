@@ -1,0 +1,157 @@
+id: web.csrf_elgg
+category: web
+description: Initial environment acceptance for Web_CSRF_Elgg, without carrying out
+  the attack tasks.
+requirements:
+  deployment:
+    source: category-web/Web_CSRF_Elgg/Web_CSRF_Elgg.tex
+    section: Lab Environment Setup
+    description: Initial services, supplied customizations and host addresses are
+      correctly deployed.
+  database:
+    source: category-web/Web_CSRF_Elgg/Web_CSRF_Elgg.tex
+    section: Lab Environment Setup / supplied accounts
+    description: Database schema, seed accounts and application-to-database connectivity
+      are ready.
+  normal-use:
+    source: category-web/Web_CSRF_Elgg/Web_CSRF_Elgg.tex
+    section: Lab Environment / normal use
+    description: Ordinary page requests and authorized login work without injection
+      or cross-site requests.
+  policy:
+    source: category-web/Web_CSRF_Elgg/Web_CSRF_Elgg.tex
+    section: Lab tasks / initial defense configuration
+    description: Provided CSP, framing or SameSite demonstration settings are present
+      before students modify them.
+variants:
+  amd64:
+    setup: category-web/Web_CSRF_Elgg/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-web/Web_CSRF_Elgg/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    elgg:
+      role: daemon
+    mysql:
+      role: daemon
+    attacker:
+      role: daemon
+  readiness:
+  - id: elgg-running
+    type: service-state
+    requirement: deployment
+    service: elgg
+    expected: running
+    retries: 20
+    interval: 2
+  - id: mysql-running
+    type: service-state
+    requirement: deployment
+    service: mysql
+    expected: running
+    retries: 20
+    interval: 2
+  - id: attacker-running
+    type: service-state
+    requirement: deployment
+    service: attacker
+    expected: running
+    retries: 20
+    interval: 2
+  - id: database-initial-data
+    type: exec
+    requirement: database
+    service: mysql
+    argv:
+    - mysql
+    - -uroot
+    - -pdees
+    - --batch
+    - --skip-column-names
+    - elgg_seed
+    - -e
+    - SELECT COUNT(*) FROM elgg_metadata WHERE name='username' AND value IN ('admin','alice','boby','charlie','samy');
+    stdout_equals: '5'
+    retries: 40
+    interval: 2
+    timeout: 5
+  - id: elgg-login-page
+    type: http
+    requirement: normal-use
+    url: http://www.seed-server.com/
+    connect_address: 10.9.0.5
+    expect_status: 200
+    body_contains: Elgg
+    retries: 30
+    interval: 2
+    timeout: 5
+  - id: attacker-page
+    type: http
+    requirement: normal-use
+    url: http://www.attacker32.com/
+    connect_address: 10.9.0.105
+    expect_status: 200
+    body_contains: CSRF Attacker's Page
+    retries: 30
+    interval: 2
+    timeout: 5
+checks:
+- id: elgg-ip
+  type: container-ip
+  requirement: deployment
+  service: elgg
+  expected: 10.9.0.5
+- id: mysql-ip
+  type: container-ip
+  requirement: deployment
+  service: mysql
+  expected: 10.9.0.6
+- id: attacker-ip
+  type: container-ip
+  requirement: deployment
+  service: attacker
+  expected: 10.9.0.105
+- id: normal-alice-login
+  type: web-login
+  requirement: normal-use
+  url: http://www.seed-server.com/
+  connect_address: 10.9.0.5
+  username: alice
+  password: seedalice
+  login_path: /action/login
+  body_contains: action/logout
+  timeout: 20
+- id: elgg-db-settings
+  type: file
+  requirement: deployment
+  service: elgg
+  source: image_www/elgg/settings.php
+  path: /var/www/elgg/elgg-config/settings.php
+- id: csrf-customization
+  type: file
+  requirement: deployment
+  service: elgg
+  source: image_www/elgg/Csrf.php
+  path: /var/www/elgg/vendor/elgg/elgg/engine/classes/Elgg/Security/Csrf.php
+- id: samesite-lax-example
+  type: http
+  requirement: policy
+  url: http://www.example32.com/
+  connect_address: 10.9.0.5
+  expect_status: 200
+  expected_headers:
+    Set-Cookie: SameSite=Lax
+  body_contains: Setting Cookies
+- id: samesite-strict-example
+  type: http
+  requirement: policy
+  url: http://www.example32.com/
+  connect_address: 10.9.0.5
+  expect_status: 200
+  expected_headers:
+    Set-Cookie: SameSite=Strict
+  body_contains: Setting Cookies

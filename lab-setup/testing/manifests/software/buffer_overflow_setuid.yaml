@@ -1,0 +1,214 @@
+id: software.buffer_overflow_setuid
+category: software
+description: Environment acceptance for Buffer_Overflow_Setuid; no exploitation, payload
+  generation, or student solutions.
+requirements:
+  compilation:
+    source: category-software/Buffer_Overflow_Setuid/Buffer_Overflow_Setuid.tex
+    section: Environment setup / compilation
+    description: Supplied starter programs build using the public commands and retain
+      the required architecture and ELF properties.
+  environment:
+    source: category-software/Buffer_Overflow_Setuid/Buffer_Overflow_Setuid.tex
+    section: Lab environment / tools and permissions
+    description: The existing host supplies native execution, required tools and ordinary-user
+      permissions.
+variants:
+  amd64:
+    setup: category-software/Buffer_Overflow_Setuid/Labsetup
+    architecture: amd64
+prepare:
+- id: compile-stack-levels
+  argv:
+  - make
+  cwd: code
+  expected:
+  - code/stack-L1
+  - code/stack-L2
+  - code/stack-L3
+  - code/stack-L4
+  - code/stack-L1-dbg
+  - code/stack-L2-dbg
+  - code/stack-L3-dbg
+  - code/stack-L4-dbg
+- id: compile-shellcode-harness
+  argv:
+  - make
+  cwd: shellcode
+  expected:
+  - shellcode/a32.out
+  - shellcode/a64.out
+- id: compile-uid-capability
+  argv:
+  - gcc
+  - .seedtest/uid_check.c
+  - -o
+  - .seedtest/uid-check
+  cwd: .
+  expected:
+  - .seedtest/uid-check
+- id: setuid-capability-permissions
+  argv:
+  - sh
+  - -c
+  - chown root:root .seedtest/uid-check && chmod 4755 .seedtest/uid-check
+  cwd: .
+  expected:
+  - .seedtest/uid-check
+  privileged: true
+runtime:
+  backend: host
+  readiness:
+  - id: host-ready
+    type: host-exec
+    requirement: environment
+    argv:
+    - 'true'
+checks:
+- id: ordinary-user
+  type: host-exec
+  requirement: environment
+  argv:
+  - id
+  - -u
+  stdout_equals: '{uid}'
+- id: setuid-filesystem-capability
+  type: host-exec
+  requirement: environment
+  argv:
+  - ./.seedtest/uid-check
+  stdout_equals: '{uid} 0'
+- id: zsh-available
+  type: host-exec
+  requirement: environment
+  argv:
+  - zsh
+  - --version
+  stdout_contains: zsh
+- id: level-1-elf
+  type: elf
+  requirement: compilation
+  source: code/stack-L1
+  elf_class: 32
+  machine: i386
+  executable_stack: true
+- id: level-1-setuid-permissions
+  type: host-exec
+  requirement: environment
+  argv:
+  - stat
+  - -c
+  - '%u %a'
+  - ./code/stack-L1
+  stdout_equals: 0 4755
+- id: level-1-canary-disabled
+  type: host-exec
+  requirement: compilation
+  argv:
+  - sh
+  - -c
+  - '! nm -u ./code/stack-L1 | grep -q __stack_chk_fail'
+- id: level-2-elf
+  type: elf
+  requirement: compilation
+  source: code/stack-L2
+  elf_class: 32
+  machine: i386
+  executable_stack: true
+- id: level-2-setuid-permissions
+  type: host-exec
+  requirement: environment
+  argv:
+  - stat
+  - -c
+  - '%u %a'
+  - ./code/stack-L2
+  stdout_equals: 0 4755
+- id: level-2-canary-disabled
+  type: host-exec
+  requirement: compilation
+  argv:
+  - sh
+  - -c
+  - '! nm -u ./code/stack-L2 | grep -q __stack_chk_fail'
+- id: level-3-elf
+  type: elf
+  requirement: compilation
+  source: code/stack-L3
+  elf_class: 64
+  machine: x86_64
+  executable_stack: true
+- id: level-3-setuid-permissions
+  type: host-exec
+  requirement: environment
+  argv:
+  - stat
+  - -c
+  - '%u %a'
+  - ./code/stack-L3
+  stdout_equals: 0 4755
+- id: level-3-canary-disabled
+  type: host-exec
+  requirement: compilation
+  argv:
+  - sh
+  - -c
+  - '! nm -u ./code/stack-L3 | grep -q __stack_chk_fail'
+- id: level-4-elf
+  type: elf
+  requirement: compilation
+  source: code/stack-L4
+  elf_class: 64
+  machine: x86_64
+  executable_stack: true
+- id: level-4-setuid-permissions
+  type: host-exec
+  requirement: environment
+  argv:
+  - stat
+  - -c
+  - '%u %a'
+  - ./code/stack-L4
+  stdout_equals: 0 4755
+- id: level-4-canary-disabled
+  type: host-exec
+  requirement: compilation
+  argv:
+  - sh
+  - -c
+  - '! nm -u ./code/stack-L4 | grep -q __stack_chk_fail'
+- id: debug-symbols
+  type: host-exec
+  requirement: environment
+  argv:
+  - gdb
+  - -nx
+  - --batch
+  - -ex
+  - file ./code/stack-L1-dbg
+  - -ex
+  - info functions bof
+  stdout_contains: bof
+tools:
+- source: lab-setup/testing/tools/uid_check.c
+  destination: .seedtest/uid_check.c
+host:
+  commands:
+  - gcc
+  - make
+  - nm
+  - gdb
+  - zsh
+  - sudo
+  sudo: true
+  non_root: true
+  packages:
+  - gcc
+  - make
+  - libc6-dev
+  - binutils
+  - gdb
+  - zsh
+  architecture_packages:
+    amd64:
+    - gcc-multilib

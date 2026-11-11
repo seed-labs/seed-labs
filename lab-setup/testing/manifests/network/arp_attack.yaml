@@ -1,0 +1,113 @@
+id: network.arp_attack
+category: network
+description: Initial environment acceptance for ARP_Attack; no attacks or student
+  solutions.
+requirements:
+  topology:
+    source: category-network/ARP_Attack/ARP_Attack.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/ARP_Attack/ARP_Attack.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  capabilities:
+    source: category-network/ARP_Attack/ARP_Attack.tex
+    section: Lab environment / required tools
+    description: Packet capture, protocol libraries and required kernel interfaces
+      are usable.
+variants:
+  amd64:
+    setup: category-network/ARP_Attack/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-network/ARP_Attack/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose.yml
+  services:
+    HostA:
+      role: daemon
+    HostB:
+      role: daemon
+    HostM:
+      role: daemon
+  readiness:
+  - id: hosta-running
+    type: service-state
+    requirement: services
+    service: HostA
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hostb-running
+    type: service-state
+    requirement: services
+    service: HostB
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hostm-running
+    type: service-state
+    requirement: services
+    service: HostM
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hosta-telnet
+    type: tcp
+    requirement: services
+    host: 10.9.0.5
+    port: 23
+    retries: 20
+    interval: 2
+    timeout: 3
+  - id: hostb-telnet
+    type: tcp
+    requirement: services
+    host: 10.9.0.6
+    port: 23
+    retries: 20
+    interval: 2
+    timeout: 3
+checks:
+- id: hosta-ip-0
+  type: container-ip
+  requirement: topology
+  service: HostA
+  expected: 10.9.0.5
+- id: hostb-ip-0
+  type: container-ip
+  requirement: topology
+  service: HostB
+  expected: 10.9.0.6
+- id: hostm-ip-0
+  type: container-ip
+  requirement: topology
+  service: HostM
+  expected: 10.9.0.105
+- id: a-reaches-b
+  type: exec
+  requirement: topology
+  service: HostA
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 10.9.0.6
+- id: hostm-capture-normal-icmp
+  type: exec
+  requirement: capabilities
+  service: HostM
+  argv:
+  - python3
+  - -c
+  - from scapy.all import AsyncSniffer,conf; import subprocess,time; s=AsyncSniffer(iface=conf.route.route('10.9.0.5')[0],filter='icmp',count=1,store=True);
+    s.start(); time.sleep(.5); subprocess.run(['ping','-c','1','-W','2','10.9.0.5'],check=True,timeout=4);
+    s.join(4); assert s.results and len(s.results)>0
+  timeout: 15

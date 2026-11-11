@@ -1,0 +1,200 @@
+id: network.vpn_tunnel_site_to_site
+category: network
+description: Initial environment acceptance for VPN_Tunnel; no attacks or student
+  solutions.
+requirements:
+  topology:
+    source: category-network/VPN_Tunnel/VPN_Tunnel.tex
+    section: Lab environment / initial topology
+    description: Initial hosts, addresses, interfaces and routes match the supplied
+      lab topology.
+  services:
+    source: category-network/VPN_Tunnel/VPN_Tunnel.tex
+    section: Lab environment / initial services
+    description: Provided services start and accept ordinary traffic before students
+      modify the environment.
+  capabilities:
+    source: category-network/VPN_Tunnel/VPN_Tunnel.tex
+    section: Lab environment / required tools
+    description: Packet capture, protocol libraries and required kernel interfaces
+      are usable.
+  configuration:
+    source: category-network/VPN_Tunnel/VPN_Tunnel.tex
+    section: Lab environment / initial configuration
+    description: Initial countermeasure and firewall settings preserve the conditions
+      described by the manual.
+variants:
+  amd64:
+    setup: category-network/VPN_Tunnel/Labsetup
+    architecture: amd64
+  arm64:
+    setup: category-network/VPN_Tunnel/Labsetup-arm
+    architecture: arm64
+runtime:
+  backend: compose
+  compose: docker-compose2.yml
+  services:
+    VPN_Client:
+      role: daemon
+    Host1:
+      role: daemon
+    Host2:
+      role: daemon
+    Router:
+      role: daemon
+    HostA:
+      role: daemon
+    HostB:
+      role: daemon
+  readiness:
+  - id: vpn_client-running
+    type: service-state
+    requirement: services
+    service: VPN_Client
+    expected: running
+    retries: 20
+    interval: 2
+  - id: host1-running
+    type: service-state
+    requirement: services
+    service: Host1
+    expected: running
+    retries: 20
+    interval: 2
+  - id: host2-running
+    type: service-state
+    requirement: services
+    service: Host2
+    expected: running
+    retries: 20
+    interval: 2
+  - id: router-running
+    type: service-state
+    requirement: services
+    service: Router
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hosta-running
+    type: service-state
+    requirement: services
+    service: HostA
+    expected: running
+    retries: 20
+    interval: 2
+  - id: hostb-running
+    type: service-state
+    requirement: services
+    service: HostB
+    expected: running
+    retries: 20
+    interval: 2
+checks:
+- id: vpn_client-ip-0
+  type: container-ip
+  requirement: topology
+  service: VPN_Client
+  expected: 10.9.0.12
+- id: vpn_client-ip-1
+  type: container-ip
+  requirement: topology
+  service: VPN_Client
+  expected: 192.168.50.12
+- id: host1-ip-0
+  type: container-ip
+  requirement: topology
+  service: Host1
+  expected: 192.168.60.5
+- id: host2-ip-0
+  type: container-ip
+  requirement: topology
+  service: Host2
+  expected: 192.168.60.6
+- id: router-ip-0
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 10.9.0.11
+- id: router-ip-1
+  type: container-ip
+  requirement: topology
+  service: Router
+  expected: 192.168.60.11
+- id: hosta-ip-0
+  type: container-ip
+  requirement: topology
+  service: HostA
+  expected: 192.168.50.5
+- id: hostb-ip-0
+  type: container-ip
+  requirement: topology
+  service: HostB
+  expected: 192.168.50.6
+- id: vpn_client-tun-interface
+  type: exec
+  requirement: capabilities
+  service: VPN_Client
+  argv:
+  - python3
+  - -c
+  - import os,fcntl,struct; fd=os.open('/dev/net/tun',os.O_RDWR); fcntl.ioctl(fd,0x400454ca,struct.pack('16sH',b'seedtest%d',0x1001));
+    os.close(fd)
+- id: router-tun-interface
+  type: exec
+  requirement: capabilities
+  service: Router
+  argv:
+  - python3
+  - -c
+  - import os,fcntl,struct; fd=os.open('/dev/net/tun',os.O_RDWR); fcntl.ioctl(fd,0x400454ca,struct.pack('16sH',b'seedtest%d',0x1001));
+    os.close(fd)
+- id: router-forwarding
+  type: exec
+  requirement: configuration
+  service: Router
+  argv:
+  - sysctl
+  - -n
+  - net.ipv4.ip_forward
+  stdout_equals: '1'
+- id: client-forwarding
+  type: exec
+  requirement: configuration
+  service: VPN_Client
+  argv:
+  - sysctl
+  - -n
+  - net.ipv4.ip_forward
+  stdout_equals: '1'
+- id: private-client-lan
+  type: exec
+  requirement: topology
+  service: HostA
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 192.168.50.6
+- id: server-private-lan
+  type: exec
+  requirement: topology
+  service: Host1
+  argv:
+  - ping
+  - -c
+  - '2'
+  - -W
+  - '2'
+  - 192.168.60.6
+- id: server-private-default-route
+  type: exec
+  requirement: topology
+  service: Host1
+  argv:
+  - ip
+  - route
+  - show
+  - default
+  stdout_contains: via 192.168.60.11
